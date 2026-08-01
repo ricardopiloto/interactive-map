@@ -1,0 +1,54 @@
+services:
+  api:
+    build:
+      context: ./backend
+    container_name: mapa-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////app/data/mapa.db
+      UPLOADS_DIR: /app/uploads
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://mapa.1nodado.com.br}
+      DEBUG: ${DEBUG:-false}
+    volumes:
+      - mapa-data:/app/data
+      - mapa-uploads:/app/uploads
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    build:
+      context: ./frontend
+    container_name: mapa-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    expose:
+      - "80"
+
+  # Opcional: use este serviço se quiser um Caddy local de desenvolvimento.
+  # Em produção, o Caddy do host (já existente) costuma fazer o reverse proxy.
+  caddy:
+    image: caddy:2.9-alpine
+    container_name: mapa-caddy
+    restart: unless-stopped
+    profiles: ["with-caddy"]
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy/Caddyfile.local:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - web
+      - api
+
+volumes:
+  mapa-data:
+  mapa-uploads:

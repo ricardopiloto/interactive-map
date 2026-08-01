@@ -1,0 +1,21 @@
+.pin-modal-backdrop {
+  z-index: 90;
+}
+
+.pin-modal {
+  width: min(440px, 100%);
+  max-height: min(90dvh, 720px);
+  overflow: auto;
+}
+
+.pin-modal__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pin-modal__chips .tag {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+}

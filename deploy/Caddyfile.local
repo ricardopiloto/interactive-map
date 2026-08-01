@@ -1,0 +1,33 @@
+:80 {
+	encode gzip
+
+	handle /admin* {
+		basicauth {
+			gm $2a$14$placeholder_replace_with_caddy_hash_password
+		}
+		reverse_proxy web:80
+	}
+
+	@admin_write {
+		path /api/admin*
+		method POST PUT PATCH DELETE
+	}
+	handle @admin_write {
+		basicauth {
+			gm $2a$14$placeholder_replace_with_caddy_hash_password
+		}
+		reverse_proxy api:8000
+	}
+
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	handle /uploads/* {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:80
+	}
+}

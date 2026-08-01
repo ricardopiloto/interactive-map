@@ -1,0 +1,133 @@
+.side-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(340px, 100%);
+  height: 100%;
+  padding: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-right: 1px solid var(--color-divider);
+}
+
+.side-menu--overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: 100%;
+  border-right: none;
+}
+
+.side-menu__header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.side-menu__brand-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.side-menu__brand {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 18px;
+}
+
+.side-menu__seg-wrap {
+  padding: 0 var(--space-4);
+}
+
+.side-menu__seg-wrap .seg {
+  width: 100%;
+  display: flex;
+}
+
+.side-menu__seg-wrap .seg-opt {
+  flex: 1;
+  justify-content: center;
+}
+
+.side-menu__search {
+  margin: 0 var(--space-4);
+  width: calc(100% - 2 * var(--space-4));
+}
+
+.side-menu__body {
+  flex: 1;
+  overflow: auto;
+  padding: 0 var(--space-4) var(--space-6);
+}
+
+.side-menu__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.side-menu__card-btn {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font: inherit;
+}
+
+.side-menu__npc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+}
+
+.side-menu__npc-body {
+  margin-top: var(--space-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.side-menu__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.side-menu__chips .tag {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+}
+
+.side-menu__event {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--color-divider);
+  background: transparent;
+  color: inherit;
+  padding: var(--space-2) 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}

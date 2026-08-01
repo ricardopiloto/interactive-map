@@ -1,0 +1,14 @@
+[project]
+name = "mapa-campanha-api"
+version = "0.1.0"
+description = "API do Mapa Interativo da Campanha WFRP4e"
+requires-python = ">=3.12"
+dependencies = [
+    "aiofiles>=25.1.0",
+    "fastapi>=0.141.1",
+    "pydantic-settings>=2.14.2",
+    "python-multipart>=0.0.32",
+    "slowapi>=0.1.10",
+    "sqlmodel>=0.0.39",
+    "uvicorn[standard]>=0.52.1",
+]

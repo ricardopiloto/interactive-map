@@ -1,0 +1,20 @@
+# Build context — keep images small
+.git
+.cursor
+.specify
+**/node_modules
+**/__pycache__
+**/.venv
+**/dist
+**/*.db
+**/*.db-*
+backend/uploads/**
+!backend/uploads/**/.gitkeep
+.env
+.env.*
+!.env.example
+*.log
+coverage
+.DS_Store
+prototype
+specs

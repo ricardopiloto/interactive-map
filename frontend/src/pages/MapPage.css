@@ -1,0 +1,126 @@
+.map-page {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.map-page--mobile {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+}
+
+.map-page__main {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-page__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.map-page__top-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.map-page__brand {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 15px;
+}
+
+.map-page__subtitle {
+  font-size: 13px;
+}
+
+.map-page__corner {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.map-page__status {
+  position: absolute;
+  inset: auto 1rem 1rem 1rem;
+  z-index: 4;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  color: var(--color-text);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+
+.map-page__status--error,
+.map-page__inline-error {
+  color: var(--color-accent-300);
+}
+
+.map-page__inline-error {
+  font-size: 12px;
+  margin: 0 0 var(--space-2);
+}
+
+.map-page__bottom {
+  display: flex;
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+.map-page__bottom button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  padding: 0.85rem 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.map-page__bottom button.active {
+  color: var(--color-accent);
+}
+
+.gm-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gm-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gm-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.gm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.gm-chips .tag {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+}
