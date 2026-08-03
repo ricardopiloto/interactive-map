@@ -12,9 +12,8 @@
 }
 
 .pin-modal {
+  /* Shell max-height / flex / overflow come from .dialog (nocturne). */
   width: min(440px, 100%);
-  max-height: min(90dvh, 720px);
-  overflow: auto;
 }
 
 .pin-modal--beside {

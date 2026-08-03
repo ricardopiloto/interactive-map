@@ -108,37 +108,39 @@ export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: 
         aria-labelledby="pin-modal-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <ImageSlot
-          src={local.imagem_url}
-          placeholder="Imagem do local"
-          shape="rounded"
-          style={{ width: '100%', height: 150 }}
-        />
         <div className="dialog-title" id="pin-modal-title">
           {local.nome}
         </div>
-        {local.data_sessao && <div className="card-meta">{local.data_sessao}</div>}
-        {descricao ? (
-          <MarkdownSafe className="dialog-body pin-modal__markdown">{descricao}</MarkdownSafe>
-        ) : (
-          <div className="dialog-body">Sem descrição.</div>
-        )}
-        <div className="pin-modal__chips">
-          {arco && (
-            <button type="button" className="tag tag-accent" onClick={() => onOpenArco(arco.id)}>
-              {arco.titulo}
-            </button>
+        <div className="dialog__body">
+          <ImageSlot
+            src={local.imagem_url}
+            placeholder="Imagem do local"
+            shape="rounded"
+            style={{ width: '100%', height: 150 }}
+          />
+          {local.data_sessao && <div className="card-meta">{local.data_sessao}</div>}
+          {descricao ? (
+            <MarkdownSafe className="dialog-body pin-modal__markdown">{descricao}</MarkdownSafe>
+          ) : (
+            <div className="dialog-body">Sem descrição.</div>
           )}
-          {linkedNpcs.map((n) => (
-            <button
-              key={n.id}
-              type="button"
-              className="tag tag-outline"
-              onClick={() => onOpenNpc(n.id)}
-            >
-              {n.nome}
-            </button>
-          ))}
+          <div className="pin-modal__chips">
+            {arco && (
+              <button type="button" className="tag tag-accent" onClick={() => onOpenArco(arco.id)}>
+                {arco.titulo}
+              </button>
+            )}
+            {linkedNpcs.map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                className="tag tag-outline"
+                onClick={() => onOpenNpc(n.id)}
+              >
+                {n.nome}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onClose}>

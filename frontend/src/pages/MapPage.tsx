@@ -172,6 +172,7 @@ export function MapPage() {
         data_sessao: localDraft.data_sessao.trim() || null,
         arco_id: localDraft.arco_id,
         npc_ids: localDraft.npc_ids,
+        saida_ids: localDraft.saida_ids,
         imagem_url: localDraft.imagem_url,
         cor_pin: localDraft.cor_pin,
       }
@@ -398,6 +399,7 @@ export function MapPage() {
                     data_sessao: '',
                     arco_id: arcos[0]?.id ?? null,
                     npc_ids: [],
+                    saida_ids: [],
                     x,
                     y,
                     imagem_url: null,
@@ -476,6 +478,7 @@ export function MapPage() {
           draft={localDraft}
           arcos={arcos}
           npcs={npcs}
+          locais={locais}
           onChange={(patch) => setLocalDraft({ ...localDraft, ...patch })}
           onSave={() => void saveLocal()}
           onCancel={() => {

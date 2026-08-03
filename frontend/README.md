@@ -28,11 +28,13 @@ Abre em http://localhost:5173. O Vite faz proxy de `/api` e `/uploads` para o ba
 ### Jogador
 
 - Clique no pin ou no local no menu → foca a vista (pan/zoom) e abre o modal de leitura ao lado do pin (Markdown seguro); fechar limpa a seleção
-- Hover no cartão/nome na aba Locais → destaque visual do pin (sem mover pan/zoom da vista)
+- Hover no cartão/nome na aba Locais → destaque visual do pin (sem mover pan/zoom da vista); sem seleção, também mostra as linhas de saída daquele local
+- Com local selecionado/aberto → linhas de saída no mapa (vermelho claro); hover na lista não troca as linhas
+- Diálogos longos → corpo rolável com ações fixas no rodapé
 
 ### Modo GM
 
-- CRUD via abas / diálogos; cor do pin e descrição (texto ou Markdown) no formulário de local
+- CRUD via abas / diálogos; cor do pin, saídas para outros locais e descrição (texto ou Markdown) no formulário de local
 - Botão **Mapa** nos controles para substituir a imagem da campanha
 - Clique no pin → seleciona sem foco automático da câmera; clique no menu → pode focar como no jogador
 - Clique na área vazia do mapa → deseleciona o pin (não fecha formulários admin abertos)

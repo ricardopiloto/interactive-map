@@ -281,14 +281,37 @@ textarea.input { min-height: 90px; resize: vertical; }
   background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
 }
 .dialog {
-  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
-  padding: var(--space-4); border-radius: var(--radius-lg);
-  background: var(--color-surface); box-shadow: var(--shadow-lg);
+  width: min(440px, 100%);
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  min-height: 0;
+  overflow: hidden;
 }
 .dialog-title {
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
   font-size: 20px;
+  flex-shrink: 0;
+}
+.dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 .dialog-body { font-size: 14px; opacity: 0.85; }
-.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  margin-top: 0;
+}
 

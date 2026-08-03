@@ -38,6 +38,9 @@ def _migrate_sqlite() -> None:
 
 
 def init_db() -> None:
+    # Register all table models on SQLModel.metadata before create_all.
+    import app.models  # noqa: F401
+
     SQLModel.metadata.create_all(engine)
     _migrate_sqlite()
 

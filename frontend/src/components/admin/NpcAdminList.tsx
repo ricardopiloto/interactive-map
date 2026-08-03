@@ -36,48 +36,50 @@ export function NpcFormDialog({
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
       <div className="dialog" role="dialog">
         <div className="dialog-title">{title}</div>
-        <ImageSlot
-          src={retrato_url}
-          placeholder="Retrato do NPC"
-          shape="rounded"
-          editable
-          category="portraits"
-          style={{ width: '100%', height: 110 }}
-          onUploaded={(url) => onChange({ retrato_url: url })}
-        />
-        <div className="field">
-          <label>Nome</label>
-          <input className="input" value={nome} onChange={(e) => onChange({ nome: e.target.value })} />
-        </div>
-        <div className="field">
-          <label>Descrição</label>
-          <textarea
-            className="input"
-            rows={3}
-            value={descricao}
-            onChange={(e) => onChange({ descricao: e.target.value })}
+        <div className="dialog__body">
+          <ImageSlot
+            src={retrato_url}
+            placeholder="Retrato do NPC"
+            shape="rounded"
+            editable
+            category="portraits"
+            style={{ width: '100%', height: 110 }}
+            onUploaded={(url) => onChange({ retrato_url: url })}
           />
-        </div>
-        <div className="field">
-          <label>Facção (opcional)</label>
-          <input
-            className="input"
-            value={faccao}
-            onChange={(e) => onChange({ faccao: e.target.value })}
-          />
-        </div>
-        <div className="field">
-          <label>Status</label>
-          <select
-            className="input"
-            value={status}
-            onChange={(e) => onChange({ status: e.target.value as NPCStatus })}
-          >
-            <option value="vivo">Vivo</option>
-            <option value="morto">Morto</option>
-            <option value="desaparecido">Desaparecido</option>
-            <option value="desconhecido">Desconhecido</option>
-          </select>
+          <div className="field">
+            <label>Nome</label>
+            <input className="input" value={nome} onChange={(e) => onChange({ nome: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Descrição</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={descricao}
+              onChange={(e) => onChange({ descricao: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Facção (opcional)</label>
+            <input
+              className="input"
+              value={faccao}
+              onChange={(e) => onChange({ faccao: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Status</label>
+            <select
+              className="input"
+              value={status}
+              onChange={(e) => onChange({ status: e.target.value as NPCStatus })}
+            >
+              <option value="vivo">Vivo</option>
+              <option value="morto">Morto</option>
+              <option value="desaparecido">Desaparecido</option>
+              <option value="desconhecido">Desconhecido</option>
+            </select>
+          </div>
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>

@@ -1,6 +1,6 @@
 [project]
 name = "mapa-campanha-api"
-version = "0.4.0"
+version = "0.5.0"
 description = "API do Mapa Interativo da Campanha WFRP4e"
 requires-python = ">=3.12"
 dependencies = [

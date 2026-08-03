@@ -20,23 +20,25 @@ export function AdminGateDialog({ error, onSubmit, onCancel }: AdminGateDialogPr
         <div className="dialog-title" id="gm-gate-title">
           Acesso do Mestre
         </div>
-        <div className="dialog-body">Área restrita de edição da campanha.</div>
-        <div className="field">
-          <label htmlFor="gm-password">Senha</label>
-          <input
-            id="gm-password"
-            className="input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Senha"
-            autoFocus
-            autoComplete="current-password"
-          />
+        <div className="dialog__body">
+          <div className="dialog-body">Área restrita de edição da campanha.</div>
+          <div className="field">
+            <label htmlFor="gm-password">Senha</label>
+            <input
+              id="gm-password"
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Senha"
+              autoFocus
+              autoComplete="current-password"
+            />
+          </div>
+          {error && (
+            <div style={{ fontSize: 12, color: 'var(--color-accent-300)' }}>Senha incorreta.</div>
+          )}
         </div>
-        {error && (
-          <div style={{ fontSize: 12, color: 'var(--color-accent-300)' }}>Senha incorreta.</div>
-        )}
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>
             Cancelar

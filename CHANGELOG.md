@@ -5,6 +5,21 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.5.0] — 2026-08-03
+
+Conexões entre locais no mapa, estilo das linhas, pré-visualização no hover do menu e modais que cabem na viewport.
+
+### Added
+
+- Saídas dirigidas entre locais (`saida_ids` / `local_conexao`): cadastro no formulário GM; linhas no mapa ligando origem → destinos
+- Pré-visualização das linhas ao passar o mouse sobre um local na aba Locais (ou lista GM), **somente** quando nenhum pin está selecionado
+- Diálogos (local, NPC, arco, gate, pin) com altura máxima na viewport: corpo rolável e ações fixas no rodapé
+
+### Changed
+
+- Linhas de conexão usam vermelho claro da família “visitado”, opacidade moderada e sombra suave (em vez do accent roxo)
+- Com um local selecionado/aberto, hover na lista só destaca o pin — as linhas permanecem as da seleção
+
 ## [0.4.0] — 2026-08-03
 
 Foco no pin a partir do menu/mapa, modal ao lado do pin e refinamentos de hover na sidebar.

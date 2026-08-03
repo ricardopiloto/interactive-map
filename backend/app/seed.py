@@ -140,6 +140,22 @@ def seed(session: Session) -> None:
         local.npcs = [n for n in npcs if n.id in npc_ids]
         session.add(local)
 
+    session.flush()
+    seeded_locais = list(session.exec(select(Local).order_by(Local.id)).all())
+    # Example exits: Praça → Taverna + Clareira; Clareira → Torre
+    if len(seeded_locais) >= 4:
+        from app.models.links import LocalConexaoLink
+
+        session.add(
+            LocalConexaoLink(origem_id=seeded_locais[0].id, destino_id=seeded_locais[1].id)  # type: ignore[arg-type]
+        )
+        session.add(
+            LocalConexaoLink(origem_id=seeded_locais[0].id, destino_id=seeded_locais[2].id)  # type: ignore[arg-type]
+        )
+        session.add(
+            LocalConexaoLink(origem_id=seeded_locais[2].id, destino_id=seeded_locais[3].id)  # type: ignore[arg-type]
+        )
+
     grupo = session.get(GrupoPosicao, 1)
     if grupo is None:
         session.add(GrupoPosicao(id=1, x=0.66, y=0.27, formato="bandeira"))
@@ -150,7 +166,7 @@ def seed(session: Session) -> None:
         session.add(grupo)
 
     session.commit()
-    print("Seed aplicado: 2 arcos, 5 NPCs, 5 locais, posição do grupo.")
+    print("Seed aplicado: 2 arcos, 5 NPCs, 5 locais, conexões de saída, posição do grupo.")
 
 
 def main() -> None:

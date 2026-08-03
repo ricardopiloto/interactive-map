@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.database import get_session
+from app.models.links import LocalConexaoLink
 from app.models.local import Local
 from app.models.npc import NPC
 from app.routers.public.locais import _to_read
@@ -28,6 +29,59 @@ def _sync_npcs(session: Session, local: Local, npc_ids: list[int]) -> None:
     local.npcs = npcs
 
 
+def _sync_saidas(session: Session, local: Local, saida_ids: list[int]) -> None:
+    if local.id is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Local sem id para sincronizar saídas",
+        )
+    origem_id = int(local.id)
+    unique: list[int] = []
+    seen: set[int] = set()
+    for destino_id in saida_ids:
+        if destino_id == origem_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Local não pode ter saída para si mesmo",
+            )
+        if destino_id in seen:
+            continue
+        seen.add(destino_id)
+        unique.append(destino_id)
+
+    missing: list[int] = []
+    for destino_id in unique:
+        if session.get(Local, destino_id) is None:
+            missing.append(destino_id)
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Locais destino não encontrados: {sorted(missing)}",
+        )
+
+    existing = list(
+        session.exec(select(LocalConexaoLink).where(LocalConexaoLink.origem_id == origem_id)).all()
+    )
+    for link in existing:
+        session.delete(link)
+    session.flush()
+    for destino_id in unique:
+        session.add(LocalConexaoLink(origem_id=origem_id, destino_id=destino_id))
+
+
+def _clear_conexoes_for_local(session: Session, local_id: int) -> None:
+    links = list(
+        session.exec(
+            select(LocalConexaoLink).where(
+                (LocalConexaoLink.origem_id == local_id) | (LocalConexaoLink.destino_id == local_id)
+            )
+        ).all()
+    )
+    for link in links:
+        session.delete(link)
+    session.flush()
+
+
 @router.post("/locais", response_model=LocalRead, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
 def create_local(
@@ -49,9 +103,11 @@ def create_local(
     session.flush()
     if payload.npc_ids:
         _sync_npcs(session, local, payload.npc_ids)
+    if payload.saida_ids:
+        _sync_saidas(session, local, payload.saida_ids)
     session.commit()
     session.refresh(local)
-    return _to_read(local)
+    return _to_read(session, local)
 
 
 @router.put("/locais/{local_id}", response_model=LocalRead)
@@ -68,15 +124,18 @@ def update_local(
 
     data = payload.model_dump(exclude_unset=True)
     npc_ids = data.pop("npc_ids", None)
+    saida_ids = data.pop("saida_ids", None)
     for key, value in data.items():
         setattr(local, key, value)
     if npc_ids is not None:
         _sync_npcs(session, local, npc_ids)
+    if saida_ids is not None:
+        _sync_saidas(session, local, saida_ids)
 
     session.add(local)
     session.commit()
     session.refresh(local)
-    return _to_read(local)
+    return _to_read(session, local)
 
 
 @router.delete("/locais/{local_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -89,5 +148,6 @@ def delete_local(
     local = session.get(Local, local_id)
     if not local:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Local não encontrado")
+    _clear_conexoes_for_local(session, local_id)
     session.delete(local)
     session.commit()

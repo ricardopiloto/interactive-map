@@ -10,6 +10,7 @@ export interface LocalPayload {
   data_sessao?: string | null
   arco_id?: number | null
   npc_ids?: number[]
+  saida_ids?: number[]
   cor_pin: string
 }
 

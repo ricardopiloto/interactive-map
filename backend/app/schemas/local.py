@@ -18,6 +18,7 @@ class LocalCreate(BaseModel):
     data_sessao: Optional[str] = Field(default=None, max_length=100)
     arco_id: Optional[int] = None
     npc_ids: list[int] = Field(default_factory=list)
+    saida_ids: list[int] = Field(default_factory=list)
     cor_pin: str = Field(min_length=7, max_length=7, pattern=_HEX_PIN)
 
     @field_validator("cor_pin")
@@ -35,6 +36,7 @@ class LocalUpdate(BaseModel):
     data_sessao: Optional[str] = Field(default=None, max_length=100)
     arco_id: Optional[int] = None
     npc_ids: Optional[list[int]] = None
+    saida_ids: Optional[list[int]] = None
     cor_pin: Optional[str] = Field(default=None, min_length=7, max_length=7, pattern=_HEX_PIN)
 
     @field_validator("cor_pin")
@@ -55,4 +57,5 @@ class LocalRead(BaseModel):
     data_sessao: Optional[str]
     arco_id: Optional[int]
     npc_ids: list[int] = Field(default_factory=list)
+    saida_ids: list[int] = Field(default_factory=list)
     cor_pin: str

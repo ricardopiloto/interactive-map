@@ -216,6 +216,35 @@ export function CampaignMap({
                 Mapa da campanha — imagem indisponível
               </div>
             )}
+            {(() => {
+              // Selection wins for lines; hover previews only when nothing is selected (020).
+              const connectionOriginId =
+                selectedLocalId != null ? selectedLocalId : hoveredLocalId
+              if (connectionOriginId == null) return null
+              const origin = locais.find((l) => l.id === connectionOriginId)
+              if (!origin) return null
+              const saidas = origin.saida_ids ?? []
+              if (saidas.length === 0) return null
+              const byId = new Map(locais.map((l) => [l.id, l]))
+              const segments = saidas
+                .map((id) => byId.get(id))
+                .filter((d): d is (typeof locais)[number] => d != null)
+              if (segments.length === 0) return null
+              return (
+                <svg className="campaign-map__connections" aria-hidden="true">
+                  {segments.map((dest) => (
+                    <line
+                      key={`${origin.id}-${dest.id}`}
+                      className="campaign-map__connection-line"
+                      x1={`${origin.x * 100}%`}
+                      y1={`${origin.y * 100}%`}
+                      x2={`${dest.x * 100}%`}
+                      y2={`${dest.y * 100}%`}
+                    />
+                  ))}
+                </svg>
+              )
+            })()}
             {locais.map((local) => {
               const selected = selectedLocalId === local.id
               const hovered = hoveredLocalId === local.id

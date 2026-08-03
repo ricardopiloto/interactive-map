@@ -2,7 +2,7 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.4.0 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.5.0 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
@@ -12,8 +12,11 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 - Clique no local no menu (ou no pin, jogador) foca a vista no pin com pan/zoom animado
 - Descrição do local em texto livre ou Markdown (renderizada com segurança na leitura do pin)
 - Hover na aba Locais destaca o pin no mapa e tint no cartão — **sem** mover pan/zoom da vista
+- Sem seleção: hover no menu (ou lista GM) também pré-visualiza as **linhas de saída** daquele local
+- Ao selecionar/abrir um local, linhas simples mostram as **saídas** cadastradas (vermelho claro, translúcidas, com sombra suave)
+- Modais longos cabem na tela (corpo rola; botões de ação ficam no rodapé)
 - Modo GM na mesma tela: canto “Acesso restrito (GM)” ou `/?gm=1`
-  - CRUD de locais (inclui cor do pin), NPCs, arcos; upload de imagens; mover grupo
+  - CRUD de locais (inclui cor do pin e saídas para outros locais), NPCs, arcos; upload de imagens; mover grupo
   - Substituir mapa pelo botão **Mapa** nos controles
   - Clique na área vazia do mapa deseleciona o pin selecionado
   - Clique no pin seleciona sem foco automático da câmera
@@ -39,8 +42,12 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`014-sidebar-hover-fit`](specs/014-sidebar-hover-fit/spec.md) | Tint no hover do cartão + busca ajustada |
 | [`015-map-pin-focus`](specs/015-map-pin-focus/spec.md) | Clique no pin (jogador) → focar vista |
 | [`016-hover-no-pan`](specs/016-hover-no-pan/spec.md) | Hover no menu não move pan/zoom da vista |
+| [`017-location-connections`](specs/017-location-connections/spec.md) | Linhas de saída entre locais (no foco) |
+| [`018-modal-viewport-fit`](specs/018-modal-viewport-fit/spec.md) | Modais cabem na viewport (corpo rolável) |
+| [`019-connection-line-style`](specs/019-connection-line-style/spec.md) | Estilo vermelho claro / sombra / opacidade das linhas |
+| [`020-menu-hover-connections`](specs/020-menu-hover-connections/spec.md) | Hover no menu pré-visualiza linhas (sem seleção) |
 
-- Spec ativa: [`specs/016-hover-no-pan`](specs/016-hover-no-pan/spec.md)
+- Spec ativa: [`specs/020-menu-hover-connections`](specs/020-menu-hover-connections/spec.md)
 - Protótipo (fonte visual): `prototype/`
 
 ## Stack

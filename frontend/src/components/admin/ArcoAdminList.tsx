@@ -23,31 +23,33 @@ export function ArcoFormDialog({
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
       <div className="dialog" role="dialog">
         <div className="dialog-title">{title}</div>
-        <div className="field">
-          <label>Título</label>
-          <input
-            className="input"
-            value={titulo}
-            onChange={(e) => onChange({ titulo: e.target.value })}
-          />
-        </div>
-        <div className="field">
-          <label>Resumo</label>
-          <textarea
-            className="input"
-            rows={3}
-            value={resumo}
-            onChange={(e) => onChange({ resumo: e.target.value })}
-          />
-        </div>
-        <div className="field">
-          <label>Ordem</label>
-          <input
-            className="input"
-            type="number"
-            value={ordem}
-            onChange={(e) => onChange({ ordem: Number(e.target.value) })}
-          />
+        <div className="dialog__body">
+          <div className="field">
+            <label>Título</label>
+            <input
+              className="input"
+              value={titulo}
+              onChange={(e) => onChange({ titulo: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Resumo</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={resumo}
+              onChange={(e) => onChange({ resumo: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Ordem</label>
+            <input
+              className="input"
+              type="number"
+              value={ordem}
+              onChange={(e) => onChange({ ordem: Number(e.target.value) })}
+            />
+          </div>
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>
