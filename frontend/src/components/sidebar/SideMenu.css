@@ -54,9 +54,20 @@
   justify-content: center;
 }
 
+.side-menu__search-wrap {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 var(--space-4);
+  box-sizing: border-box;
+}
+
 .side-menu__search {
-  margin: 0 var(--space-4);
-  width: calc(100% - 2 * var(--space-4));
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .side-menu__body {
@@ -83,6 +94,12 @@
   flex-direction: column;
   gap: var(--space-1);
   font: inherit;
+}
+
+/* Player Locais cards only (.card + .side-menu__card-btn) — subtle hover tint */
+.side-menu__stack > button.card.side-menu__card-btn:hover,
+.side-menu__stack > button.card.side-menu__card-btn:focus-visible {
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface));
 }
 
 .side-menu__npc-head {

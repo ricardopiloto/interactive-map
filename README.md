@@ -2,19 +2,21 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.3.0 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.4.0 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
 
 - Mapa com zoom/pan, pins de locais coloridos e marcador do grupo (bandeira ou brasão)
-- Menu lateral (Locais, História, NPCs) e modal ao clicar no pin (jogador)
+- Menu lateral (Locais, História, NPCs); modal de leitura ao lado do pin (jogador)
+- Clique no local no menu (ou no pin, jogador) foca a vista no pin com pan/zoom animado
 - Descrição do local em texto livre ou Markdown (renderizada com segurança na leitura do pin)
-- Hover na aba Locais destaca o pin correspondente no mapa (sem abrir o modal)
+- Hover na aba Locais destaca o pin no mapa e tint no cartão — **sem** mover pan/zoom da vista
 - Modo GM na mesma tela: canto “Acesso restrito (GM)” ou `/?gm=1`
   - CRUD de locais (inclui cor do pin), NPCs, arcos; upload de imagens; mover grupo
   - Substituir mapa pelo botão **Mapa** nos controles
   - Clique na área vazia do mapa deseleciona o pin selecionado
+  - Clique no pin seleciona sem foco automático da câmera
 - API de escrita protegida com HTTP Basic Auth
 
 ## Specs
@@ -32,8 +34,13 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`009-pin-visit-colors`](specs/009-pin-visit-colors/spec.md) | Cor livre do pin + convenção visitado/conhecido |
 | [`010-gm-deselect-pin`](specs/010-gm-deselect-pin/spec.md) | GM deseleciona pin com clique fora |
 | [`011-pin-markdown-text`](specs/011-pin-markdown-text/spec.md) | Descrição do pin com Markdown opcional |
+| [`012-menu-center-pin`](specs/012-menu-center-pin/spec.md) | Clique no menu → focar pin no mapa |
+| [`013-modal-beside-pin`](specs/013-modal-beside-pin/spec.md) | Modal de leitura ao lado do pin |
+| [`014-sidebar-hover-fit`](specs/014-sidebar-hover-fit/spec.md) | Tint no hover do cartão + busca ajustada |
+| [`015-map-pin-focus`](specs/015-map-pin-focus/spec.md) | Clique no pin (jogador) → focar vista |
+| [`016-hover-no-pan`](specs/016-hover-no-pan/spec.md) | Hover no menu não move pan/zoom da vista |
 
-- Spec ativa: [`specs/011-pin-markdown-text`](specs/011-pin-markdown-text/spec.md)
+- Spec ativa: [`specs/016-hover-no-pan`](specs/016-hover-no-pan/spec.md)
 - Protótipo (fonte visual): `prototype/`
 
 ## Stack

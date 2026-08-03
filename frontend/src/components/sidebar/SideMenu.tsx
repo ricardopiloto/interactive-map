@@ -102,13 +102,15 @@ export function SideMenu({
       </div>
 
       {!isGm && (tab === 'locais' || tab === 'npcs') && (
-        <input
-          className="input side-menu__search"
-          type="search"
-          placeholder={tab === 'locais' ? 'Buscar local…' : 'Buscar NPC…'}
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-        />
+        <div className="side-menu__search-wrap">
+          <input
+            className="input side-menu__search"
+            type="search"
+            placeholder={tab === 'locais' ? 'Buscar local…' : 'Buscar NPC…'}
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+          />
+        </div>
       )}
 
       <div className="side-menu__body">

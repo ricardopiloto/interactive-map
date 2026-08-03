@@ -6,7 +6,7 @@ import {
   hasAdminCredentials,
   setAdminCredentials,
 } from '../api/client'
-import { CampaignMap } from '../components/map/CampaignMap'
+import { CampaignMap, type PinFocusRequest } from '../components/map/CampaignMap'
 import { PinModal } from '../components/common/PinModal'
 import { SideMenu, type SideTab } from '../components/sidebar/SideMenu'
 import { AdminGateDialog } from '../components/gm/AdminGateDialog'
@@ -32,6 +32,7 @@ export function MapPage() {
   const [query, setQuery] = useState('')
   const [selectedLocalId, setSelectedLocalId] = useState<number | null>(null)
   const [hoveredLocalId, setHoveredLocalId] = useState<number | null>(null)
+  const [focusRequest, setFocusRequest] = useState<PinFocusRequest | null>(null)
   const [selectedNpcId, setSelectedNpcId] = useState<number | null>(null)
   const [selectedArcoId, setSelectedArcoId] = useState<number | null>(null)
   const [isMobile, setIsMobile] = useState(
@@ -105,6 +106,20 @@ export function MapPage() {
     setSelectedLocalId(id)
     setSelectedNpcId(null)
     if (isMobile) setMobilePanelOpen(false)
+  }
+
+  function selectLocalFromMenu(id: number) {
+    if (isGm && placement !== 'none') return
+    selectLocal(id)
+    setFocusRequest({ localId: id, nonce: Date.now() })
+  }
+
+  /** Player map-pin click: select + focus (015). GM: select only, no focusRequest. */
+  function selectLocalFromMap(id: number) {
+    if (isGm && placement !== 'none') return
+    selectLocal(id)
+    if (isGm) return
+    setFocusRequest({ localId: id, nonce: Date.now() })
   }
 
   function selectNpc(id: number) {
@@ -322,7 +337,7 @@ export function MapPage() {
           onQueryChange={setQuery}
           selectedNpcId={selectedNpcId}
           selectedArcoId={selectedArcoId}
-          onSelectLocal={selectLocal}
+          onSelectLocal={selectLocalFromMenu}
           onSelectNpc={selectNpc}
           onSelectArco={selectArco}
           onLocalHover={setHoveredLocalId}
@@ -366,7 +381,9 @@ export function MapPage() {
               grupo={grupo}
               selectedLocalId={selectedLocalId}
               hoveredLocalId={hoveredLocalId}
-              onSelectLocal={selectLocal}
+              onSelectLocal={selectLocalFromMap}
+              focusRequest={focusRequest}
+              onFocusApplied={() => setFocusRequest(null)}
               interactivePins={!isGm || placement === 'none'}
               placementMode={isGm ? placement : 'none'}
               mapEditable={isGm}

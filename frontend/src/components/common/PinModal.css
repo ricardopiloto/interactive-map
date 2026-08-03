@@ -1,11 +1,26 @@
 .pin-modal-backdrop {
   z-index: 90;
+  /* Override nocturne grid centering so the panel can be positioned beside the pin. */
+  display: block;
+  padding: 0;
+}
+
+.pin-modal-backdrop--centered {
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
 }
 
 .pin-modal {
   width: min(440px, 100%);
   max-height: min(90dvh, 720px);
   overflow: auto;
+}
+
+.pin-modal--beside {
+  position: fixed;
+  margin: 0;
+  width: min(440px, calc(100vw - 32px));
 }
 
 .pin-modal__markdown {

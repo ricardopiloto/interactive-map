@@ -5,6 +5,25 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] — 2026-08-03
+
+Foco no pin a partir do menu/mapa, modal ao lado do pin e refinamentos de hover na sidebar.
+
+### Added
+
+- Clique no local no menu (jogador) anima pan/zoom até o pin correspondente no mapa
+- Clique no pin no mapa (jogador) também foca a vista no pin; no Modo GM o clique só seleciona (sem foco automático)
+- Modal de leitura do pin abre ao lado do pin na tela (não centrado genérico)
+- Hover no cartão da aba Locais com tint sutil; campo de busca com largura ajustada ao layout
+
+### Fixed
+
+- Hover na lista de Locais não re-dispara pan/zoom da vista após um foco anterior (a vista permanece onde o jogador deixou; o destaque local do pin continua)
+
+### Changed
+
+- Destaque de pin no hover do menu permanece só visual (escala/brilho), sem mover a câmera do mapa
+
 ## [0.3.1] — 2026-08-03
 
 Ajuste nas legendas

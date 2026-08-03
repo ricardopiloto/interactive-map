@@ -5,6 +5,12 @@ import type { GrupoPosicao, Local } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
 import './CampaignMap.css'
 
+/** Fixed moderate zoom when focusing a pin from the side menu. */
+export const FOCUS_SCALE = 2
+export const FOCUS_ANIM_MS = 400
+
+export type PinFocusRequest = { localId: number; nonce: number }
+
 interface CampaignMapProps {
   mapUrl: string
   locais: Local[]
@@ -16,6 +22,10 @@ interface CampaignMapProps {
   onMapClickRelative?: (x: number, y: number) => void
   /** Empty-stage click when not placing — clear pin selection (GM). */
   onClearSelection?: () => void
+  /** Menu-driven focus: animate pan+zoom to pin (nonce re-triggers same id). */
+  focusRequest?: PinFocusRequest | null
+  /** Clear focusRequest after zoom so hover re-renders cannot re-fire (016). */
+  onFocusApplied?: () => void
   interactivePins?: boolean
   mapEditable?: boolean
   onMapUploaded?: (url: string) => void
@@ -55,6 +65,39 @@ function MapControls({ onReplaceMap }: { onReplaceMap?: () => void }) {
   )
 }
 
+function PinFocusController({
+  focusRequest,
+  onFocusApplied,
+}: {
+  focusRequest: PinFocusRequest | null | undefined
+  /** Clear request after apply so hover re-renders cannot re-fire zoom (016). */
+  onFocusApplied?: () => void
+}) {
+  const { zoomToElement } = useControls()
+  const zoomToElementRef = useRef(zoomToElement)
+  zoomToElementRef.current = zoomToElement
+  const onFocusAppliedRef = useRef(onFocusApplied)
+  onFocusAppliedRef.current = onFocusApplied
+
+  const localId = focusRequest?.localId
+  const nonce = focusRequest?.nonce
+
+  useEffect(() => {
+    if (localId == null || nonce == null) return
+    const id = `map-pin-${localId}`
+    try {
+      const el = document.getElementById(id)
+      if (!el) return
+      zoomToElementRef.current(el, FOCUS_SCALE, FOCUS_ANIM_MS, 'easeOut')
+      onFocusAppliedRef.current?.()
+    } catch {
+      // FR-007: no-op if transform/DOM not ready
+    }
+  }, [localId, nonce])
+
+  return null
+}
+
 export function CampaignMap({
   mapUrl,
   locais,
@@ -65,6 +108,8 @@ export function CampaignMap({
   placementMode = 'none',
   onMapClickRelative,
   onClearSelection,
+  focusRequest = null,
+  onFocusApplied,
   interactivePins = true,
   mapEditable = false,
   onMapUploaded,
@@ -122,6 +167,7 @@ export function CampaignMap({
         wheel={{ step: 0.1 }}
         panning={{ disabled: placing }}
       >
+        <PinFocusController focusRequest={focusRequest} onFocusApplied={onFocusApplied} />
         <MapControls
           onReplaceMap={
             mapEditable && showImage ? () => replaceInputRef.current?.click() : undefined
@@ -184,6 +230,7 @@ export function CampaignMap({
               return (
                 <button
                   key={local.id}
+                  id={`map-pin-${local.id}`}
                   type="button"
                   className={pinClass}
                   style={{
