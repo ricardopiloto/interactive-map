@@ -8,6 +8,45 @@
   overflow: auto;
 }
 
+.pin-modal__markdown {
+  line-height: 1.45;
+}
+
+.pin-modal__markdown > :first-child {
+  margin-top: 0;
+}
+
+.pin-modal__markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.pin-modal__markdown p,
+.pin-modal__markdown ul,
+.pin-modal__markdown ol,
+.pin-modal__markdown h1,
+.pin-modal__markdown h2,
+.pin-modal__markdown h3 {
+  margin: 0.5em 0;
+}
+
+.pin-modal__markdown h1,
+.pin-modal__markdown h2,
+.pin-modal__markdown h3 {
+  font-size: 1em;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.pin-modal__markdown ul,
+.pin-modal__markdown ol {
+  padding-left: 1.25em;
+}
+
+.pin-modal__markdown a {
+  color: var(--color-accent-300);
+  text-decoration: underline;
+}
+
 .pin-modal__chips {
   display: flex;
   flex-wrap: wrap;

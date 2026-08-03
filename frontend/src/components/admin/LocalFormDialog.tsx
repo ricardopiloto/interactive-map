@@ -64,12 +64,15 @@ export function LocalFormDialog({
           />
         </div>
         <div className="field">
-          <label>Descrição</label>
+          <label>
+            Descrição <span className="text-muted">(Markdown opcional)</span>
+          </label>
           <textarea
             className="input"
             rows={3}
             value={draft.descricao}
             onChange={(e) => onChange({ descricao: e.target.value })}
+            placeholder="Texto livre ou Markdown"
           />
         </div>
         <div className="field">

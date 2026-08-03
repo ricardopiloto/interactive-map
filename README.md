@@ -2,13 +2,14 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.2.0 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.3.0 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
 
 - Mapa com zoom/pan, pins de locais coloridos e marcador do grupo (bandeira ou brasão)
 - Menu lateral (Locais, História, NPCs) e modal ao clicar no pin (jogador)
+- Descrição do local em texto livre ou Markdown (renderizada com segurança na leitura do pin)
 - Hover na aba Locais destaca o pin correspondente no mapa (sem abrir o modal)
 - Modo GM na mesma tela: canto “Acesso restrito (GM)” ou `/?gm=1`
   - CRUD de locais (inclui cor do pin), NPCs, arcos; upload de imagens; mover grupo
@@ -30,8 +31,9 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`008-smooth-wheel-zoom`](specs/008-smooth-wheel-zoom/spec.md) | Zoom suave na roda (planejado; ainda não implementado) |
 | [`009-pin-visit-colors`](specs/009-pin-visit-colors/spec.md) | Cor livre do pin + convenção visitado/conhecido |
 | [`010-gm-deselect-pin`](specs/010-gm-deselect-pin/spec.md) | GM deseleciona pin com clique fora |
+| [`011-pin-markdown-text`](specs/011-pin-markdown-text/spec.md) | Descrição do pin com Markdown opcional |
 
-- Spec ativa: [`specs/010-gm-deselect-pin`](specs/010-gm-deselect-pin/spec.md)
+- Spec ativa: [`specs/011-pin-markdown-text`](specs/011-pin-markdown-text/spec.md)
 - Protótipo (fonte visual): `prototype/`
 
 ## Stack

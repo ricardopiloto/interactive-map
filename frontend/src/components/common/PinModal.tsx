@@ -1,5 +1,6 @@
 import type { Arco, Local, NPC } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
+import { MarkdownSafe } from './MarkdownSafe'
 import './PinModal.css'
 
 interface PinModalProps {
@@ -13,6 +14,7 @@ interface PinModalProps {
 
 export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: PinModalProps) {
   const linkedNpcs = npcs.filter((n) => local.npc_ids.includes(n.id))
+  const descricao = local.descricao.trim()
 
   return (
     <div className="dialog-backdrop pin-modal-backdrop" onClick={onClose} role="presentation">
@@ -32,7 +34,11 @@ export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: 
           {local.nome}
         </div>
         {local.data_sessao && <div className="card-meta">{local.data_sessao}</div>}
-        <div className="dialog-body">{local.descricao || 'Sem descrição.'}</div>
+        {descricao ? (
+          <MarkdownSafe className="dialog-body pin-modal__markdown">{descricao}</MarkdownSafe>
+        ) : (
+          <div className="dialog-body">Sem descrição.</div>
+        )}
         <div className="pin-modal__chips">
           {arco && (
             <button type="button" className="tag tag-accent" onClick={() => onOpenArco(arco.id)}>
