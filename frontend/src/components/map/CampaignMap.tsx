@@ -230,11 +230,9 @@ export function CampaignMap({
       <div className="campaign-map__legend">
         <span>
           <i className="campaign-map__legend-pin campaign-map__legend-pin--visited" /> Visitado
-          <span className="text-muted"> (sugestão)</span>
         </span>
         <span>
           <i className="campaign-map__legend-pin campaign-map__legend-pin--known" /> Conhecido
-          <span className="text-muted"> (sugestão)</span>
         </span>
         <span>
           <i className={`campaign-map__legend-party campaign-map__legend-party--${formato}`} /> Grupo

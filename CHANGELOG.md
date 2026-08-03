@@ -5,6 +5,14 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.3.1] — 2026-08-03
+
+Ajuste nas legendas
+
+### Changed
+
+- Ajustado o tamanho das legendas para ficar mais em linha com o design da aplicação
+
 ## [0.3.0] — 2026-08-03
 
 Descrição do pin com Markdown opcional na leitura.
