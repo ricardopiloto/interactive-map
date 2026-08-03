@@ -1,5 +1,6 @@
-import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
+import { adminApi } from '../../api/admin'
 import type { GrupoPosicao, Local } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
 import './CampaignMap.css'
@@ -13,13 +14,15 @@ interface CampaignMapProps {
   onSelectLocal: (id: number) => void
   placementMode?: 'none' | 'add-pin' | 'reposition' | 'move-group'
   onMapClickRelative?: (x: number, y: number) => void
+  /** Empty-stage click when not placing — clear pin selection (GM). */
+  onClearSelection?: () => void
   interactivePins?: boolean
   mapEditable?: boolean
   onMapUploaded?: (url: string) => void
   overlay?: ReactNode
 }
 
-function MapControls() {
+function MapControls({ onReplaceMap }: { onReplaceMap?: () => void }) {
   const { zoomIn, zoomOut, resetTransform } = useControls()
   return (
     <div className="campaign-map__controls">
@@ -37,6 +40,17 @@ function MapControls() {
       >
         1:1
       </button>
+      {onReplaceMap && (
+        <button
+          type="button"
+          className="btn btn-secondary campaign-map__replace"
+          onClick={onReplaceMap}
+          aria-label="Substituir mapa"
+          title="Substituir mapa"
+        >
+          Mapa
+        </button>
+      )}
     </div>
   )
 }
@@ -50,6 +64,7 @@ export function CampaignMap({
   onSelectLocal,
   placementMode = 'none',
   onMapClickRelative,
+  onClearSelection,
   interactivePins = true,
   mapEditable = false,
   onMapUploaded,
@@ -57,6 +72,7 @@ export function CampaignMap({
 }: CampaignMapProps) {
   const placing = placementMode !== 'none'
   const [mapFailed, setMapFailed] = useState(false)
+  const replaceInputRef = useRef<HTMLInputElement>(null)
   const formato = grupo?.formato === 'brasao' ? 'brasao' : 'bandeira'
 
   useEffect(() => {
@@ -64,12 +80,27 @@ export function CampaignMap({
   }, [mapUrl])
 
   function handleStageClick(e: MouseEvent<HTMLDivElement>) {
-    if (!onMapClickRelative || !placing) return
-    const stage = e.currentTarget
-    const rect = stage.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / rect.width
-    const y = (e.clientY - rect.top) / rect.height
-    onMapClickRelative(Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, y)))
+    if (placing) {
+      if (!onMapClickRelative) return
+      const stage = e.currentTarget
+      const rect = stage.getBoundingClientRect()
+      const x = (e.clientX - rect.left) / rect.width
+      const y = (e.clientY - rect.top) / rect.height
+      onMapClickRelative(Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, y)))
+      return
+    }
+    onClearSelection?.()
+  }
+
+  async function handleReplaceFile(file: File | undefined) {
+    if (!file || !onMapUploaded) return
+    try {
+      const { url } = await adminApi.upload('map', file)
+      setMapFailed(false)
+      onMapUploaded(url)
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Falha no upload')
+    }
   }
 
   const showImage = !mapFailed && Boolean(mapUrl)
@@ -91,17 +122,38 @@ export function CampaignMap({
         wheel={{ step: 0.1 }}
         panning={{ disabled: placing }}
       >
-        <MapControls />
-        <TransformComponent wrapperClass="campaign-map__viewport" contentClass="campaign-map__content">
+        <MapControls
+          onReplaceMap={
+            mapEditable && showImage ? () => replaceInputRef.current?.click() : undefined
+          }
+        />
+        <TransformComponent
+          wrapperClass="campaign-map__viewport"
+          contentClass="campaign-map__content"
+          wrapperStyle={{ width: '100%', height: '100%' }}
+        >
           <div
             className="campaign-map__stage"
             onClick={handleStageClick}
             role={placing ? 'button' : undefined}
           >
-            {mapEditable ? (
+            {showImage && (
+              <img
+                key={mapUrl}
+                src={mapUrl}
+                alt="Mapa da campanha"
+                className="campaign-map__image"
+                draggable={false}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setMapFailed(false)}
+                onError={() => setMapFailed(true)}
+              />
+            )}
+            {!showImage && mapEditable && (
               <ImageSlot
                 className="campaign-map__slot"
-                src={showImage ? mapUrl : null}
+                src={null}
                 placeholder="Mapa da campanha — arraste a imagem aqui"
                 shape="rect"
                 fit="cover"
@@ -112,31 +164,16 @@ export function CampaignMap({
                   onMapUploaded?.(url)
                 }}
               />
-            ) : (
-              <>
-                {showImage && (
-                  <img
-                    key={mapUrl}
-                    src={mapUrl}
-                    alt="Mapa da campanha"
-                    className="campaign-map__image"
-                    draggable={false}
-                    loading="lazy"
-                    decoding="async"
-                    onLoad={() => setMapFailed(false)}
-                    onError={() => setMapFailed(true)}
-                  />
-                )}
-                {mapFailed && (
-                  <div className="campaign-map__placeholder" role="status">
-                    Mapa da campanha — imagem indisponível
-                  </div>
-                )}
-              </>
+            )}
+            {!showImage && !mapEditable && (
+              <div className="campaign-map__placeholder" role="status">
+                Mapa da campanha — imagem indisponível
+              </div>
             )}
             {locais.map((local) => {
               const selected = selectedLocalId === local.id
               const hovered = hoveredLocalId === local.id
+              const pinColor = local.cor_pin || '#c4b5fd'
               const pinClass = [
                 'campaign-map__pin',
                 selected ? 'campaign-map__pin--selected' : '',
@@ -149,7 +186,12 @@ export function CampaignMap({
                   key={local.id}
                   type="button"
                   className={pinClass}
-                  style={{ left: `${local.x * 100}%`, top: `${local.y * 100}%` }}
+                  style={{
+                    left: `${local.x * 100}%`,
+                    top: `${local.y * 100}%`,
+                    background: pinColor,
+                    ['--pin-color' as string]: pinColor,
+                  }}
                   title={local.nome}
                   disabled={!interactivePins || placing}
                   onClick={(ev) => {
@@ -166,18 +208,38 @@ export function CampaignMap({
                 className={`campaign-map__party campaign-map__party--${formato}`}
                 style={{ left: `${grupo.x * 100}%`, top: `${grupo.y * 100}%` }}
                 title="Posição do grupo"
+                onClick={(ev) => ev.stopPropagation()}
               />
             )}
           </div>
         </TransformComponent>
       </TransformWrapper>
+      {mapEditable && (
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            e.target.value = ''
+            void handleReplaceFile(file)
+          }}
+        />
+      )}
       <div className="campaign-map__legend">
         <span>
-          <i className="campaign-map__legend-pin" /> Local
+          <i className="campaign-map__legend-pin campaign-map__legend-pin--visited" /> Visitado
+          <span className="text-muted"> (sugestão)</span>
+        </span>
+        <span>
+          <i className="campaign-map__legend-pin campaign-map__legend-pin--known" /> Conhecido
+          <span className="text-muted"> (sugestão)</span>
         </span>
         <span>
           <i className={`campaign-map__legend-party campaign-map__legend-party--${formato}`} /> Grupo
         </span>
+        <span className="campaign-map__legend-note text-muted">GM pode usar outras cores</span>
       </div>
       {overlay}
     </div>

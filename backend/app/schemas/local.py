@@ -1,6 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_HEX_PIN = r"^#[0-9A-Fa-f]{6}$"
+
+
+def _normalize_hex(value: str) -> str:
+    return value.lower()
 
 
 class LocalCreate(BaseModel):
@@ -12,6 +18,12 @@ class LocalCreate(BaseModel):
     data_sessao: Optional[str] = Field(default=None, max_length=100)
     arco_id: Optional[int] = None
     npc_ids: list[int] = Field(default_factory=list)
+    cor_pin: str = Field(min_length=7, max_length=7, pattern=_HEX_PIN)
+
+    @field_validator("cor_pin")
+    @classmethod
+    def normalize_cor_pin(cls, value: str) -> str:
+        return _normalize_hex(value)
 
 
 class LocalUpdate(BaseModel):
@@ -23,6 +35,12 @@ class LocalUpdate(BaseModel):
     data_sessao: Optional[str] = Field(default=None, max_length=100)
     arco_id: Optional[int] = None
     npc_ids: Optional[list[int]] = None
+    cor_pin: Optional[str] = Field(default=None, min_length=7, max_length=7, pattern=_HEX_PIN)
+
+    @field_validator("cor_pin")
+    @classmethod
+    def normalize_cor_pin(cls, value: Optional[str]) -> Optional[str]:
+        return _normalize_hex(value) if value is not None else None
 
 
 class LocalRead(BaseModel):
@@ -37,3 +55,4 @@ class LocalRead(BaseModel):
     data_sessao: Optional[str]
     arco_id: Optional[int]
     npc_ids: list[int] = Field(default_factory=list)
+    cor_pin: str

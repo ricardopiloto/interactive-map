@@ -83,6 +83,7 @@ def seed(session: Session) -> None:
             a1.id,
             [npcs[0].id, npcs[2].id],
             "Sessão 3",
+            "#e5484d",
         ),
         (
             "Taverna do Javali Dourado",
@@ -92,6 +93,7 @@ def seed(session: Session) -> None:
             a1.id,
             [npcs[1].id],
             "Sessão 4",
+            "#e5484d",
         ),
         (
             "Reikwald — Clareira Antiga",
@@ -101,6 +103,7 @@ def seed(session: Session) -> None:
             a2.id,
             [npcs[3].id],
             "Sessão 6",
+            "#c4b5fd",
         ),
         (
             "Torre Abandonada",
@@ -110,6 +113,7 @@ def seed(session: Session) -> None:
             a2.id,
             [npcs[4].id],
             "Sessão 7",
+            "#c4b5fd",
         ),
         (
             "Aldeia de Grissenwald",
@@ -119,10 +123,11 @@ def seed(session: Session) -> None:
             a2.id,
             [npcs[3].id, npcs[4].id],
             "Sessão 8",
+            "#c4b5fd",
         ),
     ]
 
-    for nome, x, y, desc, arco_id, npc_ids, data in locais_data:
+    for nome, x, y, desc, arco_id, npc_ids, data, cor_pin in locais_data:
         local = Local(
             nome=nome,
             descricao=desc,
@@ -130,6 +135,7 @@ def seed(session: Session) -> None:
             y=y,
             arco_id=arco_id,
             data_sessao=data,
+            cor_pin=cor_pin,
         )
         local.npcs = [n for n in npcs if n.id in npc_ids]
         session.add(local)

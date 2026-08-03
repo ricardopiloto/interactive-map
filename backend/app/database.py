@@ -13,15 +13,26 @@ def _migrate_sqlite() -> None:
     if not settings.database_url.startswith("sqlite"):
         return
     with engine.begin() as conn:
-        cols = {
+        grupo_cols = {
             row[1]
             for row in conn.execute(text("PRAGMA table_info(grupo_posicao)")).fetchall()
         }
-        if cols and "formato" not in cols:
+        if grupo_cols and "formato" not in grupo_cols:
             conn.execute(
                 text(
                     "ALTER TABLE grupo_posicao ADD COLUMN formato VARCHAR(20) "
                     "NOT NULL DEFAULT 'bandeira'"
+                )
+            )
+
+        local_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(local)")).fetchall()
+        }
+        if local_cols and "cor_pin" not in local_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE local ADD COLUMN cor_pin VARCHAR(7) "
+                    "NOT NULL DEFAULT '#c4b5fd'"
                 )
             )
 

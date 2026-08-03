@@ -1,6 +1,6 @@
 # Mapa Campanha — Frontend
 
-React + Vite + TypeScript.
+React + Vite + TypeScript + design system Nocturne. Versão do pacote: ver `package.json` (alinhada ao [CHANGELOG](../CHANGELOG.md)).
 
 ## Desenvolvimento
 
@@ -20,7 +20,19 @@ Abre em http://localhost:5173. O Vite faz proxy de `/api` e `/uploads` para o ba
 | `npm run preview` | Preview do build |
 | `npm run lint` | Oxlint |
 
-## Rotas
+## Rotas / modos
 
-- `/` — mapa público + menu lateral
-- `/admin` — painel GM (protegido no Caddy em produção)
+- `/` — Codex: mapa + menu (jogador); Modo GM in-page via “Acesso restrito (GM)” ou `/?gm=1`
+- `/admin` — redireciona para `/?gm=1` (gate de senha)
+
+### Jogador
+
+- Clique no pin → modal de leitura; fechar limpa a seleção
+- Hover no nome na aba Locais → destaque do pin no mapa
+
+### Modo GM
+
+- CRUD via abas / diálogos; cor do pin no formulário de local
+- Botão **Mapa** nos controles para substituir a imagem da campanha
+- Clique na área vazia do mapa → deseleciona o pin (não fecha formulários admin abertos)
+- Placement (novo local / reposicionar / mover grupo) tem prioridade sobre deseleção

@@ -2,15 +2,18 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Changelog:** [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.2.0 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
 
-- Mapa com zoom/pan, pins de locais e marcador do grupo (bandeira ou brasão)
-- Menu lateral (Locais, História, NPCs) e modal ao clicar no pin
+- Mapa com zoom/pan, pins de locais coloridos e marcador do grupo (bandeira ou brasão)
+- Menu lateral (Locais, História, NPCs) e modal ao clicar no pin (jogador)
 - Hover na aba Locais destaca o pin correspondente no mapa (sem abrir o modal)
 - Modo GM na mesma tela: canto “Acesso restrito (GM)” ou `/?gm=1`
+  - CRUD de locais (inclui cor do pin), NPCs, arcos; upload de imagens; mover grupo
+  - Substituir mapa pelo botão **Mapa** nos controles
+  - Clique na área vazia do mapa deseleciona o pin selecionado
 - API de escrita protegida com HTTP Basic Auth
 
 ## Specs
@@ -22,8 +25,13 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`003-align-prototype-ui`](specs/003-align-prototype-ui/spec.md) | Alinhamento visual com o protótipo Nocturne |
 | [`004-group-pin-border`](specs/004-group-pin-border/spec.md) | Borda escura no pin do grupo |
 | [`005-menu-hover-pin`](specs/005-menu-hover-pin/spec.md) | Hover no menu → destaque do pin |
+| [`006-fix-gm-map-click`](specs/006-fix-gm-map-click/spec.md) | Clique no mapa não abre upload; botão explícito |
+| [`007-visible-zoom-controls`](specs/007-visible-zoom-controls/spec.md) | Controles de zoom sempre na área útil |
+| [`008-smooth-wheel-zoom`](specs/008-smooth-wheel-zoom/spec.md) | Zoom suave na roda (planejado; ainda não implementado) |
+| [`009-pin-visit-colors`](specs/009-pin-visit-colors/spec.md) | Cor livre do pin + convenção visitado/conhecido |
+| [`010-gm-deselect-pin`](specs/010-gm-deselect-pin/spec.md) | GM deseleciona pin com clique fora |
 
-- Spec ativa: [`specs/005-menu-hover-pin`](specs/005-menu-hover-pin/spec.md)
+- Spec ativa: [`specs/010-gm-deselect-pin`](specs/010-gm-deselect-pin/spec.md)
 - Protótipo (fonte visual): `prototype/`
 
 ## Stack
@@ -49,6 +57,8 @@ uv run uvicorn app.main:app --reload --port 8000
 uv run python -m app.seed
 ```
 
+Detalhes: [`backend/README.md`](backend/README.md)
+
 ### Frontend
 
 ```bash
@@ -58,6 +68,8 @@ npm run dev
 ```
 
 http://localhost:5173 — proxy `/api` e `/uploads` → `:8000`
+
+Detalhes: [`frontend/README.md`](frontend/README.md)
 
 - `/` — Codex (jogador + Modo GM in-page via canto “Acesso restrito (GM)”)
 - `/admin` — redireciona para `/?gm=1` (abre o gate de senha; **sem** dica de senha na UI)

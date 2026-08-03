@@ -20,6 +20,11 @@ class Local(SQLModel, table=True):
     imagem_url: Optional[str] = Field(default=None, max_length=500)
     data_sessao: Optional[str] = Field(default=None, max_length=100, description="Rótulo livre, ex.: Sessão 3")
     arco_id: Optional[int] = Field(default=None, foreign_key="arco.id", index=True)
+    cor_pin: str = Field(
+        default="#c4b5fd",
+        max_length=7,
+        description="Cor do pin no mapa (#RRGGBB)",
+    )
 
     arco: Optional["Arco"] = Relationship(back_populates="locais")
     npcs: list["NPC"] = Relationship(back_populates="locais", link_model=LocalNPCLink)

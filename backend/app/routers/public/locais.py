@@ -19,6 +19,7 @@ def _to_read(local: Local) -> LocalRead:
         data_sessao=local.data_sessao,
         arco_id=local.arco_id,
         npc_ids=[n.id for n in local.npcs if n.id is not None],
+        cor_pin=getattr(local, "cor_pin", None) or "#c4b5fd",
     )
 
 

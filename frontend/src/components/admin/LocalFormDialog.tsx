@@ -1,6 +1,11 @@
 import type { Arco, Local, NPC } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
 
+export const PIN_COLOR_VISITED = '#e5484d'
+export const PIN_COLOR_KNOWN = '#c4b5fd'
+
+const HEX_PIN = /^#[0-9a-fA-F]{6}$/
+
 export interface LocalFormDraft {
   id?: number
   nome: string
@@ -11,6 +16,7 @@ export interface LocalFormDraft {
   x: number
   y: number
   imagem_url: string | null
+  cor_pin: string
   isNew: boolean
 }
 
@@ -33,6 +39,9 @@ export function LocalFormDialog({
   onCancel,
   onStartReposition,
 }: LocalFormDialogProps) {
+  const colorOk = HEX_PIN.test(draft.cor_pin)
+  const canSave = Boolean(draft.nome.trim()) && colorOk
+
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
       <div className="dialog" role="dialog" aria-label={draft.isNew ? 'Novo local' : 'Editar local'}>
@@ -62,6 +71,39 @@ export function LocalFormDialog({
             value={draft.descricao}
             onChange={(e) => onChange({ descricao: e.target.value })}
           />
+        </div>
+        <div className="field">
+          <label htmlFor="local-cor-pin">Cor do pin</label>
+          <div className="gm-row" style={{ alignItems: 'center', marginTop: 0 }}>
+            <input
+              id="local-cor-pin"
+              type="color"
+              value={colorOk ? draft.cor_pin : PIN_COLOR_KNOWN}
+              onChange={(e) => onChange({ cor_pin: e.target.value.toLowerCase() })}
+              aria-label="Seletor de cor do pin"
+            />
+            <button
+              type="button"
+              className="btn btn-secondary"
+              title="Visitado (sugestão)"
+              onClick={() => onChange({ cor_pin: PIN_COLOR_VISITED })}
+            >
+              Visitado
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              title="Conhecido não visitado (sugestão)"
+              onClick={() => onChange({ cor_pin: PIN_COLOR_KNOWN })}
+            >
+              Conhecido
+            </button>
+          </div>
+          {!colorOk && (
+            <p className="map-page__inline-error" role="alert">
+              Escolha uma cor válida para o pin.
+            </p>
+          )}
         </div>
         <div className="field">
           <label>Rótulo da sessão (opcional)</label>
@@ -125,12 +167,7 @@ export function LocalFormDialog({
           <button type="button" className="btn btn-secondary" onClick={onCancel}>
             Cancelar
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={onSave}
-            disabled={!draft.nome.trim()}
-          >
+          <button type="button" className="btn btn-primary" onClick={onSave} disabled={!canSave}>
             Salvar
           </button>
         </div>
@@ -150,6 +187,7 @@ export function localToDraft(local: Local): LocalFormDraft {
     x: local.x,
     y: local.y,
     imagem_url: local.imagem_url,
+    cor_pin: local.cor_pin || PIN_COLOR_KNOWN,
     isNew: false,
   }
 }

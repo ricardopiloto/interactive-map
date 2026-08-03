@@ -43,6 +43,7 @@ def create_local(
         imagem_url=payload.imagem_url,
         data_sessao=payload.data_sessao,
         arco_id=payload.arco_id,
+        cor_pin=payload.cor_pin,
     )
     session.add(local)
     session.flush()

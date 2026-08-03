@@ -11,6 +11,7 @@ export interface Local {
   data_sessao: string | null
   arco_id: number | null
   npc_ids: number[]
+  cor_pin: string
 }
 
 export interface NPC {

@@ -158,6 +158,7 @@ export function MapPage() {
         arco_id: localDraft.arco_id,
         npc_ids: localDraft.npc_ids,
         imagem_url: localDraft.imagem_url,
+        cor_pin: localDraft.cor_pin,
       }
       if (localDraft.isNew) await adminApi.createLocal(payload)
       else if (localDraft.id != null) await adminApi.updateLocal(localDraft.id, payload)
@@ -357,48 +358,52 @@ export function MapPage() {
 
         {loading && <p className="map-page__status">Carregando campanha…</p>}
         {error && <p className="map-page__status map-page__status--error">{error}</p>}
-        {!loading && !error && (
-          <CampaignMap
-            mapUrl={mapUrl}
-            locais={locais}
-            grupo={grupo}
-            selectedLocalId={selectedLocalId}
-            hoveredLocalId={hoveredLocalId}
-            onSelectLocal={selectLocal}
-            interactivePins={!isGm || placement === 'none'}
-            placementMode={isGm ? placement : 'none'}
-            mapEditable={isGm}
-            onMapUploaded={(url) => setMapUrl(`${url}?t=${Date.now()}`)}
-            onMapClickRelative={async (x, y) => {
-              if (!isGm) return
-              if (placement === 'add-pin') {
-                setLocalDraft({
-                  nome: '',
-                  descricao: '',
-                  data_sessao: '',
-                  arco_id: arcos[0]?.id ?? null,
-                  npc_ids: [],
-                  x,
-                  y,
-                  imagem_url: null,
-                  isNew: true,
-                })
-                setPlacement('none')
-              } else if (placement === 'reposition' && localDraft) {
-                setLocalDraft({ ...localDraft, x, y })
-                setPlacement('none')
-              } else if (placement === 'move-group' && grupo) {
-                await adminApi.updateGrupo({
-                  x,
-                  y,
-                  formato: grupo.formato ?? 'bandeira',
-                })
-                setPlacement('none')
-                refresh()
-              }
-            }}
-          />
-        )}
+        <div className="map-page__map">
+          {!loading && !error && (
+            <CampaignMap
+              mapUrl={mapUrl}
+              locais={locais}
+              grupo={grupo}
+              selectedLocalId={selectedLocalId}
+              hoveredLocalId={hoveredLocalId}
+              onSelectLocal={selectLocal}
+              interactivePins={!isGm || placement === 'none'}
+              placementMode={isGm ? placement : 'none'}
+              mapEditable={isGm}
+              onClearSelection={isGm ? () => setSelectedLocalId(null) : undefined}
+              onMapUploaded={(url) => setMapUrl(`${url}?t=${Date.now()}`)}
+              onMapClickRelative={async (x, y) => {
+                if (!isGm) return
+                if (placement === 'add-pin') {
+                  setLocalDraft({
+                    nome: '',
+                    descricao: '',
+                    data_sessao: '',
+                    arco_id: arcos[0]?.id ?? null,
+                    npc_ids: [],
+                    x,
+                    y,
+                    imagem_url: null,
+                    cor_pin: '#c4b5fd',
+                    isNew: true,
+                  })
+                  setPlacement('none')
+                } else if (placement === 'reposition' && localDraft) {
+                  setLocalDraft({ ...localDraft, x, y })
+                  setPlacement('none')
+                } else if (placement === 'move-group' && grupo) {
+                  await adminApi.updateGrupo({
+                    x,
+                    y,
+                    formato: grupo.formato ?? 'bandeira',
+                  })
+                  setPlacement('none')
+                  refresh()
+                }
+              }}
+            />
+          )}
+        </div>
 
         {!isGm && selectedLocal && (
           <PinModal
