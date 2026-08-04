@@ -5,7 +5,8 @@
   left: var(--space-4, 1rem);
   width: min(280px, calc(100% - 2rem));
   max-height: min(70vh, 480px);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: var(--space-3, 0.75rem);
   background: color-mix(in srgb, var(--color-bg, #1a1625) 92%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-text, #eee) 18%, transparent);
@@ -71,4 +72,46 @@
 .route-planner__costs {
   font-size: 0.8rem;
   opacity: 0.85;
+}
+
+.waypoint-combobox__wrap {
+  position: relative;
+}
+
+.waypoint-combobox__list {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0.2rem 0;
+  max-height: 10rem;
+  overflow: auto;
+  border: 1px solid var(--color-divider, color-mix(in srgb, #e9e9ed 16%, transparent));
+  background: var(--color-surface, #232532);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.waypoint-combobox__option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.55rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.waypoint-combobox__option.is-active,
+.waypoint-combobox__option:hover {
+  background: color-mix(in srgb, var(--color-accent, #9184d9) 22%, transparent);
+}
+
+.waypoint-combobox__option.is-selected {
+  font-weight: 600;
+}
+
+.waypoint-combobox__empty {
+  padding: 0.4rem 0.55rem;
+  font-size: 0.8rem;
+  opacity: 0.75;
 }

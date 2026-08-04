@@ -5,6 +5,14 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.2] — 2026-08-03
+
+Pesquisa com autocomplete nas listas De/Para do Calcular rota.
+
+### Added
+
+- **Calcular rota**: comboboxes De/Para com filtragem ao digitar (case- e accent-insensitive); reeditar limpa a seleção até nova escolha
+
 ## [0.6.1] — 2026-08-03
 
 Correção do desalinhamento dos nós na Rede de rotas.

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { campaignApi } from '../../api/campaign'
 import type { Local, Ritmo, RoutePlanItem, Waypoint } from '../../types'
+import { WaypointCombobox } from './WaypointCombobox'
 import './RoutePlanner.css'
 
 const RITMOS: { value: Ritmo; label: string }[] = [
@@ -36,7 +37,7 @@ function disambiguateRouteTitles(bases: string[]): string[] {
   })
 }
 
-/** FR-008: nome do nó → nome do Local → `Nó {id}` */
+/** nome do nó → nome do Local → `Nó {id}` */
 function waypointOptionLabel(wp: Waypoint, locaisById: Map<number, string>): string {
   const nome = wp.nome?.trim()
   if (nome) return nome
@@ -76,7 +77,7 @@ export function RoutePlannerPanel({
 
   const options = useMemo(() => {
     return [...waypoints]
-      .map((wp) => ({ wp, label: waypointOptionLabel(wp, locaisById) }))
+      .map((wp) => ({ id: wp.id, label: waypointOptionLabel(wp, locaisById) }))
       .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
   }, [waypoints, locaisById])
 
@@ -86,6 +87,8 @@ export function RoutePlannerPanel({
   )
   const [origemId, setOrigemId] = useState<number | ''>('')
   const [destinoId, setDestinoId] = useState<number | ''>('')
+  const [origemQuery, setOrigemQuery] = useState('')
+  const [destinoQuery, setDestinoQuery] = useState('')
   const [ritmo, setRitmo] = useState<Ritmo>('normal')
   const [velocidade, setVelocidade] = useState('')
   const [busy, setBusy] = useState(false)
@@ -137,36 +140,34 @@ export function RoutePlannerPanel({
           ×
         </button>
       </div>
-      <label className="route-planner__field">
-        <span>De</span>
-        <select
-          className="input"
-          value={origemId === '' ? '' : String(origemId)}
-          onChange={(e) => setOrigemId(e.target.value ? Number(e.target.value) : '')}
-        >
-          <option value="">—</option>
-          {options.map(({ wp, label }) => (
-            <option key={wp.id} value={wp.id}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="route-planner__field">
-        <span>Para</span>
-        <select
-          className="input"
-          value={destinoId === '' ? '' : String(destinoId)}
-          onChange={(e) => setDestinoId(e.target.value ? Number(e.target.value) : '')}
-        >
-          <option value="">—</option>
-          {options.map(({ wp, label }) => (
-            <option key={wp.id} value={wp.id}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <WaypointCombobox
+        label="De"
+        options={options}
+        query={origemQuery}
+        selectedId={origemId}
+        onQueryChange={(q) => {
+          setOrigemQuery(q)
+          setOrigemId('')
+        }}
+        onSelect={(id, label) => {
+          setOrigemId(id)
+          setOrigemQuery(label)
+        }}
+      />
+      <WaypointCombobox
+        label="Para"
+        options={options}
+        query={destinoQuery}
+        selectedId={destinoId}
+        onQueryChange={(q) => {
+          setDestinoQuery(q)
+          setDestinoId('')
+        }}
+        onSelect={(id, label) => {
+          setDestinoId(id)
+          setDestinoQuery(label)
+        }}
+      />
       <label className="route-planner__field">
         <span>Ritmo</span>
         <select className="input" value={ritmo} onChange={(e) => setRitmo(e.target.value as Ritmo)}>
