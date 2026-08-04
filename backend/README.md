@@ -32,3 +32,5 @@ Em produção o Caddy pode exigir Basic Auth **adicional** em rotas GM; a API co
 - `data_sessao` nos locais é **texto livre** (rótulo), não data de calendário
 - `cor_pin` nos locais é hex `#RRGGBB` (obrigatório no create); migração SQLite aplica default `#c4b5fd` em DBs antigos
 - `saida_ids` nos locais lista IDs de destinos de saída (vínculo dirigido em `local_conexao`); exclusão do local remove conexões onde ele é origem ou destino
+- Rede de viagem (021/028/029): `waypoint` / `route_segment` / `map_scale`; `GET /api/routes/plan?origem_waypoint_id=&destino_waypoint_id=&ritmo=`; CRUD admin em `/api/admin/waypoints`, `/route-segments`, `/map-scale`
+- Locais expõem `waypoint_id` (read); create/update aceitam `waypoint_id` opcional — ao vincular, coords do Local passam às do nó (unicidade 1:1; conflito → 422)

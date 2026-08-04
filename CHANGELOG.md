@@ -5,6 +5,25 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.0] — 2026-08-03
+
+Rede de vias e cálculo de rotas (De/Para entre nós), refinamentos do digitizer, e vínculo nó↔Local depois da criação.
+
+### Added
+
+- Rede de viagem: waypoints, segmentos (estrada/rio/trilha), escala mi/unidade; vista GM **Rede de rotas** para digitalizar sem pins de lore
+- **Calcular rota**: origem/destino entre **qualquer nó** da rede (com ou sem Local); ritmo de viagem; várias rotas por tempo (mais rápida destacada; alternativas tracejadas)
+- Título da rota derivado do tipo de via dominante no percurso
+- Vincular nó ↔ Local **depois** da criação: select na lista de nós (Rede) e campo “Nó da rede” no formulário de Local; ao vincular, o pin do Local move para as coordenadas do nó; desvincular não reverte a posição
+- Zoom máximo maior na digitalização; zona de fecho de segmento mais apertada; botão direito desfaz o último ponto (ou a origem) ao traçar
+
+### Changed
+
+- Zoom com a roda do mouse mais suave no mapa da campanha e na Rede de rotas (step alinhado aos botões +/−)
+
+### Deferred
+
+- Ajuste de tamanho/âncora dos pins no móvel (spec 030) — revertido do produto; ver `specs/030-pin-size-offset` (Deferred / Staged)
 ## [0.5.0] — 2026-08-03
 
 Conexões entre locais no mapa, estilo das linhas, pré-visualização no hover do menu e modais que cabem na viewport.

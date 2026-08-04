@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { adminApi } from '../api/admin'
+import { campaignApi } from '../api/campaign'
 import {
   clearAdminCredentials,
   hasAdminCredentials,
@@ -10,13 +11,15 @@ import { CampaignMap, type PinFocusRequest } from '../components/map/CampaignMap
 import { PinModal } from '../components/common/PinModal'
 import { SideMenu, type SideTab } from '../components/sidebar/SideMenu'
 import { AdminGateDialog } from '../components/gm/AdminGateDialog'
+import { RouteDigitizerView } from '../components/gm/RouteDigitizerView'
+import { RoutePlannerPanel } from '../components/routes/RoutePlannerPanel'
 import { LocalAdminList } from '../components/admin/LocalAdminList'
 import { LocalFormDialog, localToDraft, type LocalFormDraft } from '../components/admin/LocalFormDialog'
 import { NpcAdminList, NpcFormDialog } from '../components/admin/NpcAdminList'
 import { ArcoAdminList, ArcoFormDialog } from '../components/admin/ArcoAdminList'
 import { GrupoAdminPanel } from '../components/admin/GrupoAdminPanel'
 import { useCampaignData } from '../hooks/useCampaignData'
-import type { GrupoFormato, NPCStatus } from '../types'
+import type { GrupoFormato, NPCStatus, RoutePlanItem, Waypoint } from '../types'
 import './MapPage.css'
 
 const DEFAULT_MAP_URL = import.meta.env.VITE_MAP_URL ?? '/uploads/map/campaign-map.webp'
@@ -48,6 +51,11 @@ export function MapPage() {
   const [busyError, setBusyError] = useState<string | null>(null)
 
   const [localDraft, setLocalDraft] = useState<LocalFormDraft | null>(null)
+  const [routePlannerOpen, setRoutePlannerOpen] = useState(false)
+  const [travelPlan, setTravelPlan] = useState<RoutePlanItem[]>([])
+  const [travelSelectedIndex, setTravelSelectedIndex] = useState(0)
+  const [routeWaypoints, setRouteWaypoints] = useState<Waypoint[]>([])
+  const [routeDigitizerOpen, setRouteDigitizerOpen] = useState(false)
   const [npcDraft, setNpcDraft] = useState<{
     id?: number
     nome: string
@@ -92,10 +100,28 @@ export function MapPage() {
       })
   }, [])
 
+  useEffect(() => {
+    void campaignApi
+      .listWaypoints(false)
+      .then(setRouteWaypoints)
+      .catch(() => setRouteWaypoints([]))
+  }, [locais, routeDigitizerOpen])
+
   const selectedLocal = useMemo(
     () => locais.find((l) => l.id === selectedLocalId) ?? null,
     [locais, selectedLocalId],
   )
+
+  /** Map pins/lines: edit draft overrides persisted coords until save/cancel (033). */
+  const displayLocais = useMemo(() => {
+    if (!localDraft || localDraft.isNew || localDraft.id == null) return locais
+    return locais.map((l) =>
+      l.id === localDraft.id
+        ? { ...l, x: localDraft.x, y: localDraft.y, cor_pin: localDraft.cor_pin }
+        : l,
+    )
+  }, [locais, localDraft])
+
   const selectedArco = useMemo(() => {
     if (!selectedLocal?.arco_id) return null
     return arcos.find((a) => a.id === selectedLocal.arco_id) ?? null
@@ -175,6 +201,7 @@ export function MapPage() {
         saida_ids: localDraft.saida_ids,
         imagem_url: localDraft.imagem_url,
         cor_pin: localDraft.cor_pin,
+        waypoint_id: localDraft.waypoint_id,
       }
       if (localDraft.isNew) await adminApi.createLocal(payload)
       else if (localDraft.id != null) await adminApi.updateLocal(localDraft.id, payload)
@@ -356,6 +383,33 @@ export function MapPage() {
             <span className="map-page__brand">Codex da Campanha</span>
             <span className="map-page__subtitle text-muted">Mapa da campanha WFRP4e</span>
             {isGm && <span className="tag tag-accent">Modo GM</span>}
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                setRoutePlannerOpen((o) => !o)
+                if (routePlannerOpen) {
+                  setTravelPlan([])
+                  setTravelSelectedIndex(0)
+                }
+              }}
+            >
+              Calcular rota
+            </button>
+            {isGm && (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setRouteDigitizerOpen(true)
+                  setPlacement('none')
+                  setTravelPlan([])
+                  setRoutePlannerOpen(false)
+                }}
+              >
+                Rede de rotas
+              </button>
+            )}
           </div>
           <button
             type="button"
@@ -376,49 +430,85 @@ export function MapPage() {
         {error && <p className="map-page__status map-page__status--error">{error}</p>}
         <div className="map-page__map">
           {!loading && !error && (
-            <CampaignMap
+            <>
+              <CampaignMap
+                mapUrl={mapUrl}
+                locais={displayLocais}
+                grupo={grupo}
+                selectedLocalId={selectedLocalId}
+                hoveredLocalId={hoveredLocalId}
+                onSelectLocal={selectLocalFromMap}
+                focusRequest={focusRequest}
+                onFocusApplied={() => setFocusRequest(null)}
+                interactivePins={!isGm || placement === 'none'}
+                placementMode={isGm ? placement : 'none'}
+                mapEditable={isGm}
+                travelPlan={travelPlan}
+                travelSelectedIndex={travelSelectedIndex}
+                onClearSelection={isGm ? () => setSelectedLocalId(null) : undefined}
+                onCancelPlacement={
+                  isGm && placement === 'reposition' ? () => setPlacement('none') : undefined
+                }
+                onMapUploaded={(url) => setMapUrl(`${url}?t=${Date.now()}`)}
+                onMapClickRelative={async (x, y) => {
+                  if (!isGm) return
+                  if (placement === 'add-pin') {
+                    setLocalDraft({
+                      nome: '',
+                      descricao: '',
+                      data_sessao: '',
+                      arco_id: arcos[0]?.id ?? null,
+                      npc_ids: [],
+                      saida_ids: [],
+                      x,
+                      y,
+                      imagem_url: null,
+                      cor_pin: '#c4b5fd',
+                      waypoint_id: null,
+                      isNew: true,
+                    })
+                    setPlacement('none')
+                  } else if (placement === 'reposition' && localDraft) {
+                    setLocalDraft({ ...localDraft, x, y })
+                    setPlacement('none')
+                  } else if (placement === 'move-group' && grupo) {
+                    await adminApi.updateGrupo({
+                      x,
+                      y,
+                      formato: grupo.formato ?? 'bandeira',
+                    })
+                    setPlacement('none')
+                    refresh()
+                  }
+                }}
+              />
+              <RoutePlannerPanel
+                waypoints={routeWaypoints}
+                locais={locais}
+                open={routePlannerOpen}
+                onClose={() => {
+                  setRoutePlannerOpen(false)
+                  setTravelPlan([])
+                  setTravelSelectedIndex(0)
+                }}
+                plan={travelPlan}
+                selectedIndex={travelSelectedIndex}
+                onPlanChange={(rotas, idx) => {
+                  setTravelPlan(rotas)
+                  setTravelSelectedIndex(idx)
+                }}
+                onSelectIndex={setTravelSelectedIndex}
+              />
+            </>
+          )}
+          {routeDigitizerOpen && isGm && (
+            <RouteDigitizerView
               mapUrl={mapUrl}
               locais={locais}
-              grupo={grupo}
-              selectedLocalId={selectedLocalId}
-              hoveredLocalId={hoveredLocalId}
-              onSelectLocal={selectLocalFromMap}
-              focusRequest={focusRequest}
-              onFocusApplied={() => setFocusRequest(null)}
-              interactivePins={!isGm || placement === 'none'}
-              placementMode={isGm ? placement : 'none'}
-              mapEditable={isGm}
-              onClearSelection={isGm ? () => setSelectedLocalId(null) : undefined}
-              onMapUploaded={(url) => setMapUrl(`${url}?t=${Date.now()}`)}
-              onMapClickRelative={async (x, y) => {
-                if (!isGm) return
-                if (placement === 'add-pin') {
-                  setLocalDraft({
-                    nome: '',
-                    descricao: '',
-                    data_sessao: '',
-                    arco_id: arcos[0]?.id ?? null,
-                    npc_ids: [],
-                    saida_ids: [],
-                    x,
-                    y,
-                    imagem_url: null,
-                    cor_pin: '#c4b5fd',
-                    isNew: true,
-                  })
-                  setPlacement('none')
-                } else if (placement === 'reposition' && localDraft) {
-                  setLocalDraft({ ...localDraft, x, y })
-                  setPlacement('none')
-                } else if (placement === 'move-group' && grupo) {
-                  await adminApi.updateGrupo({
-                    x,
-                    y,
-                    formato: grupo.formato ?? 'bandeira',
-                  })
-                  setPlacement('none')
-                  refresh()
-                }
+              onCampaignChanged={() => refresh()}
+              onClose={() => {
+                setRouteDigitizerOpen(false)
+                refresh()
               }}
             />
           )}
@@ -473,12 +563,13 @@ export function MapPage() {
         />
       )}
 
-      {localDraft && (
+      {localDraft && placement !== 'reposition' && (
         <LocalFormDialog
           draft={localDraft}
           arcos={arcos}
           npcs={npcs}
           locais={locais}
+          waypoints={routeWaypoints}
           onChange={(patch) => setLocalDraft({ ...localDraft, ...patch })}
           onSave={() => void saveLocal()}
           onCancel={() => {

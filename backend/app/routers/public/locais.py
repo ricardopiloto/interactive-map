@@ -5,6 +5,7 @@ from app.database import get_session
 from app.models.links import LocalConexaoLink
 from app.models.local import Local
 from app.schemas.local import LocalRead
+from app.services.waypoint_local_link import waypoint_id_for_local
 
 router = APIRouter()
 
@@ -17,6 +18,7 @@ def _saida_ids_for(session: Session, local_id: int) -> list[int]:
 
 
 def _to_read(session: Session, local: Local) -> LocalRead:
+    lid = int(local.id) if local.id is not None else None
     return LocalRead(
         id=local.id,  # type: ignore[arg-type]
         nome=local.nome,
@@ -27,8 +29,9 @@ def _to_read(session: Session, local: Local) -> LocalRead:
         data_sessao=local.data_sessao,
         arco_id=local.arco_id,
         npc_ids=[n.id for n in local.npcs if n.id is not None],
-        saida_ids=_saida_ids_for(session, int(local.id)) if local.id is not None else [],
+        saida_ids=_saida_ids_for(session, lid) if lid is not None else [],
         cor_pin=getattr(local, "cor_pin", None) or "#c4b5fd",
+        waypoint_id=waypoint_id_for_local(session, lid) if lid is not None else None,
     )
 
 

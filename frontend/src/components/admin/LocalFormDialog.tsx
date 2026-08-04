@@ -1,4 +1,4 @@
-import type { Arco, Local, NPC } from '../../types'
+import type { Arco, Local, NPC, Waypoint } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
 
 export const PIN_COLOR_VISITED = '#e5484d'
@@ -18,6 +18,7 @@ export interface LocalFormDraft {
   y: number
   imagem_url: string | null
   cor_pin: string
+  waypoint_id: number | null
   isNew: boolean
 }
 
@@ -26,6 +27,7 @@ interface LocalFormDialogProps {
   arcos: Arco[]
   npcs: NPC[]
   locais: Local[]
+  waypoints: Waypoint[]
   onChange: (patch: Partial<LocalFormDraft>) => void
   onSave: () => void
   onCancel: () => void
@@ -37,6 +39,7 @@ export function LocalFormDialog({
   arcos,
   npcs,
   locais,
+  waypoints,
   onChange,
   onSave,
   onCancel,
@@ -45,6 +48,9 @@ export function LocalFormDialog({
   const colorOk = HEX_PIN.test(draft.cor_pin)
   const canSave = Boolean(draft.nome.trim()) && colorOk
   const destinoOptions = locais.filter((l) => l.id !== draft.id)
+  const waypointsElegiveis = waypoints.filter(
+    (w) => w.local_id == null || w.local_id === draft.id,
+  )
 
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
@@ -140,6 +146,29 @@ export function LocalFormDialog({
             </select>
           </div>
           <div className="field">
+            <label htmlFor="local-waypoint">Nó da rede</label>
+            <select
+              id="local-waypoint"
+              className="input"
+              value={draft.waypoint_id ?? ''}
+              onChange={(e) => {
+                const wid = e.target.value ? Number(e.target.value) : null
+                const wp = wid != null ? waypoints.find((w) => w.id === wid) : undefined
+                onChange({
+                  waypoint_id: wid,
+                  ...(wp ? { x: wp.x, y: wp.y } : {}),
+                })
+              }}
+            >
+              <option value="">Sem nó</option>
+              {waypointsElegiveis.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.nome?.trim() || `Nó ${w.id}`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
             <label>NPCs presentes</label>
             <div className="gm-chips">
               {npcs.map((n) => {
@@ -225,6 +254,7 @@ export function localToDraft(local: Local): LocalFormDraft {
     y: local.y,
     imagem_url: local.imagem_url,
     cor_pin: local.cor_pin || PIN_COLOR_KNOWN,
+    waypoint_id: local.waypoint_id ?? null,
     isNew: false,
   }
 }

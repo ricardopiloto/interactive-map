@@ -2,21 +2,23 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.5.0 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.6.0 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
 
-- Mapa com zoom/pan, pins de locais coloridos e marcador do grupo (bandeira ou brasão)
+- Mapa com zoom/pan (roda suave), pins de locais coloridos e marcador do grupo (bandeira ou brasão)
 - Menu lateral (Locais, História, NPCs); modal de leitura ao lado do pin (jogador)
 - Clique no local no menu (ou no pin, jogador) foca a vista no pin com pan/zoom animado
 - Descrição do local em texto livre ou Markdown (renderizada com segurança na leitura do pin)
 - Hover na aba Locais destaca o pin no mapa e tint no cartão — **sem** mover pan/zoom da vista
 - Sem seleção: hover no menu (ou lista GM) também pré-visualiza as **linhas de saída** daquele local
 - Ao selecionar/abrir um local, linhas simples mostram as **saídas** cadastradas (vermelho claro, translúcidas, com sombra suave)
+- **Calcular rota**: De/Para entre **qualquer nó** da rede de vias (com ou sem Local), ritmo de viagem, várias rotas por tempo (mais rápida destacada; alternativas tracejadas)
+- Modo GM: vista **Rede de rotas** para digitalizar nós/segmentos (estrada/rio/trilha); vincular nó↔Local na lista ou no formulário de Local (pin do Local segue o nó)
 - Modais longos cabem na tela (corpo rola; botões de ação ficam no rodapé)
 - Modo GM na mesma tela: canto “Acesso restrito (GM)” ou `/?gm=1`
-  - CRUD de locais (inclui cor do pin e saídas para outros locais), NPCs, arcos; upload de imagens; mover grupo
+  - CRUD de locais (inclui cor do pin, saídas e nó da rede), NPCs, arcos; upload de imagens; mover grupo
   - Substituir mapa pelo botão **Mapa** nos controles
   - Clique na área vazia do mapa deseleciona o pin selecionado
   - Clique no pin seleciona sem foco automático da câmera
@@ -33,7 +35,7 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`005-menu-hover-pin`](specs/005-menu-hover-pin/spec.md) | Hover no menu → destaque do pin |
 | [`006-fix-gm-map-click`](specs/006-fix-gm-map-click/spec.md) | Clique no mapa não abre upload; botão explícito |
 | [`007-visible-zoom-controls`](specs/007-visible-zoom-controls/spec.md) | Controles de zoom sempre na área útil |
-| [`008-smooth-wheel-zoom`](specs/008-smooth-wheel-zoom/spec.md) | Zoom suave na roda (planejado; ainda não implementado) |
+| [`008-smooth-wheel-zoom`](specs/008-smooth-wheel-zoom/spec.md) | Zoom suave na roda (superseded por [`026`](specs/026-smooth-wheel-zoom/spec.md)) |
 | [`009-pin-visit-colors`](specs/009-pin-visit-colors/spec.md) | Cor livre do pin + convenção visitado/conhecido |
 | [`010-gm-deselect-pin`](specs/010-gm-deselect-pin/spec.md) | GM deseleciona pin com clique fora |
 | [`011-pin-markdown-text`](specs/011-pin-markdown-text/spec.md) | Descrição do pin com Markdown opcional |
@@ -46,8 +48,22 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`018-modal-viewport-fit`](specs/018-modal-viewport-fit/spec.md) | Modais cabem na viewport (corpo rolável) |
 | [`019-connection-line-style`](specs/019-connection-line-style/spec.md) | Estilo vermelho claro / sombra / opacidade das linhas |
 | [`020-menu-hover-connections`](specs/020-menu-hover-connections/spec.md) | Hover no menu pré-visualiza linhas (sem seleção) |
+| [`021-route-generation`](specs/021-route-generation/spec.md) | Rede de vias + cálculo de rotas / tempo de viagem |
+| [`022-digitizer-max-zoom`](specs/022-digitizer-max-zoom/spec.md) | Zoom máximo maior na Rede de rotas |
+| [`023-segment-finish-zone`](specs/023-segment-finish-zone/spec.md) | Zona menor para fechar segmento no digitizer |
+| [`024-route-planner-speed`](specs/024-route-planner-speed/spec.md) | Ritmo / velocidade e alternativas no calculador |
+| [`025-route-type-title`](specs/025-route-type-title/spec.md) | Título da rota pelo tipo de via |
+| [`026-smooth-wheel-zoom`](specs/026-smooth-wheel-zoom/spec.md) | Zoom suave com a roda (mapa + Rede) |
+| [`027-undo-segment-point`](specs/027-undo-segment-point/spec.md) | Botão direito desfaz ponto ao traçar segmento |
+| [`028-route-any-waypoint`](specs/028-route-any-waypoint/spec.md) | Calcular rota entre quaisquer nós (não só Locais) |
+| [`029-link-node-local`](specs/029-link-node-local/spec.md) | Vincular nó ↔ Local após a criação (snap do pin) |
+| [`030-pin-size-offset`](specs/030-pin-size-offset/spec.md) | Pins móveis + âncora (**Deferred / Staged**; revertido por [`034`](specs/034-revert-pin-offset/spec.md)) |
+| [`031-route-travel-cost`](specs/031-route-travel-cost/spec.md) | Custo Dentro/Fora (bp) e velocidade opcional nas rotas |
+| [`032-fix-reposition-modal`](specs/032-fix-reposition-modal/spec.md) | Esconder modal ao reposicionar local |
+| [`033-fix-reposition-pin`](specs/033-fix-reposition-pin/spec.md) | Pin reflecte rascunho ao reposicionar |
+| [`034-revert-pin-offset`](specs/034-revert-pin-offset/spec.md) | Reverter visual 030; alinhar pin ao ponto |
 
-- Spec ativa: [`specs/020-menu-hover-connections`](specs/020-menu-hover-connections/spec.md)
+- Spec ativa: [`specs/034-revert-pin-offset`](specs/034-revert-pin-offset/spec.md)
 - Protótipo (fonte visual): `prototype/`
 
 ## Stack

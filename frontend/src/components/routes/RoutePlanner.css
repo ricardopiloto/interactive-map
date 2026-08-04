@@ -1,0 +1,74 @@
+.route-planner {
+  position: absolute;
+  z-index: 5;
+  top: var(--space-4, 1rem);
+  left: var(--space-4, 1rem);
+  width: min(280px, calc(100% - 2rem));
+  max-height: min(70vh, 480px);
+  overflow: auto;
+  padding: var(--space-3, 0.75rem);
+  background: color-mix(in srgb, var(--color-bg, #1a1625) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text, #eee) 18%, transparent);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.35));
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.route-planner__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.route-planner__title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.route-planner__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.route-planner__error {
+  margin: 0;
+  color: #e5484d;
+  font-size: 0.85rem;
+}
+
+.route-planner__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.route-planner__item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--color-text, #eee) 6%, transparent);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.route-planner__item.is-selected {
+  border-color: color-mix(in srgb, #e5484d 70%, transparent);
+  background: color-mix(in srgb, #e5484d 18%, transparent);
+}
+
+.route-planner__costs {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}

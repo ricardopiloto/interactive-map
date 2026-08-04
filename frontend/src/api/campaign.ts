@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { Arco, GrupoPosicao, Local, NPC } from '../types'
+import type { Arco, GrupoPosicao, Local, NPC, Ritmo, RoutePlanResponse, Waypoint } from '../types'
 
 export const campaignApi = {
   listLocais: (q?: string) =>
@@ -11,4 +11,22 @@ export const campaignApi = {
   listArcos: () => api.get<Arco[]>('/api/arcos'),
   getArco: (id: number) => api.get<Arco>(`/api/arcos/${id}`),
   getGrupo: () => api.get<GrupoPosicao>('/api/grupo'),
+  listWaypoints: (linkedOnly = false) =>
+    api.get<Waypoint[]>(`/api/waypoints${linkedOnly ? '?linked_only=true' : ''}`),
+  planRoute: (
+    origemWaypointId: number,
+    destinoWaypointId: number,
+    ritmo: Ritmo,
+    velocidadeMediaMph?: number,
+  ) => {
+    const params = new URLSearchParams({
+      origem_waypoint_id: String(origemWaypointId),
+      destino_waypoint_id: String(destinoWaypointId),
+      ritmo,
+    })
+    if (velocidadeMediaMph != null) {
+      params.set('velocidade_media_mph', String(velocidadeMediaMph))
+    }
+    return api.get<RoutePlanResponse>(`/api/routes/plan?${params}`)
+  },
 }

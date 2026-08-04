@@ -8,6 +8,7 @@ from app.models.npc import NPC
 from app.routers.public.locais import _to_read
 from app.schemas.local import LocalCreate, LocalRead, LocalUpdate
 from app.services.rate_limit import limiter
+from app.services.waypoint_local_link import set_local_waypoint_id
 
 router = APIRouter()
 
@@ -105,6 +106,8 @@ def create_local(
         _sync_npcs(session, local, payload.npc_ids)
     if payload.saida_ids:
         _sync_saidas(session, local, payload.saida_ids)
+    if payload.waypoint_id is not None:
+        set_local_waypoint_id(session, local, payload.waypoint_id)
     session.commit()
     session.refresh(local)
     return _to_read(session, local)
@@ -125,12 +128,16 @@ def update_local(
     data = payload.model_dump(exclude_unset=True)
     npc_ids = data.pop("npc_ids", None)
     saida_ids = data.pop("saida_ids", None)
+    waypoint_id_provided = "waypoint_id" in data
+    waypoint_id_val = data.pop("waypoint_id", None) if waypoint_id_provided else None
     for key, value in data.items():
         setattr(local, key, value)
     if npc_ids is not None:
         _sync_npcs(session, local, npc_ids)
     if saida_ids is not None:
         _sync_saidas(session, local, saida_ids)
+    if waypoint_id_provided:
+        set_local_waypoint_id(session, local, waypoint_id_val)
 
     session.add(local)
     session.commit()
@@ -149,5 +156,11 @@ def delete_local(
     if not local:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Local não encontrado")
     _clear_conexoes_for_local(session, local_id)
+    from app.models.waypoint import Waypoint
+
+    wp = session.exec(select(Waypoint).where(Waypoint.local_id == local_id)).first()
+    if wp:
+        wp.local_id = None
+        session.add(wp)
     session.delete(local)
     session.commit()

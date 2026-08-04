@@ -1,5 +1,16 @@
 import { api } from './client'
-import type { Arco, GrupoFormato, GrupoPosicao, Local, NPC } from '../types'
+import type {
+  Arco,
+  GrupoFormato,
+  GrupoPosicao,
+  Local,
+  MapPoint,
+  MapScale,
+  NPC,
+  RouteSegment,
+  RouteTipo,
+  Waypoint,
+} from '../types'
 
 export interface LocalPayload {
   nome: string
@@ -12,6 +23,7 @@ export interface LocalPayload {
   npc_ids?: number[]
   saida_ids?: number[]
   cor_pin: string
+  waypoint_id?: number | null
 }
 
 export interface NPCPayload {
@@ -26,6 +38,21 @@ export interface ArcoPayload {
   titulo: string
   resumo?: string
   ordem?: number
+}
+
+export interface WaypointPayload {
+  nome?: string | null
+  x: number
+  y: number
+  local_id?: number | null
+}
+
+export interface RouteSegmentPayload {
+  waypoint_a_id: number
+  waypoint_b_id: number
+  tipo: RouteTipo
+  pontos_intermediarios?: MapPoint[]
+  modificador_velocidade?: number | null
 }
 
 export const adminApi = {
@@ -51,4 +78,22 @@ export const adminApi = {
 
   upload: (category: 'map' | 'portraits' | 'locals', file: File) =>
     api.adminUpload(category, file),
+
+  listWaypoints: () => api.adminGet<Waypoint[]>('/api/admin/waypoints'),
+  createWaypoint: (body: WaypointPayload) =>
+    api.adminPost<Waypoint>('/api/admin/waypoints', body),
+  updateWaypoint: (id: number, body: Partial<WaypointPayload>) =>
+    api.adminPut<Waypoint>(`/api/admin/waypoints/${id}`, body),
+  deleteWaypoint: (id: number) => api.adminDelete(`/api/admin/waypoints/${id}`),
+
+  listRouteSegments: () => api.adminGet<RouteSegment[]>('/api/admin/route-segments'),
+  createRouteSegment: (body: RouteSegmentPayload) =>
+    api.adminPost<RouteSegment>('/api/admin/route-segments', body),
+  updateRouteSegment: (id: number, body: Partial<RouteSegmentPayload>) =>
+    api.adminPut<RouteSegment>(`/api/admin/route-segments/${id}`, body),
+  deleteRouteSegment: (id: number) => api.adminDelete(`/api/admin/route-segments/${id}`),
+
+  getMapScale: () => api.adminGet<MapScale>('/api/admin/map-scale'),
+  updateMapScale: (body: { miles_per_map_unit: number; notas?: string | null }) =>
+    api.adminPut<MapScale>('/api/admin/map-scale', body),
 }

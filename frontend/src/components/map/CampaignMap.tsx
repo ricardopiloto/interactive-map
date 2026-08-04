@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
 import { adminApi } from '../../api/admin'
-import type { GrupoPosicao, Local } from '../../types'
+import type { GrupoPosicao, Local, RoutePlanItem } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
+import { RouteOverlay } from '../routes/RouteOverlay'
 import './CampaignMap.css'
 
 /** Fixed moderate zoom when focusing a pin from the side menu. */
@@ -22,6 +23,8 @@ interface CampaignMapProps {
   onMapClickRelative?: (x: number, y: number) => void
   /** Empty-stage click when not placing — clear pin selection (GM). */
   onClearSelection?: () => void
+  /** Banner Cancel during reposition — exit placement without changing draft coords. */
+  onCancelPlacement?: () => void
   /** Menu-driven focus: animate pan+zoom to pin (nonce re-triggers same id). */
   focusRequest?: PinFocusRequest | null
   /** Clear focusRequest after zoom so hover re-renders cannot re-fire (016). */
@@ -30,6 +33,11 @@ interface CampaignMapProps {
   mapEditable?: boolean
   onMapUploaded?: (url: string) => void
   overlay?: ReactNode
+  /** Travel plan overlay (021) — separate from narrative saida_ids lines. */
+  travelPlan?: RoutePlanItem[]
+  travelSelectedIndex?: number
+  /** Hide lore pins/grupo (GM route digitizer). */
+  hideLorePins?: boolean
 }
 
 function MapControls({ onReplaceMap }: { onReplaceMap?: () => void }) {
@@ -108,12 +116,16 @@ export function CampaignMap({
   placementMode = 'none',
   onMapClickRelative,
   onClearSelection,
+  onCancelPlacement,
   focusRequest = null,
   onFocusApplied,
   interactivePins = true,
   mapEditable = false,
   onMapUploaded,
   overlay,
+  travelPlan = [],
+  travelSelectedIndex = 0,
+  hideLorePins = false,
 }: CampaignMapProps) {
   const placing = placementMode !== 'none'
   const [mapFailed, setMapFailed] = useState(false)
@@ -155,7 +167,23 @@ export function CampaignMap({
       {placing && (
         <div className="tag tag-accent campaign-map__banner" role="status">
           {placementMode === 'add-pin' && 'Clique no mapa para posicionar o novo local'}
-          {placementMode === 'reposition' && 'Clique no mapa para reposicionar o local'}
+          {placementMode === 'reposition' && (
+            <>
+              <span>Clique no mapa para reposicionar o local</span>
+              {onCancelPlacement && (
+                <button
+                  type="button"
+                  className="btn btn-ghost campaign-map__banner-cancel"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onCancelPlacement()
+                  }}
+                >
+                  Cancelar
+                </button>
+              )}
+            </>
+          )}
           {placementMode === 'move-group' && 'Clique no mapa para reposicionar o grupo'}
         </div>
       )}
@@ -164,7 +192,7 @@ export function CampaignMap({
         minScale={0.5}
         maxScale={4}
         centerOnInit
-        wheel={{ step: 0.1 }}
+        wheel={{ step: 0.01 }}
         panning={{ disabled: placing }}
       >
         <PinFocusController focusRequest={focusRequest} onFocusApplied={onFocusApplied} />
@@ -217,6 +245,7 @@ export function CampaignMap({
               </div>
             )}
             {(() => {
+              if (hideLorePins) return null
               // Selection wins for lines; hover previews only when nothing is selected (020).
               const connectionOriginId =
                 selectedLocalId != null ? selectedLocalId : hoveredLocalId
@@ -245,7 +274,9 @@ export function CampaignMap({
                 </svg>
               )
             })()}
-            {locais.map((local) => {
+            <RouteOverlay rotas={travelPlan} selectedIndex={travelSelectedIndex} />
+            {!hideLorePins &&
+              locais.map((local) => {
               const selected = selectedLocalId === local.id
               const hovered = hoveredLocalId === local.id
               const pinColor = local.cor_pin || '#c4b5fd'
@@ -279,7 +310,7 @@ export function CampaignMap({
                 </button>
               )
             })}
-            {grupo && (
+            {!hideLorePins && grupo && (
               <div
                 className={`campaign-map__party campaign-map__party--${formato}`}
                 style={{ left: `${grupo.x * 100}%`, top: `${grupo.y * 100}%` }}
@@ -303,18 +334,20 @@ export function CampaignMap({
           }}
         />
       )}
-      <div className="campaign-map__legend">
-        <span>
-          <i className="campaign-map__legend-pin campaign-map__legend-pin--visited" /> Visitado
-        </span>
-        <span>
-          <i className="campaign-map__legend-pin campaign-map__legend-pin--known" /> Conhecido
-        </span>
-        <span>
-          <i className={`campaign-map__legend-party campaign-map__legend-party--${formato}`} /> Grupo
-        </span>
-        <span className="campaign-map__legend-note text-muted">GM pode usar outras cores</span>
-      </div>
+      {!hideLorePins && (
+        <div className="campaign-map__legend">
+          <span>
+            <i className="campaign-map__legend-pin campaign-map__legend-pin--visited" /> Visitado
+          </span>
+          <span>
+            <i className="campaign-map__legend-pin campaign-map__legend-pin--known" /> Conhecido
+          </span>
+          <span>
+            <i className={`campaign-map__legend-party campaign-map__legend-party--${formato}`} /> Grupo
+          </span>
+          <span className="campaign-map__legend-note text-muted">GM pode usar outras cores</span>
+        </div>
+      )}
       {overlay}
     </div>
   )

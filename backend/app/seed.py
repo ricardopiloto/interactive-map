@@ -165,8 +165,50 @@ def seed(session: Session) -> None:
         grupo.formato = getattr(grupo, "formato", None) or "bandeira"
         session.add(grupo)
 
+    # Travel graph (021): two paths Praça → Torre via Clareira vs via Grissenwald
+    from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
+    from app.services.route_planner import compute_distancia_milhas, dump_pontos
+
+    if session.get(MapScale, 1) is None:
+        session.add(MapScale(id=1, miles_per_map_unit=80.0, notas="Seed: ~80 mi por unidade de mapa"))
+
+    if not session.exec(select(Waypoint)).first() and len(seeded_locais) >= 5:
+        # 0 Praça, 1 Taverna, 2 Clareira, 3 Torre, 4 Grissenwald
+        wps = [
+            Waypoint(nome=seeded_locais[0].nome, x=seeded_locais[0].x, y=seeded_locais[0].y, local_id=seeded_locais[0].id),
+            Waypoint(nome=seeded_locais[2].nome, x=seeded_locais[2].x, y=seeded_locais[2].y, local_id=seeded_locais[2].id),
+            Waypoint(nome=seeded_locais[3].nome, x=seeded_locais[3].x, y=seeded_locais[3].y, local_id=seeded_locais[3].id),
+            Waypoint(nome=seeded_locais[4].nome, x=seeded_locais[4].x, y=seeded_locais[4].y, local_id=seeded_locais[4].id),
+            Waypoint(nome="Cruzamento do Reik", x=0.48, y=0.45, local_id=None),
+        ]
+        for w in wps:
+            session.add(w)
+        session.flush()
+        scale = 80.0
+        pairs = [
+            (wps[0], wps[4], RouteTipo.estrada, []),
+            (wps[4], wps[1], RouteTipo.estrada, []),
+            (wps[1], wps[2], RouteTipo.trilha, []),
+            (wps[0], wps[3], RouteTipo.rio, [{"x": 0.5, "y": 0.5}]),
+            (wps[3], wps[2], RouteTipo.estrada, []),
+        ]
+        from app.schemas.routes import Point
+
+        for a, b, tipo, mid_raw in pairs:
+            mid = [Point(**p) for p in mid_raw]
+            dist = compute_distancia_milhas(a, b, mid, scale)
+            session.add(
+                RouteSegment(
+                    waypoint_a_id=a.id,  # type: ignore[arg-type]
+                    waypoint_b_id=b.id,  # type: ignore[arg-type]
+                    tipo=tipo,
+                    pontos_intermediarios=dump_pontos(mid),
+                    distancia_milhas=dist,
+                )
+            )
+
     session.commit()
-    print("Seed aplicado: 2 arcos, 5 NPCs, 5 locais, conexões de saída, posição do grupo.")
+    print("Seed aplicado: 2 arcos, 5 NPCs, 5 locais, conexões de saída, rotas de viagem, posição do grupo.")
 
 
 def main() -> None:

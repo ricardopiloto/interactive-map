@@ -1,5 +1,7 @@
 export type NPCStatus = 'vivo' | 'morto' | 'desaparecido' | 'desconhecido'
 export type GrupoFormato = 'bandeira' | 'brasao'
+export type RouteTipo = 'estrada' | 'rio' | 'trilha'
+export type Ritmo = 'normal' | 'intenso'
 
 export interface Local {
   id: number
@@ -13,6 +15,7 @@ export interface Local {
   npc_ids: number[]
   saida_ids: number[]
   cor_pin: string
+  waypoint_id?: number | null
 }
 
 export interface NPC {
@@ -37,4 +40,50 @@ export interface GrupoPosicao {
   y: number
   formato: GrupoFormato
   atualizado_em: string
+}
+
+export interface MapPoint {
+  x: number
+  y: number
+}
+
+export interface Waypoint {
+  id: number
+  nome: string | null
+  x: number
+  y: number
+  local_id: number | null
+}
+
+export interface RouteSegment {
+  id: number
+  waypoint_a_id: number
+  waypoint_b_id: number
+  tipo: RouteTipo
+  pontos_intermediarios: MapPoint[]
+  distancia_milhas: number
+  modificador_velocidade: number | null
+}
+
+export interface RoutePlanItem {
+  waypoint_ids: number[]
+  distancia_milhas: number
+  tempo_horas: number
+  tempo_dias: number
+  tempo_horas_resto: number
+  tempo_texto: string
+  tipos: string[]
+  geometria: MapPoint[]
+  custo_dentro_bp: number
+  custo_fora_bp: number
+}
+
+export interface RoutePlanResponse {
+  rotas: RoutePlanItem[]
+}
+
+export interface MapScale {
+  id: number
+  miles_per_map_unit: number
+  notas: string | null
 }
