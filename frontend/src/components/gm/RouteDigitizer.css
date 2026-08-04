@@ -102,12 +102,30 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 1;
+  overflow: visible;
 }
 
 .route-digitizer__seg {
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.route-digitizer__seg.is-hovered {
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.85));
+}
+
+.route-digitizer__seg-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: stroke;
+  cursor: help;
 }
 
 .route-digitizer__seg--estrada {
@@ -126,11 +144,30 @@
 .route-digitizer__seg--draft {
   stroke: #e5484d;
   stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+.route-digitizer__seg-tooltip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  background: var(--color-surface, #221c30);
+  border: 1px solid var(--color-divider, #555);
+  border-radius: 4px;
+  color: #f0ecf8;
+  white-space: nowrap;
+  max-width: min(90%, 28rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .route-digitizer__wp {
   position: absolute;
-  /* Hit + aura ≈ NODE_SNAP (~0.01 map) at typical stage width; disk centered inside */
+  /* Hit + aura ≈ ORIGIN_SNAP (~0.01 map) at typical stage width; disk centered inside */
   width: 22px;
   height: 22px;
   margin: -11px 0 0 -11px;
@@ -143,6 +180,13 @@
   z-index: 2;
   transform: scale(calc(1 / var(--map-zoom, 1)));
   transform-origin: 50% 50%;
+}
+
+/* Draft open: hit + aura ≈ FINISH_SNAP (~0.005); matches tighter close zone */
+.route-digitizer__wp--closing {
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
 }
 
 .route-digitizer__wp::after {
@@ -200,7 +244,13 @@
   align-items: center;
   gap: 0.35rem;
   margin-bottom: 0.4rem;
-  padding: 0.15rem 0;
+  padding: 0.15rem 0.25rem;
+}
+
+.route-digitizer__lists li.is-hovered {
+  background: color-mix(in srgb, #9184d9 22%, transparent);
+  outline: 1px solid color-mix(in srgb, #9184d9 45%, transparent);
+  border-radius: 4px;
 }
 
 .route-digitizer__lists li .input {

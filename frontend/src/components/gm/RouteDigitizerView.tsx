@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
 import { adminApi } from '../../api/admin'
 import type { Local, MapPoint, RouteSegment, RouteTipo, Waypoint } from '../../types'
@@ -6,8 +6,9 @@ import './RouteDigitizer.css'
 
 type Mode = 'idle' | 'place-wp' | 'draw-seg'
 
-/** Normalized map coords (0–1): single pick radius for origin and finish (= visible aura). */
-const NODE_SNAP = 0.01
+/** Normalized map coords (0–1): origin pick (= idle/origin aura); finish close (= draft aura). */
+const ORIGIN_SNAP = 0.01
+const FINISH_SNAP = 0.005
 
 interface Props {
   mapUrl: string
@@ -42,7 +43,11 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   const [wpName, setWpName] = useState('')
   const [segTipo, setSegTipo] = useState<RouteTipo>('estrada')
   const [draftA, setDraftA] = useState<number | null>(null)
+  const [hoveredSegmentId, setHoveredSegmentId] = useState<number | null>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const segRowRefs = useRef<Map<number, HTMLLIElement>>(new Map())
 
   const setMapZoomCss = useCallback((scale: number) => {
     stageRef.current?.style.setProperty('--map-zoom', String(scale))
@@ -136,7 +141,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
 
     if (mode === 'draw-seg') {
       if (draftA == null) {
-        const hit = nearestWaypoint(x, y, NODE_SNAP)
+        const hit = nearestWaypoint(x, y, ORIGIN_SNAP)
         if (!hit) {
           setError('Clique em um nó existente para começar o segmento.')
           return
@@ -145,7 +150,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
         setDraftMids([])
         return
       }
-      const hit = nearestWaypoint(x, y, NODE_SNAP)
+      const hit = nearestWaypoint(x, y, FINISH_SNAP)
       if (hit && hit.id !== draftA) {
         setBusy(true)
         try {
@@ -216,10 +221,53 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   async function removeSegment(id: number) {
     if (!window.confirm('Remover segmento?')) return
     await adminApi.deleteRouteSegment(id)
+    if (hoveredSegmentId === id) {
+      setHoveredSegmentId(null)
+      setTooltipPos(null)
+    }
     await reload()
   }
 
   const byId = new Map(waypoints.map((w) => [w.id, w]))
+
+  function waypointLabel(id: number): string {
+    const w = byId.get(id)
+    const nome = w?.nome?.trim()
+    return nome || String(id)
+  }
+
+  function segmentIdentity(s: RouteSegment): string {
+    return `${waypointLabel(s.waypoint_a_id)}↔${waypointLabel(s.waypoint_b_id)} · ${s.tipo} · ${s.distancia_milhas} mi`
+  }
+
+  function updateSegTooltipPos(e: ReactPointerEvent) {
+    const map = mapRef.current
+    if (!map) return
+    const rect = map.getBoundingClientRect()
+    setTooltipPos({ x: e.clientX - rect.left + 12, y: e.clientY - rect.top + 12 })
+  }
+
+  function onSavedSegPointerEnter(s: RouteSegment, e: ReactPointerEvent<SVGPolylineElement>) {
+    setHoveredSegmentId(s.id)
+    updateSegTooltipPos(e)
+    requestAnimationFrame(() => {
+      segRowRefs.current.get(s.id)?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    })
+  }
+
+  function onSavedSegPointerLeave() {
+    setHoveredSegmentId(null)
+    setTooltipPos(null)
+  }
+
+  useEffect(() => {
+    if (hoveredSegmentId != null && !segments.some((s) => s.id === hoveredSegmentId)) {
+      setHoveredSegmentId(null)
+      setTooltipPos(null)
+    }
+  }, [segments, hoveredSegmentId])
+
+  const hoveredSegment = hoveredSegmentId != null ? segments.find((s) => s.id === hoveredSegmentId) : undefined
 
   return (
     <div className="route-digitizer">
@@ -308,7 +356,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
         </p>
       )}
 
-      <div className="route-digitizer__map">
+      <div className="route-digitizer__map" ref={mapRef}>
         <TransformWrapper
           initialScale={1}
           minScale={0.5}
@@ -342,14 +390,25 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
                     ...s.pontos_intermediarios.map((p) => `${p.x * 100},${p.y * 100}`),
                     `${b.x * 100},${b.y * 100}`,
                   ].join(' ')
+                  const hovered = hoveredSegmentId === s.id
                   return (
-                    <polyline
-                      key={s.id}
-                      points={pts}
-                      className={`route-digitizer__seg route-digitizer__seg--${s.tipo}`}
-                      fill="none"
-                      vectorEffect="non-scaling-stroke"
-                    />
+                    <g key={s.id}>
+                      <polyline
+                        points={pts}
+                        className={`route-digitizer__seg route-digitizer__seg--${s.tipo}${hovered ? ' is-hovered' : ''}`}
+                        fill="none"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <polyline
+                        points={pts}
+                        className="route-digitizer__seg-hit"
+                        fill="none"
+                        vectorEffect="non-scaling-stroke"
+                        onPointerEnter={(e) => onSavedSegPointerEnter(s, e)}
+                        onPointerMove={updateSegTooltipPos}
+                        onPointerLeave={onSavedSegPointerLeave}
+                      />
+                    </g>
                   )
                 })}
                 {draftA != null &&
@@ -374,7 +433,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
                 <button
                   key={w.id}
                   type="button"
-                  className={`route-digitizer__wp${draftA === w.id ? ' is-active' : ''}`}
+                  className={`route-digitizer__wp${draftA != null ? ' route-digitizer__wp--closing' : ''}${draftA === w.id ? ' is-active' : ''}`}
                   style={{ left: `${w.x * 100}%`, top: `${w.y * 100}%` }}
                   title={w.nome || `Nó ${w.id}`}
                   onContextMenu={onDrawSegContextMenu}
@@ -413,6 +472,15 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
             </div>
           </TransformComponent>
         </TransformWrapper>
+        {hoveredSegment && tooltipPos && (
+          <div
+            className="route-digitizer__seg-tooltip"
+            style={{ left: tooltipPos.x, top: tooltipPos.y }}
+            role="status"
+          >
+            {segmentIdentity(hoveredSegment)}
+          </div>
+        )}
       </div>
 
       <aside className="route-digitizer__lists">
@@ -459,9 +527,17 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
           <h3>Segmentos ({segments.length})</h3>
           <ul>
             {segments.map((s) => (
-              <li key={s.id}>
+              <li
+                key={s.id}
+                className={hoveredSegmentId === s.id ? 'is-hovered' : undefined}
+                ref={(el) => {
+                  if (el) segRowRefs.current.set(s.id, el)
+                  else segRowRefs.current.delete(s.id)
+                }}
+              >
                 <span>
-                  {s.waypoint_a_id}↔{s.waypoint_b_id} · {s.tipo} · {s.distancia_milhas} mi
+                  {waypointLabel(s.waypoint_a_id)}↔{waypointLabel(s.waypoint_b_id)} · {s.tipo} ·{' '}
+                  {s.distancia_milhas} mi
                 </span>
                 <button type="button" className="btn btn-ghost" onClick={() => void removeSegment(s.id)}>
                   Apagar

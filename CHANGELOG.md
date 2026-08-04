@@ -5,13 +5,18 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
-## [0.6.4] — 2026-08-04
+## [0.6.5] — 2026-08-04
 
-Rede de rotas: zona de clique dos nós menor, com aura visível; segmentos mais finos.
+Rede de rotas: aura/snap dos nós, traços mais finos, fecho mais apertado e hover com identidade do segmento.
+
+### Added
+
+- Rede de rotas: aura visível em cada nó (zona clicável); origem activa continua distinta
+- Rede de rotas: ao passar o rato sobre um segmento gravado, tooltip com extremos/tipo/distância e destaque (com scroll) da linha correspondente em Segmentos; traço enfatizado; hover não apaga
 
 ### Changed
 
-- Rede de rotas: snap origem/fecho unificado e mais apertado; cada nó mostra uma aura da área clicável; origem activa continua distinta
+- Rede de rotas: snap de origem mantém folga útil; snap de fecho ~metade — com draft aberto a aura encolhe para coincidir com a zona de fecho; sem draft, aura de origem
 - Rede de rotas: linhas de segmento (gravadas e rascunho) mais finas (~60% da espessura anterior) para alinhar melhor ao mapa
 
 ## [0.6.3] — 2026-08-04
