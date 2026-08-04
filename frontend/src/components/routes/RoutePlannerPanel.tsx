@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { campaignApi } from '../../api/campaign'
 import type { Local, Ritmo, RoutePlanItem, Waypoint } from '../../types'
 import { WaypointCombobox } from './WaypointCombobox'
@@ -37,7 +37,17 @@ function disambiguateRouteTitles(bases: string[]): string[] {
   })
 }
 
-/** nome do nó → nome do Local → `Nó {id}` */
+/** FR-002: own trimmed name, or linked Local with trimmed name. */
+function isNamedWaypoint(wp: Waypoint, locaisById: Map<number, string>): boolean {
+  if (wp.nome?.trim()) return true
+  if (wp.local_id != null) {
+    const localNome = locaisById.get(wp.local_id)?.trim()
+    if (localNome) return true
+  }
+  return false
+}
+
+/** nome do nó → nome do Local (named options only; `Nó {id}` is defensive). */
 function waypointOptionLabel(wp: Waypoint, locaisById: Map<number, string>): string {
   const nome = wp.nome?.trim()
   if (nome) return nome
@@ -77,9 +87,12 @@ export function RoutePlannerPanel({
 
   const options = useMemo(() => {
     return [...waypoints]
+      .filter((wp) => isNamedWaypoint(wp, locaisById))
       .map((wp) => ({ id: wp.id, label: waypointOptionLabel(wp, locaisById) }))
       .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
   }, [waypoints, locaisById])
+
+  const namedIds = useMemo(() => new Set(options.map((o) => o.id)), [options])
 
   const routeTitles = useMemo(
     () => disambiguateRouteTitles(plan.map((r) => routeTitleBase(r.tipos))),
@@ -93,6 +106,17 @@ export function RoutePlannerPanel({
   const [velocidade, setVelocidade] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (origemId !== '' && !namedIds.has(origemId)) {
+      setOrigemId('')
+      setOrigemQuery('')
+    }
+    if (destinoId !== '' && !namedIds.has(destinoId)) {
+      setDestinoId('')
+      setDestinoQuery('')
+    }
+  }, [namedIds, origemId, destinoId])
 
   if (!open) return null
 
@@ -222,7 +246,11 @@ export function RoutePlannerPanel({
         </ul>
       )}
       {options.length === 0 && (
-        <p className="text-muted">Nenhum nó na rede de vias ainda.</p>
+        <p className="text-muted">
+          {waypoints.length === 0
+            ? 'Nenhum nó na rede de vias ainda.'
+            : 'Nenhum nó com nome disponível para origem/destino.'}
+        </p>
       )}
     </aside>
   )

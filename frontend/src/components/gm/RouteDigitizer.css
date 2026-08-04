@@ -130,20 +130,23 @@
 
 .route-digitizer__wp {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
   border-radius: 50%;
   border: 2px solid #fff;
   background: #9184d9;
   padding: 0;
   cursor: pointer;
   z-index: 2;
+  transform: scale(calc(1 / var(--map-zoom, 1)));
+  transform-origin: 50% 50%;
 }
 
 .route-digitizer__wp.is-active {
   background: #e5484d;
-  box-shadow: 0 0 0 4px color-mix(in srgb, #e5484d 40%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, #e5484d 40%, transparent);
+  transform: scale(calc(1.25 / var(--map-zoom, 1)));
 }
 
 .route-digitizer__lists {

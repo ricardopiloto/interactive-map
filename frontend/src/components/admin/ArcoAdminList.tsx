@@ -84,6 +84,7 @@ export function ArcoAdminList({ arcos, onAdd, onEdit, onDelete }: ArcoAdminListP
         + Novo arco
       </button>
       <div className="gm-stack">
+        {sorted.length === 0 && <p className="text-muted">Nenhum item.</p>}
         {sorted.map((arco) => (
           <div key={arco.id} className="card elev-sm">
             <div className="card-title">{arco.titulo}</div>

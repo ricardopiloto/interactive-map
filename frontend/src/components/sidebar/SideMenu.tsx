@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Arco, Local, NPC } from '../../types'
+import { labelMatchesQuery } from '../../utils/textMatch'
 import { ImageSlot } from '../media/ImageSlot'
 import './SideMenu.css'
 
@@ -10,6 +11,11 @@ const STATUS_LABEL: Record<string, string> = {
   morto: 'Morto',
   desaparecido: 'Desaparecido',
   desconhecido: 'Desconhecido',
+}
+
+function arcoMatchesQuery(arco: Arco, locais: Local[], query: string): boolean {
+  if (labelMatchesQuery(arco.titulo, query)) return true
+  return locais.some((l) => l.arco_id === arco.id && labelMatchesQuery(l.nome, query))
 }
 
 interface SideMenuProps {
@@ -57,10 +63,17 @@ export function SideMenu({
   headerExtra,
   adminPanel,
 }: SideMenuProps) {
-  const needle = query.toLowerCase()
-  const filteredLocais = locais.filter((l) => l.nome.toLowerCase().includes(needle))
-  const filteredNpcs = npcs.filter((n) => n.nome.toLowerCase().includes(needle))
-  const sortedArcos = [...arcos].sort((a, b) => a.ordem - b.ordem || a.id - b.id)
+  const filtering = query.trim().length > 0
+  const filteredLocais = locais.filter((l) => labelMatchesQuery(l.nome, query))
+  const filteredNpcs = npcs.filter((n) => labelMatchesQuery(n.nome, query))
+  const filteredArcos = [...arcos]
+    .filter((a) => arcoMatchesQuery(a, locais, query))
+    .sort((a, b) => a.ordem - b.ordem || a.id - b.id)
+
+  const showSearch = tab === 'locais' || tab === 'npcs' || tab === 'arcos'
+
+  const searchPlaceholder =
+    tab === 'locais' ? 'Buscar local…' : tab === 'npcs' ? 'Buscar NPC…' : 'Buscar arco ou local…'
 
   const tabLabel: Record<SideTab, string> = {
     locais: 'Locais',
@@ -101,12 +114,12 @@ export function SideMenu({
         </div>
       </div>
 
-      {!isGm && (tab === 'locais' || tab === 'npcs') && (
+      {showSearch && (
         <div className="side-menu__search-wrap">
           <input
             className="input side-menu__search"
             type="search"
-            placeholder={tab === 'locais' ? 'Buscar local…' : 'Buscar NPC…'}
+            placeholder={searchPlaceholder}
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
           />
@@ -121,7 +134,9 @@ export function SideMenu({
             {tab === 'locais' && (
               <div className="side-menu__stack">
                 {filteredLocais.length === 0 && (
-                  <p className="text-muted">Nenhum local visitado ainda.</p>
+                  <p className="text-muted">
+                    {filtering ? 'Nenhuma correspondência.' : 'Nenhum local visitado ainda.'}
+                  </p>
                 )}
                 {filteredLocais.map((local) => {
                   const arco = arcos.find((a) => a.id === local.arco_id)
@@ -145,7 +160,9 @@ export function SideMenu({
             {tab === 'npcs' && (
               <div className="side-menu__stack">
                 {filteredNpcs.length === 0 && (
-                  <p className="text-muted">Nenhum NPC conhecido ainda.</p>
+                  <p className="text-muted">
+                    {filtering ? 'Nenhuma correspondência.' : 'Nenhum NPC conhecido ainda.'}
+                  </p>
                 )}
                 {filteredNpcs.map((npc) => {
                   const expanded = selectedNpcId === npc.id
@@ -209,10 +226,12 @@ export function SideMenu({
 
             {tab === 'arcos' && (
               <div className="side-menu__stack">
-                {sortedArcos.length === 0 && (
-                  <p className="text-muted">Nenhum arco registrado ainda.</p>
+                {filteredArcos.length === 0 && (
+                  <p className="text-muted">
+                    {filtering ? 'Nenhuma correspondência.' : 'Nenhum arco registrado ainda.'}
+                  </p>
                 )}
-                {sortedArcos.map((arco) => {
+                {filteredArcos.map((arco) => {
                   const expanded = selectedArcoId === arco.id
                   const events = locais
                     .filter((l) => l.arco_id === arco.id)

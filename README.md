@@ -2,19 +2,20 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.6.0 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.6.3 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
 
-- Mapa com zoom/pan (roda suave), pins de locais coloridos e marcador do grupo (bandeira ou brasão)
-- Menu lateral (Locais, História, NPCs); modal de leitura ao lado do pin (jogador)
+- Mapa com zoom/pan (roda suave), pins de locais coloridos e marcador do grupo (bandeira ou brasão); pins/grupo com tamanho de ecrã estável ao zoom
+- Controlo **Ir ao grupo** no cluster de zoom (+/−/1:1) para recentrar o pin do grupo
+- Menu lateral (Locais, História, NPCs) com scroll nas listas e busca em Locais/NPCs/História; modal de leitura ao lado do pin (jogador)
 - Clique no local no menu (ou no pin, jogador) foca a vista no pin com pan/zoom animado
 - Descrição do local em texto livre ou Markdown (renderizada com segurança na leitura do pin)
 - Hover na aba Locais destaca o pin no mapa e tint no cartão — **sem** mover pan/zoom da vista
 - Sem seleção: hover no menu (ou lista GM) também pré-visualiza as **linhas de saída** daquele local
 - Ao selecionar/abrir um local, linhas simples mostram as **saídas** cadastradas (vermelho claro, translúcidas, com sombra suave)
-- **Calcular rota**: De/Para entre **qualquer nó** da rede de vias (com ou sem Local), ritmo de viagem, várias rotas por tempo (mais rápida destacada; alternativas tracejadas)
+- **Calcular rota**: De/Para entre nós **com nome** (nome do nó ou Local ligado), ritmo de viagem, várias rotas por tempo (mais rápida destacada; alternativas tracejadas); nós sem nome só como passagem
 - Modo GM: vista **Rede de rotas** para digitalizar nós/segmentos (estrada/rio/trilha); vincular nó↔Local na lista ou no formulário de Local (pin do Local segue o nó)
 - Modais longos cabem na tela (corpo rola; botões de ação ficam no rodapé)
 - Modo GM na mesma tela: canto “Acesso restrito (GM)” ou `/?gm=1`
@@ -62,8 +63,14 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
 | [`032-fix-reposition-modal`](specs/032-fix-reposition-modal/spec.md) | Esconder modal ao reposicionar local |
 | [`033-fix-reposition-pin`](specs/033-fix-reposition-pin/spec.md) | Pin reflecte rascunho ao reposicionar |
 | [`034-revert-pin-offset`](specs/034-revert-pin-offset/spec.md) | Reverter visual 030; alinhar pin ao ponto |
+| [`035-fix-digitizer-node-offset`](specs/035-fix-digitizer-node-offset/spec.md) | Alinhar stage/nós do digitizer à imagem do mapa |
+| [`036-route-endpoint-search`](specs/036-route-endpoint-search/spec.md) | Combobox/busca De/Para no Calcular rota |
+| [`037-side-menu-scroll-search`](specs/037-side-menu-scroll-search/spec.md) | Scroll + busca no menu lateral |
+| [`038-fixed-marker-size`](specs/038-fixed-marker-size/spec.md) | Pins/nós menores com tamanho fixo no zoom |
+| [`039-focus-group-pin`](specs/039-focus-group-pin/spec.md) | Botão para centralizar o pin do grupo |
+| [`040-named-route-endpoints`](specs/040-named-route-endpoints/spec.md) | De/Para só com nós nomeados |
 
-- Spec ativa: [`specs/034-revert-pin-offset`](specs/034-revert-pin-offset/spec.md)
+- Spec ativa: [`specs/040-named-route-endpoints`](specs/040-named-route-endpoints/spec.md)
 - Protótipo (fonte visual): `prototype/`
 
 ## Stack

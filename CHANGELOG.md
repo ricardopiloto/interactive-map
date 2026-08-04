@@ -5,6 +5,24 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.3] — 2026-08-04
+
+Menu lateral (scroll e busca), marcadores mais compactos com tamanho fixo no zoom, botão para ir ao grupo, e De/Para só com nós nomeados.
+
+### Added
+
+- Menu lateral: filtro de busca em Locais, NPCs e História (jogador e GM; case/accent-insensitive); História casa título do arco ou nome de local ligado; busca oculta na aba Grupo
+- Controlo “Ir ao grupo” no cluster de zoom (+/−/1:1): recentra o pin do grupo no viewport; oculto quando não há posição de grupo
+
+### Fixed
+
+- Menu lateral: scroll do corpo das abas (cadeia de altura flex/grid) para listas longas não ficarem cortadas
+
+### Changed
+
+- Mapa e Rede de rotas: pins, grupo e nós mais compactos (~60% da área anterior); tamanho aparente no ecrã fixo face ao zoom; ênfase de selecção/hover mantida a partir do novo tamanho base
+- **Calcular rota**: listas De/Para omitem nós sem nome (sem rótulo `Nó {id}`); nós sem nome continuam a servir de passagem no caminho
+
 ## [0.6.2] — 2026-08-03
 
 Pesquisa com autocomplete nas listas De/Para do Calcular rota.

@@ -1,4 +1,4 @@
-/** Case- and accent-insensitive fold for substring search (FR-003). */
+/** Case- and accent-insensitive fold for substring search. */
 export function foldText(s: string): string {
   return s
     .normalize('NFD')

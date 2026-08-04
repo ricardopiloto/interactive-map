@@ -108,6 +108,7 @@ export function NpcAdminList({ npcs, onAdd, onEdit, onDelete }: NpcAdminListProp
         + Novo NPC
       </button>
       <div className="gm-stack">
+        {npcs.length === 0 && <p className="text-muted">Nenhum item.</p>}
         {npcs.map((npc) => (
           <div key={npc.id} className="card elev-sm">
             <div className="card-title">{npc.nome}</div>

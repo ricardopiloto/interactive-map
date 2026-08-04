@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
 import { adminApi } from '../../api/admin'
 import type { GrupoPosicao, Local, RoutePlanItem } from '../../types'
@@ -10,7 +10,9 @@ import './CampaignMap.css'
 export const FOCUS_SCALE = 2
 export const FOCUS_ANIM_MS = 400
 
-export type PinFocusRequest = { localId: number; nonce: number }
+export type PinFocusRequest =
+  | { target: 'local'; localId: number; nonce: number }
+  | { target: 'group'; nonce: number }
 
 interface CampaignMapProps {
   mapUrl: string
@@ -40,7 +42,15 @@ interface CampaignMapProps {
   hideLorePins?: boolean
 }
 
-function MapControls({ onReplaceMap }: { onReplaceMap?: () => void }) {
+function MapControls({
+  onReplaceMap,
+  showFocusGroup,
+  onFocusGroup,
+}: {
+  onReplaceMap?: () => void
+  showFocusGroup?: boolean
+  onFocusGroup?: () => void
+}) {
   const { zoomIn, zoomOut, resetTransform } = useControls()
   return (
     <div className="campaign-map__controls">
@@ -58,6 +68,17 @@ function MapControls({ onReplaceMap }: { onReplaceMap?: () => void }) {
       >
         1:1
       </button>
+      {showFocusGroup && onFocusGroup && (
+        <button
+          type="button"
+          className="btn btn-secondary btn-icon campaign-map__focus-group"
+          onClick={onFocusGroup}
+          aria-label="Ir ao grupo"
+          title="Ir ao grupo"
+        >
+          ⚑
+        </button>
+      )}
       {onReplaceMap && (
         <button
           type="button"
@@ -87,21 +108,23 @@ function PinFocusController({
   const onFocusAppliedRef = useRef(onFocusApplied)
   onFocusAppliedRef.current = onFocusApplied
 
-  const localId = focusRequest?.localId
+  const target = focusRequest?.target
+  const localId = focusRequest?.target === 'local' ? focusRequest.localId : undefined
   const nonce = focusRequest?.nonce
 
   useEffect(() => {
-    if (localId == null || nonce == null) return
-    const id = `map-pin-${localId}`
+    if (target == null || nonce == null) return
+    const id = target === 'group' ? 'map-party' : localId != null ? `map-pin-${localId}` : null
+    if (!id) return
     try {
       const el = document.getElementById(id)
       if (!el) return
       zoomToElementRef.current(el, FOCUS_SCALE, FOCUS_ANIM_MS, 'easeOut')
       onFocusAppliedRef.current?.()
     } catch {
-      // FR-007: no-op if transform/DOM not ready
+      // Silent no-op if transform/DOM not ready (missing #map-party / pin)
     }
-  }, [localId, nonce])
+  }, [target, localId, nonce])
 
   return null
 }
@@ -129,12 +152,32 @@ export function CampaignMap({
 }: CampaignMapProps) {
   const placing = placementMode !== 'none'
   const [mapFailed, setMapFailed] = useState(false)
+  const [internalFocus, setInternalFocus] = useState<PinFocusRequest | null>(null)
   const replaceInputRef = useRef<HTMLInputElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
   const formato = grupo?.formato === 'brasao' ? 'brasao' : 'bandeira'
+  const partyVisible = Boolean(grupo) && !hideLorePins
+  const effectiveFocus = focusRequest ?? internalFocus
+
+  const setMapZoomCss = useCallback((scale: number) => {
+    stageRef.current?.style.setProperty('--map-zoom', String(scale))
+  }, [])
+
+  const handleFocusApplied = useCallback(() => {
+    if (focusRequest) {
+      onFocusApplied?.()
+    } else {
+      setInternalFocus(null)
+    }
+  }, [focusRequest, onFocusApplied])
 
   useEffect(() => {
     setMapFailed(false)
   }, [mapUrl])
+
+  useEffect(() => {
+    if (focusRequest) setInternalFocus(null)
+  }, [focusRequest])
 
   function handleStageClick(e: MouseEvent<HTMLDivElement>) {
     if (placing) {
@@ -194,11 +237,19 @@ export function CampaignMap({
         centerOnInit
         wheel={{ step: 0.01 }}
         panning={{ disabled: placing }}
+        onInit={(ref) => setMapZoomCss(ref.state.scale)}
+        onTransform={(_ref, state) => setMapZoomCss(state.scale)}
       >
-        <PinFocusController focusRequest={focusRequest} onFocusApplied={onFocusApplied} />
+        <PinFocusController focusRequest={effectiveFocus} onFocusApplied={handleFocusApplied} />
         <MapControls
           onReplaceMap={
             mapEditable && showImage ? () => replaceInputRef.current?.click() : undefined
+          }
+          showFocusGroup={partyVisible}
+          onFocusGroup={
+            partyVisible
+              ? () => setInternalFocus({ target: 'group', nonce: Date.now() })
+              : undefined
           }
         />
         <TransformComponent
@@ -207,7 +258,9 @@ export function CampaignMap({
           wrapperStyle={{ width: '100%', height: '100%' }}
         >
           <div
+            ref={stageRef}
             className="campaign-map__stage"
+            style={{ ['--map-zoom' as string]: 1 }}
             onClick={handleStageClick}
             role={placing ? 'button' : undefined}
           >
@@ -312,6 +365,7 @@ export function CampaignMap({
             })}
             {!hideLorePins && grupo && (
               <div
+                id="map-party"
                 className={`campaign-map__party campaign-map__party--${formato}`}
                 style={{ left: `${grupo.x * 100}%`, top: `${grupo.y * 100}%` }}
                 title="Posição do grupo"

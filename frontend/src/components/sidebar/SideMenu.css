@@ -4,10 +4,12 @@
   gap: var(--space-3);
   width: min(340px, 100%);
   height: 100%;
+  min-height: 0;
   padding: 0;
   background: var(--color-surface);
   color: var(--color-text);
   border-right: 1px solid var(--color-divider);
+  overflow: hidden;
 }
 
 .side-menu--overlay {
@@ -15,6 +17,8 @@
   inset: 0;
   z-index: 50;
   width: 100%;
+  height: 100%;
+  min-height: 0;
   border-right: none;
 }
 
@@ -41,6 +45,7 @@
 }
 
 .side-menu__seg-wrap {
+  flex-shrink: 0;
   padding: 0 var(--space-4);
 }
 
@@ -72,6 +77,7 @@
 
 .side-menu__body {
   flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 0 var(--space-4) var(--space-6);
 }

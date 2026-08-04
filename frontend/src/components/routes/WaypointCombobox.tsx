@@ -1,5 +1,5 @@
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
-import { labelMatchesQuery } from './textMatch'
+import { labelMatchesQuery } from '../../utils/textMatch'
 
 export interface WaypointComboboxOption {
   id: number

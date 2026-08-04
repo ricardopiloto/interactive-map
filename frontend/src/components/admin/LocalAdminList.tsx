@@ -36,6 +36,7 @@ export function LocalAdminList({
         </div>
       )}
       <div className="gm-stack">
+        {locais.length === 0 && <p className="text-muted">Nenhum item.</p>}
         {locais.map((loc) => {
           const arco = arcos.find((a) => a.id === loc.arco_id)
           return (

@@ -20,6 +20,7 @@ import { ArcoAdminList, ArcoFormDialog } from '../components/admin/ArcoAdminList
 import { GrupoAdminPanel } from '../components/admin/GrupoAdminPanel'
 import { useCampaignData } from '../hooks/useCampaignData'
 import type { GrupoFormato, NPCStatus, RoutePlanItem, Waypoint } from '../types'
+import { labelMatchesQuery } from '../utils/textMatch'
 import './MapPage.css'
 
 const DEFAULT_MAP_URL = import.meta.env.VITE_MAP_URL ?? '/uploads/map/campaign-map.webp'
@@ -137,7 +138,7 @@ export function MapPage() {
   function selectLocalFromMenu(id: number) {
     if (isGm && placement !== 'none') return
     selectLocal(id)
-    setFocusRequest({ localId: id, nonce: Date.now() })
+    setFocusRequest({ target: 'local', localId: id, nonce: Date.now() })
   }
 
   /** Player map-pin click: select + focus (015). GM: select only, no focusRequest. */
@@ -145,7 +146,7 @@ export function MapPage() {
     if (isGm && placement !== 'none') return
     selectLocal(id)
     if (isGm) return
-    setFocusRequest({ localId: id, nonce: Date.now() })
+    setFocusRequest({ target: 'local', localId: id, nonce: Date.now() })
   }
 
   function selectNpc(id: number) {
@@ -258,12 +259,27 @@ export function MapPage() {
   const tabs: SideTab[] = isGm ? ['locais', 'npcs', 'arcos', 'grupo'] : ['locais', 'npcs', 'arcos']
   const showSidebar = !isMobile || mobilePanelOpen
 
+  const gmLocais = useMemo(
+    () => locais.filter((l) => labelMatchesQuery(l.nome, query)),
+    [locais, query],
+  )
+  const gmNpcs = useMemo(
+    () => npcs.filter((n) => labelMatchesQuery(n.nome, query)),
+    [npcs, query],
+  )
+  const gmArcos = useMemo(() => {
+    return arcos.filter((arco) => {
+      if (labelMatchesQuery(arco.titulo, query)) return true
+      return locais.some((l) => l.arco_id === arco.id && labelMatchesQuery(l.nome, query))
+    })
+  }, [arcos, locais, query])
+
   const adminPanel = isGm ? (
     <>
       {busyError && <p className="map-page__inline-error">{busyError}</p>}
       {tab === 'locais' && (
         <LocalAdminList
-          locais={locais}
+          locais={gmLocais}
           arcos={arcos}
           adding={placement === 'add-pin'}
           onStartAdd={() => {
@@ -285,7 +301,7 @@ export function MapPage() {
       )}
       {tab === 'npcs' && (
         <NpcAdminList
-          npcs={npcs}
+          npcs={gmNpcs}
           onAdd={() =>
             setNpcDraft({
               nome: '',
@@ -315,7 +331,7 @@ export function MapPage() {
       )}
       {tab === 'arcos' && (
         <ArcoAdminList
-          arcos={arcos}
+          arcos={gmArcos}
           onAdd={() =>
             setArcoDraft({ titulo: '', resumo: '', ordem: arcos.length + 1, isNew: true })
           }

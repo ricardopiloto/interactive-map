@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
 import { adminApi } from '../../api/admin'
 import type { Local, MapPoint, RouteSegment, RouteTipo, Waypoint } from '../../types'
@@ -43,6 +43,11 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   const [wpName, setWpName] = useState('')
   const [segTipo, setSegTipo] = useState<RouteTipo>('estrada')
   const [draftA, setDraftA] = useState<number | null>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+
+  const setMapZoomCss = useCallback((scale: number) => {
+    stageRef.current?.style.setProperty('--map-zoom', String(scale))
+  }, [])
   const [draftMids, setDraftMids] = useState<MapPoint[]>([])
   const [scaleMiles, setScaleMiles] = useState('80')
   const [error, setError] = useState<string | null>(null)
@@ -305,7 +310,15 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
       )}
 
       <div className="route-digitizer__map">
-        <TransformWrapper initialScale={1} minScale={0.5} maxScale={12} centerOnInit wheel={{ step: 0.01 }}>
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.5}
+          maxScale={12}
+          centerOnInit
+          wheel={{ step: 0.01 }}
+          onInit={(ref) => setMapZoomCss(ref.state.scale)}
+          onTransform={(_ref, state) => setMapZoomCss(state.scale)}
+        >
           <DigControls />
           <TransformComponent
             wrapperClass="route-digitizer__viewport"
@@ -313,7 +326,9 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
             wrapperStyle={{ width: '100%', height: '100%' }}
           >
             <div
+              ref={stageRef}
               className="route-digitizer__stage"
+              style={{ ['--map-zoom' as string]: 1 }}
               onClick={(e) => void onStageClick(e)}
               onContextMenu={onDrawSegContextMenu}
             >
