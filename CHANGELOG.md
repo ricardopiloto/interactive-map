@@ -5,6 +5,14 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.6] — 2026-08-04
+
+Rede de rotas: segment-hover só em idle — desligado ao colocar nó ou traçar segmento.
+
+### Changed
+
+- Rede de rotas: em **Novo nó** e **Traçar segmento**, o hover de segmento (tooltip, destaque na lista e hit largo) fica desligado para não interferir com colocação/desenho; em idle o comportamento de 0.6.5 mantém-se
+
 ## [0.6.5] — 2026-08-04
 
 Rede de rotas: aura/snap dos nós, traços mais finos, fecho mais apertado e hover com identidade do segmento.

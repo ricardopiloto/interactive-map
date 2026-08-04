@@ -57,6 +57,8 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const segmentHoverEnabled = mode === 'idle'
+
   const localById = new Map(locais.map((l) => [l.id, l]))
 
   function locaisElegiveisPara(wp: Waypoint | null): Local[] {
@@ -241,6 +243,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   }
 
   function updateSegTooltipPos(e: ReactPointerEvent) {
+    if (!segmentHoverEnabled) return
     const map = mapRef.current
     if (!map) return
     const rect = map.getBoundingClientRect()
@@ -248,6 +251,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   }
 
   function onSavedSegPointerEnter(s: RouteSegment, e: ReactPointerEvent<SVGPolylineElement>) {
+    if (!segmentHoverEnabled) return
     setHoveredSegmentId(s.id)
     updateSegTooltipPos(e)
     requestAnimationFrame(() => {
@@ -261,13 +265,23 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   }
 
   useEffect(() => {
+    if (!segmentHoverEnabled) {
+      setHoveredSegmentId(null)
+      setTooltipPos(null)
+    }
+  }, [segmentHoverEnabled])
+
+  useEffect(() => {
     if (hoveredSegmentId != null && !segments.some((s) => s.id === hoveredSegmentId)) {
       setHoveredSegmentId(null)
       setTooltipPos(null)
     }
   }, [segments, hoveredSegmentId])
 
-  const hoveredSegment = hoveredSegmentId != null ? segments.find((s) => s.id === hoveredSegmentId) : undefined
+  const hoveredSegment =
+    segmentHoverEnabled && hoveredSegmentId != null
+      ? segments.find((s) => s.id === hoveredSegmentId)
+      : undefined
 
   return (
     <div className="route-digitizer">
@@ -390,7 +404,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
                     ...s.pontos_intermediarios.map((p) => `${p.x * 100},${p.y * 100}`),
                     `${b.x * 100},${b.y * 100}`,
                   ].join(' ')
-                  const hovered = hoveredSegmentId === s.id
+                  const hovered = segmentHoverEnabled && hoveredSegmentId === s.id
                   return (
                     <g key={s.id}>
                       <polyline
@@ -399,15 +413,17 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
                         fill="none"
                         vectorEffect="non-scaling-stroke"
                       />
-                      <polyline
-                        points={pts}
-                        className="route-digitizer__seg-hit"
-                        fill="none"
-                        vectorEffect="non-scaling-stroke"
-                        onPointerEnter={(e) => onSavedSegPointerEnter(s, e)}
-                        onPointerMove={updateSegTooltipPos}
-                        onPointerLeave={onSavedSegPointerLeave}
-                      />
+                      {segmentHoverEnabled && (
+                        <polyline
+                          points={pts}
+                          className="route-digitizer__seg-hit"
+                          fill="none"
+                          vectorEffect="non-scaling-stroke"
+                          onPointerEnter={(e) => onSavedSegPointerEnter(s, e)}
+                          onPointerMove={updateSegTooltipPos}
+                          onPointerLeave={onSavedSegPointerLeave}
+                        />
+                      )}
                     </g>
                   )
                 })}
@@ -529,7 +545,9 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
             {segments.map((s) => (
               <li
                 key={s.id}
-                className={hoveredSegmentId === s.id ? 'is-hovered' : undefined}
+                className={
+                  segmentHoverEnabled && hoveredSegmentId === s.id ? 'is-hovered' : undefined
+                }
                 ref={(el) => {
                   if (el) segRowRefs.current.set(s.id, el)
                   else segRowRefs.current.delete(s.id)
