@@ -68,25 +68,30 @@
   gap: 0.35rem;
 }
 
-.route-digitizer__viewport,
-.route-digitizer__content {
+.route-digitizer__viewport {
   width: 100% !important;
   height: 100% !important;
 }
 
+/* Image-driven content box so 0–1 coords match visible map art (035). */
+.route-digitizer__content {
+  width: fit-content !important;
+  height: fit-content !important;
+}
+
 .route-digitizer__stage {
   position: relative;
-  width: min(100%, 1200px);
-  aspect-ratio: 6800 / 4403;
-  margin: 0 auto;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
   cursor: crosshair;
 }
 
 .route-digitizer__image {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: min(100vw - 2rem, 1200px);
+  max-width: 100%;
+  height: auto;
   pointer-events: none;
   user-select: none;
 }

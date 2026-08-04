@@ -5,6 +5,14 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.1] — 2026-08-03
+
+Correção do desalinhamento dos nós na Rede de rotas.
+
+### Fixed
+
+- Rede de rotas (digitizer): stage guiado pela imagem (sem `aspect-ratio` fixo + `object-fit: cover`), para nós e cliques alinharem ao mapa
+
 ## [0.6.0] — 2026-08-03
 
 Rede de vias e cálculo de rotas (De/Para entre nós), refinamentos do digitizer, e vínculo nó↔Local depois da criação.
@@ -24,6 +32,7 @@ Rede de vias e cálculo de rotas (De/Para entre nós), refinamentos do digitizer
 ### Deferred
 
 - Ajuste de tamanho/âncora dos pins no móvel (spec 030) — revertido do produto; ver `specs/030-pin-size-offset` (Deferred / Staged)
+
 ## [0.5.0] — 2026-08-03
 
 Conexões entre locais no mapa, estilo das linhas, pré-visualização no hover do menu e modais que cabem na viewport.
