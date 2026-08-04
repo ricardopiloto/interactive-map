@@ -5,6 +5,15 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.4] — 2026-08-04
+
+Rede de rotas: zona de clique dos nós menor, com aura visível; segmentos mais finos.
+
+### Changed
+
+- Rede de rotas: snap origem/fecho unificado e mais apertado; cada nó mostra uma aura da área clicável; origem activa continua distinta
+- Rede de rotas: linhas de segmento (gravadas e rascunho) mais finas (~60% da espessura anterior) para alinhar melhor ao mapa
+
 ## [0.6.3] — 2026-08-04
 
 Menu lateral (scroll e busca), marcadores mais compactos com tamanho fixo no zoom, botão para ir ao grupo, e De/Para só com nós nomeados.

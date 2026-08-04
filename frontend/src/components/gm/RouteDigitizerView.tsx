@@ -6,9 +6,8 @@ import './RouteDigitizer.css'
 
 type Mode = 'idle' | 'place-wp' | 'draw-seg'
 
-/** Normalized map coords (0–1): origin pick stays generous; finish is ~⅓ as tight. */
-const ORIGIN_SNAP = 0.03
-const FINISH_SNAP = 0.01
+/** Normalized map coords (0–1): single pick radius for origin and finish (= visible aura). */
+const NODE_SNAP = 0.01
 
 interface Props {
   mapUrl: string
@@ -137,7 +136,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
 
     if (mode === 'draw-seg') {
       if (draftA == null) {
-        const hit = nearestWaypoint(x, y, ORIGIN_SNAP)
+        const hit = nearestWaypoint(x, y, NODE_SNAP)
         if (!hit) {
           setError('Clique em um nó existente para começar o segmento.')
           return
@@ -146,7 +145,7 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
         setDraftMids([])
         return
       }
-      const hit = nearestWaypoint(x, y, FINISH_SNAP)
+      const hit = nearestWaypoint(x, y, NODE_SNAP)
       if (hit && hit.id !== draftA) {
         setBusy(true)
         try {
