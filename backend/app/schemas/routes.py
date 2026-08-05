@@ -11,6 +11,7 @@ class RouteTipo(str, Enum):
 
 
 Ritmo = Literal["normal", "intenso"]
+OrdenacaoRota = Literal["mais_rapida", "mais_barata"]
 
 
 class Point(BaseModel):

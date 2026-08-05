@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.models.waypoint import Waypoint
-from app.schemas.routes import RoutePlanResponse, Ritmo, WaypointRead
+from app.schemas.routes import OrdenacaoRota, RoutePlanResponse, Ritmo, WaypointRead
 from app.services.route_planner import plan_routes
 
 router = APIRouter()
@@ -15,6 +15,7 @@ def plan(
     destino_waypoint_id: int = Query(...),
     ritmo: Ritmo = Query(...),
     velocidade_media_mph: float | None = Query(default=None, gt=0),
+    ordenacao: OrdenacaoRota = Query(default="mais_rapida"),
     session: Session = Depends(get_session),
 ) -> RoutePlanResponse:
     if origem_waypoint_id == destino_waypoint_id:
@@ -41,6 +42,7 @@ def plan(
             destino_wp.id,
             ritmo,
             velocidade_media_mph=velocidade_media_mph,
+            ordenacao=ordenacao,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e

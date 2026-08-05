@@ -1,12 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { campaignApi } from '../../api/campaign'
-import type { Local, Ritmo, RoutePlanItem, Waypoint } from '../../types'
+import type { Local, OrdenacaoRota, Ritmo, RoutePlanItem, Waypoint } from '../../types'
 import { WaypointCombobox } from './WaypointCombobox'
 import './RoutePlanner.css'
 
 const RITMOS: { value: Ritmo; label: string }[] = [
   { value: 'normal', label: 'Normal (6 h/dia)' },
   { value: 'intenso', label: 'Intenso (8 h/dia)' },
+]
+
+const ORDENACOES: { value: OrdenacaoRota; label: string }[] = [
+  { value: 'mais_rapida', label: 'Mais rápida' },
+  { value: 'mais_barata', label: 'Mais barata' },
 ]
 
 const TIPO_LABELS: Record<string, string> = {
@@ -103,9 +108,11 @@ export function RoutePlannerPanel({
   const [origemQuery, setOrigemQuery] = useState('')
   const [destinoQuery, setDestinoQuery] = useState('')
   const [ritmo, setRitmo] = useState<Ritmo>('normal')
+  const [ordenacao, setOrdenacao] = useState<OrdenacaoRota>('mais_rapida')
   const [velocidade, setVelocidade] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const skipOrdenacaoRecalc = useRef(true)
 
   useEffect(() => {
     if (origemId !== '' && !namedIds.has(origemId)) {
@@ -118,43 +125,57 @@ export function RoutePlannerPanel({
     }
   }, [namedIds, origemId, destinoId])
 
-  if (!open) return null
-
-  async function calcular() {
-    setError(null)
-    if (origemId === '' || destinoId === '') {
-      setError('Escolha origem e destino.')
-      return
-    }
-    if (origemId === destinoId) {
-      setError('Origem e destino devem ser diferentes.')
-      return
-    }
-    const trimmed = velocidade.trim()
-    let mph: number | undefined
-    if (trimmed !== '') {
-      mph = Number(trimmed)
-      if (!Number.isFinite(mph) || mph <= 0) {
-        setError('Velocidade média deve ser um número maior que zero.')
+  const calcular = useCallback(
+    async (ord: OrdenacaoRota = ordenacao) => {
+      setError(null)
+      if (origemId === '' || destinoId === '') {
+        setError('Escolha origem e destino.')
         return
       }
-    }
-    setBusy(true)
-    try {
-      const res = await campaignApi.planRoute(origemId, destinoId, ritmo, mph)
-      if (res.rotas.length === 0) {
-        setError('Nenhuma rota encontrada entre esses nós.')
-        onPlanChange([], 0)
-      } else {
-        onPlanChange(res.rotas, 0)
+      if (origemId === destinoId) {
+        setError('Origem e destino devem ser diferentes.')
+        return
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Falha ao calcular rota')
-      onPlanChange([], 0)
-    } finally {
-      setBusy(false)
+      const trimmed = velocidade.trim()
+      let mph: number | undefined
+      if (trimmed !== '') {
+        mph = Number(trimmed)
+        if (!Number.isFinite(mph) || mph <= 0) {
+          setError('Velocidade média deve ser um número maior que zero.')
+          return
+        }
+      }
+      setBusy(true)
+      try {
+        const res = await campaignApi.planRoute(origemId, destinoId, ritmo, mph, ord)
+        if (res.rotas.length === 0) {
+          setError('Nenhuma rota encontrada entre esses nós.')
+          onPlanChange([], 0)
+        } else {
+          onPlanChange(res.rotas, 0)
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Falha ao calcular rota')
+        onPlanChange([], 0)
+      } finally {
+        setBusy(false)
+      }
+    },
+    [origemId, destinoId, velocidade, ritmo, ordenacao, onPlanChange],
+  )
+
+  useEffect(() => {
+    if (skipOrdenacaoRecalc.current) {
+      skipOrdenacaoRecalc.current = false
+      return
     }
-  }
+    if (!open || origemId === '' || destinoId === '' || origemId === destinoId) return
+    void calcular(ordenacao)
+  }, [ordenacao]) // eslint-disable-line react-hooks/exhaustive-deps -- only on preference change
+
+  if (!open) return null
+
+  const firstBadge = ordenacao === 'mais_barata' ? 'mais barata' : 'mais rápida'
 
   return (
     <aside className="route-planner" aria-label="Calcular rota">
@@ -202,6 +223,23 @@ export function RoutePlannerPanel({
           ))}
         </select>
       </label>
+      <fieldset className="route-planner__ordenacao">
+        <legend>Ordenar por</legend>
+        <div className="route-planner__ordenacao-options">
+          {ORDENACOES.map((o) => (
+            <label key={o.value} className="route-planner__ordenacao-option">
+              <input
+                type="radio"
+                name="ordenacao-rota"
+                value={o.value}
+                checked={ordenacao === o.value}
+                onChange={() => setOrdenacao(o.value)}
+              />
+              <span>{o.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <label className="route-planner__field">
         <span>Velocidade média (mi/h)</span>
         <input
@@ -233,7 +271,7 @@ export function RoutePlannerPanel({
               >
                 <strong>
                   {routeTitles[i] ?? 'Rota'}
-                  {i === 0 ? ' · mais rápida' : ''}
+                  {i === 0 ? ` · ${firstBadge}` : ''}
                 </strong>
                 <span>{r.distancia_milhas} mi</span>
                 <span>{r.tempo_texto || `${r.tempo_horas} h`}</span>

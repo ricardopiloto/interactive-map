@@ -5,6 +5,14 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.7] — 2026-08-04
+
+Calcular rota: ordenar por mais rápida ou mais barata (até 6 alternativas).
+
+### Added
+
+- **Calcular rota**: opção Ordenar por Mais rápida / Mais barata (default rápida); até 6 rotas para o critério; mais barata usa custo Dentro; mudar a preferência recalcula automaticamente
+
 ## [0.6.6] — 2026-08-04
 
 Rede de rotas: segment-hover só em idle — desligado ao colocar nó ou traçar segmento.

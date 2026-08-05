@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { Arco, GrupoPosicao, Local, NPC, Ritmo, RoutePlanResponse, Waypoint } from '../types'
+import type { Arco, GrupoPosicao, Local, NPC, OrdenacaoRota, Ritmo, RoutePlanResponse, Waypoint } from '../types'
 
 export const campaignApi = {
   listLocais: (q?: string) =>
@@ -18,11 +18,13 @@ export const campaignApi = {
     destinoWaypointId: number,
     ritmo: Ritmo,
     velocidadeMediaMph?: number,
+    ordenacao: OrdenacaoRota = 'mais_rapida',
   ) => {
     const params = new URLSearchParams({
       origem_waypoint_id: String(origemWaypointId),
       destino_waypoint_id: String(destinoWaypointId),
       ritmo,
+      ordenacao,
     })
     if (velocidadeMediaMph != null) {
       params.set('velocidade_media_mph', String(velocidadeMediaMph))

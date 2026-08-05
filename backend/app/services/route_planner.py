@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+from typing import Literal
 
 import networkx as nx
 from sqlmodel import Session, select
@@ -36,7 +37,9 @@ CUSTO_BP_POR_MILHA: dict[RouteTipo, tuple[float, float]] = {
     RouteTipo.trilha: (0.0, 0.0),
 }
 
-K_MAX = 5
+K_MAX = 6
+
+Ordenacao = Literal["mais_rapida", "mais_barata"]
 
 
 def parse_pontos(raw: str) -> list[Point]:
@@ -142,11 +145,22 @@ def format_tempo_texto(tempo_horas: float, horas_por_dia: float) -> tuple[int, f
     return dias, resto, texto
 
 
+def hop_sort_key(d: dict, ordenacao: Ordenacao) -> tuple:
+    tempo = float(d["tempo"])
+    dentro = float(d.get("custo_dentro_bp", 0.0))
+    fora = float(d.get("custo_fora_bp", 0.0))
+    dist = float(d.get("distancia", 0.0))
+    if ordenacao == "mais_barata":
+        return (dentro, fora, tempo, dist)
+    return (tempo, dist, dentro)
+
+
 def build_graph(
     session: Session,
     velocidade_media_mph: float | None,
+    ordenacao: Ordenacao = "mais_rapida",
 ) -> tuple[nx.Graph, dict[int, Waypoint], dict[int, RouteSegment], dict[tuple[int, int], list[dict]]]:
-    """Simple Graph for k-shortest (min tempo per pair) + parallel edge lists for variants."""
+    """Simple Graph for k-shortest + parallel edge lists for variants."""
     if velocidade_media_mph is not None and velocidade_media_mph <= 0:
         raise ValueError("velocidade_media_mph deve ser > 0")
 
@@ -173,13 +187,14 @@ def build_graph(
             "seg_id": seg.id,
             "custo_dentro_bp": custo_d,
             "custo_fora_bp": custo_f,
+            "peso_barata": custo_d + 1e-9 * tempo,
         }
         by_id[seg.id] = seg
         key = (min(a, b), max(a, b))
         parallels.setdefault(key, []).append(attrs)
 
     for (u, v), edges in parallels.items():
-        edges.sort(key=lambda d: float(d["tempo"]))
+        edges.sort(key=lambda d: hop_sort_key(d, ordenacao))
         best = edges[0]
         g.add_edge(
             u,
@@ -190,26 +205,35 @@ def build_graph(
             seg_id=best["seg_id"],
             custo_dentro_bp=best["custo_dentro_bp"],
             custo_fora_bp=best["custo_fora_bp"],
+            peso_barata=best["peso_barata"],
         )
 
     return g, waypoints, by_id, parallels
 
 
-def hops_for_pair(parallels: dict[tuple[int, int], list[dict]], u: int, v: int) -> list[dict]:
+def hops_for_pair(
+    parallels: dict[tuple[int, int], list[dict]],
+    u: int,
+    v: int,
+    ordenacao: Ordenacao = "mais_rapida",
+) -> list[dict]:
     key = (min(u, v), max(u, v))
     hops = list(parallels.get(key, []))
-    hops.sort(key=lambda d: float(d["tempo"]))
+    hops.sort(key=lambda d: hop_sort_key(d, ordenacao))
     return hops
 
 
 def edge_variants_for_path(
     parallels: dict[tuple[int, int], list[dict]],
     path: list[int],
+    ordenacao: Ordenacao = "mais_rapida",
 ) -> list[list[dict]]:
-    """Primary = min tempo per hop; plus single-hop swaps to slower parallel edges."""
+    """Primary = best hop per preference; plus single-hop swaps to other parallel edges."""
     if len(path) < 2:
         return []
-    hop_opts = [hops_for_pair(parallels, path[i], path[i + 1]) for i in range(len(path) - 1)]
+    hop_opts = [
+        hops_for_pair(parallels, path[i], path[i + 1], ordenacao) for i in range(len(path) - 1)
+    ]
     if any(not opts for opts in hop_opts):
         return []
     primary = [opts[0] for opts in hop_opts]
@@ -290,28 +314,33 @@ def plan_routes(
     ritmo: str,
     velocidade_media_mph: float | None = None,
     k: int = K_MAX,
+    ordenacao: Ordenacao = "mais_rapida",
 ) -> list[RoutePlanItem]:
+    if ordenacao not in ("mais_rapida", "mais_barata"):
+        raise ValueError(f"Ordenação inválida: {ordenacao}")
+
     horas_por_dia = HORAS_POR_DIA.get(ritmo)
     if horas_por_dia is None:
         raise ValueError(f"Ritmo inválido: {ritmo}")
 
-    g, waypoints, by_id, parallels = build_graph(session, velocidade_media_mph)
+    g, waypoints, by_id, parallels = build_graph(session, velocidade_media_mph, ordenacao)
     if origem_waypoint_id not in g or destino_waypoint_id not in g:
         return []
     if origem_waypoint_id == destino_waypoint_id:
         return []
 
+    weight = "peso_barata" if ordenacao == "mais_barata" else "tempo"
     candidates: list[RoutePlanItem] = []
     seen: set[tuple[int, ...]] = set()
 
     try:
-        gen = nx.shortest_simple_paths(g, origem_waypoint_id, destino_waypoint_id, weight="tempo")
+        gen = nx.shortest_simple_paths(g, origem_waypoint_id, destino_waypoint_id, weight=weight)
         node_paths = 0
         for path in gen:
             if node_paths >= k:
                 break
             node_paths += 1
-            for edge_attrs in edge_variants_for_path(parallels, path):
+            for edge_attrs in edge_variants_for_path(parallels, path, ordenacao):
                 sig = tuple(int(d["seg_id"]) for d in edge_attrs)
                 if sig in seen:
                     continue
@@ -320,7 +349,17 @@ def plan_routes(
     except nx.NetworkXNoPath:
         return []
 
-    candidates.sort(key=lambda r: (r.tempo_horas, r.distancia_milhas))
+    if ordenacao == "mais_barata":
+        candidates.sort(
+            key=lambda r: (
+                r.custo_dentro_bp,
+                r.custo_fora_bp,
+                r.tempo_horas,
+                r.distancia_milhas,
+            )
+        )
+    else:
+        candidates.sort(key=lambda r: (r.tempo_horas, r.distancia_milhas, r.custo_dentro_bp))
     return candidates[:k]
 
 
