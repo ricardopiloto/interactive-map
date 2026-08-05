@@ -10,7 +10,7 @@ import networkx as nx
 from sqlmodel import Session, select
 
 from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
-from app.schemas.routes import Point, RoutePlanItem
+from app.schemas.routes import ModoTransporte, Point, RoutePlanItem
 
 HORAS_POR_DIA: dict[str, float] = {
     "normal": 6.0,
@@ -40,6 +40,8 @@ CUSTO_BP_POR_MILHA: dict[RouteTipo, tuple[float, float]] = {
 K_MAX = 6
 
 Ordenacao = Literal["mais_rapida", "mais_barata"]
+
+DEFAULT_PROPRIO_MPH = 4.0
 
 
 def parse_pontos(raw: str) -> list[Point]:
@@ -155,10 +157,31 @@ def hop_sort_key(d: dict, ordenacao: Ordenacao) -> tuple:
     return (tempo, dist, dentro)
 
 
+def resolve_speed_and_zero_costs(
+    modo_transporte: ModoTransporte | None,
+    velocidade_media_mph: float | None,
+) -> tuple[float | None, bool]:
+    """Return (effective mph for segment_speed, whether to zero passage costs).
+
+    - proprio: mph or DEFAULT_PROPRIO_MPH, zero costs
+    - pago: table speeds (None), table costs
+    - omitted + mph: legacy override with table costs
+    - omitted + no mph: table
+    """
+    if modo_transporte == "proprio":
+        mph = DEFAULT_PROPRIO_MPH if velocidade_media_mph is None else velocidade_media_mph
+        return mph, True
+    if modo_transporte == "pago":
+        return None, False
+    # Legacy / omitted mode
+    return velocidade_media_mph, False
+
+
 def build_graph(
     session: Session,
     velocidade_media_mph: float | None,
     ordenacao: Ordenacao = "mais_rapida",
+    zerar_custos: bool = False,
 ) -> tuple[nx.Graph, dict[int, Waypoint], dict[int, RouteSegment], dict[tuple[int, int], list[dict]]]:
     """Simple Graph for k-shortest + parallel edge lists for variants."""
     if velocidade_media_mph is not None and velocidade_media_mph <= 0:
@@ -180,6 +203,8 @@ def build_graph(
         speed = segment_speed(seg, velocidade_media_mph)
         tempo = seg.distancia_milhas / speed if speed > 0 else float("inf")
         custo_d, custo_f = segment_cost_bp(seg.tipo, seg.distancia_milhas)
+        if zerar_custos:
+            custo_d, custo_f = 0.0, 0.0
         attrs = {
             "tempo": tempo,
             "distancia": seg.distancia_milhas,
@@ -315,15 +340,21 @@ def plan_routes(
     velocidade_media_mph: float | None = None,
     k: int = K_MAX,
     ordenacao: Ordenacao = "mais_rapida",
+    modo_transporte: ModoTransporte | None = None,
 ) -> list[RoutePlanItem]:
     if ordenacao not in ("mais_rapida", "mais_barata"):
         raise ValueError(f"Ordenação inválida: {ordenacao}")
+    if modo_transporte is not None and modo_transporte not in ("pago", "proprio"):
+        raise ValueError(f"Modo de transporte inválido: {modo_transporte}")
 
     horas_por_dia = HORAS_POR_DIA.get(ritmo)
     if horas_por_dia is None:
         raise ValueError(f"Ritmo inválido: {ritmo}")
 
-    g, waypoints, by_id, parallels = build_graph(session, velocidade_media_mph, ordenacao)
+    effective_mph, zerar_custos = resolve_speed_and_zero_costs(modo_transporte, velocidade_media_mph)
+    g, waypoints, by_id, parallels = build_graph(
+        session, effective_mph, ordenacao, zerar_custos=zerar_custos
+    )
     if origem_waypoint_id not in g or destino_waypoint_id not in g:
         return []
     if origem_waypoint_id == destino_waypoint_id:

@@ -2,7 +2,7 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.6.3 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.6.8 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades

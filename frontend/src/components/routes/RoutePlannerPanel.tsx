@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { campaignApi } from '../../api/campaign'
-import type { Local, OrdenacaoRota, Ritmo, RoutePlanItem, Waypoint } from '../../types'
+import type { Local, ModoTransporte, OrdenacaoRota, Ritmo, RoutePlanItem, Waypoint } from '../../types'
 import { WaypointCombobox } from './WaypointCombobox'
 import './RoutePlanner.css'
 
@@ -13,6 +13,13 @@ const ORDENACOES: { value: OrdenacaoRota; label: string }[] = [
   { value: 'mais_rapida', label: 'Mais rápida' },
   { value: 'mais_barata', label: 'Mais barata' },
 ]
+
+const MODOS: { value: ModoTransporte; label: string }[] = [
+  { value: 'pago', label: 'Transporte pago' },
+  { value: 'proprio', label: 'Transporte próprio' },
+]
+
+const DEFAULT_PROPRIO_SPEED = '4'
 
 const TIPO_LABELS: Record<string, string> = {
   estrada: 'Estrada',
@@ -109,10 +116,13 @@ export function RoutePlannerPanel({
   const [destinoQuery, setDestinoQuery] = useState('')
   const [ritmo, setRitmo] = useState<Ritmo>('normal')
   const [ordenacao, setOrdenacao] = useState<OrdenacaoRota>('mais_rapida')
-  const [velocidade, setVelocidade] = useState('')
+  const [modo, setModo] = useState<ModoTransporte>('pago')
+  const [velocidade, setVelocidade] = useState(DEFAULT_PROPRIO_SPEED)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const skipOrdenacaoRecalc = useRef(true)
+  const skipModoRecalc = useRef(true)
+  const wasOpen = useRef(false)
 
   useEffect(() => {
     if (origemId !== '' && !namedIds.has(origemId)) {
@@ -125,8 +135,23 @@ export function RoutePlannerPanel({
     }
   }, [namedIds, origemId, destinoId])
 
+  // FR-012: each open → pago + prepare speed draft 4
+  useEffect(() => {
+    if (open && !wasOpen.current) {
+      setModo((prev) => {
+        if (prev !== 'pago') {
+          skipModoRecalc.current = true
+        }
+        return 'pago'
+      })
+      setVelocidade(DEFAULT_PROPRIO_SPEED)
+      setError(null)
+    }
+    wasOpen.current = open
+  }, [open])
+
   const calcular = useCallback(
-    async (ord: OrdenacaoRota = ordenacao) => {
+    async (ord: OrdenacaoRota = ordenacao, modoAtual: ModoTransporte = modo) => {
       setError(null)
       if (origemId === '' || destinoId === '') {
         setError('Escolha origem e destino.')
@@ -136,18 +161,22 @@ export function RoutePlannerPanel({
         setError('Origem e destino devem ser diferentes.')
         return
       }
-      const trimmed = velocidade.trim()
       let mph: number | undefined
-      if (trimmed !== '') {
+      if (modoAtual === 'proprio') {
+        const trimmed = velocidade.trim()
+        if (trimmed === '') {
+          setError('Informe a velocidade desejada (mi/h).')
+          return
+        }
         mph = Number(trimmed)
         if (!Number.isFinite(mph) || mph <= 0) {
-          setError('Velocidade média deve ser um número maior que zero.')
+          setError('Velocidade desejada deve ser um número maior que zero.')
           return
         }
       }
       setBusy(true)
       try {
-        const res = await campaignApi.planRoute(origemId, destinoId, ritmo, mph, ord)
+        const res = await campaignApi.planRoute(origemId, destinoId, ritmo, modoAtual, mph, ord)
         if (res.rotas.length === 0) {
           setError('Nenhuma rota encontrada entre esses nós.')
           onPlanChange([], 0)
@@ -161,7 +190,7 @@ export function RoutePlannerPanel({
         setBusy(false)
       }
     },
-    [origemId, destinoId, velocidade, ritmo, ordenacao, onPlanChange],
+    [origemId, destinoId, velocidade, ritmo, ordenacao, modo, onPlanChange],
   )
 
   useEffect(() => {
@@ -170,8 +199,24 @@ export function RoutePlannerPanel({
       return
     }
     if (!open || origemId === '' || destinoId === '' || origemId === destinoId) return
-    void calcular(ordenacao)
+    void calcular(ordenacao, modo)
   }, [ordenacao]) // eslint-disable-line react-hooks/exhaustive-deps -- only on preference change
+
+  useEffect(() => {
+    if (skipModoRecalc.current) {
+      skipModoRecalc.current = false
+      return
+    }
+    if (!open || origemId === '' || destinoId === '' || origemId === destinoId) return
+    void calcular(ordenacao, modo)
+  }, [modo]) // eslint-disable-line react-hooks/exhaustive-deps -- only on mode change (FR-010)
+
+  const onModoChange = (next: ModoTransporte) => {
+    if (next === 'proprio') {
+      setVelocidade(DEFAULT_PROPRIO_SPEED)
+    }
+    setModo(next)
+  }
 
   if (!open) return null
 
@@ -213,6 +258,23 @@ export function RoutePlannerPanel({
           setDestinoQuery(label)
         }}
       />
+      <fieldset className="route-planner__modo">
+        <legend>Transporte</legend>
+        <div className="route-planner__modo-options">
+          {MODOS.map((m) => (
+            <label key={m.value} className="route-planner__modo-option">
+              <input
+                type="radio"
+                name="modo-transporte"
+                value={m.value}
+                checked={modo === m.value}
+                onChange={() => onModoChange(m.value)}
+              />
+              <span>{m.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <label className="route-planner__field">
         <span>Ritmo</span>
         <select className="input" value={ritmo} onChange={(e) => setRitmo(e.target.value as Ritmo)}>
@@ -240,18 +302,19 @@ export function RoutePlannerPanel({
           ))}
         </div>
       </fieldset>
-      <label className="route-planner__field">
-        <span>Velocidade média (mi/h)</span>
-        <input
-          className="input"
-          type="number"
-          min={0.1}
-          step={0.1}
-          placeholder="Tabela (estrada 6 · rio 8)"
-          value={velocidade}
-          onChange={(e) => setVelocidade(e.target.value)}
-        />
-      </label>
+      {modo === 'proprio' && (
+        <label className="route-planner__field">
+          <span>Velocidade desejada (mi/h)</span>
+          <input
+            className="input"
+            type="number"
+            min={0.1}
+            step={0.1}
+            value={velocidade}
+            onChange={(e) => setVelocidade(e.target.value)}
+          />
+        </label>
+      )}
       <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void calcular()}>
         {busy ? 'Calculando…' : 'Calcular'}
       </button>

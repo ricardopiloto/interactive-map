@@ -5,6 +5,18 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.8] — 2026-08-05
+
+Rede de rotas com traços mais finos; Calcular rota com transporte pago vs próprio. Tentativas de realinhar pins no móvel (que partiam o desktop) foram revertidas — o mapa da campanha mantém o alinhamento estável anterior.
+
+### Added
+
+- **Calcular rota**: escolha Transporte pago (tabela de velocidades/custos) ou Transporte próprio (velocidade desejada default 4 mi/h, custos Dentro/Fora 0); abrir o painel volta a pago; mudar o modo recalcula; editar só a velocidade não recalcula sozinho
+
+### Changed
+
+- **Rede de rotas**: stroke normal/draft ~1.0 e hover ~2.3 (antes 1.5 / 3.5); hit-area de hover inalterada; mapa da campanha e overlay de rota sem mudança
+
 ## [0.6.7] — 2026-08-04
 
 Calcular rota: ordenar por mais rápida ou mais barata (até 6 alternativas).

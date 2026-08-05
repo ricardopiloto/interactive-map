@@ -107,14 +107,15 @@
 }
 
 .route-digitizer__seg {
-  stroke-width: 1.5;
+  /* 048: ~⅔ of prior 1.5 / 3.5 */
+  stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
 }
 
 .route-digitizer__seg.is-hovered {
-  stroke-width: 3.5;
+  stroke-width: 2.3;
   filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.85));
 }
 

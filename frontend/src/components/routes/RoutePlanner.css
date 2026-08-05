@@ -42,17 +42,27 @@
   font-size: 0.85rem;
 }
 
+.route-planner__modo {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 0.85rem;
+}
+
+.route-planner__modo legend,
 .route-planner__ordenacao legend {
   padding: 0;
   margin-bottom: 0.35rem;
 }
 
+.route-planner__modo-options,
 .route-planner__ordenacao-options {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem 1rem;
 }
 
+.route-planner__modo-option,
 .route-planner__ordenacao-option {
   display: inline-flex;
   align-items: center;
