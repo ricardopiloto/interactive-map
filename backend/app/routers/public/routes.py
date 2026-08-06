@@ -3,7 +3,14 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.models.waypoint import Waypoint
-from app.schemas.routes import ModoTransporte, OrdenacaoRota, RoutePlanResponse, Ritmo, WaypointRead
+from app.schemas.routes import (
+    ModoTransporte,
+    OrdenacaoRota,
+    PreferenciaVia,
+    RoutePlanResponse,
+    Ritmo,
+    WaypointRead,
+)
 from app.services.route_planner import plan_routes
 
 router = APIRouter()
@@ -19,6 +26,10 @@ def plan(
     modo_transporte: ModoTransporte | None = Query(
         default=None,
         description="pago=tabela; proprio=mph+custos 0; omitido=legado (mph opcional com tarifas)",
+    ),
+    preferencia_via: PreferenciaVia = Query(
+        default="nenhuma",
+        description="nenhuma=sem enviesamento; rio/estrada=preferência suave",
     ),
     session: Session = Depends(get_session),
 ) -> RoutePlanResponse:
@@ -48,6 +59,7 @@ def plan(
             velocidade_media_mph=velocidade_media_mph,
             ordenacao=ordenacao,
             modo_transporte=modo_transporte,
+            preferencia_via=preferencia_via,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e

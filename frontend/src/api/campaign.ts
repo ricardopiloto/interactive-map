@@ -6,6 +6,7 @@ import type {
   ModoTransporte,
   NPC,
   OrdenacaoRota,
+  PreferenciaVia,
   Ritmo,
   RoutePlanResponse,
   Waypoint,
@@ -30,6 +31,7 @@ export const campaignApi = {
     modoTransporte: ModoTransporte = 'pago',
     velocidadeMediaMph?: number,
     ordenacao: OrdenacaoRota = 'mais_rapida',
+    preferenciaVia: PreferenciaVia = 'nenhuma',
   ) => {
     const params = new URLSearchParams({
       origem_waypoint_id: String(origemWaypointId),
@@ -37,6 +39,7 @@ export const campaignApi = {
       ritmo,
       ordenacao,
       modo_transporte: modoTransporte,
+      preferencia_via: preferenciaVia,
     })
     if (modoTransporte === 'proprio' && velocidadeMediaMph != null) {
       params.set('velocidade_media_mph', String(velocidadeMediaMph))

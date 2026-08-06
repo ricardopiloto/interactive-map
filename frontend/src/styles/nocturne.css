@@ -315,3 +315,29 @@ textarea.input { min-height: 90px; resize: vertical; }
   margin-top: 0;
 }
 
+/* NPC edit dialog portrait — shrink-to-fit, max 50vh (058) */
+.npc-form__portrait.image-slot {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  padding: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.npc-form__portrait.image-slot img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.npc-form__portrait--empty.image-slot {
+  min-height: 110px;
+  padding: var(--space-2);
+}
+

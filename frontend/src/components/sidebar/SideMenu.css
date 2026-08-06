@@ -128,6 +128,27 @@
   line-height: 1.45;
 }
 
+/* Expanded portrait: shrink-to-fit aspect ratio, capped at 50vh (057) */
+.side-menu__npc-portrait.image-slot {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  overflow: hidden;
+}
+
+.side-menu__npc-portrait.image-slot img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
 .side-menu__chips {
   display: flex;
   flex-wrap: wrap;

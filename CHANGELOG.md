@@ -5,6 +5,25 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.9] — 2026-08-05
+
+Calcular rota com preferência de via, painel mais limpo e cobertura de tipos puros; retratos de NPC no menu e na edição sem corte fixo.
+
+### Added
+
+- **Calcular rota**: preferência de via Sem preferência (default) / Por rio / Por estrada — enviesamento suave (rotas mistas permitidas); abrir o painel repõe Sem preferência; mudar a preferência recalcula
+- **Calcular rota**: bloco Opções de viagem colapsável (recolhido por omissão) com resumo só de não-defaults; ordem De → Para → Calcular → Opções → Resultados
+
+### Changed
+
+- **Calcular rota**: resultados em título + linha de meta; rótulos Pago/Próprio e Normal/Intenso (h/dia como apoio)
+
+### Fixed
+
+- **Calcular rota**: se a rede tem um caminho contínuo só de um tipo (ex. Estrada Altdorf→Ubersreik), essa alternativa pura entra na lista de até 6 mesmo sob Mais rápida; preferência de via não suprime tipos puros opostos
+- **NPCs (menu lateral)**: retrato no cartão expandido acompanha a proporção da imagem (shrink-to-fit), com altura máxima ~50% da viewport; miniatura circular inalterada
+- **NPCs (modo GM)**: caixa do retrato no formulário criar/editar com o mesmo sizing; upload continua editável; placeholder vazio mantém zona de drop utilizável
+
 ## [0.6.8] — 2026-08-05
 
 Rede de rotas com traços mais finos; Calcular rota com transporte pago vs próprio. Tentativas de realinhar pins no móvel (que partiam o desktop) foram revertidas — o mapa da campanha mantém o alinhamento estável anterior.

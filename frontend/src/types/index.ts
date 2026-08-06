@@ -4,6 +4,7 @@ export type RouteTipo = 'estrada' | 'rio' | 'trilha'
 export type Ritmo = 'normal' | 'intenso'
 export type OrdenacaoRota = 'mais_rapida' | 'mais_barata'
 export type ModoTransporte = 'pago' | 'proprio'
+export type PreferenciaVia = 'nenhuma' | 'rio' | 'estrada'
 
 
 export interface Local {

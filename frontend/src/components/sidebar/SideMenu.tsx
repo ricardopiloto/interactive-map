@@ -195,7 +195,8 @@ export function SideMenu({
                             <ImageSlot
                               src={npc.retrato_url}
                               shape="rounded"
-                              style={{ width: '100%', height: 110, marginBottom: 8 }}
+                              fit="contain"
+                              className="side-menu__npc-portrait"
                             />
                           )}
                           <p className="card-body">{npc.descricao || 'Sem descrição.'}</p>

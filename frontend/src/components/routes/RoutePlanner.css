@@ -35,14 +35,72 @@
   font-size: 0.85rem;
 }
 
-.route-planner__ordenacao {
-  margin: 0;
-  padding: 0;
-  border: none;
-  font-size: 0.85rem;
+.route-planner__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.route-planner__modo {
+.route-planner__options-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.35rem 0.15rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.route-planner__options-toggle:hover {
+  opacity: 0.92;
+}
+
+.route-planner__options-toggle-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.route-planner__options-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.route-planner__options-chevron {
+  display: inline-block;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+
+.route-planner__options-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.route-planner__options-summary {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  line-height: 1.3;
+}
+
+.route-planner__options-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.15rem;
+}
+
+.route-planner__ordenacao,
+.route-planner__modo,
+.route-planner__preferencia,
+.route-planner__ritmo {
   margin: 0;
   padding: 0;
   border: none;
@@ -50,24 +108,36 @@
 }
 
 .route-planner__modo legend,
-.route-planner__ordenacao legend {
+.route-planner__ordenacao legend,
+.route-planner__preferencia legend,
+.route-planner__ritmo legend {
   padding: 0;
   margin-bottom: 0.35rem;
 }
 
 .route-planner__modo-options,
-.route-planner__ordenacao-options {
+.route-planner__ordenacao-options,
+.route-planner__preferencia-options,
+.route-planner__ritmo-options {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem 1rem;
 }
 
 .route-planner__modo-option,
-.route-planner__ordenacao-option {
+.route-planner__ordenacao-option,
+.route-planner__preferencia-option,
+.route-planner__ritmo-option {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   cursor: pointer;
+}
+
+.route-planner__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  opacity: 0.65;
 }
 
 .route-planner__error {
@@ -90,7 +160,7 @@
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
   padding: 0.5rem 0.6rem;
   border: 1px solid transparent;
   background: color-mix(in srgb, var(--color-text, #eee) 6%, transparent);
@@ -104,9 +174,16 @@
   background: color-mix(in srgb, #e5484d 18%, transparent);
 }
 
-.route-planner__costs {
-  font-size: 0.8rem;
-  opacity: 0.85;
+.route-planner__item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.route-planner__item-meta {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  line-height: 1.35;
 }
 
 .waypoint-combobox__wrap {

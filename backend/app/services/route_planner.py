@@ -10,7 +10,7 @@ import networkx as nx
 from sqlmodel import Session, select
 
 from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
-from app.schemas.routes import ModoTransporte, Point, RoutePlanItem
+from app.schemas.routes import ModoTransporte, Point, PreferenciaVia, RoutePlanItem
 
 HORAS_POR_DIA: dict[str, float] = {
     "normal": 6.0,
@@ -39,9 +39,41 @@ CUSTO_BP_POR_MILHA: dict[RouteTipo, tuple[float, float]] = {
 
 K_MAX = 6
 
+PURE_TIPOS: tuple[str, ...] = ("estrada", "rio", "trilha")
+
 Ordenacao = Literal["mais_rapida", "mais_barata"]
 
+Candidate = tuple[RoutePlanItem, float, tuple[int, ...]]  # item, preferência share, seg-id sig
+
 DEFAULT_PROPRIO_MPH = 4.0
+
+# Soft preferência de via (054): discovery weight multipliers
+PREF_MATCH_MULT = 0.75
+PREF_OPPOSITE_MULT = 1.25
+
+
+def preferencia_weight_mult(tipo: str, preferencia: PreferenciaVia) -> float:
+    if preferencia == "nenhuma":
+        return 1.0
+    if tipo == preferencia:
+        return PREF_MATCH_MULT
+    if preferencia == "rio" and tipo == "estrada":
+        return PREF_OPPOSITE_MULT
+    if preferencia == "estrada" and tipo == "rio":
+        return PREF_OPPOSITE_MULT
+    return 1.0  # trilha or unknown
+
+
+def preferred_miles_share(edge_attrs: list[dict], preferencia: PreferenciaVia) -> float:
+    if preferencia == "nenhuma":
+        return 0.0
+    total = sum(float(d.get("distancia", 0.0)) for d in edge_attrs)
+    if total <= 0:
+        return 0.0
+    preferred = sum(
+        float(d.get("distancia", 0.0)) for d in edge_attrs if str(d.get("tipo")) == preferencia
+    )
+    return preferred / total
 
 
 def parse_pontos(raw: str) -> list[Point]:
@@ -147,9 +179,14 @@ def format_tempo_texto(tempo_horas: float, horas_por_dia: float) -> tuple[int, f
     return dias, resto, texto
 
 
-def hop_sort_key(d: dict, ordenacao: Ordenacao) -> tuple:
-    tempo = float(d["tempo"])
-    dentro = float(d.get("custo_dentro_bp", 0.0))
+def hop_sort_key(
+    d: dict,
+    ordenacao: Ordenacao,
+    preferencia: PreferenciaVia = "nenhuma",
+) -> tuple:
+    mult = preferencia_weight_mult(str(d.get("tipo", "")), preferencia)
+    tempo = float(d["tempo"]) * mult
+    dentro = float(d.get("custo_dentro_bp", 0.0)) * mult
     fora = float(d.get("custo_fora_bp", 0.0))
     dist = float(d.get("distancia", 0.0))
     if ordenacao == "mais_barata":
@@ -182,8 +219,13 @@ def build_graph(
     velocidade_media_mph: float | None,
     ordenacao: Ordenacao = "mais_rapida",
     zerar_custos: bool = False,
+    preferencia_via: PreferenciaVia = "nenhuma",
 ) -> tuple[nx.Graph, dict[int, Waypoint], dict[int, RouteSegment], dict[tuple[int, int], list[dict]]]:
-    """Simple Graph for k-shortest + parallel edge lists for variants."""
+    """Simple Graph for k-shortest + parallel edge lists for variants.
+
+    Parallels keep true tempo/costs for reporting. Graph edge weights used for
+    pathfinding are soft-biased when preferencia_via is rio/estrada.
+    """
     if velocidade_media_mph is not None and velocidade_media_mph <= 0:
         raise ValueError("velocidade_media_mph deve ser > 0")
 
@@ -219,18 +261,19 @@ def build_graph(
         parallels.setdefault(key, []).append(attrs)
 
     for (u, v), edges in parallels.items():
-        edges.sort(key=lambda d: hop_sort_key(d, ordenacao))
+        edges.sort(key=lambda d: hop_sort_key(d, ordenacao, preferencia_via))
         best = edges[0]
+        mult = preferencia_weight_mult(str(best["tipo"]), preferencia_via)
         g.add_edge(
             u,
             v,
-            tempo=best["tempo"],
+            tempo=best["tempo"] * mult,
             distancia=best["distancia"],
             tipo=best["tipo"],
             seg_id=best["seg_id"],
             custo_dentro_bp=best["custo_dentro_bp"],
             custo_fora_bp=best["custo_fora_bp"],
-            peso_barata=best["peso_barata"],
+            peso_barata=best["peso_barata"] * mult,
         )
 
     return g, waypoints, by_id, parallels
@@ -269,6 +312,142 @@ def edge_variants_for_path(
             swapped[i] = alt
             variants.append(swapped)
     return variants
+
+
+def build_type_restricted_graph(
+    parallels: dict[tuple[int, int], list[dict]],
+    tipo: str,
+    ordenacao: Ordenacao,
+    preferencia_via: PreferenciaVia,
+) -> nx.Graph:
+    """Undirected graph using only hops of `tipo` (best hop per pair for pathfinding)."""
+    g: nx.Graph = nx.Graph()
+    for (u, v), edges in parallels.items():
+        typed = [d for d in edges if str(d.get("tipo")) == tipo]
+        if not typed:
+            continue
+        typed.sort(key=lambda d: hop_sort_key(d, ordenacao, preferencia_via))
+        best = typed[0]
+        mult = preferencia_weight_mult(str(best["tipo"]), preferencia_via)
+        g.add_edge(
+            u,
+            v,
+            tempo=best["tempo"] * mult,
+            distancia=best["distancia"],
+            tipo=best["tipo"],
+            seg_id=best["seg_id"],
+            custo_dentro_bp=best["custo_dentro_bp"],
+            custo_fora_bp=best["custo_fora_bp"],
+            peso_barata=best["peso_barata"] * mult,
+        )
+    return g
+
+
+def pure_edge_attrs_for_path(
+    parallels: dict[tuple[int, int], list[dict]],
+    path: list[int],
+    tipo: str,
+    ordenacao: Ordenacao,
+    preferencia_via: PreferenciaVia,
+) -> list[dict] | None:
+    """Best hop of `tipo` only along each step; None if any step lacks that tipo."""
+    if len(path) < 2:
+        return None
+    attrs: list[dict] = []
+    for i in range(len(path) - 1):
+        key = (min(path[i], path[i + 1]), max(path[i], path[i + 1]))
+        typed = [d for d in parallels.get(key, []) if str(d.get("tipo")) == tipo]
+        if not typed:
+            return None
+        typed.sort(key=lambda d: hop_sort_key(d, ordenacao, preferencia_via))
+        attrs.append(typed[0])
+    return attrs
+
+
+def best_pure_candidate(
+    parallels: dict[tuple[int, int], list[dict]],
+    origem: int,
+    destino: int,
+    tipo: str,
+    ordenacao: Ordenacao,
+    preferencia_via: PreferenciaVia,
+    weight: str,
+    waypoints: dict[int, Waypoint],
+    by_id: dict[int, RouteSegment],
+    horas_por_dia: float,
+) -> Candidate | None:
+    """Best continuous path using only `tipo`, or None if disconnected."""
+    g_t = build_type_restricted_graph(parallels, tipo, ordenacao, preferencia_via)
+    if origem not in g_t or destino not in g_t:
+        return None
+    try:
+        path = nx.shortest_path(g_t, origem, destino, weight=weight)
+    except nx.NetworkXNoPath:
+        return None
+    edge_attrs = pure_edge_attrs_for_path(parallels, path, tipo, ordenacao, preferencia_via)
+    if not edge_attrs:
+        return None
+    item = item_from_edges(path, edge_attrs, waypoints, by_id, horas_por_dia)
+    if item.tipos != [tipo]:
+        return None
+    share = preferred_miles_share(edge_attrs, preferencia_via)
+    sig = tuple(int(d["seg_id"]) for d in edge_attrs)
+    return item, share, sig
+
+
+def candidate_rank_key(item: RoutePlanItem, share: float, ordenacao: Ordenacao) -> tuple:
+    if ordenacao == "mais_barata":
+        return (
+            item.custo_dentro_bp,
+            item.custo_fora_bp,
+            -share,
+            item.tempo_horas,
+            item.distancia_milhas,
+        )
+    return (
+        item.tempo_horas,
+        -share,
+        item.distancia_milhas,
+        item.custo_dentro_bp,
+    )
+
+
+def assemble_with_type_coverage(
+    candidates: list[Candidate],
+    k: int,
+    ordenacao: Ordenacao,
+) -> list[RoutePlanItem]:
+    """Keep overall #1 + best pure per tipo present; fill with mixes up to k."""
+    if not candidates:
+        return []
+    ranked = sorted(candidates, key=lambda t: candidate_rank_key(t[0], t[1], ordenacao))
+    overall = ranked[0]
+
+    coverage: list[Candidate] = []
+    for tipo in PURE_TIPOS:
+        for t in ranked:
+            if t[0].tipos == [tipo]:
+                coverage.append(t)
+                break
+
+    selected: list[Candidate] = []
+    selected_sigs: set[tuple[int, ...]] = set()
+
+    def try_add(t: Candidate) -> None:
+        _item, _share, sig = t
+        if sig in selected_sigs or len(selected) >= k:
+            return
+        selected.append(t)
+        selected_sigs.add(sig)
+
+    try_add(overall)
+    for t in coverage:
+        try_add(t)
+    for t in ranked:
+        try_add(t)
+
+    selected_sorted = sorted(selected, key=lambda t: candidate_rank_key(t[0], t[1], ordenacao))
+    return [t[0] for t in selected_sorted[:k]]
 
 
 def geometry_for_edges(
@@ -341,11 +520,15 @@ def plan_routes(
     k: int = K_MAX,
     ordenacao: Ordenacao = "mais_rapida",
     modo_transporte: ModoTransporte | None = None,
+    preferencia_via: PreferenciaVia | None = None,
 ) -> list[RoutePlanItem]:
     if ordenacao not in ("mais_rapida", "mais_barata"):
         raise ValueError(f"Ordenação inválida: {ordenacao}")
     if modo_transporte is not None and modo_transporte not in ("pago", "proprio"):
         raise ValueError(f"Modo de transporte inválido: {modo_transporte}")
+    pref: PreferenciaVia = preferencia_via if preferencia_via is not None else "nenhuma"
+    if pref not in ("nenhuma", "rio", "estrada"):
+        raise ValueError(f"Preferência de via inválida: {preferencia_via}")
 
     horas_por_dia = HORAS_POR_DIA.get(ritmo)
     if horas_por_dia is None:
@@ -353,7 +536,11 @@ def plan_routes(
 
     effective_mph, zerar_custos = resolve_speed_and_zero_costs(modo_transporte, velocidade_media_mph)
     g, waypoints, by_id, parallels = build_graph(
-        session, effective_mph, ordenacao, zerar_custos=zerar_custos
+        session,
+        effective_mph,
+        ordenacao,
+        zerar_custos=zerar_custos,
+        preferencia_via=pref,
     )
     if origem_waypoint_id not in g or destino_waypoint_id not in g:
         return []
@@ -361,7 +548,7 @@ def plan_routes(
         return []
 
     weight = "peso_barata" if ordenacao == "mais_barata" else "tempo"
-    candidates: list[RoutePlanItem] = []
+    candidates: list[Candidate] = []
     seen: set[tuple[int, ...]] = set()
 
     try:
@@ -376,22 +563,37 @@ def plan_routes(
                 if sig in seen:
                     continue
                 seen.add(sig)
-                candidates.append(item_from_edges(path, edge_attrs, waypoints, by_id, horas_por_dia))
+                item = item_from_edges(path, edge_attrs, waypoints, by_id, horas_por_dia)
+                share = preferred_miles_share(edge_attrs, pref)
+                candidates.append((item, share, sig))
     except nx.NetworkXNoPath:
+        pass
+
+    for tipo in PURE_TIPOS:
+        pure = best_pure_candidate(
+            parallels,
+            origem_waypoint_id,
+            destino_waypoint_id,
+            tipo,
+            ordenacao,
+            pref,
+            weight,
+            waypoints,
+            by_id,
+            horas_por_dia,
+        )
+        if pure is None:
+            continue
+        item, share, sig = pure
+        if sig in seen:
+            continue
+        seen.add(sig)
+        candidates.append((item, share, sig))
+
+    if not candidates:
         return []
 
-    if ordenacao == "mais_barata":
-        candidates.sort(
-            key=lambda r: (
-                r.custo_dentro_bp,
-                r.custo_fora_bp,
-                r.tempo_horas,
-                r.distancia_milhas,
-            )
-        )
-    else:
-        candidates.sort(key=lambda r: (r.tempo_horas, r.distancia_milhas, r.custo_dentro_bp))
-    return candidates[:k]
+    return assemble_with_type_coverage(candidates, k, ordenacao)
 
 
 def recompute_all_distances(session: Session) -> int:

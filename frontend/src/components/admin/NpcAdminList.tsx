@@ -43,10 +43,10 @@ export function NpcFormDialog({
             shape="rounded"
             editable
             category="portraits"
-            style={{ width: '100%', height: 110 }}
+            fit="contain"
+            className={`npc-form__portrait${retrato_url ? '' : ' npc-form__portrait--empty'}`}
             onUploaded={(url) => onChange({ retrato_url: url })}
-          />
-          <div className="field">
+          />          <div className="field">
             <label>Nome</label>
             <input className="input" value={nome} onChange={(e) => onChange({ nome: e.target.value })} />
           </div>
