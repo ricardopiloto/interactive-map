@@ -7,11 +7,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [0.6.10.1] — 2026-08-06
 
-Correcção do versionamento da release do mapa → Calcular rota (060/061).
+Correcção do versionamento e do build Docker do mapa → Calcular rota (060/061).
 
 ### Fixed
 
-- **Versionamento**: specs 060 e 061 ficam documentadas e publicadas como **0.6.10** (sem release intermédia 0.6.11); esta patch alinha manifests (README, frontend, backend) a **0.6.10.1**
+- **Versionamento**: specs 060 e 061 ficam documentadas e publicadas como **0.6.10** (sem release intermédia 0.6.11); manifests alinhados a **0.6.10.1**
+- **Build frontend**: erro TypeScript em `RoutePlannerPanel` (comparação `number` vs `''`) que quebrava `npm run build` no Docker
 
 ## [0.6.10] — 2026-08-06
 

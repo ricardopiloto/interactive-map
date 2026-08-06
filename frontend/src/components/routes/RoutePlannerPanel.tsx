@@ -245,25 +245,25 @@ export function RoutePlannerPanel({
     if (!wp) return
     const label = waypointOptionLabel(wp, locaisById)
     const pickId = mapPick.waypointId
-    let nextOrigem: number | '' = origemIdRef.current
-    let nextDestino: number | '' = ''
+    const prevOrigem = origemIdRef.current
 
-    if (nextOrigem === '') {
-      setOrigemId(pickId)
-      setOrigemQuery(label)
-      origemIdRef.current = pickId
-      nextOrigem = pickId
-    } else {
-      setDestinoId(pickId)
-      setDestinoQuery(label)
-      nextDestino = pickId
-    }
     setAppliedMapPickNonce(mapPick.nonce)
     setError(null)
 
-    if (nextOrigem !== '' && nextDestino !== '' && nextOrigem !== nextDestino) {
-      void calcular(ordenacao, modo, preferenciaVia, nextOrigem, nextDestino)
+    if (prevOrigem === '') {
+      setOrigemId(pickId)
+      setOrigemQuery(label)
+      origemIdRef.current = pickId
+      return
     }
+
+    setDestinoId(pickId)
+    setDestinoQuery(label)
+    if (prevOrigem === pickId) {
+      setError('Origem e destino devem ser diferentes.')
+      return
+    }
+    void calcular(ordenacao, modo, preferenciaVia, prevOrigem, pickId)
   }, [mapPick, open, namedIds, waypoints, locaisById, appliedMapPickNonce, calcular, ordenacao, modo, preferenciaVia])
 
   useEffect(() => {

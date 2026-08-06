@@ -119,6 +119,7 @@ Detalhes: [`frontend/README.md`](frontend/README.md)
 ```bash
 cp .env.example .env
 # Preencha ADMIN_USER, ADMIN_PASSWORD (e ADMIN_PASSWORD_HASH para Caddy)
+# Senhas com `$`: no Compose use `$$` ou aspas simples — senão o Compose trata `$...` como variável vazia
 docker compose up --build
 docker compose --profile with-caddy up --build   # porta 8080
 ```
