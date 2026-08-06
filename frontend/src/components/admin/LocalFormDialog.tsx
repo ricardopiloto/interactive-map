@@ -63,7 +63,8 @@ export function LocalFormDialog({
             shape="rounded"
             editable
             category="locals"
-            style={{ width: '100%', height: 150 }}
+            fit="contain"
+            className={`local-form__image${draft.imagem_url ? '' : ' local-form__image--empty'}`}
             onUploaded={(url) => onChange({ imagem_url: url })}
           />
           <div className="field">

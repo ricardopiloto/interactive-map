@@ -112,12 +112,15 @@ export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: 
           {local.nome}
         </div>
         <div className="dialog__body">
-          <ImageSlot
-            src={local.imagem_url}
-            placeholder="Imagem do local"
-            shape="rounded"
-            style={{ width: '100%', height: 150 }}
-          />
+          {local.imagem_url ? (
+            <ImageSlot
+              src={local.imagem_url}
+              placeholder="Imagem do local"
+              shape="rounded"
+              fit="contain"
+              className="pin-modal__image"
+            />
+          ) : null}
           {local.data_sessao && <div className="card-meta">{local.data_sessao}</div>}
           {descricao ? (
             <MarkdownSafe className="dialog-body pin-modal__markdown">{descricao}</MarkdownSafe>

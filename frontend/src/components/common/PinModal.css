@@ -22,6 +22,27 @@
   width: min(440px, calc(100vw - 32px));
 }
 
+/* Local image — shrink-to-fit, max 50vh (059); only rendered when imagem_url is set */
+.pin-modal__image.image-slot {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  padding: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pin-modal__image.image-slot img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
 .pin-modal__markdown {
   line-height: 1.45;
 }

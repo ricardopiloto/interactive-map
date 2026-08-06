@@ -5,6 +5,15 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.9.1] — 2026-08-05
+
+Imagens de Locais no pin modal e no formulário GM sem corte fixo (mesma política dos retratos de NPC).
+
+### Fixed
+
+- **Locais (pin modal)**: imagem do local acompanha a proporção (shrink-to-fit), com altura máxima ~50% da viewport; sem imagem não mostra caixa vazia
+- **Locais (modo GM)**: caixa da imagem no formulário criar/editar com o mesmo sizing; upload continua editável; placeholder vazio mantém zona de drop utilizável
+
 ## [0.6.9] — 2026-08-05
 
 Calcular rota com preferência de via, painel mais limpo e cobertura de tipos puros; retratos de NPC no menu e na edição sem corte fixo.
