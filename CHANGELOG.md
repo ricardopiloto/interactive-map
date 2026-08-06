@@ -5,18 +5,25 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
-## [0.6.10] — 2026-08-06
+## [0.6.10.1] — 2026-08-06
 
-Calcular rota: clicar no pin preenche De/Para de forma fiável e calcula automaticamente. Seleccionar origem e destino no mapa com Calcular rota aberto.
+Correcção do versionamento da release do mapa → Calcular rota (060/061).
 
 ### Fixed
 
-- **Calcular rota**: pin no mapa resolve o nó também por nome (além de local_id), para cidades que já aparecem no combobox; deixa de abrir só o modal sem preencher De/Para
+- **Versionamento**: specs 060 e 061 ficam documentadas e publicadas como **0.6.10** (sem release intermédia 0.6.11); esta patch alinha manifests (README, frontend, backend) a **0.6.10.1**
+
+## [0.6.10] — 2026-08-06
+
+Calcular rota: seleccionar origem/destino no mapa (estilo Directions) e calcular automaticamente.
 
 ### Added
 
-- **Calcular rota**: ao completar De e Para pelo mapa (ou híbrido combobox+mapa), o cálculo corre automaticamente; o botão Calcular mantém-se
-- **Calcular rota**: com o painel aberto, clicar num pin de Local ligado a um nó nomeado preenche De (se vazio) ou Para; pin sem nó abre o detalhe como antes; sem zonas clicáveis novas; combobox continua disponível
+- **Calcular rota**: com o painel aberto, clicar num pin de Local preenche De (se vazio) ou Para; ao completar ambos, o cálculo corre automaticamente; pin sem nó correspondente no combobox abre o detalhe como antes; sem zonas clicáveis novas; combobox e botão Calcular continuam disponíveis
+
+### Fixed
+
+- **Calcular rota**: o pin resolve o nó também por nome (além de local_id), para cidades que já aparecem no combobox — deixa de abrir só o modal sem preencher De/Para
 
 ## [0.6.9.1] — 2026-08-05
 

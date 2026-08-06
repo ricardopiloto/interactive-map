@@ -92,8 +92,8 @@
 
 **Purpose**: Changelog, version, full quickstart
 
-- [x] T016 [P] Add CHANGELOG entry under **[0.6.11]** in `CHANGELOG.md` — fix map pick (name match) + auto-cálculo ao completar De/Para
-- [x] T017 [P] Bump to **0.6.11** in `README.md`, `frontend/package.json`, `frontend/package-lock.json`, `backend/pyproject.toml`, `backend/uv.lock`
+- [x] T016 [P] Add CHANGELOG entry under **[0.6.10]** in `CHANGELOG.md` — map pick (060) + name-match fix + auto-cálculo (061) na mesma release
+- [x] T017 [P] Keep version at **0.6.10** in `README.md`, `frontend/package.json`, `frontend/package-lock.json`, `backend/pyproject.toml`, `backend/uv.lock`
 - [x] T018 Run full `specs/061-fix-map-route-pick/quickstart.md` A–G
 
 ---
