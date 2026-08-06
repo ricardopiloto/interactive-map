@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { campaignApi } from '../../api/campaign'
 import type { Local, ModoTransporte, OrdenacaoRota, PreferenciaVia, Ritmo, RoutePlanItem, Waypoint } from '../../types'
 import { WaypointCombobox } from './WaypointCombobox'
+import {
+  isNamedWaypoint,
+  waypointOptionLabel,
+  type RouteMapPick,
+} from './routeMapPick'
 import './RoutePlanner.css'
 
 const RITMOS: { value: Ritmo; label: string; hint: string }[] = [
@@ -79,27 +84,6 @@ function formatOptionsSummary(
   return fragments
 }
 
-/** FR-002: own trimmed name, or linked Local with trimmed name. */
-function isNamedWaypoint(wp: Waypoint, locaisById: Map<number, string>): boolean {
-  if (wp.nome?.trim()) return true
-  if (wp.local_id != null) {
-    const localNome = locaisById.get(wp.local_id)?.trim()
-    if (localNome) return true
-  }
-  return false
-}
-
-/** nome do nó → nome do Local (named options only; `Nó {id}` is defensive). */
-function waypointOptionLabel(wp: Waypoint, locaisById: Map<number, string>): string {
-  const nome = wp.nome?.trim()
-  if (nome) return nome
-  if (wp.local_id != null) {
-    const localNome = locaisById.get(wp.local_id)?.trim()
-    if (localNome) return localNome
-  }
-  return `Nó ${wp.id}`
-}
-
 interface Props {
   waypoints: Waypoint[]
   locais: Local[]
@@ -109,6 +93,8 @@ interface Props {
   selectedIndex: number
   onPlanChange: (rotas: RoutePlanItem[], selectedIndex: number) => void
   onSelectIndex: (index: number) => void
+  /** Map pin pick while panel open (060): nonce re-triggers same waypoint. */
+  mapPick?: RouteMapPick | null
 }
 
 export function RoutePlannerPanel({
@@ -120,6 +106,7 @@ export function RoutePlannerPanel({
   selectedIndex,
   onPlanChange,
   onSelectIndex,
+  mapPick = null,
 }: Props) {
   const locaisById = useMemo(() => {
     const m = new Map<number, string>()
@@ -152,10 +139,13 @@ export function RoutePlannerPanel({
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [appliedMapPickNonce, setAppliedMapPickNonce] = useState<number | null>(null)
   const skipOrdenacaoRecalc = useRef(true)
   const skipModoRecalc = useRef(true)
   const skipPreferenciaRecalc = useRef(true)
   const wasOpen = useRef(false)
+  const origemIdRef = useRef(origemId)
+  origemIdRef.current = origemId
 
   const summaryFragments = useMemo(
     () => formatOptionsSummary(modo, ritmo, ordenacao, preferenciaVia, velocidade),
@@ -200,13 +190,17 @@ export function RoutePlannerPanel({
       ord: OrdenacaoRota = ordenacao,
       modoAtual: ModoTransporte = modo,
       prefAtual: PreferenciaVia = preferenciaVia,
+      origemOverride?: number | '',
+      destinoOverride?: number | '',
     ) => {
+      const o = origemOverride !== undefined ? origemOverride : origemId
+      const d = destinoOverride !== undefined ? destinoOverride : destinoId
       setError(null)
-      if (origemId === '' || destinoId === '') {
+      if (o === '' || d === '') {
         setError('Escolha origem e destino.')
         return
       }
-      if (origemId === destinoId) {
+      if (o === d) {
         setError('Origem e destino devem ser diferentes.')
         return
       }
@@ -225,15 +219,7 @@ export function RoutePlannerPanel({
       }
       setBusy(true)
       try {
-        const res = await campaignApi.planRoute(
-          origemId,
-          destinoId,
-          ritmo,
-          modoAtual,
-          mph,
-          ord,
-          prefAtual,
-        )
+        const res = await campaignApi.planRoute(o, d, ritmo, modoAtual, mph, ord, prefAtual)
         if (res.rotas.length === 0) {
           setError('Nenhuma rota encontrada entre esses nós.')
           onPlanChange([], 0)
@@ -249,6 +235,36 @@ export function RoutePlannerPanel({
     },
     [origemId, destinoId, velocidade, ritmo, ordenacao, modo, preferenciaVia, onPlanChange],
   )
+
+  // 060/061: map pin → De/Para by field state; auto-calc when both ends set (FR-011)
+  useEffect(() => {
+    if (!open || !mapPick) return
+    if (appliedMapPickNonce === mapPick.nonce) return
+    if (!namedIds.has(mapPick.waypointId)) return
+    const wp = waypoints.find((w) => w.id === mapPick.waypointId)
+    if (!wp) return
+    const label = waypointOptionLabel(wp, locaisById)
+    const pickId = mapPick.waypointId
+    let nextOrigem: number | '' = origemIdRef.current
+    let nextDestino: number | '' = ''
+
+    if (nextOrigem === '') {
+      setOrigemId(pickId)
+      setOrigemQuery(label)
+      origemIdRef.current = pickId
+      nextOrigem = pickId
+    } else {
+      setDestinoId(pickId)
+      setDestinoQuery(label)
+      nextDestino = pickId
+    }
+    setAppliedMapPickNonce(mapPick.nonce)
+    setError(null)
+
+    if (nextOrigem !== '' && nextDestino !== '' && nextOrigem !== nextDestino) {
+      void calcular(ordenacao, modo, preferenciaVia, nextOrigem, nextDestino)
+    }
+  }, [mapPick, open, namedIds, waypoints, locaisById, appliedMapPickNonce, calcular, ordenacao, modo, preferenciaVia])
 
   useEffect(() => {
     if (skipOrdenacaoRecalc.current) {

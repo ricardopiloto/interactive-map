@@ -13,6 +13,7 @@ import { SideMenu, type SideTab } from '../components/sidebar/SideMenu'
 import { AdminGateDialog } from '../components/gm/AdminGateDialog'
 import { RouteDigitizerView } from '../components/gm/RouteDigitizerView'
 import { RoutePlannerPanel } from '../components/routes/RoutePlannerPanel'
+import { resolveNamedWaypointForLocal, type RouteMapPick } from '../components/routes/routeMapPick'
 import { LocalAdminList } from '../components/admin/LocalAdminList'
 import { LocalFormDialog, localToDraft, type LocalFormDraft } from '../components/admin/LocalFormDialog'
 import { NpcAdminList, NpcFormDialog } from '../components/admin/NpcAdminList'
@@ -56,6 +57,7 @@ export function MapPage() {
   const [travelPlan, setTravelPlan] = useState<RoutePlanItem[]>([])
   const [travelSelectedIndex, setTravelSelectedIndex] = useState(0)
   const [routeWaypoints, setRouteWaypoints] = useState<Waypoint[]>([])
+  const [routeMapPick, setRouteMapPick] = useState<RouteMapPick | null>(null)
   const [routeDigitizerOpen, setRouteDigitizerOpen] = useState(false)
   const [npcDraft, setNpcDraft] = useState<{
     id?: number
@@ -141,9 +143,17 @@ export function MapPage() {
     setFocusRequest({ target: 'local', localId: id, nonce: Date.now() })
   }
 
-  /** Player map-pin click: select + focus (015). GM: select only, no focusRequest. */
+  /** Player map-pin click: select + focus (015). GM: select only, no focusRequest.
+   *  With Calcular rota open (060): eligible pin → De/Para pick, no modal. */
   function selectLocalFromMap(id: number) {
     if (isGm && placement !== 'none') return
+    if (routePlannerOpen) {
+      const wp = resolveNamedWaypointForLocal(id, routeWaypoints, locais)
+      if (wp) {
+        setRouteMapPick({ waypointId: wp.id, nonce: Date.now() })
+        return
+      }
+    }
     selectLocal(id)
     if (isGm) return
     setFocusRequest({ target: 'local', localId: id, nonce: Date.now() })
@@ -502,10 +512,12 @@ export function MapPage() {
                 waypoints={routeWaypoints}
                 locais={locais}
                 open={routePlannerOpen}
+                mapPick={routeMapPick}
                 onClose={() => {
                   setRoutePlannerOpen(false)
                   setTravelPlan([])
                   setTravelSelectedIndex(0)
+                  setRouteMapPick(null)
                 }}
                 plan={travelPlan}
                 selectedIndex={travelSelectedIndex}
