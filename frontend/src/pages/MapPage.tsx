@@ -53,7 +53,6 @@ export function MapPage() {
   const [busyError, setBusyError] = useState<string | null>(null)
 
   const [localDraft, setLocalDraft] = useState<LocalFormDraft | null>(null)
-  const [routePlannerOpen, setRoutePlannerOpen] = useState(false)
   const [travelPlan, setTravelPlan] = useState<RoutePlanItem[]>([])
   const [travelSelectedIndex, setTravelSelectedIndex] = useState(0)
   const [routeWaypoints, setRouteWaypoints] = useState<Waypoint[]>([])
@@ -144,10 +143,10 @@ export function MapPage() {
   }
 
   /** Player map-pin click: select + focus (015). GM: select only, no focusRequest.
-   *  With Calcular rota open (060): eligible pin → De/Para pick, no modal. */
+   *  With Rota tab active (060/064): eligible pin → De/Para pick, no modal. */
   function selectLocalFromMap(id: number) {
     if (isGm && placement !== 'none') return
-    if (routePlannerOpen) {
+    if (tab === 'rota') {
       const wp = resolveNamedWaypointForLocal(id, routeWaypoints, locais)
       if (wp) {
         setRouteMapPick({ waypointId: wp.id, nonce: Date.now() })
@@ -266,8 +265,28 @@ export function MapPage() {
     refresh()
   }
 
-  const tabs: SideTab[] = isGm ? ['locais', 'npcs', 'arcos', 'grupo'] : ['locais', 'npcs', 'arcos']
+  const tabs: SideTab[] = isGm
+    ? ['locais', 'npcs', 'arcos', 'rota', 'grupo']
+    : ['locais', 'npcs', 'arcos', 'rota']
   const showSidebar = !isMobile || mobilePanelOpen
+  const routeTabActive = tab === 'rota'
+
+  const rotaPanel = (
+    <RoutePlannerPanel
+      waypoints={routeWaypoints}
+      locais={locais}
+      open
+      embedded
+      mapPick={routeTabActive ? routeMapPick : null}
+      plan={travelPlan}
+      selectedIndex={travelSelectedIndex}
+      onPlanChange={(rotas, idx) => {
+        setTravelPlan(rotas)
+        setTravelSelectedIndex(idx)
+      }}
+      onSelectIndex={setTravelSelectedIndex}
+    />
+  )
 
   const gmLocais = useMemo(
     () => locais.filter((l) => labelMatchesQuery(l.nome, query)),
@@ -400,6 +419,7 @@ export function MapPage() {
           tabs={tabs}
           isGm={isGm}
           adminPanel={adminPanel}
+          rotaPanel={rotaPanel}
         />
       )}
 
@@ -409,19 +429,6 @@ export function MapPage() {
             <span className="map-page__brand">Codex da Campanha</span>
             <span className="map-page__subtitle text-muted">Mapa da campanha WFRP4e</span>
             {isGm && <span className="tag tag-accent">Modo GM</span>}
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                setRoutePlannerOpen((o) => !o)
-                if (routePlannerOpen) {
-                  setTravelPlan([])
-                  setTravelSelectedIndex(0)
-                }
-              }}
-            >
-              Calcular rota
-            </button>
             {isGm && (
               <button
                 type="button"
@@ -430,7 +437,7 @@ export function MapPage() {
                   setRouteDigitizerOpen(true)
                   setPlacement('none')
                   setTravelPlan([])
-                  setRoutePlannerOpen(false)
+                  setTravelSelectedIndex(0)
                 }}
               >
                 Rede de rotas
@@ -469,7 +476,7 @@ export function MapPage() {
                 interactivePins={!isGm || placement === 'none'}
                 placementMode={isGm ? placement : 'none'}
                 mapEditable={isGm}
-                travelPlan={travelPlan}
+                travelPlan={routeTabActive ? travelPlan : []}
                 travelSelectedIndex={travelSelectedIndex}
                 onClearSelection={isGm ? () => setSelectedLocalId(null) : undefined}
                 onCancelPlacement={
@@ -507,25 +514,6 @@ export function MapPage() {
                     refresh()
                   }
                 }}
-              />
-              <RoutePlannerPanel
-                waypoints={routeWaypoints}
-                locais={locais}
-                open={routePlannerOpen}
-                mapPick={routeMapPick}
-                onClose={() => {
-                  setRoutePlannerOpen(false)
-                  setTravelPlan([])
-                  setTravelSelectedIndex(0)
-                  setRouteMapPick(null)
-                }}
-                plan={travelPlan}
-                selectedIndex={travelSelectedIndex}
-                onPlanChange={(rotas, idx) => {
-                  setTravelPlan(rotas)
-                  setTravelSelectedIndex(idx)
-                }}
-                onSelectIndex={setTravelSelectedIndex}
               />
             </>
           )}
@@ -574,7 +562,15 @@ export function MapPage() {
                   setMobilePanelOpen(true)
                 }}
               >
-                {t === 'locais' ? 'Locais' : t === 'npcs' ? 'NPCs' : t === 'arcos' ? 'História' : 'Grupo'}
+                {t === 'locais'
+                  ? 'Locais'
+                  : t === 'npcs'
+                    ? 'NPCs'
+                    : t === 'arcos'
+                      ? 'História'
+                      : t === 'rota'
+                        ? 'Rota'
+                        : 'Grupo'}
               </button>
             ))}
         </nav>

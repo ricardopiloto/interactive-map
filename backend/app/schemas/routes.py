@@ -90,6 +90,29 @@ class MapScaleUpdate(BaseModel):
     notas: Optional[str] = Field(default=None, max_length=500)
 
 
+class PernoiteTipo(str, Enum):
+    local = "local"
+    relento = "relento"
+
+
+class Pernoite(BaseModel):
+    dia: int = Field(ge=1)
+    tipo: PernoiteTipo
+    local_id: Optional[int] = None
+    nome: Optional[str] = None
+    x: float = Field(ge=0.0, le=1.0)
+    y: float = Field(ge=0.0, le=1.0)
+
+
+class DiaVisual(BaseModel):
+    """Per-day polyline slice for map colouring (063)."""
+
+    dia: int = Field(ge=1)
+    residual: bool = False
+    fadiga_apos: int = Field(default=0, ge=0)
+    geometria: list[Point] = Field(default_factory=list)
+
+
 class RoutePlanItem(BaseModel):
     waypoint_ids: list[int]
     distancia_milhas: float
@@ -101,6 +124,12 @@ class RoutePlanItem(BaseModel):
     geometria: list[Point]
     custo_dentro_bp: float = 0.0
     custo_fora_bp: float = 0.0
+    pernoites: list[Pernoite] = Field(default_factory=list)
+    fadiga_saldo: int = 0
+    fadiga_pico: int = 0
+    fadiga_aviso: bool = False
+    fadiga_morte: bool = False
+    dias_visuais: list[DiaVisual] = Field(default_factory=list)
 
 
 class RoutePlanResponse(BaseModel):

@@ -157,6 +157,13 @@ export function CampaignMap({
   const stageRef = useRef<HTMLDivElement>(null)
   const formato = grupo?.formato === 'brasao' ? 'brasao' : 'bandeira'
   const partyVisible = Boolean(grupo) && !hideLorePins
+  const selectedPernoites = travelPlan[travelSelectedIndex]?.pernoites ?? []
+  const overnightLocalIds = new Set(
+    selectedPernoites
+      .filter((p) => p.tipo === 'local' && p.local_id != null)
+      .map((p) => p.local_id as number),
+  )
+  const relentoPins = selectedPernoites.filter((p) => p.tipo === 'relento')
   const effectiveFocus = focusRequest ?? internalFocus
 
   const setMapZoomCss = useCallback((scale: number) => {
@@ -332,14 +339,17 @@ export function CampaignMap({
               locais.map((local) => {
               const selected = selectedLocalId === local.id
               const hovered = hoveredLocalId === local.id
+              const overnight = overnightLocalIds.has(local.id)
               const pinColor = local.cor_pin || '#c4b5fd'
               const pinClass = [
                 'campaign-map__pin',
                 selected ? 'campaign-map__pin--selected' : '',
                 hovered ? 'campaign-map__pin--hovered' : '',
+                overnight ? 'campaign-map__pin--pernoite' : '',
               ]
                 .filter(Boolean)
                 .join(' ')
+              const pinTitle = overnight ? `${local.nome} · Pernoite` : local.nome
               return (
                 <button
                   key={local.id}
@@ -352,17 +362,26 @@ export function CampaignMap({
                     background: pinColor,
                     ['--pin-color' as string]: pinColor,
                   }}
-                  title={local.nome}
+                  title={pinTitle}
                   disabled={!interactivePins || placing}
                   onClick={(ev) => {
                     ev.stopPropagation()
                     if (!placing) onSelectLocal(local.id)
                   }}
                 >
-                  <span className="visually-hidden">{local.nome}</span>
+                  <span className="visually-hidden">{pinTitle}</span>
                 </button>
               )
             })}
+            {relentoPins.map((p, i) => (
+              <div
+                key={`relento-${p.dia}-${i}-${p.x}-${p.y}`}
+                className="campaign-map__pin campaign-map__pin--relento"
+                style={{ left: `${p.x * 100}%`, top: `${p.y * 100}%` }}
+                title="Pernoite"
+                aria-label="Pernoite"
+              />
+            ))}
             {!hideLorePins && grupo && (
               <div
                 id="map-party"

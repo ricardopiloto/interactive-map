@@ -16,6 +16,20 @@
   gap: 0.6rem;
 }
 
+.route-planner--embedded {
+  position: static;
+  z-index: auto;
+  top: auto;
+  left: auto;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 .route-planner__head {
   display: flex;
   align-items: center;

@@ -109,8 +109,8 @@
 }
 
 .campaign-map__travel-route--selected {
-  stroke: #e5484d;
-  stroke-width: 3.5;
+  stroke: #df5b5b;
+  stroke-width: 3;
   stroke-opacity: 0.9;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
 }
@@ -120,6 +120,49 @@
   stroke-width: 2;
   stroke-opacity: 0.45;
   stroke-dasharray: 6 5;
+}
+
+.campaign-map__travel-route-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: stroke;
+  cursor: help;
+}
+
+.campaign-map__travel-route--fadiga {
+  stroke-width: 3.5;
+  stroke-opacity: 0.95;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  pointer-events: stroke;
+  cursor: help;
+}
+
+.campaign-map__travel-route--fadiga-1 {
+  stroke: #de5058;
+}
+.campaign-map__travel-route--fadiga-2 {
+  stroke: #d03c44;
+}
+.campaign-map__travel-route--fadiga-3 {
+  stroke: #c93038;
+}
+.campaign-map__travel-route--fadiga-4 {
+  stroke: #a81e28;
+}
+.campaign-map__travel-route--fadiga-5 {
+  stroke: #8f151e;
+}
+.campaign-map__travel-route--fadiga-6 {
+  stroke: #7a1018;
+}
+
+.campaign-map__pin--pernoite {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #3b82f6 55%, transparent),
+    var(--shadow-sm);
 }
 
 .campaign-map__pin {
@@ -134,6 +177,18 @@
   border: 2px solid var(--color-bg);
   box-shadow: var(--shadow-sm);
   transition: transform 0.15s ease;
+}
+
+.campaign-map__pin.campaign-map__pin--relento {
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -11px;
+  background: #3b82f6;
+  border-width: 1.5px;
+  pointer-events: auto;
+  z-index: 2;
+  cursor: help;
 }
 
 .campaign-map__pin--selected {

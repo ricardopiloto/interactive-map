@@ -4,7 +4,7 @@ import { labelMatchesQuery } from '../../utils/textMatch'
 import { ImageSlot } from '../media/ImageSlot'
 import './SideMenu.css'
 
-export type SideTab = 'locais' | 'npcs' | 'arcos' | 'grupo'
+export type SideTab = 'locais' | 'npcs' | 'arcos' | 'grupo' | 'rota'
 
 const STATUS_LABEL: Record<string, string> = {
   vivo: 'Vivo',
@@ -39,6 +39,8 @@ interface SideMenuProps {
   isGm?: boolean
   headerExtra?: ReactNode
   adminPanel?: ReactNode
+  /** Content for the Rota tab (route planner). */
+  rotaPanel?: ReactNode
 }
 
 export function SideMenu({
@@ -62,6 +64,7 @@ export function SideMenu({
   isGm = false,
   headerExtra,
   adminPanel,
+  rotaPanel,
 }: SideMenuProps) {
   const filtering = query.trim().length > 0
   const filteredLocais = locais.filter((l) => labelMatchesQuery(l.nome, query))
@@ -80,6 +83,7 @@ export function SideMenu({
     npcs: 'NPCs',
     arcos: 'História',
     grupo: 'Grupo',
+    rota: 'Rota',
   }
 
   return (
@@ -127,9 +131,18 @@ export function SideMenu({
       )}
 
       <div className="side-menu__body">
-        {isGm && adminPanel ? (
+        {rotaPanel ? (
+          <div
+            className="side-menu__rota"
+            hidden={tab !== 'rota'}
+            style={tab === 'rota' ? undefined : { display: 'none' }}
+          >
+            {rotaPanel}
+          </div>
+        ) : null}
+        {tab !== 'rota' && isGm && adminPanel ? (
           adminPanel
-        ) : (
+        ) : tab !== 'rota' ? (
           <>
             {tab === 'locais' && (
               <div className="side-menu__stack">
@@ -274,7 +287,7 @@ export function SideMenu({
               </div>
             )}
           </>
-        )}
+        ) : null}
       </div>
     </aside>
   )

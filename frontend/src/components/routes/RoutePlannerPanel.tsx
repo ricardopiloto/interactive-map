@@ -88,13 +88,16 @@ interface Props {
   waypoints: Waypoint[]
   locais: Local[]
   open: boolean
-  onClose: () => void
+  /** Optional clear/close; hidden in embedded side-tab mode when omitted. */
+  onClose?: () => void
   plan: RoutePlanItem[]
   selectedIndex: number
   onPlanChange: (rotas: RoutePlanItem[], selectedIndex: number) => void
   onSelectIndex: (index: number) => void
   /** Map pin pick while panel open (060): nonce re-triggers same waypoint. */
   mapPick?: RouteMapPick | null
+  /** Render inside side menu (no floating chrome). */
+  embedded?: boolean
 }
 
 export function RoutePlannerPanel({
@@ -107,6 +110,7 @@ export function RoutePlannerPanel({
   onPlanChange,
   onSelectIndex,
   mapPick = null,
+  embedded = false,
 }: Props) {
   const locaisById = useMemo(() => {
     const m = new Map<number, string>()
@@ -306,12 +310,17 @@ export function RoutePlannerPanel({
   const ritmoHint = RITMOS.find((r) => r.value === ritmo)?.hint
 
   return (
-    <aside className="route-planner" aria-label="Calcular rota">
+    <aside
+      className={embedded ? 'route-planner route-planner--embedded' : 'route-planner'}
+      aria-label="Calcular rota"
+    >
       <div className="route-planner__head">
         <h2 className="route-planner__title">Calcular rota</h2>
-        <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Fechar">
-          ×
-        </button>
+        {onClose ? (
+          <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Fechar">
+            ×
+          </button>
+        ) : null}
       </div>
       <WaypointCombobox
         label="De"
@@ -461,11 +470,17 @@ export function RoutePlannerPanel({
           {plan.map((r, i) => {
             const tempo = r.tempo_texto || `${r.tempo_horas} h`
             const meta = `${r.distancia_milhas} mi · ${tempo} · Dentro ${r.custo_dentro_bp} · Fora ${r.custo_fora_bp}`
+            const itemClass = [
+              'route-planner__item',
+              i === selectedIndex ? 'is-selected' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')
             return (
               <li key={`${r.waypoint_ids.join('-')}-${r.tipos.join('-')}-${i}`}>
                 <button
                   type="button"
-                  className={`route-planner__item${i === selectedIndex ? ' is-selected' : ''}`}
+                  className={itemClass}
                   onClick={() => onSelectIndex(i)}
                 >
                   <strong className="route-planner__item-title">

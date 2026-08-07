@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     allowed_image_types: str = "image/jpeg,image/png,image/webp,image/gif"
     admin_user: str | None = Field(default=None, validation_alias="ADMIN_USER")
     admin_password: str | None = Field(default=None, validation_alias="ADMIN_PASSWORD")
+    # Overnight stops: ± fraction of daily mile budget to snap to a Local on path
+    tolerancia_pernoite_pct: float = 0.20
 
     @property
     def cors_origin_list(self) -> list[str]:

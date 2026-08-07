@@ -9,8 +9,11 @@ from typing import Literal
 import networkx as nx
 from sqlmodel import Session, select
 
+from app.config import settings
+from app.models.local import Local
 from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
 from app.schemas.routes import ModoTransporte, Point, PreferenciaVia, RoutePlanItem
+from app.services.overnight import milhas_por_dia_from_route, simulate_overnights_and_fatigue
 
 HORAS_POR_DIA: dict[str, float] = {
     "normal": 6.0,
@@ -375,6 +378,8 @@ def best_pure_candidate(
     waypoints: dict[int, Waypoint],
     by_id: dict[int, RouteSegment],
     horas_por_dia: float,
+    ritmo: str = "normal",
+    local_names: dict[int, str] | None = None,
 ) -> Candidate | None:
     """Best continuous path using only `tipo`, or None if disconnected."""
     g_t = build_type_restricted_graph(parallels, tipo, ordenacao, preferencia_via)
@@ -387,7 +392,15 @@ def best_pure_candidate(
     edge_attrs = pure_edge_attrs_for_path(parallels, path, tipo, ordenacao, preferencia_via)
     if not edge_attrs:
         return None
-    item = item_from_edges(path, edge_attrs, waypoints, by_id, horas_por_dia)
+    item = item_from_edges(
+        path,
+        edge_attrs,
+        waypoints,
+        by_id,
+        horas_por_dia,
+        ritmo=ritmo,
+        local_names=local_names,
+    )
     if item.tipos != [tipo]:
         return None
     share = preferred_miles_share(edge_attrs, preferencia_via)
@@ -482,6 +495,8 @@ def item_from_edges(
     waypoints: dict[int, Waypoint],
     by_id: dict[int, RouteSegment],
     horas_por_dia: float,
+    ritmo: str = "normal",
+    local_names: dict[int, str] | None = None,
 ) -> RoutePlanItem:
     dist = 0.0
     tempo = 0.0
@@ -497,6 +512,19 @@ def item_from_edges(
         if t not in tipos:
             tipos.append(t)
     dias, resto, texto = format_tempo_texto(tempo, horas_por_dia)
+    march_days, milhas_por_dia = milhas_por_dia_from_route(dist, dias, resto)
+    max_intermediate = max(0, march_days - 1)
+    pernoites, f_saldo, f_pico, f_aviso, f_morte, dias_visuais = simulate_overnights_and_fatigue(
+        path,
+        edge_attrs,
+        waypoints,
+        by_id,
+        local_names or {},
+        milhas_por_dia,
+        settings.tolerancia_pernoite_pct,
+        ritmo,
+        max_intermediate=max_intermediate,
+    )
     return RoutePlanItem(
         waypoint_ids=path,
         distancia_milhas=round(dist, 2),
@@ -508,6 +536,12 @@ def item_from_edges(
         geometria=geometry_for_edges(path, edge_attrs, waypoints, by_id),
         custo_dentro_bp=round(custo_dentro, 2),
         custo_fora_bp=round(custo_fora, 2),
+        pernoites=pernoites,
+        fadiga_saldo=f_saldo,
+        fadiga_pico=f_pico,
+        fadiga_aviso=f_aviso,
+        fadiga_morte=f_morte,
+        dias_visuais=dias_visuais,
     )
 
 
@@ -535,6 +569,9 @@ def plan_routes(
         raise ValueError(f"Ritmo inválido: {ritmo}")
 
     effective_mph, zerar_custos = resolve_speed_and_zero_costs(modo_transporte, velocidade_media_mph)
+
+    local_names = {loc.id: loc.nome for loc in session.exec(select(Local)).all() if loc.id is not None}
+
     g, waypoints, by_id, parallels = build_graph(
         session,
         effective_mph,
@@ -563,7 +600,15 @@ def plan_routes(
                 if sig in seen:
                     continue
                 seen.add(sig)
-                item = item_from_edges(path, edge_attrs, waypoints, by_id, horas_por_dia)
+                item = item_from_edges(
+                    path,
+                    edge_attrs,
+                    waypoints,
+                    by_id,
+                    horas_por_dia,
+                    ritmo=ritmo,
+                    local_names=local_names,
+                )
                 share = preferred_miles_share(edge_attrs, pref)
                 candidates.append((item, share, sig))
     except nx.NetworkXNoPath:
@@ -581,6 +626,8 @@ def plan_routes(
             waypoints,
             by_id,
             horas_por_dia,
+            ritmo=ritmo,
+            local_names=local_names,
         )
         if pure is None:
             continue

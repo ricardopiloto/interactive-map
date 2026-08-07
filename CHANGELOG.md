@@ -5,6 +5,24 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.7.0] — 2026-08-07
+
+Planeamento de viagem com pernoites, fadiga no mapa e Calcular rota no menu lateral (specs 062–065). As notas intermédias 0.6.11–0.6.14 ficam documentadas nesta release.
+
+### Added
+
+- **Pernoites**: simulação alinhada ao tempo publicado da rota (dias de marcha M a partir de D/R; orçamento diário = milhas ÷ M; no máximo M−1 paragens); Local dentro de ±20% do orçamento diário ou ao relento; chegada não conta como pernoite
+- **Fadiga (ritmo intenso)**: +1 por dia de marcha, −1 com noite em Local; saldo/pico na API; no mapa, trechos residuais em vermelho mais escuro conforme o saldo (até o máximo da escala); hover no segmento indica ganho de fadiga
+- **API**: `pernoites`, campos de fadiga e `dias_visuais` (geometria por dia, `residual`, `fadiga_apos`) em cada item do plano
+- **Mapa**: pin azul pequeno ao relento; badge de pernoite no pin de Local existente (sem segundo pin)
+- **UI**: separador **Rota** no menu lateral (paridade com Locais/NPCs/História); mapa-pick De/Para e overlay de viagem só com Rota activo
+- `Settings.tolerancia_pernoite_pct` (default 0.20)
+
+### Changed
+
+- **Calcular rota**: painel flutuante removido; lista sem resumos textuais de pernoite/fadiga (só meta de viagem — distância/tempo/custos)
+- **Mapa**: rota seleccionada em vermelho base; alternativas tracejadas/mais claras; fadiga escurece o vermelho nos dias residuais
+
 ## [0.6.10.1] — 2026-08-06
 
 Correcção do versionamento e do build Docker do mapa → Calcular rota (060/061).
