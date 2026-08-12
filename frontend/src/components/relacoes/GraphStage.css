@@ -1,0 +1,154 @@
+.graph-stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-text) 6%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.graph-stage:active {
+  cursor: grabbing;
+}
+
+.graph-stage__world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.graph-stage__edges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.graph-stage__edge-group {
+  pointer-events: auto;
+}
+
+.graph-stage__edge-line {
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+
+.graph-stage__edge-hit {
+  cursor: pointer;
+}
+
+.graph-stage__edge-label-bg {
+  fill: var(--color-surface);
+  stroke: var(--color-divider);
+  stroke-width: 1;
+}
+
+.graph-stage__edge-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.graph-node {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 2px; /* keep in sync with DISC_PAD_TOP in graphLayout.ts */
+  transition:
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s ease-out;
+  cursor: pointer;
+}
+
+.graph-node__disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.graph-node--npc .graph-node__disc {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-divider);
+  color: var(--color-text);
+}
+
+.graph-node--pj .graph-node__disc {
+  background: color-mix(in srgb, var(--color-accent) 22%, var(--color-surface));
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-accent-100);
+}
+
+.graph-node--selected .graph-node__disc {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+.graph-node--morto .graph-node__disc {
+  filter: grayscale(1);
+  opacity: 0.75;
+}
+
+.graph-node__name {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.graph-node--morto .graph-node__name {
+  text-decoration: line-through;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+.graph-node__papel {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.graph-stage__zoom {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-divider);
+}

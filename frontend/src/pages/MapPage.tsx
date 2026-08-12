@@ -10,6 +10,7 @@ import {
 import { CampaignMap, type PinFocusRequest } from '../components/map/CampaignMap'
 import { PinModal } from '../components/common/PinModal'
 import { SideMenu, type SideTab } from '../components/sidebar/SideMenu'
+import { CodexHeader } from '../components/layout/CodexHeader'
 import { AdminGateDialog } from '../components/gm/AdminGateDialog'
 import { RouteDigitizerView } from '../components/gm/RouteDigitizerView'
 import { RoutePlannerPanel } from '../components/routes/RoutePlannerPanel'
@@ -61,6 +62,7 @@ export function MapPage() {
   const [npcDraft, setNpcDraft] = useState<{
     id?: number
     nome: string
+    papel: string
     descricao: string
     faccao: string
     status: NPCStatus
@@ -228,6 +230,8 @@ export function MapPage() {
     try {
       const payload = {
         nome: npcDraft.nome.trim(),
+        tipo: 'npc' as const,
+        papel: npcDraft.papel.trim() || null,
         descricao: npcDraft.descricao,
         faccao: npcDraft.faccao.trim() || null,
         status: npcDraft.status,
@@ -334,6 +338,7 @@ export function MapPage() {
           onAdd={() =>
             setNpcDraft({
               nome: '',
+              papel: '',
               descricao: '',
               faccao: '',
               status: 'vivo',
@@ -345,6 +350,7 @@ export function MapPage() {
             setNpcDraft({
               id: npc.id,
               nome: npc.nome,
+              papel: npc.papel ?? '',
               descricao: npc.descricao,
               faccao: npc.faccao ?? '',
               status: npc.status ?? 'desconhecido',
@@ -424,40 +430,34 @@ export function MapPage() {
       )}
 
       <main className="map-page__main">
-        <header className="map-page__top">
-          <div className="map-page__top-left">
-            <span className="map-page__brand">Codex da Campanha</span>
-            <span className="map-page__subtitle text-muted">Mapa da campanha WFRP4e</span>
-            {isGm && <span className="tag tag-accent">Modo GM</span>}
-            {isGm && (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => {
-                  setRouteDigitizerOpen(true)
-                  setPlacement('none')
-                  setTravelPlan([])
-                  setTravelSelectedIndex(0)
-                }}
-              >
-                Rede de rotas
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            className="btn btn-ghost map-page__corner"
-            onClick={() => {
-              if (isGm) logoutGm()
-              else {
-                setGateError(false)
-                setShowGate(true)
-              }
-            }}
-          >
-            {isGm ? 'Modo GM · Sair' : 'Acesso restrito (GM)'}
-          </button>
-        </header>
+        <CodexHeader
+          isGm={isGm}
+          onToggleGm={() => {
+            if (isGm) logoutGm()
+            else {
+              setGateError(false)
+              setShowGate(true)
+            }
+          }}
+          extraLeft={
+            <>
+              {isGm && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setRouteDigitizerOpen(true)
+                    setPlacement('none')
+                    setTravelPlan([])
+                    setTravelSelectedIndex(0)
+                  }}
+                >
+                  Rede de rotas
+                </button>
+              )}
+            </>
+          }
+        />
 
         {loading && <p className="map-page__status">Carregando campanha…</p>}
         {error && <p className="map-page__status map-page__status--error">{error}</p>}
@@ -608,6 +608,7 @@ export function MapPage() {
         <NpcFormDialog
           title={npcDraft.isNew ? 'Novo NPC' : 'Editar NPC'}
           nome={npcDraft.nome}
+          papel={npcDraft.papel}
           descricao={npcDraft.descricao}
           faccao={npcDraft.faccao}
           status={npcDraft.status}

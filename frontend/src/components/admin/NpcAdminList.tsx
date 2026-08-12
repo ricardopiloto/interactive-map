@@ -4,6 +4,7 @@ import { ImageSlot } from '../media/ImageSlot'
 interface NpcFormDialogProps {
   title: string
   nome: string
+  papel?: string
   descricao: string
   faccao: string
   status: NPCStatus
@@ -11,6 +12,7 @@ interface NpcFormDialogProps {
   onChange: (
     patch: Partial<{
       nome: string
+      papel: string
       descricao: string
       faccao: string
       status: NPCStatus
@@ -24,6 +26,7 @@ interface NpcFormDialogProps {
 export function NpcFormDialog({
   title,
   nome,
+  papel = '',
   descricao,
   faccao,
   status,
@@ -46,9 +49,18 @@ export function NpcFormDialog({
             fit="contain"
             className={`npc-form__portrait${retrato_url ? '' : ' npc-form__portrait--empty'}`}
             onUploaded={(url) => onChange({ retrato_url: url })}
-          />          <div className="field">
+          />
+          <div className="field">
             <label>Nome</label>
             <input className="input" value={nome} onChange={(e) => onChange({ nome: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Papel (opcional)</label>
+            <input
+              className="input"
+              value={papel}
+              onChange={(e) => onChange({ papel: e.target.value })}
+            />
           </div>
           <div className="field">
             <label>Descrição</label>

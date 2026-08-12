@@ -36,7 +36,7 @@ export function useCampaignData(): CampaignData {
         ])
         if (cancelled) return
         setLocais(locaisData)
-        setNpcs(npcsData)
+        setNpcs(npcsData.filter((n) => (n.tipo ?? 'npc') === 'npc'))
         setArcos(arcosData)
         setGrupo(grupoData)
       } catch (err) {

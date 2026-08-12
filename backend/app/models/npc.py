@@ -16,11 +16,20 @@ class NPCStatus(str, Enum):
     desconhecido = "desconhecido"
 
 
+class PersonagemTipo(str, Enum):
+    pj = "pj"
+    npc = "npc"
+
+
 class NPC(SQLModel, table=True):
+    """Personagem unificado (PJ|NPC). Table name kept as `npc` for SQLite stability."""
+
     __tablename__ = "npc"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     nome: str = Field(max_length=200, index=True)
+    tipo: PersonagemTipo = Field(default=PersonagemTipo.npc, max_length=10)
+    papel: Optional[str] = Field(default=None, max_length=200)
     descricao: str = Field(default="", max_length=10000)
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = Field(default=NPCStatus.desconhecido)

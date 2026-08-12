@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models.npc import NPC
+from app.models.npc import NPC, PersonagemTipo
 from app.schemas.npc import NPCRead
 
 router = APIRouter()
@@ -12,6 +12,8 @@ def _to_read(npc: NPC) -> NPCRead:
     return NPCRead(
         id=npc.id,  # type: ignore[arg-type]
         nome=npc.nome,
+        tipo=npc.tipo if npc.tipo is not None else PersonagemTipo.npc,
+        papel=npc.papel,
         descricao=npc.descricao,
         faccao=npc.faccao,
         status=npc.status,

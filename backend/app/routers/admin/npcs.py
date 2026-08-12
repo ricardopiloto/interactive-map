@@ -3,6 +3,7 @@ from sqlmodel import Session
 
 from app.database import get_session
 from app.models.npc import NPC
+from app.routers.admin.personagens import _delete_vinculos_for
 from app.routers.public.npcs import _to_read
 from app.schemas.npc import NPCCreate, NPCRead, NPCUpdate
 from app.services.rate_limit import limiter
@@ -55,5 +56,6 @@ def delete_npc(
     npc = session.get(NPC, npc_id)
     if not npc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NPC não encontrado")
+    _delete_vinculos_for(session, npc_id)
     session.delete(npc)
     session.commit()

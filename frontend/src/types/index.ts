@@ -1,4 +1,12 @@
 export type NPCStatus = 'vivo' | 'morto' | 'desaparecido' | 'desconhecido'
+export type PersonagemTipo = 'pj' | 'npc'
+export type VinculoTipo =
+  | 'aliado'
+  | 'amizade'
+  | 'inimizade'
+  | 'romance'
+  | 'familia'
+  | 'conhecido'
 export type GrupoFormato = 'bandeira' | 'brasao'
 export type RouteTipo = 'estrada' | 'rio' | 'trilha'
 export type Ritmo = 'normal' | 'intenso'
@@ -25,11 +33,25 @@ export interface Local {
 export interface NPC {
   id: number
   nome: string
+  tipo?: PersonagemTipo
+  papel?: string | null
   descricao: string
   faccao: string | null
   status: NPCStatus | null
   retrato_url: string | null
   local_ids: number[]
+}
+
+/** Personagem unificado (PJ|NPC) — mesma API/shape do NPC evoluído. */
+export type Personagem = Required<Pick<NPC, 'tipo'>> & NPC
+
+export interface Vinculo {
+  id: number
+  personagem_a_id: number
+  personagem_b_id: number
+  tipo: VinculoTipo
+  nota: string
+  publico: boolean
 }
 
 export interface Arco {

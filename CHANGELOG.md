@@ -5,6 +5,34 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.8.2] — 2026-08-11
+
+### Changed
+
+- **Relações**: linhas da rede visíveis a ~18% sem selecção; após a animação de foco, arestas do personagem a ~90% e as restantes ténues (spec 068)
+
+## [0.8.1] — 2026-08-11
+
+### Fixed
+
+- **Relações**: linhas de vínculo ancoram no centro do disco (não no bloco nome/papel); etiquetas no médio disco–disco (spec 067)
+
+## [0.8.0] — 2026-08-11
+
+Rede de Relações: segunda aba do Codex com grafo PJ/NPC, vínculos tipados e visibilidade pública controlada pelo GM (spec 066).
+
+### Added
+
+- **Relações** (`/relacoes`): anéis PJ/NPC, selecção com animação, linhas só após foco; filtros, isolar, painel de detalhe
+- **Personagem** unificado (evolui NPC): `tipo` pj|npc, `papel`; APIs `/api/personagens` (+ aliases `/api/npcs`)
+- **Vínculo**: tipos (aliado, amizade, inimizade, romance, família, conhecido), nota, flag `publico` (default false); jogadores só vêem públicos
+- **GM**: + Personagem / + Conexão; editar linha/lista; apagar personagem com cascade de vínculos
+- Nav partilhada **Mapa | Relações** (`CodexHeader`); seed Ubersreik (~4 PJs, ~7 NPCs, ~15 vínculos)
+
+### Changed
+
+- Formulário de NPC no mapa inclui **papel**; lista do mapa exclui personagens `tipo=pj`
+
 ## [0.7.0] — 2026-08-07
 
 Planeamento de viagem com pernoites, fadiga no mapa e Calcular rota no menu lateral (specs 062–065). As notas intermédias 0.6.11–0.6.14 ficam documentadas nesta release.

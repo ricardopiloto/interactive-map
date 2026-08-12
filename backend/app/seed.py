@@ -16,12 +16,101 @@ from app.database import engine, init_db
 from app.models.arco import Arco
 from app.models.grupo import GrupoPosicao
 from app.models.local import Local
-from app.models.npc import NPC, NPCStatus
+from app.models.npc import NPC, NPCStatus, PersonagemTipo
+from app.models.vinculo import Vinculo, VinculoTipo
+
+
+def _pair(a: int, b: int) -> tuple[int, int]:
+    return (a, b) if a < b else (b, a)
+
+
+def seed_relacoes(session: Session) -> None:
+    """Idempotent: add PJs / extra NPCs / vínculos if rede ainda vazia."""
+    if session.exec(select(Vinculo)).first():
+        print("Seed relações ignorado: já existem vínculos.")
+        return
+
+    # Ensure existing NPCs have tipo/papel
+    existing = list(session.exec(select(NPC)).all())
+    papel_by_nome = {
+        "Doutor Hedrich": "Físico",
+        "Ranulf Grimsby": "Contrabandista",
+        "Irmã Wilhelmina": "Sacerdotisa de Shallya",
+        "Barão von Kessler": "Barão",
+        "Skrik Orelha-Fendida": "Agente Skaven",
+    }
+    for n in existing:
+        if getattr(n, "tipo", None) is None:
+            n.tipo = PersonagemTipo.npc
+        if not n.papel and n.nome in papel_by_nome:
+            n.papel = papel_by_nome[n.nome]
+        session.add(n)
+    session.flush()
+
+    by_nome = {n.nome: n for n in session.exec(select(NPC)).all()}
+
+    extras = [
+        ("Capitã Helga Brunn", PersonagemTipo.npc, "Capitã da Guarda", "Guarda de Ubersreik", NPCStatus.vivo, "Chefe da guarda municipal; pragmática e desconfiada."),
+        ("Greta Mole", PersonagemTipo.npc, "Curandeira", None, NPCStatus.vivo, "Curandeira de aldeia; conhece remédios que o Colégio ignora."),
+        ("Elara Voss", PersonagemTipo.pj, "Caçadora de Recompensas", None, NPCStatus.vivo, "PJ — caça recompensas nas estradas do Reikland."),
+        ("Marcus Stein", PersonagemTipo.pj, "Soldado", "Exército Imperial", NPCStatus.vivo, "PJ — veterano de campanhas no norte."),
+        ("Lila Nacht", PersonagemTipo.pj, "Ladina", None, NPCStatus.vivo, "PJ — mãos leves e ouvidos abertos."),
+        ("Brother Tomas", PersonagemTipo.pj, "Iniciado de Sigmar", "Culto de Sigmar", NPCStatus.vivo, "PJ — fé fervorosa e pouco tato social."),
+    ]
+    for nome, tipo, papel, faccao, status, desc in extras:
+        if nome in by_nome:
+            continue
+        row = NPC(
+            nome=nome,
+            tipo=tipo,
+            papel=papel,
+            faccao=faccao,
+            status=status,
+            descricao=desc,
+        )
+        session.add(row)
+        by_nome[nome] = row
+    session.flush()
+
+    def pid(nome: str) -> int:
+        return by_nome[nome].id  # type: ignore[return-value]
+
+    links: list[tuple[str, str, VinculoTipo, str, bool]] = [
+        ("Elara Voss", "Marcus Stein", VinculoTipo.aliado, "Companheiros de estrada desde Bögenhafen", True),
+        ("Elara Voss", "Lila Nacht", VinculoTipo.amizade, "Lila deve um favor a Elara — e odeia admitir", True),
+        ("Marcus Stein", "Brother Tomas", VinculoTipo.aliado, "Tomas cura; Marcus protege", True),
+        ("Lila Nacht", "Ranulf Grimsby", VinculoTipo.conhecido, "Negócios no submundo, nada pessoal", True),
+        ("Brother Tomas", "Irmã Wilhelmina", VinculoTipo.amizade, "Respeito entre cultos — com ressalvas", True),
+        ("Doutor Hedrich", "Irmã Wilhelmina", VinculoTipo.inimizade, "Métodos vs compaixão; quase se agridem em público", True),
+        ("Doutor Hedrich", "Barão von Kessler", VinculoTipo.conhecido, "O barão financiava pesquisas… até morrer", False),
+        ("Barão von Kessler", "Skrik Orelha-Fendida", VinculoTipo.aliado, "Pacto secreto no Reikwald", False),
+        ("Ranulf Grimsby", "Skrik Orelha-Fendida", VinculoTipo.inimizade, "Ranulf viu demais no esgoto", False),
+        ("Capitã Helga Brunn", "Marcus Stein", VinculoTipo.conhecido, "Ex-colegas de formação", True),
+        ("Capitã Helga Brunn", "Ranulf Grimsby", VinculoTipo.inimizade, "Quer vê-lo atrás das grades", True),
+        ("Greta Mole", "Irmã Wilhelmina", VinculoTipo.amizade, "Trocam remédios e fofocas de aldeia", True),
+        ("Greta Mole", "Elara Voss", VinculoTipo.conhecido, "Curou um ferimento feio na caçada", True),
+        ("Lila Nacht", "Brother Tomas", VinculoTipo.romance, "Segredo constrangedor do grupo", False),
+        ("Elara Voss", "Doutor Hedrich", VinculoTipo.familia, "Primo distante — ela não gosta de lembrar", False),
+    ]
+    for na, nb, tipo, nota, publico in links:
+        a, b = _pair(pid(na), pid(nb))
+        session.add(
+            Vinculo(
+                personagem_a_id=a,
+                personagem_b_id=b,
+                tipo=tipo,
+                nota=nota,
+                publico=publico,
+            )
+        )
+    session.commit()
+    print("Seed relações: PJs/NPCs extras e ~15 vínculos aplicados.")
 
 
 def seed(session: Session) -> None:
     if session.exec(select(Arco)).first():
         print("Seed ignorado: já existem arcos no banco.")
+        seed_relacoes(session)
         return
 
     a1 = Arco(
@@ -41,30 +130,40 @@ def seed(session: Session) -> None:
     npcs = [
         NPC(
             nome="Doutor Hedrich",
+            tipo=PersonagemTipo.npc,
+            papel="Físico",
             descricao="Físico do Colégio da Física, investiga a origem da peste com métodos nem sempre ortodoxos.",
             faccao="Colégio da Física",
             status=NPCStatus.vivo,
         ),
         NPC(
             nome="Ranulf Grimsby",
+            tipo=PersonagemTipo.npc,
+            papel="Contrabandista",
             descricao="Contrabandista com contatos no submundo de Ubersreik; sabe mais do que aparenta.",
             faccao=None,
             status=NPCStatus.desaparecido,
         ),
         NPC(
             nome="Irmã Wilhelmina",
+            tipo=PersonagemTipo.npc,
+            papel="Sacerdotisa de Shallya",
             descricao="Sacerdotisa de Shallya que cuida dos doentes sem pedir nada em troca — ou quase nada.",
             faccao="Culto de Shallya",
             status=NPCStatus.vivo,
         ),
         NPC(
             nome="Barão von Kessler",
+            tipo=PersonagemTipo.npc,
+            papel="Barão",
             descricao="Nobre local com ligações suspeitas a rituais realizados no Reikwald.",
             faccao="Nobreza de Ubersreik",
             status=NPCStatus.morto,
         ),
         NPC(
             nome="Skrik Orelha-Fendida",
+            tipo=PersonagemTipo.npc,
+            papel="Agente Skaven",
             descricao="Agente skaven avistado nos arredores da torre abandonada, provável ligação ao Clã Eshin.",
             faccao="Clã Eshin",
             status=NPCStatus.desaparecido,
@@ -209,6 +308,7 @@ def seed(session: Session) -> None:
 
     session.commit()
     print("Seed aplicado: 2 arcos, 5 NPCs, 5 locais, conexões de saída, rotas de viagem, posição do grupo.")
+    seed_relacoes(session)
 
 
 def main() -> None:

@@ -6,9 +6,11 @@ import type {
   ModoTransporte,
   NPC,
   OrdenacaoRota,
+  Personagem,
   PreferenciaVia,
   Ritmo,
   RoutePlanResponse,
+  Vinculo,
   Waypoint,
 } from '../types'
 
@@ -19,6 +21,12 @@ export const campaignApi = {
   listNpcs: (q?: string) =>
     api.get<NPC[]>(`/api/npcs${q ? `?q=${encodeURIComponent(q)}` : ''}`),
   getNpc: (id: number) => api.get<NPC>(`/api/npcs/${id}`),
+  listPersonagens: (q?: string) =>
+    api.get<Personagem[]>(
+      `/api/personagens${q ? `?q=${encodeURIComponent(q)}` : ''}`,
+    ),
+  getPersonagem: (id: number) => api.get<Personagem>(`/api/personagens/${id}`),
+  listVinculos: () => api.get<Vinculo[]>('/api/vinculos'),
   listArcos: () => api.get<Arco[]>('/api/arcos'),
   getArco: (id: number) => api.get<Arco>(`/api/arcos/${id}`),
   getGrupo: () => api.get<GrupoPosicao>('/api/grupo'),

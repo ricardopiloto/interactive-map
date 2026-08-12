@@ -36,6 +36,14 @@ def _migrate_sqlite() -> None:
                 )
             )
 
+        npc_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(npc)")).fetchall()}
+        if npc_cols and "tipo" not in npc_cols:
+            conn.execute(
+                text("ALTER TABLE npc ADD COLUMN tipo VARCHAR(10) NOT NULL DEFAULT 'npc'")
+            )
+        if npc_cols and "papel" not in npc_cols:
+            conn.execute(text("ALTER TABLE npc ADD COLUMN papel VARCHAR(200)"))
+
 
 def init_db() -> None:
     # Register all table models on SQLModel.metadata before create_all.

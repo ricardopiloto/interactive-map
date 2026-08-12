@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { MapPage } from './pages/MapPage'
+import { RelacoesPage } from './pages/RelacoesPage'
 
 function AdminRedirect() {
   const navigate = useNavigate()
@@ -15,6 +16,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<MapPage />} />
+        <Route path="/relacoes" element={<RelacoesPage />} />
         <Route path="/admin" element={<AdminRedirect />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

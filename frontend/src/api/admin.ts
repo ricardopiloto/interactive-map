@@ -7,8 +7,10 @@ import type {
   MapPoint,
   MapScale,
   NPC,
+  Personagem,
   RouteSegment,
   RouteTipo,
+  Vinculo,
   Waypoint,
 } from '../types'
 
@@ -28,10 +30,30 @@ export interface LocalPayload {
 
 export interface NPCPayload {
   nome: string
+  tipo?: NPC['tipo']
+  papel?: string | null
   descricao?: string
   faccao?: string | null
   status?: NPC['status']
   retrato_url?: string | null
+}
+
+export interface PersonagemPayload {
+  nome: string
+  tipo: NonNullable<NPC['tipo']>
+  papel?: string | null
+  descricao?: string
+  faccao?: string | null
+  status?: NPC['status']
+  retrato_url?: string | null
+}
+
+export interface VinculoPayload {
+  personagem_a_id: number
+  personagem_b_id: number
+  tipo: Vinculo['tipo']
+  nota?: string
+  publico?: boolean
 }
 
 export interface ArcoPayload {
@@ -67,6 +89,19 @@ export const adminApi = {
   updateNpc: (id: number, body: Partial<NPCPayload>) =>
     api.adminPut<NPC>(`/api/admin/npcs/${id}`, body),
   deleteNpc: (id: number) => api.adminDelete(`/api/admin/npcs/${id}`),
+
+  createPersonagem: (body: PersonagemPayload) =>
+    api.adminPost<Personagem>('/api/admin/personagens', body),
+  updatePersonagem: (id: number, body: Partial<PersonagemPayload>) =>
+    api.adminPut<Personagem>(`/api/admin/personagens/${id}`, body),
+  deletePersonagem: (id: number) => api.adminDelete(`/api/admin/personagens/${id}`),
+
+  listVinculosAdmin: () => api.adminGet<Vinculo[]>('/api/admin/vinculos'),
+  createVinculo: (body: VinculoPayload) =>
+    api.adminPost<Vinculo>('/api/admin/vinculos', body),
+  updateVinculo: (id: number, body: Partial<VinculoPayload>) =>
+    api.adminPut<Vinculo>(`/api/admin/vinculos/${id}`, body),
+  deleteVinculo: (id: number) => api.adminDelete(`/api/admin/vinculos/${id}`),
 
   createArco: (body: ArcoPayload) => api.adminPost<Arco>('/api/admin/arcos', body),
   updateArco: (id: number, body: Partial<ArcoPayload>) =>
