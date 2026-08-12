@@ -21,6 +21,12 @@ import {
   type Point,
 } from './graphLayout'
 import { vinculoStyle } from './vinculoStyles'
+import {
+  edgeIsDashed,
+  edgeMatchesTipos,
+  isDuasVias,
+  tipColors,
+} from './vinculoDirection'
 import './GraphStage.css'
 
 const MIN_SCALE = 0.35
@@ -114,7 +120,7 @@ export function GraphStage({
   }, [])
 
   const filteredVinculos = useMemo(
-    () => vinculos.filter((v) => activeTipos.has(v.tipo)),
+    () => vinculos.filter((v) => edgeMatchesTipos(v, activeTipos)),
     [vinculos, activeTipos],
   )
 
@@ -278,22 +284,56 @@ export function GraphStage({
         }}
       >
         <svg className="graph-stage__edges" aria-hidden="true">
+          <defs>
+            {visibleEdges.filter(isDuasVias).map((v) => {
+              const aPos = positions.get(v.personagem_a_id)
+              const bPos = positions.get(v.personagem_b_id)
+              if (!aPos || !bPos) return null
+              const a = discCenterFromNodePos(aPos)
+              const b = discCenterFromNodePos(bPos)
+              const { colorA, colorB } = tipColors(v)
+              return (
+                <linearGradient
+                  key={`grad-${v.id}`}
+                  id={`vinculo-grad-${v.id}`}
+                  gradientUnits="userSpaceOnUse"
+                  x1={a.x}
+                  y1={a.y}
+                  x2={b.x}
+                  y2={b.y}
+                >
+                  <stop offset="0%" stopColor={colorA} />
+                  <stop offset="45%" stopColor={colorA} />
+                  <stop offset="55%" stopColor={colorB} />
+                  <stop offset="100%" stopColor={colorB} />
+                </linearGradient>
+              )
+            })}
+          </defs>
           {visibleEdges.map((v) => {
               const aPos = positions.get(v.personagem_a_id)
               const bPos = positions.get(v.personagem_b_id)
               if (!aPos || !bPos) return null
               const a = discCenterFromNodePos(aPos)
               const b = discCenterFromNodePos(bPos)
-              const style = vinculoStyle(v.tipo)
+              const duas = isDuasVias(v)
+              const styleA = vinculoStyle(v.tipo_ab)
+              const styleB = vinculoStyle(v.tipo_ba ?? v.tipo_ab)
+              const style = styleA
               const highlighted = showEdges && isFocusEdge(v)
               const dimOpacity = selectedId != null ? EDGE_OPACITY_DIM_SELECTED : EDGE_OPACITY_DIM
+              const opacity = highlighted ? EDGE_OPACITY_FOCUS : dimOpacity
               const midX = (a.x + b.x) / 2
               const midY = (a.y + b.y) / 2
-              const labelVisible =
+              const nearA = { x: a.x + (b.x - a.x) * 0.22, y: a.y + (b.y - a.y) * 0.22 }
+              const nearB = { x: a.x + (b.x - a.x) * 0.78, y: a.y + (b.y - a.y) * 0.78 }
+              const reciprocalLabelVisible =
+                !duas &&
                 highlighted &&
                 (rotulosVinculo === 'foco' ||
                   showAlwaysLabels ||
                   (rotulosVinculo === 'hover' && hoveredEdgeId === v.id))
+              const stroke = duas ? `url(#vinculo-grad-${v.id})` : style.color
               return (
                 <g key={v.id} className="graph-stage__edge-group">
                   <line
@@ -301,10 +341,10 @@ export function GraphStage({
                     y1={a.y}
                     x2={b.x}
                     y2={b.y}
-                    stroke={style.color}
+                    stroke={stroke}
                     strokeWidth={highlighted ? 2.25 : 2}
-                    strokeDasharray={style.dashed ? '6 5' : undefined}
-                    opacity={highlighted ? EDGE_OPACITY_FOCUS : dimOpacity}
+                    strokeDasharray={edgeIsDashed(v) ? '6 5' : undefined}
+                    opacity={opacity}
                     className="graph-stage__edge-line"
                   />
                   <line
@@ -322,7 +362,47 @@ export function GraphStage({
                       onEdgeClick?.(v.id)
                     }}
                   />
-                  {labelVisible && (
+                  {duas && (
+                    <>
+                      <g transform={`translate(${nearA.x}, ${nearA.y})`} opacity={opacity}>
+                        <rect
+                          x={-36}
+                          y={-10}
+                          width={72}
+                          height={20}
+                          rx={6}
+                          className="graph-stage__edge-label-bg"
+                        />
+                        <text
+                          textAnchor="middle"
+                          dy="4"
+                          className="graph-stage__edge-label"
+                          fill={styleA.color}
+                        >
+                          {styleA.label}
+                        </text>
+                      </g>
+                      <g transform={`translate(${nearB.x}, ${nearB.y})`} opacity={opacity}>
+                        <rect
+                          x={-36}
+                          y={-10}
+                          width={72}
+                          height={20}
+                          rx={6}
+                          className="graph-stage__edge-label-bg"
+                        />
+                        <text
+                          textAnchor="middle"
+                          dy="4"
+                          className="graph-stage__edge-label"
+                          fill={styleB.color}
+                        >
+                          {styleB.label}
+                        </text>
+                      </g>
+                    </>
+                  )}
+                  {reciprocalLabelVisible && (
                     <g transform={`translate(${midX}, ${midY})`}>
                       <rect
                         x={-42}

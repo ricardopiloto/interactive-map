@@ -5,3 +5,9 @@
   font-size: 14px;
   cursor: pointer;
 }
+
+.vinculo-form__modo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}

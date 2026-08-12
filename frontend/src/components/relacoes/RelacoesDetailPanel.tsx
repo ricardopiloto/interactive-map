@@ -1,5 +1,10 @@
 import type { Personagem, Vinculo } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
+import {
+  isDuasVias,
+  notaFromPerspective,
+  tipoFromPerspective,
+} from './vinculoDirection'
 import { vinculoStyle } from './vinculoStyles'
 import './RelacoesDetailPanel.css'
 
@@ -88,7 +93,12 @@ export function RelacoesDetailPanel({
         {vinculos.map((v) => {
           const otherId = v.personagem_a_id === personagem.id ? v.personagem_b_id : v.personagem_a_id
           const other = personagemById.get(otherId)
-          const style = vinculoStyle(v.tipo)
+          const myTipo = tipoFromPerspective(v, personagem.id)
+          const theirTipo = tipoFromPerspective(v, otherId)
+          const myNota = notaFromPerspective(v, personagem.id)
+          const theirNota = notaFromPerspective(v, otherId)
+          const style = vinculoStyle(myTipo)
+          const duas = isDuasVias(v)
           return (
             <div key={v.id} className="relacoes-detail__vinculo">
               <div className="relacoes-detail__vinculo-row">
@@ -105,7 +115,16 @@ export function RelacoesDetailPanel({
                   {style.label}
                 </span>
               </div>
-              {v.nota && <p className="relacoes-detail__vinculo-nota">{v.nota}</p>}
+              {myNota && <p className="relacoes-detail__vinculo-nota">{myNota}</p>}
+              {duas && (
+                <p className="relacoes-detail__vinculo-return">
+                  Vê-te como{' '}
+                  <span style={{ color: vinculoStyle(theirTipo).color }}>
+                    {vinculoStyle(theirTipo).label}
+                  </span>
+                  {theirNota ? ` — ${theirNota}` : ''}
+                </p>
+              )}
               {isGm && (
                 <div className="gm-row">
                   <button

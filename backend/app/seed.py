@@ -24,9 +24,39 @@ def _pair(a: int, b: int) -> tuple[int, int]:
     return (a, b) if a < b else (b, a)
 
 
+def _ensure_elara_marcus_duas_vias(session: Session) -> None:
+    """Promote Elara↔Marcus to the duas-vias demo pair when both exist."""
+    elara = session.exec(select(NPC).where(NPC.nome == "Elara Voss")).first()
+    marcus = session.exec(select(NPC).where(NPC.nome == "Marcus Stein")).first()
+    if not elara or not marcus or elara.id is None or marcus.id is None:
+        return
+    a, b = _pair(elara.id, marcus.id)
+    row = session.exec(
+        select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
+    ).first()
+    if not row:
+        return
+    # Elara → aliado, Marcus → romance (map through canonical ids)
+    if elara.id < marcus.id:
+        row.tipo_ab = VinculoTipo.aliado
+        row.tipo_ba = VinculoTipo.romance
+        row.nota_ab = "Companheiros de estrada desde Bögenhafen"
+        row.nota_ba = "Marcus vê mais do que amizade em Elara"
+    else:
+        row.tipo_ab = VinculoTipo.romance
+        row.tipo_ba = VinculoTipo.aliado
+        row.nota_ab = "Marcus vê mais do que amizade em Elara"
+        row.nota_ba = "Companheiros de estrada desde Bögenhafen"
+    row.publico = True
+    session.add(row)
+    session.commit()
+    print("Seed relações: Elara↔Marcus actualizado para duas vias (aliado/romance).")
+
+
 def seed_relacoes(session: Session) -> None:
     """Idempotent: add PJs / extra NPCs / vínculos if rede ainda vazia."""
     if session.exec(select(Vinculo)).first():
+        _ensure_elara_marcus_duas_vias(session)
         print("Seed relações ignorado: já existem vínculos.")
         return
 
@@ -75,31 +105,49 @@ def seed_relacoes(session: Session) -> None:
     def pid(nome: str) -> int:
         return by_nome[nome].id  # type: ignore[return-value]
 
-    links: list[tuple[str, str, VinculoTipo, str, bool]] = [
-        ("Elara Voss", "Marcus Stein", VinculoTipo.aliado, "Companheiros de estrada desde Bögenhafen", True),
-        ("Elara Voss", "Lila Nacht", VinculoTipo.amizade, "Lila deve um favor a Elara — e odeia admitir", True),
-        ("Marcus Stein", "Brother Tomas", VinculoTipo.aliado, "Tomas cura; Marcus protege", True),
-        ("Lila Nacht", "Ranulf Grimsby", VinculoTipo.conhecido, "Negócios no submundo, nada pessoal", True),
-        ("Brother Tomas", "Irmã Wilhelmina", VinculoTipo.amizade, "Respeito entre cultos — com ressalvas", True),
-        ("Doutor Hedrich", "Irmã Wilhelmina", VinculoTipo.inimizade, "Métodos vs compaixão; quase se agridem em público", True),
-        ("Doutor Hedrich", "Barão von Kessler", VinculoTipo.conhecido, "O barão financiava pesquisas… até morrer", False),
-        ("Barão von Kessler", "Skrik Orelha-Fendida", VinculoTipo.aliado, "Pacto secreto no Reikwald", False),
-        ("Ranulf Grimsby", "Skrik Orelha-Fendida", VinculoTipo.inimizade, "Ranulf viu demais no esgoto", False),
-        ("Capitã Helga Brunn", "Marcus Stein", VinculoTipo.conhecido, "Ex-colegas de formação", True),
-        ("Capitã Helga Brunn", "Ranulf Grimsby", VinculoTipo.inimizade, "Quer vê-lo atrás das grades", True),
-        ("Greta Mole", "Irmã Wilhelmina", VinculoTipo.amizade, "Trocam remédios e fofocas de aldeia", True),
-        ("Greta Mole", "Elara Voss", VinculoTipo.conhecido, "Curou um ferimento feio na caçada", True),
-        ("Lila Nacht", "Brother Tomas", VinculoTipo.romance, "Segredo constrangedor do grupo", False),
-        ("Elara Voss", "Doutor Hedrich", VinculoTipo.familia, "Primo distante — ela não gosta de lembrar", False),
+    links: list[tuple[str, str, VinculoTipo, VinculoTipo | None, str, str, bool]] = [
+        (
+            "Elara Voss",
+            "Marcus Stein",
+            VinculoTipo.aliado,
+            VinculoTipo.romance,
+            "Companheiros de estrada desde Bögenhafen",
+            "Marcus vê mais do que amizade em Elara",
+            True,
+        ),
+        ("Elara Voss", "Lila Nacht", VinculoTipo.amizade, None, "Lila deve um favor a Elara — e odeia admitir", "", True),
+        ("Marcus Stein", "Brother Tomas", VinculoTipo.aliado, None, "Tomas cura; Marcus protege", "", True),
+        ("Lila Nacht", "Ranulf Grimsby", VinculoTipo.conhecido, None, "Negócios no submundo, nada pessoal", "", True),
+        ("Brother Tomas", "Irmã Wilhelmina", VinculoTipo.amizade, None, "Respeito entre cultos — com ressalvas", "", True),
+        ("Doutor Hedrich", "Irmã Wilhelmina", VinculoTipo.inimizade, None, "Métodos vs compaixão; quase se agridem em público", "", True),
+        ("Doutor Hedrich", "Barão von Kessler", VinculoTipo.conhecido, None, "O barão financiava pesquisas… até morrer", "", False),
+        ("Barão von Kessler", "Skrik Orelha-Fendida", VinculoTipo.aliado, None, "Pacto secreto no Reikwald", "", False),
+        ("Ranulf Grimsby", "Skrik Orelha-Fendida", VinculoTipo.inimizade, None, "Ranulf viu demais no esgoto", "", False),
+        ("Capitã Helga Brunn", "Marcus Stein", VinculoTipo.conhecido, None, "Ex-colegas de formação", "", True),
+        ("Capitã Helga Brunn", "Ranulf Grimsby", VinculoTipo.inimizade, None, "Quer vê-lo atrás das grades", "", True),
+        ("Greta Mole", "Irmã Wilhelmina", VinculoTipo.amizade, None, "Trocam remédios e fofocas de aldeia", "", True),
+        ("Greta Mole", "Elara Voss", VinculoTipo.conhecido, None, "Curou um ferimento feio na caçada", "", True),
+        ("Lila Nacht", "Brother Tomas", VinculoTipo.romance, None, "Segredo constrangedor do grupo", "", False),
+        ("Elara Voss", "Doutor Hedrich", VinculoTipo.familia, None, "Primo distante — ela não gosta de lembrar", "", False),
     ]
-    for na, nb, tipo, nota, publico in links:
+    for na, nb, tipo_ab, tipo_ba, nota_ab, nota_ba, publico in links:
         a, b = _pair(pid(na), pid(nb))
+        # Seed lists names in story order; map to canonical ids
+        if pid(na) < pid(nb):
+            t_ab, t_ba, n_ab, n_ba = tipo_ab, tipo_ba, nota_ab, nota_ba
+        else:
+            if tipo_ba is None:
+                t_ab, t_ba, n_ab, n_ba = tipo_ab, None, nota_ab, ""
+            else:
+                t_ab, t_ba, n_ab, n_ba = tipo_ba, tipo_ab, nota_ba, nota_ab
         session.add(
             Vinculo(
                 personagem_a_id=a,
                 personagem_b_id=b,
-                tipo=tipo,
-                nota=nota,
+                tipo_ab=t_ab,
+                tipo_ba=t_ba,
+                nota_ab=n_ab,
+                nota_ba=n_ba,
                 publico=publico,
             )
         )

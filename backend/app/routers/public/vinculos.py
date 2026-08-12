@@ -13,8 +13,10 @@ def vinculo_to_read(v: Vinculo) -> VinculoRead:
         id=v.id,  # type: ignore[arg-type]
         personagem_a_id=v.personagem_a_id,
         personagem_b_id=v.personagem_b_id,
-        tipo=v.tipo,
-        nota=v.nota,
+        tipo_ab=v.tipo_ab,
+        tipo_ba=v.tipo_ba,
+        nota_ab=v.nota_ab,
+        nota_ba=v.nota_ba,
         publico=v.publico,
     )
 

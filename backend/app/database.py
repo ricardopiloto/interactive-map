@@ -44,6 +44,50 @@ def _migrate_sqlite() -> None:
         if npc_cols and "papel" not in npc_cols:
             conn.execute(text("ALTER TABLE npc ADD COLUMN papel VARCHAR(200)"))
 
+        vinculo_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(vinculo)")).fetchall()
+        }
+        if vinculo_cols and "tipo_ab" not in vinculo_cols and "tipo" in vinculo_cols:
+            conn.execute(
+                text(
+                    """
+                    CREATE TABLE vinculo_new (
+                        id INTEGER PRIMARY KEY,
+                        personagem_a_id INTEGER NOT NULL,
+                        personagem_b_id INTEGER NOT NULL,
+                        tipo_ab VARCHAR(20) NOT NULL,
+                        tipo_ba VARCHAR(20),
+                        nota_ab VARCHAR(500) NOT NULL DEFAULT '',
+                        nota_ba VARCHAR(500) NOT NULL DEFAULT '',
+                        publico BOOLEAN NOT NULL DEFAULT 0,
+                        CONSTRAINT uq_vinculo_pair UNIQUE (personagem_a_id, personagem_b_id)
+                    )
+                    """
+                )
+            )
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO vinculo_new (
+                        id, personagem_a_id, personagem_b_id,
+                        tipo_ab, tipo_ba, nota_ab, nota_ba, publico
+                    )
+                    SELECT
+                        id, personagem_a_id, personagem_b_id,
+                        tipo, NULL, COALESCE(nota, ''), '', COALESCE(publico, 0)
+                    FROM vinculo
+                    """
+                )
+            )
+            conn.execute(text("DROP TABLE vinculo"))
+            conn.execute(text("ALTER TABLE vinculo_new RENAME TO vinculo"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_vinculo_personagem_a_id ON vinculo (personagem_a_id)")
+            )
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_vinculo_personagem_b_id ON vinculo (personagem_b_id)")
+            )
+
 
 def init_db() -> None:
     # Register all table models on SQLModel.metadata before create_all.

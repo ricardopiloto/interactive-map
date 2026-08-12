@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.9.0] — 2026-08-12
+
+### Added
+
+- **Relações**: vínculos de **duas vias** — cada personagem pode ver o outro com um tipo diferente (ex.: aliado vs romance); linha com fade entre as duas cores e etiquetas nos extremos; ficha mostra “eu vejo” e “vê-te como…”; formulário GM com modo Recíproco / Duas vias (spec 071)
+
 ## [0.8.4] — 2026-08-11
 
 ### Fixed

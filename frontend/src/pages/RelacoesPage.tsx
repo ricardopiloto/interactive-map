@@ -16,6 +16,7 @@ import {
   type PersonagemDraft,
 } from '../components/relacoes/PersonagemFormDialog'
 import { VinculoFormDialog, type VinculoDraft } from '../components/relacoes/VinculoFormDialog'
+import { isDuasVias } from '../components/relacoes/vinculoDirection'
 import { VINCULO_TIPOS } from '../components/relacoes/vinculoStyles'
 import type { Personagem, Vinculo, VinculoTipo } from '../types'
 import './RelacoesPage.css'
@@ -207,8 +208,11 @@ export function RelacoesPage() {
     setVinculoDraft({
       personagem_a_id: prefillA ?? selectedId ?? null,
       personagem_b_id: null,
-      tipo: 'conhecido',
-      nota: '',
+      modo: 'reciproco',
+      tipo_ab: 'conhecido',
+      tipo_ba: 'conhecido',
+      nota_ab: '',
+      nota_ba: '',
       publico: false,
       isNew: true,
     })
@@ -217,12 +221,16 @@ export function RelacoesPage() {
   function startEditVinculo(vinculoId: number) {
     const v = vinculos.find((x) => x.id === vinculoId)
     if (!v) return
+    const duas = isDuasVias(v)
     setVinculoDraft({
       id: v.id,
       personagem_a_id: v.personagem_a_id,
       personagem_b_id: v.personagem_b_id,
-      tipo: v.tipo,
-      nota: v.nota,
+      modo: duas ? 'duas_vias' : 'reciproco',
+      tipo_ab: v.tipo_ab,
+      tipo_ba: v.tipo_ba ?? v.tipo_ab,
+      nota_ab: v.nota_ab,
+      nota_ba: v.nota_ba,
       publico: v.publico,
       isNew: false,
     })
@@ -236,11 +244,14 @@ export function RelacoesPage() {
     }
     setBusyError(null)
     try {
+      const duas = vinculoDraft.modo === 'duas_vias'
       const payload = {
         personagem_a_id,
         personagem_b_id,
-        tipo: vinculoDraft.tipo,
-        nota: vinculoDraft.nota,
+        tipo_ab: vinculoDraft.tipo_ab,
+        tipo_ba: duas ? vinculoDraft.tipo_ba : null,
+        nota_ab: vinculoDraft.nota_ab,
+        nota_ba: duas ? vinculoDraft.nota_ba : '',
         publico: vinculoDraft.publico,
       }
       if (vinculoDraft.isNew) await adminApi.createVinculo(payload)

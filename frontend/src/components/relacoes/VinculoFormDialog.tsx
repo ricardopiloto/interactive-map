@@ -2,12 +2,17 @@ import type { Personagem, VinculoTipo } from '../../types'
 import { VINCULO_STYLES, VINCULO_TIPOS } from './vinculoStyles'
 import './VinculoFormDialog.css'
 
+export type VinculoModo = 'reciproco' | 'duas_vias'
+
 export interface VinculoDraft {
   id?: number
   personagem_a_id: number | null
   personagem_b_id: number | null
-  tipo: VinculoTipo
-  nota: string
+  modo: VinculoModo
+  tipo_ab: VinculoTipo
+  tipo_ba: VinculoTipo
+  nota_ab: string
+  nota_ba: string
   publico: boolean
   isNew: boolean
 }
@@ -19,6 +24,11 @@ interface VinculoFormDialogProps {
   onChange: (patch: Partial<VinculoDraft>) => void
   onSave: () => void
   onCancel: () => void
+}
+
+function nomeOf(personagens: Personagem[], id: number | null): string {
+  if (id == null) return 'A'
+  return personagens.find((p) => p.id === id)?.nome ?? 'A'
 }
 
 export function VinculoFormDialog({
@@ -34,6 +44,10 @@ export function VinculoFormDialog({
     draft.personagem_a_id != null &&
     draft.personagem_b_id != null &&
     draft.personagem_a_id !== draft.personagem_b_id
+
+  const nameA = nomeOf(personagens, draft.personagem_a_id)
+  const nameB = nomeOf(personagens, draft.personagem_b_id)
+  const duas = draft.modo === 'duas_vias'
 
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
@@ -80,11 +94,38 @@ export function VinculoFormDialog({
             )}
 
           <div className="field">
-            <label>Tipo de vínculo</label>
+            <label>Modo</label>
+            <div className="vinculo-form__modo">
+              <label className="vinculo-form__checkbox">
+                <input
+                  type="radio"
+                  name="vinculo-modo"
+                  checked={!duas}
+                  onChange={() => onChange({ modo: 'reciproco', tipo_ba: draft.tipo_ab, nota_ba: '' })}
+                />
+                Recíproco
+              </label>
+              <label className="vinculo-form__checkbox">
+                <input
+                  type="radio"
+                  name="vinculo-modo"
+                  checked={duas}
+                  onChange={() => onChange({ modo: 'duas_vias' })}
+                />
+                Duas vias
+              </label>
+            </div>
+          </div>
+
+          <div className="field">
+            <label>{duas ? `${nameA} vê ${nameB} como` : 'Tipo de vínculo'}</label>
             <select
               className="input"
-              value={draft.tipo}
-              onChange={(e) => onChange({ tipo: e.target.value as VinculoTipo })}
+              value={draft.tipo_ab}
+              onChange={(e) => {
+                const tipo_ab = e.target.value as VinculoTipo
+                onChange(duas ? { tipo_ab } : { tipo_ab, tipo_ba: tipo_ab })
+              }}
             >
               {VINCULO_TIPOS.map((tipo) => (
                 <option key={tipo} value={tipo}>
@@ -95,15 +136,49 @@ export function VinculoFormDialog({
           </div>
 
           <div className="field">
-            <label>Nota (opcional)</label>
+            <label>{duas ? `Nota (${nameA} → ${nameB})` : 'Nota (opcional)'}</label>
             <textarea
               className="input"
               rows={2}
               placeholder="ex: Salvou a vida dela em Bögenhafen"
-              value={draft.nota}
-              onChange={(e) => onChange({ nota: e.target.value })}
+              value={draft.nota_ab}
+              onChange={(e) => onChange({ nota_ab: e.target.value })}
             />
           </div>
+
+          {duas && (
+            <>
+              <div className="field">
+                <label>
+                  {nameB} vê {nameA} como
+                </label>
+                <select
+                  className="input"
+                  value={draft.tipo_ba}
+                  onChange={(e) => onChange({ tipo_ba: e.target.value as VinculoTipo })}
+                >
+                  {VINCULO_TIPOS.map((tipo) => (
+                    <option key={tipo} value={tipo}>
+                      {VINCULO_STYLES[tipo].label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label>
+                  Nota ({nameB} → {nameA})
+                </label>
+                <textarea
+                  className="input"
+                  rows={2}
+                  placeholder="ex: Sonha com mais do que amizade"
+                  value={draft.nota_ba}
+                  onChange={(e) => onChange({ nota_ba: e.target.value })}
+                />
+              </div>
+            </>
+          )}
 
           <label className="vinculo-form__checkbox">
             <input

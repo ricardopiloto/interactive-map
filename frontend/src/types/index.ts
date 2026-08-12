@@ -49,8 +49,10 @@ export interface Vinculo {
   id: number
   personagem_a_id: number
   personagem_b_id: number
-  tipo: VinculoTipo
-  nota: string
+  tipo_ab: VinculoTipo
+  tipo_ba: VinculoTipo | null
+  nota_ab: string
+  nota_ba: string
   publico: boolean
 }
 

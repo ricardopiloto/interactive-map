@@ -51,8 +51,10 @@ export interface PersonagemPayload {
 export interface VinculoPayload {
   personagem_a_id: number
   personagem_b_id: number
-  tipo: Vinculo['tipo']
-  nota?: string
+  tipo_ab: Vinculo['tipo_ab']
+  tipo_ba?: Vinculo['tipo_ba']
+  nota_ab?: string
+  nota_ba?: string
   publico?: boolean
 }
 
