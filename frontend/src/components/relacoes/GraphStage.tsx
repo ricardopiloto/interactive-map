@@ -14,6 +14,7 @@ import {
   discCenterFromNodePos,
   DISC,
   EDGE_OPACITY_DIM,
+  EDGE_OPACITY_DIM_SELECTED,
   EDGE_OPACITY_FOCUS,
   NODE_H,
   NODE_W,
@@ -59,6 +60,23 @@ function initials(nome: string): string {
   if (parts.length === 0) return '?'
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return (parts[0][0] + parts[1][0]).toUpperCase()
+}
+
+function DiscAvatar({ nome, retratoUrl }: { nome: string; retratoUrl: string | null }) {
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setFailed(false)
+  }, [retratoUrl])
+
+  return (
+    <>
+      <span>{initials(nome)}</span>
+      {retratoUrl && !failed ? (
+        <img src={retratoUrl} alt="" aria-hidden onError={() => setFailed(true)} />
+      ) : null}
+    </>
+  )
 }
 
 export function GraphStage({
@@ -268,6 +286,7 @@ export function GraphStage({
               const b = discCenterFromNodePos(bPos)
               const style = vinculoStyle(v.tipo)
               const highlighted = showEdges && isFocusEdge(v)
+              const dimOpacity = selectedId != null ? EDGE_OPACITY_DIM_SELECTED : EDGE_OPACITY_DIM
               const midX = (a.x + b.x) / 2
               const midY = (a.y + b.y) / 2
               const labelVisible =
@@ -285,7 +304,7 @@ export function GraphStage({
                     stroke={style.color}
                     strokeWidth={highlighted ? 2.25 : 2}
                     strokeDasharray={style.dashed ? '6 5' : undefined}
-                    opacity={highlighted ? EDGE_OPACITY_FOCUS : EDGE_OPACITY_DIM}
+                    opacity={highlighted ? EDGE_OPACITY_FOCUS : dimOpacity}
                     className="graph-stage__edge-line"
                   />
                   <line
@@ -359,7 +378,7 @@ export function GraphStage({
                 }}
               >
                 <div className="graph-node__disc" style={{ width: DISC, height: DISC }}>
-                  <span>{initials(p.nome)}</span>
+                  <DiscAvatar nome={p.nome} retratoUrl={p.retrato_url} />
                 </div>
                 <div className="graph-node__name">{p.nome}</div>
                 {p.papel && <div className="graph-node__papel">{p.papel}</div>}

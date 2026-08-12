@@ -13,8 +13,10 @@ export const NODE_H = 112
 export const DISC = 58
 /** Must match `.graph-node` `padding-top` in GraphStage.css. */
 export const DISC_PAD_TOP = 2
-/** Idle / non-focus vínculo line opacity (spec 068). */
+/** Idle vínculo line opacity when nothing is selected (spec 068). */
 export const EDGE_OPACITY_DIM = 0.18
+/** Non-focus vínculo line opacity while a personagem is selected. */
+export const EDGE_OPACITY_DIM_SELECTED = 0.08
 /** Highlighted focus-edge opacity after layout animation (spec 068). */
 export const EDGE_OPACITY_FOCUS = 0.9
 

@@ -5,6 +5,19 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.8.4] — 2026-08-11
+
+### Fixed
+
+- **Relações**: descrição longa já não esmaga o retrato na ficha ao seleccionar um personagem; a folha faz scroll e a imagem mantém-se `contain` até 220px (spec 070)
+
+## [0.8.3] — 2026-08-11
+
+### Changed
+
+- **Relações**: discos com retrato mostram a foto a preencher o círculo (recorte centrado); sem retrato ou imagem a falhar, mantêm-se as iniciais (spec 069)
+- **Relações**: com um personagem seleccionado, as linhas que não são do foco descem de ~18% para ~8% de opacidade (as do foco mantêm ~90%)
+
 ## [0.8.2] — 2026-08-11
 
 ### Changed
