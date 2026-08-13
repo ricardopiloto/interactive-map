@@ -175,6 +175,7 @@ def seed_relacoes(session: Session) -> None:
             faccao=faccao,
             status=status,
             descricao=desc,
+            visivel_para_todos=True,
         )
         if "fadiga" in settings.modulos_ativos and tipo == PersonagemTipo.pj:
             row.extensoes_mecanica = {"fadiga": 1}

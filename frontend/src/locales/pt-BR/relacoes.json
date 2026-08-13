@@ -16,7 +16,8 @@
   },
   "graph": {
     "zoomIn": "Aumentar zoom",
-    "zoomOut": "Diminuir zoom"
+    "zoomOut": "Diminuir zoom",
+    "ocultoAria": "Personagem oculto aos jogadores"
   },
   "column": {
     "search": "Buscar personagem…",
@@ -48,7 +49,9 @@
     "atributos": "Atributos",
     "mecanicas": "Mecânicas",
     "notas": "Notas",
-    "papelExemplo": "ex: Caçadora de Recompensas"
+    "papelExemplo": "ex: Caçadora de Recompensas",
+    "visivelParaTodos": "Visível para todos",
+    "ocultoAosJogadores": "Oculto aos jogadores"
   },
   "vinculoForm": {
     "personagens": "Personagens",

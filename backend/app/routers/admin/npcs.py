@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.database import get_session
 from app.errors import raise_api_error
@@ -10,6 +10,12 @@ from app.schemas.npc import NPCCreate, NPCRead, NPCUpdate
 from app.services.rate_limit import limiter
 
 router = APIRouter()
+
+
+@router.get("/npcs", response_model=list[NPCRead])
+def list_npcs_admin(session: Session = Depends(get_session)) -> list[NPCRead]:
+    npcs = list(session.exec(select(NPC).order_by(NPC.nome)).all())
+    return [_to_read(n) for n in npcs]
 
 
 @router.post("/npcs", response_model=NPCRead, status_code=status.HTTP_201_CREATED)

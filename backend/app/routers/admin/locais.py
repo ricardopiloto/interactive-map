@@ -14,6 +14,9 @@ from app.services.waypoint_local_link import set_local_waypoint_id
 router = APIRouter()
 
 
+def _admin_to_read(session: Session, local: Local) -> LocalRead:
+    return _to_read(session, local, for_player=False)
+
 def _sync_npcs(session: Session, local: Local, npc_ids: list[int]) -> None:
     npcs: list[NPC] = []
     missing: list[int] = []
@@ -86,6 +89,12 @@ def _clear_conexoes_for_local(session: Session, local_id: int) -> None:
     session.flush()
 
 
+@router.get("/locais", response_model=list[LocalRead])
+def list_locais_admin(session: Session = Depends(get_session)) -> list[LocalRead]:
+    locais = list(session.exec(select(Local).order_by(Local.nome)).all())
+    return [_admin_to_read(session, loc) for loc in locais]
+
+
 @router.post("/locais", response_model=LocalRead, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
 def create_local(
@@ -113,7 +122,7 @@ def create_local(
         set_local_waypoint_id(session, local, payload.waypoint_id)
     session.commit()
     session.refresh(local)
-    return _to_read(session, local)
+    return _admin_to_read(session, local)
 
 
 @router.put("/locais/{local_id}", response_model=LocalRead)
@@ -145,7 +154,7 @@ def update_local(
     session.add(local)
     session.commit()
     session.refresh(local)
-    return _to_read(session, local)
+    return _admin_to_read(session, local)
 
 
 @router.delete("/locais/{local_id}", status_code=status.HTTP_204_NO_CONTENT)

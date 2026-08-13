@@ -6,6 +6,7 @@ from app.errors import raise_api_error
 from app.models.links import LocalConexaoLink
 from app.models.local import Local
 from app.schemas.local import LocalRead
+from app.services.personagem_visibility import is_visivel_para_jogador
 from app.services.waypoint_local_link import waypoint_id_for_local
 
 router = APIRouter()
@@ -18,8 +19,16 @@ def _saida_ids_for(session: Session, local_id: int) -> list[int]:
     return sorted({int(d) for d in rows if d is not None})
 
 
-def _to_read(session: Session, local: Local) -> LocalRead:
+def _to_read(session: Session, local: Local, *, for_player: bool = True) -> LocalRead:
     lid = int(local.id) if local.id is not None else None
+    if for_player:
+        npc_ids = [
+            n.id
+            for n in local.npcs
+            if n.id is not None and is_visivel_para_jogador(n)
+        ]
+    else:
+        npc_ids = [n.id for n in local.npcs if n.id is not None]
     return LocalRead(
         id=local.id,  # type: ignore[arg-type]
         nome=local.nome,
@@ -29,7 +38,7 @@ def _to_read(session: Session, local: Local) -> LocalRead:
         imagem_url=local.imagem_url,
         data_sessao=local.data_sessao,
         arco_id=local.arco_id,
-        npc_ids=[n.id for n in local.npcs if n.id is not None],
+        npc_ids=npc_ids,
         saida_ids=_saida_ids_for(session, lid) if lid is not None else [],
         cor_pin=getattr(local, "cor_pin", None) or "#c4b5fd",
         waypoint_id=waypoint_id_for_local(session, lid) if lid is not None else None,

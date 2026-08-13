@@ -37,6 +37,7 @@ export interface NPCPayload {
   faccao?: string | null
   status?: NPC['status']
   retrato_url?: string | null
+  visivel_para_todos?: boolean
 }
 
 export interface PersonagemPayload {
@@ -47,6 +48,7 @@ export interface PersonagemPayload {
   faccao?: string | null
   status?: NPC['status']
   retrato_url?: string | null
+  visivel_para_todos?: boolean
   extensoes_mecanica?: Record<string, unknown>
 }
 
@@ -104,6 +106,9 @@ export const adminApi = {
   updatePersonagem: (id: number, body: Partial<PersonagemPayload>) =>
     api.adminPut<Personagem>(`/api/admin/personagens/${id}`, body),
   deletePersonagem: (id: number) => api.adminDelete(`/api/admin/personagens/${id}`),
+  listPersonagensAdmin: () => api.adminGet<Personagem[]>('/api/admin/personagens'),
+  listNpcsAdmin: () => api.adminGet<NPC[]>('/api/admin/npcs'),
+  listLocaisAdmin: () => api.adminGet<Local[]>('/api/admin/locais'),
 
   listVinculosAdmin: () => api.adminGet<Vinculo[]>('/api/admin/vinculos'),
   createVinculo: (body: VinculoPayload) =>

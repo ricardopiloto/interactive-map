@@ -523,11 +523,13 @@ export function GraphStage({
             const dimBySearch = matchedIds != null && !matchedIds.has(p.id)
             const opacity = dimByFocus ? 0.28 : dimBySearch ? 0.4 : 1
             const isMorto = p.status === 'morto'
+            const isOculto = p.visivel_para_todos === false
             const classes = [
               'graph-node',
               p.tipo === 'pj' ? 'graph-node--pj' : 'graph-node--npc',
               p.id === selectedId ? 'graph-node--selected' : '',
               isMorto ? 'graph-node--morto' : '',
+              isOculto ? 'graph-node--oculto' : '',
             ]
               .filter(Boolean)
               .join(' ')
@@ -546,6 +548,11 @@ export function GraphStage({
                 <div className="graph-node__disc" style={{ width: DISC, height: DISC }}>
                   <DiscAvatar nome={p.nome} retratoUrl={p.retrato_url} />
                 </div>
+                {isOculto && (
+                  <span className="graph-node__oculto" title={t('graph.ocultoAria')} aria-label={t('graph.ocultoAria')}>
+                    ●
+                  </span>
+                )}
                 <div className="graph-node__name">{p.nome}</div>
                 {p.papel && <div className="graph-node__papel">{p.papel}</div>}
               </div>

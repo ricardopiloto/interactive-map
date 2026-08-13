@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.models.npc import NPC
 from app.models.vinculo import Vinculo
 from app.schemas.vinculo import VinculoRead, is_duas_vias
+from app.services.personagem_visibility import is_visivel_para_jogador
 
 router = APIRouter()
 
@@ -32,6 +34,14 @@ def player_visible(v: Vinculo) -> bool:
     if not is_duas_vias(v.tipo_ab, v.tipo_ba):
         return True
     return bool(v.conhecido_ab or v.conhecido_ba)
+
+
+def player_visible_with_personagens(v: Vinculo, by_id: dict[int, NPC]) -> bool:
+    if not player_visible(v):
+        return False
+    a = by_id.get(v.personagem_a_id)
+    b = by_id.get(v.personagem_b_id)
+    return is_visivel_para_jogador(a) and is_visivel_para_jogador(b)
 
 
 def vinculo_to_public_read(v: Vinculo) -> VinculoRead:
@@ -97,4 +107,9 @@ def vinculo_to_read(v: Vinculo) -> VinculoRead:
 @router.get("/vinculos", response_model=list[VinculoRead], response_model_exclude_none=True)
 def list_vinculos_publicos(session: Session = Depends(get_session)) -> list[VinculoRead]:
     rows = session.exec(select(Vinculo).where(Vinculo.publico == True).order_by(Vinculo.id)).all()  # noqa: E712
-    return [vinculo_to_public_read(v) for v in rows if player_visible(v)]
+    npcs = {n.id: n for n in session.exec(select(NPC)).all() if n.id is not None}
+    return [
+        vinculo_to_public_read(v)
+        for v in rows
+        if player_visible_with_personagens(v, npcs)
+    ]

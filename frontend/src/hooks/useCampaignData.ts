@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { adminApi } from '../api/admin'
 import { campaignApi } from '../api/campaign'
 import type { Arco, GrupoPosicao, Local, NPC } from '../types'
 
@@ -13,7 +14,8 @@ interface CampaignData {
   refresh: () => void
 }
 
-export function useCampaignData(): CampaignData {
+/** When `asGm` is true, locais/npcs come from admin APIs (includes hidden personagens). */
+export function useCampaignData(asGm = false): CampaignData {
   const { t } = useTranslation('comum')
   const [locais, setLocais] = useState<Local[]>([])
   const [npcs, setNpcs] = useState<NPC[]>([])
@@ -31,8 +33,8 @@ export function useCampaignData(): CampaignData {
       setError(null)
       try {
         const [locaisData, npcsData, arcosData, grupoData] = await Promise.all([
-          campaignApi.listLocais(),
-          campaignApi.listNpcs(),
+          asGm ? adminApi.listLocaisAdmin() : campaignApi.listLocais(),
+          asGm ? adminApi.listNpcsAdmin() : campaignApi.listNpcs(),
           campaignApi.listArcos(),
           campaignApi.getGrupo(),
         ])
@@ -54,7 +56,7 @@ export function useCampaignData(): CampaignData {
     return () => {
       cancelled = true
     }
-  }, [tick, t])
+  }, [tick, t, asGm])
 
   return {
     locais,

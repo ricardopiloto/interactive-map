@@ -5,6 +5,13 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.17.0] — 2026-08-13
+
+### Added
+
+- Personagens com **Visível para todos** (default ligado): desligado = só o GM vê o personagem e as suas conexões; distintivo no grafo + checkbox no formulário (spec 084)
+- Listagens admin de personagens/NPCs/locais para o Modo GM incluir ocultos; APIs públicas filtram personagem, vínculos e `npc_ids` de locais
+
 ## [0.16.2] — 2026-08-13
 
 ### Fixed

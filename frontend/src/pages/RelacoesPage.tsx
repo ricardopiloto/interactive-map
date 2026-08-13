@@ -70,7 +70,7 @@ export function RelacoesPage() {
     setError(null)
     try {
       const [ps, vs] = await Promise.all([
-        campaignApi.listPersonagens(),
+        isGm ? adminApi.listPersonagensAdmin() : campaignApi.listPersonagens(),
         isGm ? adminApi.listVinculosAdmin() : campaignApi.listVinculos(),
       ])
       setPersonagens(ps)
@@ -166,6 +166,7 @@ export function RelacoesPage() {
       descricao: '',
       status: 'vivo',
       retrato_url: null,
+      visivel_para_todos: true,
       extensoes_mecanica: {},
       isNew: true,
     })
@@ -181,6 +182,7 @@ export function RelacoesPage() {
       descricao: p.descricao,
       status: p.status ?? 'desconhecido',
       retrato_url: p.retrato_url,
+      visivel_para_todos: p.visivel_para_todos !== false,
       extensoes_mecanica: { ...(p.extensoes_mecanica ?? {}) },
       isNew: false,
     })
@@ -198,6 +200,7 @@ export function RelacoesPage() {
         faccao: personagemDraft.faccao.trim() || null,
         status: personagemDraft.status,
         retrato_url: personagemDraft.retrato_url,
+        visivel_para_todos: personagemDraft.visivel_para_todos,
         extensoes_mecanica: personagemDraft.extensoes_mecanica,
       }
       if (personagemDraft.isNew) await adminApi.createPersonagem(payload)

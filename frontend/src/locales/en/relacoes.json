@@ -16,7 +16,8 @@
   },
   "graph": {
     "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out"
+    "zoomOut": "Zoom out",
+    "ocultoAria": "Character hidden from players"
   },
   "column": {
     "search": "Search character…",
@@ -48,7 +49,9 @@
     "atributos": "Attributes",
     "mecanicas": "Mechanics",
     "notas": "Notes",
-    "papelExemplo": "e.g. Bounty Hunter"
+    "papelExemplo": "e.g. Bounty Hunter",
+    "visivelParaTodos": "Visible to everyone",
+    "ocultoAosJogadores": "Hidden from players"
   },
   "vinculoForm": {
     "personagens": "Characters",

@@ -13,6 +13,7 @@ class NPCCreate(BaseModel):
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = NPCStatus.desconhecido
     retrato_url: Optional[str] = Field(default=None, max_length=500)
+    visivel_para_todos: bool = True
 
 
 class NPCUpdate(BaseModel):
@@ -23,6 +24,7 @@ class NPCUpdate(BaseModel):
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = None
     retrato_url: Optional[str] = Field(default=None, max_length=500)
+    visivel_para_todos: Optional[bool] = None
 
 
 class NPCRead(BaseModel):
@@ -36,4 +38,5 @@ class NPCRead(BaseModel):
     faccao: Optional[str]
     status: Optional[NPCStatus]
     retrato_url: Optional[str]
+    visivel_para_todos: bool = True
     local_ids: list[int] = Field(default_factory=list)

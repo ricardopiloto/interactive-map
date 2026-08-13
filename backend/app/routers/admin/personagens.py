@@ -13,6 +13,12 @@ from app.services.rate_limit import limiter
 router = APIRouter()
 
 
+@router.get("/personagens", response_model=list[PersonagemRead])
+def list_personagens_admin(session: Session = Depends(get_session)) -> list[PersonagemRead]:
+    rows = list(session.exec(select(NPC).order_by(NPC.nome)).all())
+    return [personagem_to_read(n) for n in rows]
+
+
 def _apply_personagem_payload(row: NPC, payload: PersonagemCreate | PersonagemUpdate, *, is_create: bool) -> None:
     data = payload.model_dump(exclude_unset=not is_create)
     extensoes = data.pop("extensoes_mecanica", None)

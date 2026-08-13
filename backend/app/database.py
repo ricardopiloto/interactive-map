@@ -43,6 +43,13 @@ def _migrate_sqlite() -> None:
             )
         if npc_cols and "papel" not in npc_cols:
             conn.execute(text("ALTER TABLE npc ADD COLUMN papel VARCHAR(200)"))
+        if npc_cols and "visivel_para_todos" not in npc_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE npc ADD COLUMN visivel_para_todos BOOLEAN "
+                    "NOT NULL DEFAULT 1"
+                )
+            )
 
         vinculo_cols = {
             row[1] for row in conn.execute(text("PRAGMA table_info(vinculo)")).fetchall()

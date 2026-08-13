@@ -50,6 +50,7 @@ export interface NPC {
   status: NPCStatus | null
   retrato_url: string | null
   local_ids: number[]
+  visivel_para_todos?: boolean
   extensoes_mecanica?: ExtensoesMecanica
 }
 

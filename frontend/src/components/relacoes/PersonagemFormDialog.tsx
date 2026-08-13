@@ -16,6 +16,7 @@ export interface PersonagemDraft {
   descricao: string
   status: NPCStatus
   retrato_url: string | null
+  visivel_para_todos: boolean
   extensoes_mecanica: Record<string, unknown>
   isNew: boolean
 }
@@ -109,6 +110,21 @@ export function PersonagemFormDialog({
                 value={draft.papel}
                 onChange={(e) => onChange({ papel: e.target.value })}
               />
+            </div>
+            <div className="field">
+              <label className="field-check">
+                <input
+                  type="checkbox"
+                  checked={draft.visivel_para_todos}
+                  onChange={(e) => onChange({ visivel_para_todos: e.target.checked })}
+                />{' '}
+                {t('personagemForm.visivelParaTodos')}
+              </label>
+              {!draft.visivel_para_todos && (
+                <p className="text-muted" role="status">
+                  {t('personagemForm.ocultoAosJogadores')}
+                </p>
+              )}
             </div>
           </div>
 

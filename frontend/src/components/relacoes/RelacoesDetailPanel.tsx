@@ -94,6 +94,9 @@ export function RelacoesDetailPanel({
           {tc(`status.${personagem.status ?? 'desconhecido'}`)}
         </span>
         {personagem.faccao && <span className="tag tag-neutral">{personagem.faccao}</span>}
+        {isGm && personagem.visivel_para_todos === false && (
+          <span className="tag tag-accent">{t('personagemForm.ocultoAosJogadores')}</span>
+        )}
       </div>
 
       <p className="relacoes-detail__desc">{personagem.descricao || tc('empty.semDescricao')}</p>

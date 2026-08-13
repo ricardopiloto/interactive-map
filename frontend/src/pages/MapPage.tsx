@@ -41,7 +41,8 @@ export function MapPage() {
   const apiErrorMessage = useApiErrorMessage()
   const { config: instanceConfig } = useInstanceConfig()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { locais, npcs, arcos, grupo, loading, error, refresh } = useCampaignData()
+  const [isGm, setIsGm] = useState(false)
+  const { locais, npcs, arcos, grupo, loading, error, refresh } = useCampaignData(isGm)
   const [tab, setTab] = useState<SideTab>('locais')
   const [query, setQuery] = useState('')
   const [selectedLocalId, setSelectedLocalId] = useState<number | null>(null)
@@ -54,7 +55,6 @@ export function MapPage() {
   )
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
 
-  const [isGm, setIsGm] = useState(false)
   const [gmSessionChecked, setGmSessionChecked] = useState(() => !hasAdminCredentials())
   const [mapImagePresent, setMapImagePresent] = useState(
     () => Boolean(instanceConfig?.has_map_image),

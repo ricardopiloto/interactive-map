@@ -36,6 +36,7 @@ class NPC(SQLModel, table=True):
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = Field(default=NPCStatus.desconhecido)
     retrato_url: Optional[str] = Field(default=None, max_length=500)
+    visivel_para_todos: bool = Field(default=True)
     extensoes_mecanica: dict[str, Any] = Field(
         default_factory=dict,
         sa_column=Column(JSON, nullable=False),
