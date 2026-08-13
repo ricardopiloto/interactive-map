@@ -35,7 +35,8 @@ Thumbs.db
 *.log
 coverage/
 *.egg-info/
-docs/
+docs/prd/
+docs/v2
 !docs/runbook-instancias.md
 !docs/migracao-producao-map-campaign.md
 

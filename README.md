@@ -168,7 +168,9 @@ docker compose --profile with-caddy up --build   # porta 8080
 | Recurso | Conteúdo |
 |---|---|
 | [`CHANGELOG.md`](CHANGELOG.md) | Histórico de versões |
-| [`docs/runbook-instancias.md`](docs/runbook-instancias.md) | Actualizar / criar instâncias multi-campanha |
-| [`docs/migracao-producao-map-campaign.md`](docs/migracao-producao-map-campaign.md) | Upgrade da instalação actual em `/opt/map-campaign` |
+| [`docs/manuais.md`](docs/manuais.md) | Índice dos manuais de uso |
+| [`docs/manual-mapa.md`](docs/manual-mapa.md) | Mapa: pins, menu, fichas, grupo, calcular rotas, CRUD GM |
+| [`docs/manual-rede-rotas.md`](docs/manual-rede-rotas.md) | Nós e segmentos da rede de vias (Modo GM) |
+| [`docs/manual-relacoes.md`](docs/manual-relacoes.md) | Rede de Relações: grafo, tipos de vínculo, criar e visualizar |
 | [`specs/`](specs/) | Specs Speckit por funcionalidade (histórico de desenho) |
 | [`frontend/README.md`](frontend/README.md) · [`backend/README.md`](backend/README.md) | Detalhe por camada |
