@@ -5,6 +5,7 @@ import {
   notaFromPerspective,
   tipoFromPerspective,
 } from './vinculoDirection'
+import { formatVinculoTipoLabel } from './vinculoLabel'
 import { vinculoStyle } from './vinculoStyles'
 import './RelacoesDetailPanel.css'
 
@@ -28,6 +29,28 @@ interface RelacoesDetailPanelProps {
   onDeleteVinculo?: (vinculoId: number) => void
 }
 
+function neighbourId(v: Vinculo, selfId: number): number {
+  return v.personagem_a_id === selfId ? v.personagem_b_id : v.personagem_a_id
+}
+
+/** A→Z by neighbour name (pt); unresolved last; tie by vínculo id. */
+function sortVinculosByNeighbourName(
+  vinculos: Vinculo[],
+  selfId: number,
+  personagemById: Map<number, Personagem>,
+): Vinculo[] {
+  return [...vinculos].sort((a, b) => {
+    const nomeA = personagemById.get(neighbourId(a, selfId))?.nome
+    const nomeB = personagemById.get(neighbourId(b, selfId))?.nome
+    if (nomeA == null && nomeB == null) return a.id - b.id
+    if (nomeA == null) return 1
+    if (nomeB == null) return -1
+    const cmp = nomeA.localeCompare(nomeB, 'pt', { sensitivity: 'base' })
+    if (cmp !== 0) return cmp
+    return a.id - b.id
+  })
+}
+
 export function RelacoesDetailPanel({
   personagem,
   vinculos,
@@ -40,6 +63,8 @@ export function RelacoesDetailPanel({
   onEditVinculo,
   onDeleteVinculo,
 }: RelacoesDetailPanelProps) {
+  const sortedVinculos = sortVinculosByNeighbourName(vinculos, personagem.id, personagemById)
+
   return (
     <aside className="relacoes-detail">
       <button
@@ -87,22 +112,26 @@ export function RelacoesDetailPanel({
 
       <div className="hr" />
 
-      <h6>Vínculos ({vinculos.length})</h6>
+      <h6>Vínculos ({sortedVinculos.length})</h6>
       <div className="relacoes-detail__vinculos">
-        {vinculos.length === 0 && <p className="text-muted">Nenhum vínculo visível.</p>}
-        {vinculos.map((v) => {
-          const otherId = v.personagem_a_id === personagem.id ? v.personagem_b_id : v.personagem_a_id
+        {sortedVinculos.length === 0 && <p className="text-muted">Nenhum vínculo visível.</p>}
+        {sortedVinculos.map((v) => {
+          const otherId = neighbourId(v, personagem.id)
           const other = personagemById.get(otherId)
           const myTipo = tipoFromPerspective(v, personagem.id)
           const theirTipo = tipoFromPerspective(v, otherId)
           const myNota = notaFromPerspective(v, personagem.id)
           const theirNota = notaFromPerspective(v, otherId)
-          const style = vinculoStyle(myTipo)
-          const duas = isDuasVias(v)
+          const showPrimary = myTipo != null
+          const showReturn = theirTipo != null && (isDuasVias(v) || myTipo == null)
+          const style = vinculoStyle(myTipo ?? theirTipo ?? 'conhecido')
           return (
             <div key={v.id} className="relacoes-detail__vinculo">
               <div className="relacoes-detail__vinculo-row">
-                <span className="relacoes-detail__vinculo-dot" style={{ background: style.color }} />
+                <span
+                  className="relacoes-detail__vinculo-dot"
+                  style={{ background: showPrimary ? style.color : vinculoStyle(theirTipo!).color }}
+                />
                 <button
                   type="button"
                   className="relacoes-detail__vinculo-name"
@@ -111,12 +140,14 @@ export function RelacoesDetailPanel({
                 >
                   {other?.nome ?? 'Personagem removido'}
                 </button>
-                <span className="relacoes-detail__vinculo-tipo" style={{ color: style.color }}>
-                  {style.label}
-                </span>
+                {showPrimary && (
+                  <span className="relacoes-detail__vinculo-tipo" style={{ color: style.color }}>
+                    {formatVinculoTipoLabel(style.label, v.qualificador, v.direcao)}
+                  </span>
+                )}
               </div>
-              {myNota && <p className="relacoes-detail__vinculo-nota">{myNota}</p>}
-              {duas && (
+              {showPrimary && myNota && <p className="relacoes-detail__vinculo-nota">{myNota}</p>}
+              {showReturn && theirTipo != null && (
                 <p className="relacoes-detail__vinculo-return">
                   Vê-te como{' '}
                   <span style={{ color: vinculoStyle(theirTipo).color }}>

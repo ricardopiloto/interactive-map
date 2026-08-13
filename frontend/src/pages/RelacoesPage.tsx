@@ -123,6 +123,13 @@ export function RelacoesPage() {
     })
   }
 
+  function soloOrRestoreTipo(tipo: VinculoTipo) {
+    setActiveTipos((prev) => {
+      if (prev.size === 1 && prev.has(tipo)) return new Set(VINCULO_TIPOS)
+      return new Set([tipo])
+    })
+  }
+
   async function submitGate(password: string) {
     setGateError(false)
     setAdminCredentials(ADMIN_USER, password)
@@ -213,6 +220,10 @@ export function RelacoesPage() {
       tipo_ba: 'conhecido',
       nota_ab: '',
       nota_ba: '',
+      conhecido_ab: true,
+      conhecido_ba: true,
+      qualificador: '',
+      direcao: null,
       publico: false,
       isNew: true,
     })
@@ -227,10 +238,14 @@ export function RelacoesPage() {
       personagem_a_id: v.personagem_a_id,
       personagem_b_id: v.personagem_b_id,
       modo: duas ? 'duas_vias' : 'reciproco',
-      tipo_ab: v.tipo_ab,
-      tipo_ba: v.tipo_ba ?? v.tipo_ab,
+      tipo_ab: v.tipo_ab ?? v.tipo_ba ?? 'conhecido',
+      tipo_ba: v.tipo_ba ?? v.tipo_ab ?? 'conhecido',
       nota_ab: v.nota_ab,
       nota_ba: v.nota_ba,
+      conhecido_ab: v.conhecido_ab ?? true,
+      conhecido_ba: v.conhecido_ba ?? true,
+      qualificador: v.qualificador ?? '',
+      direcao: v.direcao ?? null,
       publico: v.publico,
       isNew: false,
     })
@@ -253,6 +268,10 @@ export function RelacoesPage() {
         nota_ab: vinculoDraft.nota_ab,
         nota_ba: duas ? vinculoDraft.nota_ba : '',
         publico: vinculoDraft.publico,
+        conhecido_ab: duas ? vinculoDraft.conhecido_ab : true,
+        conhecido_ba: duas ? vinculoDraft.conhecido_ba : true,
+        qualificador: vinculoDraft.qualificador.trim(),
+        direcao: vinculoDraft.direcao,
       }
       if (vinculoDraft.isNew) await adminApi.createVinculo(payload)
       else if (vinculoDraft.id != null) await adminApi.updateVinculo(vinculoDraft.id, payload)
@@ -280,6 +299,7 @@ export function RelacoesPage() {
       onQueryChange={setQuery}
       activeTipos={activeTipos}
       onToggleTipo={toggleTipo}
+      onDoubleClickTipo={soloOrRestoreTipo}
       isolate={isolate}
       onToggleIsolate={setIsolate}
       isolateDisabled={selectedId == null}

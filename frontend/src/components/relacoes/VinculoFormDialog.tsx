@@ -1,4 +1,5 @@
-import type { Personagem, VinculoTipo } from '../../types'
+import type { Personagem, VinculoDirecao, VinculoTipo } from '../../types'
+import { suggestionsForTipos } from './qualificadorSuggestions'
 import { VINCULO_STYLES, VINCULO_TIPOS } from './vinculoStyles'
 import './VinculoFormDialog.css'
 
@@ -13,6 +14,10 @@ export interface VinculoDraft {
   tipo_ba: VinculoTipo
   nota_ab: string
   nota_ba: string
+  conhecido_ab: boolean
+  conhecido_ba: boolean
+  qualificador: string
+  direcao: VinculoDirecao | null
   publico: boolean
   isNew: boolean
 }
@@ -48,6 +53,10 @@ export function VinculoFormDialog({
   const nameA = nomeOf(personagens, draft.personagem_a_id)
   const nameB = nomeOf(personagens, draft.personagem_b_id)
   const duas = draft.modo === 'duas_vias'
+  const suggestions = duas
+    ? suggestionsForTipos(draft.tipo_ab, draft.tipo_ba)
+    : suggestionsForTipos(draft.tipo_ab)
+  const listId = 'vinculo-qualificador-suggestions'
 
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
@@ -110,7 +119,13 @@ export function VinculoFormDialog({
                   type="radio"
                   name="vinculo-modo"
                   checked={duas}
-                  onChange={() => onChange({ modo: 'duas_vias' })}
+                  onChange={() =>
+                    onChange({
+                      modo: 'duas_vias',
+                      conhecido_ab: true,
+                      conhecido_ba: true,
+                    })
+                  }
                 />
                 Duas vias
               </label>
@@ -147,6 +162,17 @@ export function VinculoFormDialog({
           </div>
 
           {duas && (
+            <label className="vinculo-form__checkbox">
+              <input
+                type="checkbox"
+                checked={draft.conhecido_ab}
+                onChange={(e) => onChange({ conhecido_ab: e.target.checked })}
+              />
+              Conhecido pelos jogadores ({nameA} → {nameB})
+            </label>
+          )}
+
+          {duas && (
             <>
               <div className="field">
                 <label>
@@ -177,8 +203,67 @@ export function VinculoFormDialog({
                   onChange={(e) => onChange({ nota_ba: e.target.value })}
                 />
               </div>
+
+              <label className="vinculo-form__checkbox">
+                <input
+                  type="checkbox"
+                  checked={draft.conhecido_ba}
+                  onChange={(e) => onChange({ conhecido_ba: e.target.checked })}
+                />
+                Conhecido pelos jogadores ({nameB} → {nameA})
+              </label>
             </>
           )}
+
+          <div className="field">
+            <label>Qualificador (opcional)</label>
+            <input
+              className="input"
+              list={listId}
+              maxLength={80}
+              placeholder="ex: Mentor, Medo, Rival…"
+              value={draft.qualificador}
+              onChange={(e) => onChange({ qualificador: e.target.value })}
+            />
+            <datalist id={listId}>
+              {suggestions.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          </div>
+
+          <div className="field">
+            <label>Direção</label>
+            <div className="vinculo-form__modo">
+              <label className="vinculo-form__checkbox">
+                <input
+                  type="radio"
+                  name="vinculo-direcao"
+                  checked={draft.direcao == null}
+                  onChange={() => onChange({ direcao: null })}
+                />
+                Mútuo
+              </label>
+              <label className="vinculo-form__checkbox">
+                <input
+                  type="radio"
+                  name="vinculo-direcao"
+                  checked={draft.direcao === 'a_para_b'}
+                  onChange={() => onChange({ direcao: 'a_para_b' })}
+                />
+                {nameA} → {nameB}
+              </label>
+              <label className="vinculo-form__checkbox">
+                <input
+                  type="radio"
+                  name="vinculo-direcao"
+                  checked={draft.direcao === 'b_para_a'}
+                  onChange={() => onChange({ direcao: 'b_para_a' })}
+                />
+                {nameB} → {nameA}
+              </label>
+            </div>
+          </div>
 
           <label className="vinculo-form__checkbox">
             <input

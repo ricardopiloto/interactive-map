@@ -14,6 +14,11 @@ class VinculoTipo(str, Enum):
     conhecido = "conhecido"
 
 
+class VinculoDirecao(str, Enum):
+    a_para_b = "a_para_b"
+    b_para_a = "b_para_a"
+
+
 class Vinculo(SQLModel, table=True):
     __tablename__ = "vinculo"
     __table_args__ = (
@@ -28,3 +33,7 @@ class Vinculo(SQLModel, table=True):
     nota_ab: str = Field(default="", max_length=500)
     nota_ba: str = Field(default="", max_length=500)
     publico: bool = Field(default=False)
+    conhecido_ab: bool = Field(default=True)
+    conhecido_ba: bool = Field(default=True)
+    qualificador: str = Field(default="", max_length=80)
+    direcao: Optional[VinculoDirecao] = Field(default=None, max_length=20)

@@ -20,8 +20,10 @@ import {
   NODE_W,
   type Point,
 } from './graphLayout'
+import { estimateLabelWidth, formatVinculoTipoLabel, midQualDirFragment } from './vinculoLabel'
 import { vinculoStyle } from './vinculoStyles'
 import {
+  edgeDisplayTipo,
   edgeIsDashed,
   edgeMatchesTipos,
   isDuasVias,
@@ -317,8 +319,9 @@ export function GraphStage({
               const a = discCenterFromNodePos(aPos)
               const b = discCenterFromNodePos(bPos)
               const duas = isDuasVias(v)
-              const styleA = vinculoStyle(v.tipo_ab)
-              const styleB = vinculoStyle(v.tipo_ba ?? v.tipo_ab)
+              const displayTipo = edgeDisplayTipo(v)
+              const styleA = duas ? vinculoStyle(v.tipo_ab!) : vinculoStyle(displayTipo)
+              const styleB = duas ? vinculoStyle(v.tipo_ba!) : styleA
               const style = styleA
               const highlighted = showEdges && isFocusEdge(v)
               const dimOpacity = selectedId != null ? EDGE_OPACITY_DIM_SELECTED : EDGE_OPACITY_DIM
@@ -327,12 +330,17 @@ export function GraphStage({
               const midY = (a.y + b.y) / 2
               const nearA = { x: a.x + (b.x - a.x) * 0.22, y: a.y + (b.y - a.y) * 0.22 }
               const nearB = { x: a.x + (b.x - a.x) * 0.78, y: a.y + (b.y - a.y) * 0.78 }
-              const reciprocalLabelVisible =
-                !duas &&
+              const midLabelVisible =
                 highlighted &&
                 (rotulosVinculo === 'foco' ||
                   showAlwaysLabels ||
                   (rotulosVinculo === 'hover' && hoveredEdgeId === v.id))
+              const reciprocalText = formatVinculoTipoLabel(
+                style.label,
+                v.qualificador,
+                v.direcao,
+              )
+              const midDuasText = midQualDirFragment(v.qualificador, v.direcao)
               const stroke = duas ? `url(#vinculo-grad-${v.id})` : style.color
               return (
                 <g key={v.id} className="graph-stage__edge-group">
@@ -400,26 +408,60 @@ export function GraphStage({
                           {styleB.label}
                         </text>
                       </g>
+                      {midDuasText && midLabelVisible && (
+                        <g transform={`translate(${midX}, ${midY})`} opacity={opacity}>
+                          {(() => {
+                            const w = estimateLabelWidth(midDuasText)
+                            return (
+                              <>
+                                <rect
+                                  x={-w / 2}
+                                  y={-11}
+                                  width={w}
+                                  height={22}
+                                  rx={6}
+                                  className="graph-stage__edge-label-bg"
+                                />
+                                <text
+                                  textAnchor="middle"
+                                  dy="4"
+                                  className="graph-stage__edge-label"
+                                  fill="var(--text-muted, #9aa3b2)"
+                                >
+                                  {midDuasText}
+                                </text>
+                              </>
+                            )
+                          })()}
+                        </g>
+                      )}
                     </>
                   )}
-                  {reciprocalLabelVisible && (
+                  {!duas && midLabelVisible && (
                     <g transform={`translate(${midX}, ${midY})`}>
-                      <rect
-                        x={-42}
-                        y={-11}
-                        width={84}
-                        height={22}
-                        rx={6}
-                        className="graph-stage__edge-label-bg"
-                      />
-                      <text
-                        textAnchor="middle"
-                        dy="4"
-                        className="graph-stage__edge-label"
-                        fill={style.color}
-                      >
-                        {style.label}
-                      </text>
+                      {(() => {
+                        const w = estimateLabelWidth(reciprocalText)
+                        return (
+                          <>
+                            <rect
+                              x={-w / 2}
+                              y={-11}
+                              width={w}
+                              height={22}
+                              rx={6}
+                              className="graph-stage__edge-label-bg"
+                            />
+                            <text
+                              textAnchor="middle"
+                              dy="4"
+                              className="graph-stage__edge-label"
+                              fill={style.color}
+                            >
+                              {reciprocalText}
+                            </text>
+                          </>
+                        )
+                      })()}
                     </g>
                   )}
                 </g>

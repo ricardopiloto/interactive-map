@@ -17,11 +17,44 @@ from app.models.arco import Arco
 from app.models.grupo import GrupoPosicao
 from app.models.local import Local
 from app.models.npc import NPC, NPCStatus, PersonagemTipo
-from app.models.vinculo import Vinculo, VinculoTipo
+from app.models.vinculo import Vinculo, VinculoDirecao, VinculoTipo
 
 
 def _pair(a: int, b: int) -> tuple[int, int]:
     return (a, b) if a < b else (b, a)
+
+
+def _ensure_qualifier_direction_demos(session: Session) -> None:
+    """Demo: Marcus↔Tomas Aliado (Mentor); Helga→Ranulf Inimizade (Medo) directed."""
+    marcus = session.exec(select(NPC).where(NPC.nome == "Marcus Stein")).first()
+    tomas = session.exec(select(NPC).where(NPC.nome == "Brother Tomas")).first()
+    if marcus and tomas and marcus.id is not None and tomas.id is not None:
+        a, b = _pair(marcus.id, tomas.id)
+        row = session.exec(
+            select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
+        ).first()
+        if row:
+            row.qualificador = "Mentor"
+            row.direcao = None
+            session.add(row)
+
+    helga = session.exec(select(NPC).where(NPC.nome == "Capitã Helga Brunn")).first()
+    ranulf = session.exec(select(NPC).where(NPC.nome == "Ranulf Grimsby")).first()
+    if helga and ranulf and helga.id is not None and ranulf.id is not None:
+        a, b = _pair(helga.id, ranulf.id)
+        row = session.exec(
+            select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
+        ).first()
+        if row:
+            row.qualificador = "Medo"
+            # Helga → Ranulf relative to canonical a/b
+            row.direcao = (
+                VinculoDirecao.a_para_b if helga.id < ranulf.id else VinculoDirecao.b_para_a
+            )
+            session.add(row)
+
+    session.commit()
+    print("Seed relações: demos qualificador/direção (Mentor; Medo dirigido).")
 
 
 def _ensure_elara_marcus_duas_vias(session: Session) -> None:
@@ -48,15 +81,54 @@ def _ensure_elara_marcus_duas_vias(session: Session) -> None:
         row.nota_ab = "Marcus vê mais do que amizade em Elara"
         row.nota_ba = "Companheiros de estrada desde Bögenhafen"
     row.publico = True
+    row.conhecido_ab = True
+    row.conhecido_ba = True
     session.add(row)
     session.commit()
     print("Seed relações: Elara↔Marcus actualizado para duas vias (aliado/romance).")
+
+
+def _ensure_tomas_lila_known_direction(session: Session) -> None:
+    """Tomas→Lila romance (secret), Lila→Tomas amizade (known), público."""
+    lila = session.exec(select(NPC).where(NPC.nome == "Lila Nacht")).first()
+    tomas = session.exec(select(NPC).where(NPC.nome == "Brother Tomas")).first()
+    if not lila or not tomas or lila.id is None or tomas.id is None:
+        return
+    a, b = _pair(lila.id, tomas.id)
+    row = session.exec(
+        select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
+    ).first()
+    if not row:
+        return
+    # Tomas sees romance (secret); Lila sees amizade (known)
+    if tomas.id < lila.id:
+        row.tipo_ab = VinculoTipo.romance
+        row.tipo_ba = VinculoTipo.amizade
+        row.nota_ab = "Sentimento que Lila não conhece"
+        row.nota_ba = "Vê-o como um amigo de confiança"
+        row.conhecido_ab = False
+        row.conhecido_ba = True
+    else:
+        row.tipo_ab = VinculoTipo.amizade
+        row.tipo_ba = VinculoTipo.romance
+        row.nota_ab = "Vê-o como um amigo de confiança"
+        row.nota_ba = "Sentimento que Lila não conhece"
+        row.conhecido_ab = True
+        row.conhecido_ba = False
+    row.publico = True
+    session.add(row)
+    session.commit()
+    print(
+        "Seed relações: Tomas↔Lila duas vias (amizade conhecida / romance secreto)."
+    )
 
 
 def seed_relacoes(session: Session) -> None:
     """Idempotent: add PJs / extra NPCs / vínculos if rede ainda vazia."""
     if session.exec(select(Vinculo)).first():
         _ensure_elara_marcus_duas_vias(session)
+        _ensure_tomas_lila_known_direction(session)
+        _ensure_qualifier_direction_demos(session)
         print("Seed relações ignorado: já existem vínculos.")
         return
 
@@ -127,7 +199,7 @@ def seed_relacoes(session: Session) -> None:
         ("Capitã Helga Brunn", "Ranulf Grimsby", VinculoTipo.inimizade, None, "Quer vê-lo atrás das grades", "", True),
         ("Greta Mole", "Irmã Wilhelmina", VinculoTipo.amizade, None, "Trocam remédios e fofocas de aldeia", "", True),
         ("Greta Mole", "Elara Voss", VinculoTipo.conhecido, None, "Curou um ferimento feio na caçada", "", True),
-        ("Lila Nacht", "Brother Tomas", VinculoTipo.romance, None, "Segredo constrangedor do grupo", "", False),
+        ("Brother Tomas", "Lila Nacht", VinculoTipo.romance, VinculoTipo.amizade, "Sentimento que Lila não conhece", "Vê-o como um amigo de confiança", True),
         ("Elara Voss", "Doutor Hedrich", VinculoTipo.familia, None, "Primo distante — ela não gosta de lembrar", "", False),
     ]
     for na, nb, tipo_ab, tipo_ba, nota_ab, nota_ba, publico in links:
@@ -140,6 +212,13 @@ def seed_relacoes(session: Session) -> None:
                 t_ab, t_ba, n_ab, n_ba = tipo_ab, None, nota_ab, ""
             else:
                 t_ab, t_ba, n_ab, n_ba = tipo_ba, tipo_ab, nota_ba, nota_ab
+        # Tomas→romance secret / Lila→amizade known (after canonical map)
+        conhecido_ab, conhecido_ba = True, True
+        if {na, nb} == {"Lila Nacht", "Brother Tomas"} and t_ba is not None:
+            if t_ab == VinculoTipo.romance:
+                conhecido_ab, conhecido_ba = False, True
+            elif t_ba == VinculoTipo.romance:
+                conhecido_ab, conhecido_ba = True, False
         session.add(
             Vinculo(
                 personagem_a_id=a,
@@ -149,10 +228,14 @@ def seed_relacoes(session: Session) -> None:
                 nota_ab=n_ab,
                 nota_ba=n_ba,
                 publico=publico,
+                conhecido_ab=conhecido_ab,
+                conhecido_ba=conhecido_ba,
             )
         )
     session.commit()
     print("Seed relações: PJs/NPCs extras e ~15 vínculos aplicados.")
+    _ensure_tomas_lila_known_direction(session)
+    _ensure_qualifier_direction_demos(session)
 
 
 def seed(session: Session) -> None:

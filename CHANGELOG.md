@@ -5,6 +5,30 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.11.0] — 2026-08-12
+
+### Added
+
+- **Relações**: **qualificador** opcional (autocomplete por tipo + Medo em todos) e **direção** opcional (mútuo / A→B / B→A) nos vínculos; etiquetas e ficha mostram `Tipo (Qual)` e seta quando aplicável; em duas vias, tipos nos extremos e qual/seta no meio (spec 075)
+
+## [0.10.1] — 2026-08-12
+
+### Changed
+
+- **Relações**: duplo clique num chip de **Tipos de vínculo** isola só esse tipo; outro duplo clique no mesmo chip restaura todos (spec 074)
+
+## [0.10.0] — 2026-08-12
+
+### Added
+
+- **Relações**: em vínculos **duas vias**, o GM marca cada sentido como **conhecido** pelos jogadores ou só para o mestre; o interruptor **público** do par continua a mandar; jogadores vêem 0/1/2 vias (uma via conhecida aparece como recíproco); a API pública omite tipos secretos (spec 073)
+
+## [0.9.1] — 2026-08-12
+
+### Changed
+
+- **Relações**: lista de vínculos na ficha ordenada A→Z pelo nome do outro personagem (locale `pt`); personagens sem nome resolvido ficam no fim (spec 072)
+
 ## [0.9.0] — 2026-08-12
 
 ### Added

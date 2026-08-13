@@ -2,7 +2,7 @@
 
 Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arcos e Modo GM in-page.
 
-**Versão:** 0.9.0 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.11.0 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) (`/var/www/interactive-map`)
 
 ## Funcionalidades
@@ -24,7 +24,7 @@ Aplicação web self-hosted para acompanhar a campanha: mapa com pins, NPCs, arc
   - Clique na área vazia do mapa deseleciona o pin selecionado
   - Clique no pin seleciona sem foco automático da câmera
 - API de escrita protegida com HTTP Basic Auth
-- **Relações** (`/relacoes`): rede PJ/NPC com vínculos tipados; opcional **duas vias** (cada um vê o outro de forma diferente), com fade na linha e ficha por perspectiva
+- **Relações** (`/relacoes`): rede PJ/NPC com vínculos tipados; opcional **duas vias** (cada um vê o outro de forma diferente), com fade na linha e ficha por perspectiva; o GM pode ocultar um sentido aos jogadores; **qualificador** e **direção** opcionais (`Tipo (Mentor) →`)
 
 ## Specs
 

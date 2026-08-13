@@ -11,6 +11,7 @@ import type {
   RouteSegment,
   RouteTipo,
   Vinculo,
+  VinculoTipo,
   Waypoint,
 } from '../types'
 
@@ -51,11 +52,15 @@ export interface PersonagemPayload {
 export interface VinculoPayload {
   personagem_a_id: number
   personagem_b_id: number
-  tipo_ab: Vinculo['tipo_ab']
-  tipo_ba?: Vinculo['tipo_ba']
+  tipo_ab: VinculoTipo
+  tipo_ba?: VinculoTipo | null
   nota_ab?: string
   nota_ba?: string
   publico?: boolean
+  conhecido_ab?: boolean
+  conhecido_ba?: boolean
+  qualificador?: string
+  direcao?: 'a_para_b' | 'b_para_a' | null
 }
 
 export interface ArcoPayload {

@@ -7,6 +7,7 @@ export type VinculoTipo =
   | 'romance'
   | 'familia'
   | 'conhecido'
+export type VinculoDirecao = 'a_para_b' | 'b_para_a'
 export type GrupoFormato = 'bandeira' | 'brasao'
 export type RouteTipo = 'estrada' | 'rio' | 'trilha'
 export type Ritmo = 'normal' | 'intenso'
@@ -49,11 +50,15 @@ export interface Vinculo {
   id: number
   personagem_a_id: number
   personagem_b_id: number
-  tipo_ab: VinculoTipo
+  tipo_ab: VinculoTipo | null
   tipo_ba: VinculoTipo | null
   nota_ab: string
   nota_ba: string
   publico: boolean
+  conhecido_ab?: boolean | null
+  conhecido_ba?: boolean | null
+  qualificador?: string
+  direcao?: VinculoDirecao | null
 }
 
 export interface Arco {

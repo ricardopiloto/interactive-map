@@ -1,8 +1,8 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.models.vinculo import VinculoTipo
+from app.models.vinculo import VinculoDirecao, VinculoTipo
 
 
 def normalize_tipos(
@@ -14,6 +14,18 @@ def normalize_tipos(
     return tipo_ab, tipo_ba
 
 
+def is_duas_vias(tipo_ab: VinculoTipo, tipo_ba: Optional[VinculoTipo]) -> bool:
+    return tipo_ba is not None and tipo_ba != tipo_ab
+
+
+def flip_direcao(direcao: Optional[VinculoDirecao]) -> Optional[VinculoDirecao]:
+    if direcao is None:
+        return None
+    if direcao == VinculoDirecao.a_para_b:
+        return VinculoDirecao.b_para_a
+    return VinculoDirecao.a_para_b
+
+
 class VinculoCreate(BaseModel):
     personagem_a_id: int
     personagem_b_id: int
@@ -22,6 +34,15 @@ class VinculoCreate(BaseModel):
     nota_ab: str = Field(default="", max_length=500)
     nota_ba: str = Field(default="", max_length=500)
     publico: bool = False
+    conhecido_ab: bool = True
+    conhecido_ba: bool = True
+    qualificador: str = Field(default="", max_length=80)
+    direcao: Optional[VinculoDirecao] = None
+
+    @field_validator("qualificador")
+    @classmethod
+    def trim_qualificador(cls, v: str) -> str:
+        return (v or "").strip()
 
     @model_validator(mode="after")
     def reject_self_link_and_normalize(self) -> "VinculoCreate":
@@ -43,6 +64,17 @@ class VinculoUpdate(BaseModel):
     nota_ab: Optional[str] = Field(default=None, max_length=500)
     nota_ba: Optional[str] = Field(default=None, max_length=500)
     publico: Optional[bool] = None
+    conhecido_ab: Optional[bool] = None
+    conhecido_ba: Optional[bool] = None
+    qualificador: Optional[str] = Field(default=None, max_length=80)
+    direcao: Optional[VinculoDirecao] = None
+
+    @field_validator("qualificador")
+    @classmethod
+    def trim_qualificador(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        return v.strip()
 
 
 class VinculoRead(BaseModel):
@@ -51,8 +83,12 @@ class VinculoRead(BaseModel):
     id: int
     personagem_a_id: int
     personagem_b_id: int
-    tipo_ab: VinculoTipo
+    tipo_ab: Optional[VinculoTipo] = None
     tipo_ba: Optional[VinculoTipo] = None
     nota_ab: str = ""
     nota_ba: str = ""
     publico: bool
+    conhecido_ab: Optional[bool] = None
+    conhecido_ba: Optional[bool] = None
+    qualificador: str = ""
+    direcao: Optional[VinculoDirecao] = None

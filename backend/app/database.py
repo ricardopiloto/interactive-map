@@ -88,6 +88,30 @@ def _migrate_sqlite() -> None:
                 text("CREATE INDEX IF NOT EXISTS ix_vinculo_personagem_b_id ON vinculo (personagem_b_id)")
             )
 
+        vinculo_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(vinculo)")).fetchall()
+        }
+        if vinculo_cols and "conhecido_ab" not in vinculo_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE vinculo ADD COLUMN conhecido_ab BOOLEAN NOT NULL DEFAULT 1"
+                )
+            )
+        if vinculo_cols and "conhecido_ba" not in vinculo_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE vinculo ADD COLUMN conhecido_ba BOOLEAN NOT NULL DEFAULT 1"
+                )
+            )
+        if vinculo_cols and "qualificador" not in vinculo_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE vinculo ADD COLUMN qualificador VARCHAR(80) NOT NULL DEFAULT ''"
+                )
+            )
+        if vinculo_cols and "direcao" not in vinculo_cols:
+            conn.execute(text("ALTER TABLE vinculo ADD COLUMN direcao VARCHAR(20)"))
+
 
 def init_db() -> None:
     # Register all table models on SQLModel.metadata before create_all.
