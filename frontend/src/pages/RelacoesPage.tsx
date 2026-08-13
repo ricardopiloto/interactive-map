@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../api/admin'
 import { campaignApi } from '../api/campaign'
 import {
@@ -18,6 +19,8 @@ import {
 import { VinculoFormDialog, type VinculoDraft } from '../components/relacoes/VinculoFormDialog'
 import { isDuasVias } from '../components/relacoes/vinculoDirection'
 import { VINCULO_TIPOS } from '../components/relacoes/vinculoStyles'
+import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
+import { useInstanceConfig } from '../hooks/useInstanceConfig'
 import type { Personagem, Vinculo, VinculoTipo } from '../types'
 import './RelacoesPage.css'
 
@@ -25,6 +28,10 @@ const ADMIN_USER = import.meta.env.VITE_ADMIN_USER ?? 'gm'
 const SELECTION_ANIMATION_MS = 600
 
 export function RelacoesPage() {
+  const { t } = useTranslation('relacoes')
+  const { t: tc } = useTranslation('comum')
+  const apiErrorMessage = useApiErrorMessage()
+  const { config: instanceConfig } = useInstanceConfig()
   const [personagens, setPersonagens] = useState<Personagem[]>([])
   const [vinculos, setVinculos] = useState<Vinculo[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,7 +76,7 @@ export function RelacoesPage() {
       setPersonagens(ps)
       setVinculos(vs)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao carregar a rede de relações')
+      setError(e instanceof Error && e.name === 'ApiError' ? apiErrorMessage(e) : t('page.loadError'))
     } finally {
       setLoading(false)
     }
@@ -159,6 +166,7 @@ export function RelacoesPage() {
       descricao: '',
       status: 'vivo',
       retrato_url: null,
+      extensoes_mecanica: {},
       isNew: true,
     })
   }
@@ -173,6 +181,7 @@ export function RelacoesPage() {
       descricao: p.descricao,
       status: p.status ?? 'desconhecido',
       retrato_url: p.retrato_url,
+      extensoes_mecanica: { ...(p.extensoes_mecanica ?? {}) },
       isNew: false,
     })
   }
@@ -189,25 +198,26 @@ export function RelacoesPage() {
         faccao: personagemDraft.faccao.trim() || null,
         status: personagemDraft.status,
         retrato_url: personagemDraft.retrato_url,
+        extensoes_mecanica: personagemDraft.extensoes_mecanica,
       }
       if (personagemDraft.isNew) await adminApi.createPersonagem(payload)
       else if (personagemDraft.id != null) await adminApi.updatePersonagem(personagemDraft.id, payload)
       setPersonagemDraft(null)
       await refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao salvar personagem')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
   async function deletePersonagem(id: number) {
-    if (!window.confirm('Remover este personagem? Isso também remove seus vínculos.')) return
+    if (!window.confirm(t('page.confirmRemovePersonagem'))) return
     setBusyError(null)
     try {
       await adminApi.deletePersonagem(id)
       if (selectedId === id) deselectPersonagem()
       await refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao remover personagem')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
@@ -281,18 +291,18 @@ export function RelacoesPage() {
       setVinculoDraft(null)
       await refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao salvar vínculo')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
   async function deleteVinculo(id: number) {
-    if (!window.confirm('Remover este vínculo?')) return
+    if (!window.confirm(t('page.confirmRemoveVinculo'))) return
     setBusyError(null)
     try {
       await adminApi.deleteVinculo(id)
       await refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao remover vínculo')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
@@ -324,14 +334,14 @@ export function RelacoesPage() {
         {isGm && (
           <>
             <button type="button" className="btn btn-secondary" onClick={startCreatePersonagem}>
-              + Personagem
+              {t('page.addPersonagem')}
             </button>
             <button
               type="button"
               className="btn btn-secondary"
               onClick={() => startCreateVinculo()}
             >
-              + Conexão
+              {t('page.addConexao')}
             </button>
           </>
         )}
@@ -343,7 +353,7 @@ export function RelacoesPage() {
         {sideColumn}
 
         <div className="relacoes-page__stage-wrap">
-          {loading && <p className="map-page__status">Carregando rede de relações…</p>}
+          {loading && <p className="map-page__status">{tc('loading.network')}</p>}
           {error && <p className="map-page__status map-page__status--error">{error}</p>}
 
           {!loading && !error && (
@@ -391,8 +401,10 @@ export function RelacoesPage() {
 
       {personagemDraft && (
         <PersonagemFormDialog
-          title={personagemDraft.isNew ? 'Novo personagem' : 'Editar personagem'}
+          title={personagemDraft.isNew ? t('page.newPersonagem') : t('page.editPersonagem')}
           draft={personagemDraft}
+          instanceConfig={instanceConfig}
+          isGm={isGm}
           onChange={(patch) => setPersonagemDraft({ ...personagemDraft, ...patch })}
           onSave={() => void savePersonagem()}
           onCancel={() => setPersonagemDraft(null)}
@@ -401,7 +413,7 @@ export function RelacoesPage() {
 
       {vinculoDraft && (
         <VinculoFormDialog
-          title={vinculoDraft.isNew ? 'Nova conexão' : 'Editar conexão'}
+          title={vinculoDraft.isNew ? t('page.newConexao') : t('page.editConexao')}
           draft={vinculoDraft}
           personagens={personagens}
           onChange={(patch) => setVinculoDraft({ ...vinculoDraft, ...patch })}

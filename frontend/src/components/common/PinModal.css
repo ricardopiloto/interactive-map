@@ -14,6 +14,7 @@
 .pin-modal {
   /* Shell max-height / flex / overflow come from .dialog (nocturne). */
   width: min(440px, 100%);
+  box-shadow: var(--elevation-panel);
 }
 
 .pin-modal--beside {

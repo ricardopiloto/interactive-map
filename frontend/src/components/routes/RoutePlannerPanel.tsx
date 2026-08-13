@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { campaignApi } from '../../api/campaign'
+import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
 import type { Local, ModoTransporte, OrdenacaoRota, PreferenciaVia, Ritmo, RoutePlanItem, Waypoint } from '../../types'
 import { WaypointCombobox } from './WaypointCombobox'
 import {
@@ -9,46 +11,22 @@ import {
 } from './routeMapPick'
 import './RoutePlanner.css'
 
-const RITMOS: { value: Ritmo; label: string; hint: string }[] = [
-  { value: 'normal', label: 'Normal', hint: '6 h/dia' },
-  { value: 'intenso', label: 'Intenso', hint: '8 h/dia' },
-]
-
-const ORDENACOES: { value: OrdenacaoRota; label: string }[] = [
-  { value: 'mais_rapida', label: 'Mais rápida' },
-  { value: 'mais_barata', label: 'Mais barata' },
-]
-
-const MODOS: { value: ModoTransporte; label: string }[] = [
-  { value: 'pago', label: 'Pago' },
-  { value: 'proprio', label: 'Próprio' },
-]
-
-const PREFERENCIAS: { value: PreferenciaVia; label: string }[] = [
-  { value: 'nenhuma', label: 'Sem preferência' },
-  { value: 'rio', label: 'Por rio' },
-  { value: 'estrada', label: 'Por estrada' },
-]
-
 const DEFAULT_PROPRIO_SPEED = '4'
 const OPTIONS_PANEL_ID = 'route-planner-options-body'
 
-const TIPO_LABELS: Record<string, string> = {
-  estrada: 'Estrada',
-  rio: 'Rio',
-  trilha: 'Trilha',
-}
-
-function formatRouteTipoLabel(tipo: string): string {
+function formatRouteTipoLabel(t: (key: string) => string, tipo: string): string {
   const key = tipo.trim().toLowerCase()
-  if (TIPO_LABELS[key]) return TIPO_LABELS[key]
+  const known = ['estrada', 'rio', 'trilha'] as const
+  if (known.includes(key as (typeof known)[number])) {
+    return t(`routeEnums.tipoVia.${key}`)
+  }
   if (!key) return ''
   return key.charAt(0).toUpperCase() + key.slice(1)
 }
 
-function routeTitleBase(tipos: string[]): string {
-  const labels = tipos.map(formatRouteTipoLabel).filter(Boolean)
-  return labels.length > 0 ? labels.join(', ') : 'Rota'
+function routeTitleBase(t: (key: string) => string, tipos: string[]): string {
+  const labels = tipos.map((tipo) => formatRouteTipoLabel(t, tipo)).filter(Boolean)
+  return labels.length > 0 ? labels.join(', ') : t('routePlanner.route')
 }
 
 /** First occurrence of each base keeps bare title; later ones get (2), (3), … */
@@ -63,6 +41,7 @@ function disambiguateRouteTitles(bases: string[]): string[] {
 
 /** Non-default option fragments for collapsed header (research §2). */
 function formatOptionsSummary(
+  t: (key: string) => string,
   modo: ModoTransporte,
   ritmo: Ritmo,
   ordenacao: OrdenacaoRota,
@@ -71,16 +50,16 @@ function formatOptionsSummary(
 ): string[] {
   const fragments: string[] = []
   if (modo === 'proprio') {
-    fragments.push('Próprio')
+    fragments.push(t('routeEnums.modo.proprio'))
     const trimmed = velocidade.trim()
     if (trimmed !== '' && trimmed !== DEFAULT_PROPRIO_SPEED) {
       fragments.push(`${trimmed} mi/h`)
     }
   }
-  if (ritmo === 'intenso') fragments.push('Intenso')
-  if (ordenacao === 'mais_barata') fragments.push('Mais barata')
-  if (preferenciaVia === 'rio') fragments.push('Por rio')
-  if (preferenciaVia === 'estrada') fragments.push('Por estrada')
+  if (ritmo === 'intenso') fragments.push(t('routeEnums.ritmo.intenso'))
+  if (ordenacao === 'mais_barata') fragments.push(t('routeEnums.ordenacao.maisBarata'))
+  if (preferenciaVia === 'rio') fragments.push(t('routeEnums.preferencia.rio'))
+  if (preferenciaVia === 'estrada') fragments.push(t('routeEnums.preferencia.estrada'))
   return fragments
 }
 
@@ -112,6 +91,43 @@ export function RoutePlannerPanel({
   mapPick = null,
   embedded = false,
 }: Props) {
+  const { t } = useTranslation('mapa')
+  const { t: tc } = useTranslation('comum')
+  const apiErrorMessage = useApiErrorMessage()
+
+  const ritmos = useMemo(
+    (): { value: Ritmo; label: string; hint: string }[] => [
+      { value: 'normal', label: t('routeEnums.ritmo.normal'), hint: t('routeEnums.ritmo.normalHint') },
+      { value: 'intenso', label: t('routeEnums.ritmo.intenso'), hint: t('routeEnums.ritmo.intensoHint') },
+    ],
+    [t],
+  )
+
+  const ordenacoes = useMemo(
+    (): { value: OrdenacaoRota; label: string }[] => [
+      { value: 'mais_rapida', label: t('routeEnums.ordenacao.maisRapida') },
+      { value: 'mais_barata', label: t('routeEnums.ordenacao.maisBarata') },
+    ],
+    [t],
+  )
+
+  const modos = useMemo(
+    (): { value: ModoTransporte; label: string }[] => [
+      { value: 'pago', label: t('routeEnums.modo.pago') },
+      { value: 'proprio', label: t('routeEnums.modo.proprio') },
+    ],
+    [t],
+  )
+
+  const preferencias = useMemo(
+    (): { value: PreferenciaVia; label: string }[] => [
+      { value: 'nenhuma', label: t('routeEnums.preferencia.nenhuma') },
+      { value: 'rio', label: t('routeEnums.preferencia.rio') },
+      { value: 'estrada', label: t('routeEnums.preferencia.estrada') },
+    ],
+    [t],
+  )
+
   const locaisById = useMemo(() => {
     const m = new Map<number, string>()
     for (const l of locais) m.set(l.id, l.nome)
@@ -128,8 +144,8 @@ export function RoutePlannerPanel({
   const namedIds = useMemo(() => new Set(options.map((o) => o.id)), [options])
 
   const routeTitles = useMemo(
-    () => disambiguateRouteTitles(plan.map((r) => routeTitleBase(r.tipos))),
-    [plan],
+    () => disambiguateRouteTitles(plan.map((r) => routeTitleBase(t, r.tipos))),
+    [plan, t],
   )
   const [origemId, setOrigemId] = useState<number | ''>('')
   const [destinoId, setDestinoId] = useState<number | ''>('')
@@ -152,8 +168,8 @@ export function RoutePlannerPanel({
   origemIdRef.current = origemId
 
   const summaryFragments = useMemo(
-    () => formatOptionsSummary(modo, ritmo, ordenacao, preferenciaVia, velocidade),
-    [modo, ritmo, ordenacao, preferenciaVia, velocidade],
+    () => formatOptionsSummary(t, modo, ritmo, ordenacao, preferenciaVia, velocidade),
+    [t, modo, ritmo, ordenacao, preferenciaVia, velocidade],
   )
 
   useEffect(() => {
@@ -167,7 +183,6 @@ export function RoutePlannerPanel({
     }
   }, [namedIds, origemId, destinoId])
 
-  // FR-012 / FR-007: each open → pago + Sem preferência + speed draft 4 + options collapsed
   useEffect(() => {
     if (open && !wasOpen.current) {
       setModo((prev) => {
@@ -201,23 +216,23 @@ export function RoutePlannerPanel({
       const d = destinoOverride !== undefined ? destinoOverride : destinoId
       setError(null)
       if (o === '' || d === '') {
-        setError('Escolha origem e destino.')
+        setError(t('routePlanner.errOriginDest'))
         return
       }
       if (o === d) {
-        setError('Origem e destino devem ser diferentes.')
+        setError(t('routePlanner.errDifferent'))
         return
       }
       let mph: number | undefined
       if (modoAtual === 'proprio') {
         const trimmed = velocidade.trim()
         if (trimmed === '') {
-          setError('Informe a velocidade desejada (mi/h).')
+          setError(t('routePlanner.errSpeedRequired'))
           return
         }
         mph = Number(trimmed)
         if (!Number.isFinite(mph) || mph <= 0) {
-          setError('Velocidade desejada deve ser um número maior que zero.')
+          setError(t('routePlanner.errSpeedInvalid'))
           return
         }
       }
@@ -225,22 +240,21 @@ export function RoutePlannerPanel({
       try {
         const res = await campaignApi.planRoute(o, d, ritmo, modoAtual, mph, ord, prefAtual)
         if (res.rotas.length === 0) {
-          setError('Nenhuma rota encontrada entre esses nós.')
+          setError(t('routePlanner.errNoRoute'))
           onPlanChange([], 0)
         } else {
           onPlanChange(res.rotas, 0)
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Falha ao calcular rota')
+        setError(apiErrorMessage(e))
         onPlanChange([], 0)
       } finally {
         setBusy(false)
       }
     },
-    [origemId, destinoId, velocidade, ritmo, ordenacao, modo, preferenciaVia, onPlanChange],
+    [origemId, destinoId, velocidade, ritmo, ordenacao, modo, preferenciaVia, onPlanChange, t, apiErrorMessage],
   )
 
-  // 060/061: map pin → De/Para by field state; auto-calc when both ends set (FR-011)
   useEffect(() => {
     if (!open || !mapPick) return
     if (appliedMapPickNonce === mapPick.nonce) return
@@ -264,11 +278,11 @@ export function RoutePlannerPanel({
     setDestinoId(pickId)
     setDestinoQuery(label)
     if (prevOrigem === pickId) {
-      setError('Origem e destino devem ser diferentes.')
+      setError(t('routePlanner.errDifferent'))
       return
     }
     void calcular(ordenacao, modo, preferenciaVia, prevOrigem, pickId)
-  }, [mapPick, open, namedIds, waypoints, locaisById, appliedMapPickNonce, calcular, ordenacao, modo, preferenciaVia])
+  }, [mapPick, open, namedIds, waypoints, locaisById, appliedMapPickNonce, calcular, ordenacao, modo, preferenciaVia, t])
 
   useEffect(() => {
     if (skipOrdenacaoRecalc.current) {
@@ -306,24 +320,25 @@ export function RoutePlannerPanel({
 
   if (!open) return null
 
-  const firstBadge = ordenacao === 'mais_barata' ? 'mais barata' : 'mais rápida'
-  const ritmoHint = RITMOS.find((r) => r.value === ritmo)?.hint
+  const firstBadge =
+    ordenacao === 'mais_barata' ? t('routePlanner.badgeCheapest') : t('routePlanner.badgeFastest')
+  const ritmoHint = ritmos.find((r) => r.value === ritmo)?.hint
 
   return (
     <aside
       className={embedded ? 'route-planner route-planner--embedded' : 'route-planner'}
-      aria-label="Calcular rota"
+      aria-label={t('routePlanner.title')}
     >
       <div className="route-planner__head">
-        <h2 className="route-planner__title">Calcular rota</h2>
+        <h2 className="route-planner__title">{t('routePlanner.title')}</h2>
         {onClose ? (
-          <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Fechar">
+          <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label={tc('buttons.close')}>
             ×
           </button>
         ) : null}
       </div>
       <WaypointCombobox
-        label="De"
+        label={t('routePlanner.from')}
         options={options}
         query={origemQuery}
         selectedId={origemId}
@@ -337,7 +352,7 @@ export function RoutePlannerPanel({
         }}
       />
       <WaypointCombobox
-        label="Para"
+        label={t('routePlanner.to')}
         options={options}
         query={destinoQuery}
         selectedId={destinoId}
@@ -351,7 +366,7 @@ export function RoutePlannerPanel({
         }}
       />
       <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void calcular()}>
-        {busy ? 'Calculando…' : 'Calcular'}
+        {busy ? t('routePlanner.calculating') : t('routePlanner.calculate')}
       </button>
       {error && (
         <p className="route-planner__error" role="alert">
@@ -367,7 +382,7 @@ export function RoutePlannerPanel({
           onClick={() => setOptionsOpen((v) => !v)}
         >
           <span className="route-planner__options-toggle-main">
-            <span className="route-planner__options-label">Opções de viagem</span>
+            <span className="route-planner__options-label">{t('routePlanner.options')}</span>
             <span className={`route-planner__options-chevron${optionsOpen ? ' is-open' : ''}`} aria-hidden>
               ▾
             </span>
@@ -382,9 +397,9 @@ export function RoutePlannerPanel({
           hidden={!optionsOpen}
         >
           <fieldset className="route-planner__modo">
-            <legend>Transporte</legend>
+            <legend>{t('routePlanner.transport')}</legend>
             <div className="route-planner__modo-options">
-              {MODOS.map((m) => (
+              {modos.map((m) => (
                 <label key={m.value} className="route-planner__modo-option">
                   <input
                     type="radio"
@@ -399,9 +414,9 @@ export function RoutePlannerPanel({
             </div>
           </fieldset>
           <fieldset className="route-planner__ritmo">
-            <legend>Ritmo</legend>
+            <legend>{t('routePlanner.pace')}</legend>
             <div className="route-planner__ritmo-options">
-              {RITMOS.map((r) => (
+              {ritmos.map((r) => (
                 <label key={r.value} className="route-planner__ritmo-option">
                   <input
                     type="radio"
@@ -417,9 +432,9 @@ export function RoutePlannerPanel({
             {ritmoHint && <p className="route-planner__hint">{ritmoHint}</p>}
           </fieldset>
           <fieldset className="route-planner__ordenacao">
-            <legend>Ordenar por</legend>
+            <legend>{t('routePlanner.sortBy')}</legend>
             <div className="route-planner__ordenacao-options">
-              {ORDENACOES.map((o) => (
+              {ordenacoes.map((o) => (
                 <label key={o.value} className="route-planner__ordenacao-option">
                   <input
                     type="radio"
@@ -434,9 +449,9 @@ export function RoutePlannerPanel({
             </div>
           </fieldset>
           <fieldset className="route-planner__preferencia">
-            <legend>Preferência de via</legend>
+            <legend>{t('routePlanner.pathPref')}</legend>
             <div className="route-planner__preferencia-options">
-              {PREFERENCIAS.map((p) => (
+              {preferencias.map((p) => (
                 <label key={p.value} className="route-planner__preferencia-option">
                   <input
                     type="radio"
@@ -452,7 +467,7 @@ export function RoutePlannerPanel({
           </fieldset>
           {modo === 'proprio' && (
             <label className="route-planner__field">
-              <span>Velocidade desejada (mi/h)</span>
+              <span>{t('routePlanner.speedMph')}</span>
               <input
                 className="input"
                 type="number"
@@ -469,7 +484,12 @@ export function RoutePlannerPanel({
         <ul className="route-planner__list">
           {plan.map((r, i) => {
             const tempo = r.tempo_texto || `${r.tempo_horas} h`
-            const meta = `${r.distancia_milhas} mi · ${tempo} · Dentro ${r.custo_dentro_bp} · Fora ${r.custo_fora_bp}`
+            const meta = t('routePlanner.meta', {
+              dist: r.distancia_milhas,
+              tempo,
+              dentro: r.custo_dentro_bp,
+              fora: r.custo_fora_bp,
+            })
             const itemClass = [
               'route-planner__item',
               i === selectedIndex ? 'is-selected' : '',
@@ -484,7 +504,7 @@ export function RoutePlannerPanel({
                   onClick={() => onSelectIndex(i)}
                 >
                   <strong className="route-planner__item-title">
-                    {routeTitles[i] ?? 'Rota'}
+                    {routeTitles[i] ?? t('routePlanner.route')}
                     {i === 0 ? ` · ${firstBadge}` : ''}
                   </strong>
                   <span className="route-planner__item-meta">{meta}</span>
@@ -497,8 +517,8 @@ export function RoutePlannerPanel({
       {options.length === 0 && (
         <p className="text-muted">
           {waypoints.length === 0
-            ? 'Nenhum nó na rede de vias ainda.'
-            : 'Nenhum nó com nome disponível para origem/destino.'}
+            ? t('routePlanner.noNodes')
+            : t('routePlanner.noNamedNodes')}
         </p>
       )}
     </aside>

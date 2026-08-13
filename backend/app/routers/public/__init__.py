@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from app.routers.public import arcos, grupo, locais, npcs, personagens, routes, vinculos
+from app.routers.public import arcos, config, grupo, locais, npcs, personagens, routes, vinculos
 
 router = APIRouter(prefix="/api")
+router.include_router(config.router, tags=["config"])
 router.include_router(locais.router, tags=["locais"])
 router.include_router(npcs.router, tags=["npcs"])
 router.include_router(personagens.router, tags=["personagens"])

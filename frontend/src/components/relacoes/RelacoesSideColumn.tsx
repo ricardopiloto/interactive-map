@@ -1,6 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type MouseEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { VinculoTipo } from '../../types'
-import { VINCULO_STYLES, VINCULO_TIPOS } from './vinculoStyles'
+import { VINCULO_STYLES, VINCULO_TIPOS, getVinculoTipoLabel } from './vinculoStyles'
 import './RelacoesSideColumn.css'
 
 const CLICK_DELAY_MS = 280
@@ -26,6 +27,8 @@ export function RelacoesSideColumn({
   onToggleIsolate,
   isolateDisabled = false,
 }: RelacoesSideColumnProps) {
+  const { t } = useTranslation('relacoes')
+  const { t: tc } = useTranslation('comum')
   const pendingClick = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -61,14 +64,14 @@ export function RelacoesSideColumn({
         <input
           className="input"
           type="search"
-          placeholder="Buscar personagem…"
+          placeholder={t('column.search')}
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
         />
       </div>
 
       <div className="relacoes-side__section">
-        <h6>Tipos de vínculo</h6>
+        <h6>{t('column.tiposVinculo')}</h6>
         <div className="relacoes-side__chips">
           {VINCULO_TIPOS.map((tipo) => {
             const style = VINCULO_STYLES[tipo]
@@ -84,7 +87,7 @@ export function RelacoesSideColumn({
                 aria-pressed={active}
               >
                 <span className="relacoes-side__chip-dot" />
-                {style.label}
+                {getVinculoTipoLabel(t, tipo)}
               </button>
             )
           })}
@@ -99,19 +102,19 @@ export function RelacoesSideColumn({
             disabled={isolateDisabled}
             onChange={(e) => onToggleIsolate(e.target.checked)}
           />
-          Isolar seleção
+          {t('column.isolate')}
         </label>
       </div>
 
       <div className="relacoes-side__legend">
-        <h6>Legenda</h6>
+        <h6>{t('column.legend')}</h6>
         <div className="relacoes-side__legend-row">
           <span className="relacoes-side__legend-disc relacoes-side__legend-disc--pj" />
-          PJ
+          {tc('tipo.pj')}
         </div>
         <div className="relacoes-side__legend-row">
           <span className="relacoes-side__legend-disc relacoes-side__legend-disc--npc" />
-          NPC
+          {tc('tipo.npc')}
         </div>
         <div className="hr" />
         {VINCULO_TIPOS.map((tipo) => {
@@ -122,7 +125,7 @@ export function RelacoesSideColumn({
                 className={`relacoes-side__legend-line${style.dashed ? ' relacoes-side__legend-line--dashed' : ''}`}
                 style={{ '--chip-color': style.color } as CSSProperties}
               />
-              {style.label}
+              {getVinculoTipoLabel(t, tipo)}
             </div>
           )
         })}

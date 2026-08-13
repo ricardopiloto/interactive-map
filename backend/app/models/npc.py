@@ -1,6 +1,8 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
+from sqlalchemy import Column
+from sqlalchemy.types import JSON
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.links import LocalNPCLink
@@ -34,5 +36,9 @@ class NPC(SQLModel, table=True):
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = Field(default=NPCStatus.desconhecido)
     retrato_url: Optional[str] = Field(default=None, max_length=500)
+    extensoes_mecanica: dict[str, Any] = Field(
+        default_factory=dict,
+        sa_column=Column(JSON, nullable=False),
+    )
 
     locais: list["Local"] = Relationship(back_populates="npcs", link_model=LocalNPCLink)

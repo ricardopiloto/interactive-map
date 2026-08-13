@@ -2,9 +2,10 @@
   position: absolute;
   inset: 0;
   z-index: 20;
-  display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   background: var(--color-bg, #1a1625);
+  min-height: 0;
 }
 
 .route-digitizer__bar {
@@ -53,8 +54,17 @@
   font-size: 0.85rem;
 }
 
+.route-digitizer__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
 .route-digitizer__map {
   position: relative;
+  flex: 1;
+  min-width: 0;
   min-height: 0;
   background: #0d0a12;
 }
@@ -217,47 +227,138 @@
   background: #e5484d;
 }
 
-.route-digitizer__lists {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  max-height: 160px;
-  overflow: auto;
-  padding: 0.5rem 1rem 0.75rem;
-  border-top: 1px solid var(--color-divider, #333);
-  font-size: 0.85rem;
+.route-digitizer__wp.is-focused {
+  background: color-mix(in srgb, #9184d9 35%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, #9184d9 65%, transparent),
+    0 0 0 4px color-mix(in srgb, #9184d9 35%, transparent);
 }
 
-.route-digitizer__lists h3 {
-  margin: 0 0 0.35rem;
-  font-size: 0.9rem;
+.route-digitizer__focus-marker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.route-digitizer__lists ul {
+/* — list column (079) — */
+.digitizer-list--column {
+  width: 236px;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-surface, #221c30);
+  box-shadow: var(--elevation-column);
+  padding: var(--space-4, 0.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 0.75rem);
+}
+
+.digitizer-list__search {
+  box-shadow: var(--shadow-sm);
+}
+
+.digitizer-list__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.digitizer-list__section-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.25rem 0;
+  border: none;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text, #e9e9ed) 75%, transparent);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+}
+
+.digitizer-list__items {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
-.route-digitizer__lists li {
+.digitizer-list__items li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
-  margin-bottom: 0.4rem;
-  padding: 0.15rem 0.25rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--radius-md, 8px);
 }
 
-.route-digitizer__lists li.is-hovered {
-  background: color-mix(in srgb, #9184d9 22%, transparent);
-  outline: 1px solid color-mix(in srgb, #9184d9 45%, transparent);
-  border-radius: 4px;
+.digitizer-list__items li.is-focused {
+  background: color-mix(in srgb, #9184d9 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #9184d9 35%, transparent);
 }
 
-.route-digitizer__lists li .input {
+.digitizer-list__item-label {
+  flex: 1 1 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.15rem 0;
+}
+
+.digitizer-list__items li .input {
   flex: 1 1 8rem;
   min-width: 6rem;
-  max-width: 12rem;
+}
+
+.route-digitizer__sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border: none;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.digitizer-list--sheet {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  max-height: 70dvh;
+  overflow-y: auto;
+  background: var(--color-surface, #221c30);
+  box-shadow: var(--elevation-panel);
+  border-radius: var(--radius-lg, 14px) var(--radius-lg, 14px) 0 0;
+  padding: var(--space-4, 0.75rem);
+  flex-direction: column;
+  gap: var(--space-4, 0.75rem);
+}
+
+.digitizer-list--sheet.is-open {
+  display: flex;
+}
+
+.route-digitizer--narrow .route-digitizer__body {
+  flex-direction: column;
 }
 
 .btn.is-active {

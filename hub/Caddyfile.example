@@ -1,0 +1,8 @@
+# Hub índice (spec 078) — site estático separado das instâncias Codex.
+# Servir a pasta hub/ como raiz. Sem autenticação.
+
+:80 {
+	root * /srv/hub
+	file_server
+	header campanhas.json Cache-Control "no-cache"
+}

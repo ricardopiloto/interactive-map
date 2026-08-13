@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.links import LocalConexaoLink
 from app.models.local import Local
 from app.models.npc import NPC
@@ -23,27 +24,28 @@ def _sync_npcs(session: Session, local: Local, npc_ids: list[int]) -> None:
         else:
             npcs.append(npc)
     if missing:
-        raise HTTPException(
+        raise_api_error(
+            "NPCS_NAO_ENCONTRADOS",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"NPCs não encontrados: {sorted(missing)}",
+            detalhes={"ids": sorted(missing)},
         )
     local.npcs = npcs
 
 
 def _sync_saidas(session: Session, local: Local, saida_ids: list[int]) -> None:
     if local.id is None:
-        raise HTTPException(
+        raise_api_error(
+            "LOCAL_SEM_ID",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Local sem id para sincronizar saídas",
         )
     origem_id = int(local.id)
     unique: list[int] = []
     seen: set[int] = set()
     for destino_id in saida_ids:
         if destino_id == origem_id:
-            raise HTTPException(
+            raise_api_error(
+                "LOCAL_SAIDA_PARA_SI",
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Local não pode ter saída para si mesmo",
             )
         if destino_id in seen:
             continue
@@ -55,9 +57,10 @@ def _sync_saidas(session: Session, local: Local, saida_ids: list[int]) -> None:
         if session.get(Local, destino_id) is None:
             missing.append(destino_id)
     if missing:
-        raise HTTPException(
+        raise_api_error(
+            "LOCAIS_DESTINO_NAO_ENCONTRADOS",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Locais destino não encontrados: {sorted(missing)}",
+            detalhes={"ids": sorted(missing)},
         )
 
     existing = list(
@@ -123,7 +126,7 @@ def update_local(
 ) -> LocalRead:
     local = session.get(Local, local_id)
     if not local:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Local não encontrado")
+        raise_api_error("LOCAL_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
 
     data = payload.model_dump(exclude_unset=True)
     npc_ids = data.pop("npc_ids", None)
@@ -154,7 +157,7 @@ def delete_local(
 ) -> None:
     local = session.get(Local, local_id)
     if not local:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Local não encontrado")
+        raise_api_error("LOCAL_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     _clear_conexoes_for_local(session, local_id)
     from app.models.waypoint import Waypoint
 

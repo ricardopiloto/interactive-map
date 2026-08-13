@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Personagem, Vinculo } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
 import {
@@ -7,15 +8,8 @@ import {
   tipoFromPerspective,
 } from './vinculoDirection'
 import { formatVinculoTipoLabel } from './vinculoLabel'
-import { vinculoStyle } from './vinculoStyles'
+import { getVinculoTipoLabel, vinculoStyle } from './vinculoStyles'
 import './RelacoesDetailPanel.css'
-
-const STATUS_LABEL: Record<string, string> = {
-  vivo: 'Vivo',
-  morto: 'Morto',
-  desaparecido: 'Desaparecido',
-  desconhecido: 'Desconhecido',
-}
 
 interface RelacoesDetailPanelProps {
   personagem: Personagem
@@ -64,6 +58,8 @@ export function RelacoesDetailPanel({
   onEditVinculo,
   onDeleteVinculo,
 }: RelacoesDetailPanelProps) {
+  const { t } = useTranslation('relacoes')
+  const { t: tc } = useTranslation('comum')
   const sortedVinculos = sortVinculosByNeighbourName(vinculos, personagem.id, personagemById)
 
   return (
@@ -72,13 +68,13 @@ export function RelacoesDetailPanel({
         type="button"
         className="btn btn-ghost relacoes-detail__close"
         onClick={onClose}
-        aria-label="Fechar"
+        aria-label={tc('buttons.close')}
       >
         ×
       </button>
 
       <div className="relacoes-detail__kicker">
-        {personagem.tipo === 'pj' ? 'PJ' : 'NPC'}
+        {personagem.tipo === 'pj' ? tc('tipo.pj') : tc('tipo.npc')}
         {personagem.papel ? ` · ${personagem.papel}` : ''}
       </div>
       <h3 className={`relacoes-detail__name${personagem.status === 'morto' ? ' relacoes-detail__name--morto' : ''}`}>
@@ -87,35 +83,37 @@ export function RelacoesDetailPanel({
 
       <ImageSlot
         src={personagem.retrato_url}
-        placeholder="Sem retrato"
+        placeholder={tc('image.noPortrait')}
         shape="rounded"
         fit="contain"
         className="relacoes-detail__portrait"
       />
 
       <div className="relacoes-detail__tags">
-        <span className="tag tag-outline">{STATUS_LABEL[personagem.status ?? 'desconhecido']}</span>
+        <span className="tag tag-outline">
+          {tc(`status.${personagem.status ?? 'desconhecido'}`)}
+        </span>
         {personagem.faccao && <span className="tag tag-neutral">{personagem.faccao}</span>}
       </div>
 
-      <p className="relacoes-detail__desc">{personagem.descricao || 'Sem descrição.'}</p>
+      <p className="relacoes-detail__desc">{personagem.descricao || tc('empty.semDescricao')}</p>
 
       {isGm && (
         <div className="gm-row">
           <button type="button" className="btn btn-secondary" onClick={onEdit}>
-            Editar
+            {tc('buttons.edit')}
           </button>
           <button type="button" className="btn btn-ghost" onClick={onDelete}>
-            Remover
+            {tc('buttons.remove')}
           </button>
         </div>
       )}
 
       <div className="hr" />
 
-      <h6>Vínculos ({sortedVinculos.length})</h6>
+      <h6>{t('detail.vinculosCount', { count: sortedVinculos.length })}</h6>
       <div className="relacoes-detail__vinculos">
-        {sortedVinculos.length === 0 && <p className="text-muted">Nenhum vínculo visível.</p>}
+        {sortedVinculos.length === 0 && <p className="text-muted">{t('detail.noVinculos')}</p>}
         {sortedVinculos.map((v) => {
           const otherId = neighbourId(v, personagem.id)
           const other = personagemById.get(otherId)
@@ -127,7 +125,8 @@ export function RelacoesDetailPanel({
           const theirQual = qualFromPerspective(v, otherId)
           const showPrimary = myTipo != null
           const showReturn = theirTipo != null && (isDuasVias(v) || myTipo == null)
-          const style = vinculoStyle(myTipo ?? theirTipo ?? 'conhecido')
+          const resolvedTipo = myTipo ?? theirTipo ?? 'conhecido'
+          const style = vinculoStyle(resolvedTipo)
           return (
             <div key={v.id} className="relacoes-detail__vinculo">
               <div className="relacoes-detail__vinculo-row">
@@ -141,12 +140,12 @@ export function RelacoesDetailPanel({
                   onClick={() => onFocusPersonagem(otherId)}
                   disabled={!other}
                 >
-                  {other?.nome ?? 'Personagem removido'}
+                  {other?.nome ?? t('detail.removed')}
                 </button>
-                {showPrimary && (
+                {showPrimary && myTipo != null && (
                   <span className="relacoes-detail__vinculo-tipo" style={{ color: style.color }}>
                     {formatVinculoTipoLabel(
-                      style.label,
+                      getVinculoTipoLabel(t, myTipo),
                       myQual,
                       isDuasVias(v) ? null : v.direcao,
                     )}
@@ -156,9 +155,9 @@ export function RelacoesDetailPanel({
               {showPrimary && myNota && <p className="relacoes-detail__vinculo-nota">{myNota}</p>}
               {showReturn && theirTipo != null && (
                 <p className="relacoes-detail__vinculo-return">
-                  Vê-te como{' '}
+                  {t('detail.veTeComo')}{' '}
                   <span style={{ color: vinculoStyle(theirTipo).color }}>
-                    {formatVinculoTipoLabel(vinculoStyle(theirTipo).label, theirQual)}
+                    {formatVinculoTipoLabel(getVinculoTipoLabel(t, theirTipo), theirQual)}
                   </span>
                   {theirNota ? ` — ${theirNota}` : ''}
                 </p>
@@ -170,14 +169,14 @@ export function RelacoesDetailPanel({
                     className="btn btn-secondary"
                     onClick={() => onEditVinculo?.(v.id)}
                   >
-                    Editar
+                    {tc('buttons.edit')}
                   </button>
                   <button
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => onDeleteVinculo?.(v.id)}
                   >
-                    Remover
+                    {tc('buttons.remove')}
                   </button>
                 </div>
               )}

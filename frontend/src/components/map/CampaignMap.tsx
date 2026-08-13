@@ -243,6 +243,7 @@ export function CampaignMap({
         maxScale={4}
         centerOnInit
         wheel={{ step: 0.01 }}
+        pinch={{ step: 5 }}
         panning={{ disabled: placing }}
         onInit={(ref) => setMapZoomCss(ref.state.scale)}
         onTransform={(_ref, state) => setMapZoomCss(state.scale)}

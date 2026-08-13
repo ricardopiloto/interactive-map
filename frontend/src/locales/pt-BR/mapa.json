@@ -1,0 +1,92 @@
+{
+  "sideMenu": {
+    "sections": "Seções",
+    "tabs": {
+      "locais": "Locais",
+      "npcs": "NPCs",
+      "historia": "História",
+      "grupo": "Grupo",
+      "rota": "Rota"
+    },
+    "search": {
+      "local": "Buscar local…",
+      "npc": "Buscar NPC…",
+      "arco": "Buscar arco ou local…"
+    },
+    "empty": {
+      "locais": "Nenhum local visitado ainda.",
+      "npcs": "Nenhum NPC conhecido ainda.",
+      "historia": "Nenhum arco registrado ainda.",
+      "locaisNpc": "Locais onde apareceu",
+      "nenhumAinda": "Nenhum ainda.",
+      "semLocaisArco": "Sem locais neste arco."
+    },
+    "faccaoPrefix": "Facção:",
+    "arcoOrdem": "Arco {{ordem}}"
+  },
+  "mapPage": {
+    "routeNetwork": "Rede de rotas",
+    "navLabel": "Navegação",
+    "saveLocalError": "Erro ao salvar local",
+    "saveNpcError": "Erro ao salvar NPC",
+    "saveArcoError": "Erro ao salvar arco",
+    "newNpc": "Novo NPC",
+    "editNpc": "Editar NPC",
+    "newArco": "Novo arco",
+    "editArco": "Editar arco"
+  },
+  "pinModal": {
+    "localImage": "Imagem do local"
+  },
+  "routePlanner": {
+    "title": "Calcular rota",
+    "from": "De",
+    "to": "Para",
+    "calculating": "Calculando…",
+    "calculate": "Calcular",
+    "options": "Opções de viagem",
+    "transport": "Transporte",
+    "pace": "Ritmo",
+    "sortBy": "Ordenar por",
+    "pathPref": "Preferência de via",
+    "speedMph": "Velocidade desejada (mi/h)",
+    "route": "Rota",
+    "badgeFastest": "mais rápida",
+    "badgeCheapest": "mais barata",
+    "meta": "{{dist}} mi · {{tempo}} · Dentro {{dentro}} · Fora {{fora}}",
+    "noNodes": "Nenhum nó na rede de vias ainda.",
+    "noNamedNodes": "Nenhum nó com nome disponível para origem/destino.",
+    "errOriginDest": "Escolha origem e destino.",
+    "errDifferent": "Origem e destino devem ser diferentes.",
+    "errSpeedRequired": "Informe a velocidade desejada (mi/h).",
+    "errSpeedInvalid": "Velocidade desejada deve ser um número maior que zero.",
+    "errNoRoute": "Nenhuma rota encontrada entre esses nós.",
+    "errCalculate": "Falha ao calcular rota"
+  },
+  "routeEnums": {
+    "ritmo": {
+      "normal": "Normal",
+      "normalHint": "6 h/dia",
+      "intenso": "Intenso",
+      "intensoHint": "8 h/dia"
+    },
+    "ordenacao": {
+      "maisRapida": "Mais rápida",
+      "maisBarata": "Mais barata"
+    },
+    "modo": {
+      "pago": "Pago",
+      "proprio": "Próprio"
+    },
+    "preferencia": {
+      "nenhuma": "Sem preferência",
+      "rio": "Por rio",
+      "estrada": "Por estrada"
+    },
+    "tipoVia": {
+      "estrada": "Estrada",
+      "rio": "Rio",
+      "trilha": "Trilha"
+    }
+  }
+}

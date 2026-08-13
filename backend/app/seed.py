@@ -12,6 +12,7 @@ import os
 
 from sqlmodel import Session, select
 
+from app.config import settings
 from app.database import engine, init_db
 from app.models.arco import Arco
 from app.models.grupo import GrupoPosicao
@@ -175,6 +176,8 @@ def seed_relacoes(session: Session) -> None:
             status=status,
             descricao=desc,
         )
+        if "fadiga" in settings.modulos_ativos and tipo == PersonagemTipo.pj:
+            row.extensoes_mecanica = {"fadiga": 1}
         session.add(row)
         by_nome[nome] = row
     session.flush()

@@ -1,6 +1,7 @@
-# Mapa Campanha — Frontend
+# Codex — Frontend
 
-React + Vite + TypeScript + design system Nocturne. Versão do pacote: ver `package.json` (alinhada ao [CHANGELOG](../CHANGELOG.md)).
+React + Vite + TypeScript + design system Nocturne + i18n (`react-i18next`).  
+Versão do pacote: ver `package.json` (alinhada ao [CHANGELOG](../CHANGELOG.md)).
 
 ## Desenvolvimento
 
@@ -9,7 +10,7 @@ npm install
 npm run dev
 ```
 
-Abre em http://localhost:5173. O Vite faz proxy de `/api` e `/uploads` para o backend em `:8000`.
+http://localhost:5173 — proxy `/api` e `/uploads` → backend `:8000`.
 
 ## Scripts
 
@@ -20,27 +21,40 @@ Abre em http://localhost:5173. O Vite faz proxy de `/api` e `/uploads` para o ba
 | `npm run preview` | Preview do build |
 | `npm run lint` | Oxlint |
 
-## Rotas / modos
+## Rotas
 
-- `/` — Codex: mapa + menu (jogador); Modo GM in-page via “Acesso restrito (GM)” ou `/?gm=1`
-- `/admin` — redireciona para `/?gm=1` (gate de senha)
+| Rota | Conteúdo |
+|---|---|
+| `/` | Mapa + menu lateral (jogador / Modo GM in-page) |
+| `/relacoes` | Rede de Relações (grafo PJ/NPC) |
+| `/admin` | Redireciona para `/?gm=1` (gate de senha) |
 
-### Jogador
+Idioma da UI: combo-box **PT / EN** no `CodexHeader` (persistido no dispositivo). Conteúdo escrito pelo mestre **não** é traduzido.
 
-- Clique no pin ou no local no menu → foca a vista (pan/zoom) e abre o modal de leitura ao lado do pin (Markdown seguro); fechar limpa a seleção
-- Hover no cartão/nome na aba Locais → destaque visual do pin (sem mover pan/zoom da vista); sem seleção, também mostra as linhas de saída daquele local
-- Com local selecionado/aberto → linhas de saída no mapa (vermelho claro); hover na lista não troca as linhas
-- **Calcular rota** → De/Para entre quaisquer nós da rede (rótulo: nome do nó → Local → `Nó {id}`); ritmo; rotas por tempo; overlay no mapa
-- Zoom com a roda mais suave (mapa da campanha)
-- Diálogos longos → corpo rolável com ações fixas no rodapé
-- Em viewport estreito, pins um pouco menores; ponta alinhada às coordenadas
+## Jogador — Mapa
 
-### Modo GM
+- Clique no pin ou no local no menu → foca a vista e abre o modal de leitura (Markdown seguro)
+- Hover no menu → destaque do pin (sem pan/zoom); pré-visualiza saídas se não houver selecção
+- Local aberto → linhas de saída no mapa
+- **Rota** → De/Para, opções de viagem, alternativas no mapa
+- Zoom suave (roda / pinch); em viewport estreito os pins ficam um pouco menores
 
-- CRUD via abas / diálogos; cor do pin, saídas, **nó da rede** e descrição (texto ou Markdown) no formulário de local
-- Botão **Mapa** nos controles para substituir a imagem da campanha
-- Clique no pin → seleciona sem foco automático da câmera; clique no menu → pode focar como no jogador
-- **Rede de rotas** → digitalizar waypoints/segmentos (mapa sem pins de lore); escala mi/unidade; select Local por nó; botão direito desfaz ponto ao traçar; zoom máximo alto e roda suave
-- Ao vincular nó↔Local, o pin do Local move para o nó; desvincular não reverte a posição
-- Clique na área vazia do mapa → deseleciona o pin (não fecha formulários admin abertos)
-- Placement (novo local / reposicionar / mover grupo) tem prioridade sobre deseleção
+## Jogador — Relações
+
+- Grafo com filtros por tipo de vínculo (8 tipos), busca, isolar selecção
+- Painel de detalhe com ficha e vínculos (qualificador / direcção quando existirem)
+- Pinch-zoom e pan no palco
+
+## Modo GM
+
+- Gate “Acesso restrito (GM)” ou `/?gm=1`
+- CRUD de locais (cor, saídas, nó da rede, Markdown), personagens/NPCs, arcos; uploads; mover grupo
+- Botão **Mapa** para substituir a imagem da campanha
+- **Rede de rotas** → digitalizar waypoints/segmentos (coluna / bottom sheet ≤800px)
+- Vincular nó ↔ Local (pin segue o nó)
+- Em Relações: criar/editar personagens e conexões (recíproco / duas vias)
+
+## i18n
+
+Namespaces em `src/locales/{pt-BR,en}/`: `comum`, `mapa`, `relacoes`, `admin`.  
+Erros API surfaced → `comum:erros.*` via `useApiErrorMessage`.

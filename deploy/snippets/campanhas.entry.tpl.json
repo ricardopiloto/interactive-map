@@ -1,0 +1,7 @@
+{
+  "nome": "__NOME__",
+  "sistema": "__SISTEMA_LABEL__",
+  "mestre": "__MESTRE__",
+  "url": "__URL__",
+  "capa_url": "/capas/__SLUG__.jpg"
+}

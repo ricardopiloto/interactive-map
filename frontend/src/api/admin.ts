@@ -47,6 +47,7 @@ export interface PersonagemPayload {
   faccao?: string | null
   status?: NPC['status']
   retrato_url?: string | null
+  extensoes_mecanica?: Record<string, unknown>
 }
 
 export interface VinculoPayload {

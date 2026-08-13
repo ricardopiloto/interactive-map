@@ -1,32 +1,36 @@
 import uuid
 from pathlib import Path
 
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile, status
 
 from app.config import settings
+from app.errors import raise_api_error
 
 SUBDIRS = {"map", "portraits", "locals"}
 
 
 async def save_image(file: UploadFile, category: str) -> str:
     if category not in SUBDIRS:
-        raise HTTPException(
+        raise_api_error(
+            "CATEGORIA_UPLOAD_INVALIDA",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Categoria inválida. Use: {', '.join(sorted(SUBDIRS))}",
+            detalhes={"categorias": ", ".join(sorted(SUBDIRS))},
         )
 
     content_type = file.content_type or ""
     if content_type not in settings.allowed_image_type_list:
-        raise HTTPException(
+        raise_api_error(
+            "TIPO_ARQUIVO_NAO_PERMITIDO",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Tipo de arquivo não permitido: {content_type}",
+            detalhes={"content_type": content_type},
         )
 
     data = await file.read()
     if len(data) > settings.max_upload_bytes:
-        raise HTTPException(
+        raise_api_error(
+            "ARQUIVO_EXCEDE_TAMANHO_MAXIMO",
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"Arquivo excede o limite de {settings.max_upload_bytes} bytes",
+            detalhes={"limite_bytes": settings.max_upload_bytes},
         )
 
     ext = _extension_for(content_type, file.filename)

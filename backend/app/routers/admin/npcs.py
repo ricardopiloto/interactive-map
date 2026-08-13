@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.npc import NPC
 from app.routers.admin.personagens import _delete_vinculos_for
 from app.routers.public.npcs import _to_read
@@ -35,7 +36,7 @@ def update_npc(
 ) -> NPCRead:
     npc = session.get(NPC, npc_id)
     if not npc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NPC não encontrado")
+        raise_api_error("NPC_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
 
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(npc, key, value)
@@ -55,7 +56,7 @@ def delete_npc(
 ) -> None:
     npc = session.get(NPC, npc_id)
     if not npc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NPC não encontrado")
+        raise_api_error("NPC_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     _delete_vinculos_for(session, npc_id)
     session.delete(npc)
     session.commit()

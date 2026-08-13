@@ -3,9 +3,11 @@ import type { VinculoTipo } from '../../types'
 const MEDO = 'Medo'
 
 const BY_TIPO: Record<VinculoTipo, string[]> = {
-  aliado: ['Mentor', 'Protegido', 'Patrono', 'Devedor', 'Segredo'],
+  aliado: ['Mentor', 'Protegido', 'Patrono', 'Devedor', 'Segredo', 'Lacaio'],
+  vinculo_sangue: ['Lacaio'],
   amizade: ['Segredo', 'Companheiro de guerra'],
   inimizade: ['Rival', 'Traidor', 'Antigo aliado'],
+  adversario: ['Rival', 'Traidor', 'Antigo aliado'],
   romance: [],
   familia: ['Pai/Mãe', 'Irmão/Irmã', 'Tutor'],
   conhecido: ['Rival', 'Desconfiança', 'Contato'],

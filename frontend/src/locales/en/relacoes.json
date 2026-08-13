@@ -1,0 +1,97 @@
+{
+  "page": {
+    "loadError": "Failed to load the relationship network",
+    "addPersonagem": "+ Character",
+    "addConexao": "+ Bond",
+    "newPersonagem": "New character",
+    "editPersonagem": "Edit character",
+    "newConexao": "New bond",
+    "editConexao": "Edit bond",
+    "confirmRemovePersonagem": "Remove this character? This also removes their bonds.",
+    "confirmRemoveVinculo": "Remove this bond?",
+    "savePersonagemError": "Failed to save character",
+    "removePersonagemError": "Failed to remove character",
+    "saveVinculoError": "Failed to save bond",
+    "removeVinculoError": "Failed to remove bond"
+  },
+  "graph": {
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out"
+  },
+  "column": {
+    "search": "Search character…",
+    "tiposVinculo": "Bond types",
+    "isolate": "Isolate selection",
+    "legend": "Legend"
+  },
+  "vinculoTipo": {
+    "aliado": "Ally",
+    "vinculo_sangue": "Blood Bond",
+    "amizade": "Friendship",
+    "inimizade": "Enmity",
+    "adversario": "Adversary",
+    "romance": "Romance",
+    "familia": "Family",
+    "conhecido": "Acquaintance"
+  },
+  "detail": {
+    "removed": "Character removed",
+    "vinculosCount": "Bonds ({{count}})",
+    "noVinculos": "No visible bonds.",
+    "veTeComo": "Sees you as"
+  },
+  "personagemForm": {
+    "moduloIndisponivel": "Active module(s) unavailable in this version:",
+    "identidade": "Identity",
+    "retrato": "Character portrait",
+    "tipoPersonagem": "Character type",
+    "atributos": "Attributes",
+    "mecanicas": "Mechanics",
+    "notas": "Notes",
+    "papelExemplo": "e.g. Bounty Hunter"
+  },
+  "vinculoForm": {
+    "personagens": "Characters",
+    "personagemA": "Character A",
+    "personagemB": "Character B",
+    "selecione": "Select…",
+    "doisPersonagens": "Choose two different characters.",
+    "tipoDirecao": "Type and direction",
+    "modo": "Mode",
+    "modoReciproco": "Reciprocal",
+    "modoDuasVias": "Two-way",
+    "tipoVinculo": "Bond type",
+    "veComo": "{{a}} sees {{b}} as",
+    "qualificador": "Qualifier ({{a}} → {{b}})",
+    "qualificadorOpcional": "Qualifier (optional)",
+    "qualExMedo": "e.g. Fear, Rival…",
+    "qualExAdmiracao": "e.g. Admiration, Rival…",
+    "qualExMentor": "e.g. Mentor, Fear, Rival…",
+    "conhecidoJogadores": "Known to players ({{a}} → {{b}})",
+    "direcao": "Direction",
+    "direcaoMutuo": "Mutual",
+    "visivelJogadores": "Visible to players",
+    "notaOpcional": "Note (optional)",
+    "notaDirecional": "Note ({{a}} → {{b}})",
+    "notaExSalvou": "e.g. Saved her life in Bögenhafen",
+    "notaExSonha": "e.g. Dreams of more than friendship"
+  },
+  "qualificador": {
+    "mentor": "Mentor",
+    "protegido": "Protégé",
+    "patrono": "Patron",
+    "devedor": "Debtor",
+    "segredo": "Secret",
+    "companheiroGuerra": "War companion",
+    "rival": "Rival",
+    "traidor": "Traitor",
+    "antigoAliado": "Former ally",
+    "paiMae": "Parent",
+    "irmao": "Sibling",
+    "tutor": "Tutor",
+    "desconfianca": "Distrust",
+    "contato": "Contact",
+    "medo": "Fear",
+    "lacaio": "Minion"
+  }
+}

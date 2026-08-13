@@ -1,15 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.npc import NPC, PersonagemTipo
 from app.schemas.personagem import PersonagemRead
+from app.services.mecanica import filter_extensoes
 
 router = APIRouter()
 
 
 def personagem_to_read(npc: NPC) -> PersonagemRead:
     tipo = npc.tipo if npc.tipo is not None else PersonagemTipo.npc
+    raw_ext = npc.extensoes_mecanica if isinstance(npc.extensoes_mecanica, dict) else {}
     return PersonagemRead(
         id=npc.id,  # type: ignore[arg-type]
         nome=npc.nome,
@@ -19,6 +22,7 @@ def personagem_to_read(npc: NPC) -> PersonagemRead:
         faccao=npc.faccao,
         status=npc.status,
         retrato_url=npc.retrato_url,
+        extensoes_mecanica=filter_extensoes(raw_ext),
         local_ids=[loc.id for loc in npc.locais if loc.id is not None],
     )
 
@@ -39,5 +43,5 @@ def list_personagens(
 def get_personagem(personagem_id: int, session: Session = Depends(get_session)) -> PersonagemRead:
     row = session.get(NPC, personagem_id)
     if not row:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Personagem não encontrado")
+        raise_api_error("PERSONAGEM_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     return personagem_to_read(row)

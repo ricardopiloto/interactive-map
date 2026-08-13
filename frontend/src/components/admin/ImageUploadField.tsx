@@ -1,4 +1,7 @@
 import type { ChangeEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { parseApiError } from '../../api/parseApiError'
+import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
 
 interface ImageUploadFieldProps {
   category: 'map' | 'portraits' | 'locals'
@@ -8,6 +11,9 @@ interface ImageUploadFieldProps {
 }
 
 export function ImageUploadField({ category, label, value, onUploaded }: ImageUploadFieldProps) {
+  const apiErrorMessage = useApiErrorMessage()
+  const { t } = useTranslation('comum')
+
   async function onChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -17,7 +23,7 @@ export function ImageUploadField({ category, label, value, onUploaded }: ImageUp
     const res = await fetch('/api/admin/uploads', { method: 'POST', body })
     if (!res.ok) {
       const detail = await res.text()
-      window.alert(detail || 'Falha no upload')
+      window.alert(apiErrorMessage(parseApiError(detail, res.status)))
       return
     }
     const data = (await res.json()) as { url: string }
@@ -26,7 +32,7 @@ export function ImageUploadField({ category, label, value, onUploaded }: ImageUp
 
   return (
     <div className="field">
-      <label>{label}</label>
+      <label>{label || t('image.dragHere')}</label>
       {value && <img src={value} alt="" className="admin-thumb" />}
       <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onChange} />
     </div>

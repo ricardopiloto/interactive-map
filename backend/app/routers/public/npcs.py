@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.npc import NPC, PersonagemTipo
 from app.schemas.npc import NPCRead
 
@@ -39,5 +40,5 @@ def list_npcs(
 def get_npc(npc_id: int, session: Session = Depends(get_session)) -> NPCRead:
     npc = session.get(NPC, npc_id)
     if not npc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NPC não encontrado")
+        raise_api_error("NPC_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     return _to_read(npc)

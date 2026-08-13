@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.waypoint import Waypoint
 from app.schemas.routes import (
     ModoTransporte,
@@ -34,21 +35,21 @@ def plan(
     session: Session = Depends(get_session),
 ) -> RoutePlanResponse:
     if origem_waypoint_id == destino_waypoint_id:
-        raise HTTPException(
+        raise_api_error(
+            "ROTA_ORIGEM_DESTINO_IGUAIS",
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Origem e destino devem ser diferentes",
         )
     origem_wp = session.get(Waypoint, origem_waypoint_id)
     destino_wp = session.get(Waypoint, destino_waypoint_id)
     if not origem_wp or origem_wp.id is None:
-        raise HTTPException(
+        raise_api_error(
+            "ROTA_ORIGEM_INVALIDA",
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Origem inválida (nó não encontrado)",
         )
     if not destino_wp or destino_wp.id is None:
-        raise HTTPException(
+        raise_api_error(
+            "ROTA_DESTINO_INVALIDO",
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Destino inválido (nó não encontrado)",
         )
     try:
         rotas = plan_routes(
@@ -62,7 +63,11 @@ def plan(
             preferencia_via=preferencia_via,
         )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e
+        raise_api_error(
+            "ROTA_CALCULO_FALHOU",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detalhes={"motivo": str(e)},
+        )
     return RoutePlanResponse(rotas=rotas)
 
 

@@ -1,6 +1,7 @@
-# Mapa Campanha — API
+# Codex — API
 
-FastAPI + SQLModel + SQLite. Versão do pacote: ver `pyproject.toml` (alinhada ao [CHANGELOG](../CHANGELOG.md)).
+FastAPI + SQLModel + SQLite.  
+Versão do pacote: ver `pyproject.toml` (alinhada ao [CHANGELOG](../CHANGELOG.md)).
 
 ## Desenvolvimento
 
@@ -15,22 +16,31 @@ uv run python -m app.seed
 ```
 
 - Health: http://localhost:8000/api/health
-- Docs (só com `DEBUG=true`): http://localhost:8000/api/docs
+- Docs OpenAPI (só com `DEBUG=true`): http://localhost:8000/api/docs
 
 ## Rotas
 
 | Prefixo | Acesso | Uso |
 |---|---|---|
-| `/api/*` (GET) | Público | Leitura (locais, NPCs, arcos, grupo, …) |
+| `GET /api/*` | Público | Leitura (locais, NPCs/personagens, arcos, grupo, vínculos, rotas, config, …) |
 | `/api/admin/*` | HTTP Basic Auth (`ADMIN_USER` / `ADMIN_PASSWORD`) | Escrita / upload |
 | `/uploads/*` | Público | Imagens |
 
 Em produção o Caddy pode exigir Basic Auth **adicional** em rotas GM; a API continua fail-closed sem credenciais no ambiente.
 
+Erros surfaced na UI usam `detail: { erro, detalhes }` (ver `app/errors.py`).
+
 ## Modelo (notas)
 
 - `data_sessao` nos locais é **texto livre** (rótulo), não data de calendário
-- `cor_pin` nos locais é hex `#RRGGBB` (obrigatório no create); migração SQLite aplica default `#c4b5fd` em DBs antigos
-- `saida_ids` nos locais lista IDs de destinos de saída (vínculo dirigido em `local_conexao`); exclusão do local remove conexões onde ele é origem ou destino
-- Rede de viagem (021/028/029): `waypoint` / `route_segment` / `map_scale`; `GET /api/routes/plan?origem_waypoint_id=&destino_waypoint_id=&ritmo=`; CRUD admin em `/api/admin/waypoints`, `/route-segments`, `/map-scale`
-- Locais expõem `waypoint_id` (read); create/update aceitam `waypoint_id` opcional — ao vincular, coords do Local passam às do nó (unicidade 1:1; conflito → 422)
+- `cor_pin` nos locais é hex `#RRGGBB`
+- `saida_ids` / `local_conexao`: saídas dirigidas entre locais
+- Rede de viagem: `waypoint` / `route_segment` / `map_scale`; `GET /api/routes/plan?...`; CRUD admin de waypoints e segmentos
+- Locais expõem `waypoint_id` (vínculo 1:1 com nó; conflito → 422)
+- Personagens: `tipo` pj/npc, `extensoes_mecanica` (JSON; chaves de módulos inactivos ignoradas)
+- Vínculos: `tipo_ab` / `tipo_ba` (enum com 8 valores), qualificadores, `direcao` opcional, flags de visibilidade por sentido
+- `GET /api/config`: `sistema`, `modulos_ativos`, `has_map_image`
+
+## Config de instância
+
+Variáveis típicas no `.env` (ver `.env.example` na raiz): `SISTEMA`, `MODULOS_ATIVOS`, credenciais admin, caminho do mapa.

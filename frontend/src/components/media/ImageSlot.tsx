@@ -1,5 +1,7 @@
 import { useRef, type CSSProperties, type DragEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../api/admin'
+import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
 import './ImageSlot.css'
 
 type UploadCategory = 'map' | 'portraits' | 'locals'
@@ -18,7 +20,7 @@ interface ImageSlotProps {
 
 export function ImageSlot({
   src,
-  placeholder = 'Arraste a imagem aqui',
+  placeholder,
   shape = 'rounded',
   editable = false,
   category = 'locals',
@@ -27,7 +29,10 @@ export function ImageSlot({
   style,
   onUploaded,
 }: ImageSlotProps) {
+  const { t } = useTranslation('comum')
+  const apiErrorMessage = useApiErrorMessage()
   const inputRef = useRef<HTMLInputElement>(null)
+  const displayPlaceholder = placeholder ?? t('image.dragHere')
 
   async function handleFile(file: File | undefined) {
     if (!file || !editable || !onUploaded) return
@@ -35,7 +40,7 @@ export function ImageSlot({
       const { url } = await adminApi.upload(category, file)
       onUploaded(url)
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : 'Falha no upload')
+      window.alert(apiErrorMessage(e))
     }
   }
 
@@ -71,7 +76,7 @@ export function ImageSlot({
       {src ? (
         <img src={src} alt="" draggable={false} />
       ) : (
-        <span className="image-slot__ph">{placeholder}</span>
+        <span className="image-slot__ph">{displayPlaceholder}</span>
       )}
       {editable && (
         <input

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.arco import Arco
 from app.models.local import Local
 from app.schemas.arco import ArcoCreate, ArcoRead, ArcoUpdate
@@ -34,7 +35,7 @@ def update_arco(
 ) -> Arco:
     arco = session.get(Arco, arco_id)
     if not arco:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Arco não encontrado")
+        raise_api_error("ARCO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
 
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(arco, key, value)
@@ -54,7 +55,7 @@ def delete_arco(
 ) -> None:
     arco = session.get(Arco, arco_id)
     if not arco:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Arco não encontrado")
+        raise_api_error("ARCO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     for local in session.exec(select(Local).where(Local.arco_id == arco_id)).all():
         local.arco_id = None
         session.add(local)

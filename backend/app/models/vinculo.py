@@ -7,8 +7,10 @@ from sqlmodel import Field, SQLModel
 
 class VinculoTipo(str, Enum):
     aliado = "aliado"
+    vinculo_sangue = "vinculo_sangue"
     amizade = "amizade"
     inimizade = "inimizade"
+    adversario = "adversario"
     romance = "romance"
     familia = "familia"
     conhecido = "conhecido"

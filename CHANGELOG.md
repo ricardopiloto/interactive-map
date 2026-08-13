@@ -5,6 +5,82 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.16.1] — 2026-08-13
+
+### Changed
+
+- Seletor de idioma: combo-box (sigla + chevron + lista) substitui o par de botões PT/EN na barra superior (spec 082)
+
+## [0.16.0] — 2026-08-13
+
+Rede de Relações: dois tipos de vínculo novos (spec 081).
+
+### Added
+
+- Tipos **Adversário** (`adversario`, cobre `#c86b3c`) e **Vínculo de Sangue** / **Blood Bond** (`vinculo_sangue`, violeta `#6a3d8c`) — formulário GM, grafo, filtros e legenda (8 tipos)
+- Qualificador **Lacaio** nas sugestões de Aliado e Vínculo de Sangue; Adversário reutiliza as de Inimizade
+- Ao seleccionar Vínculo de Sangue em modo recíproco, direcção pré-preenche A→B (editável)
+
+### Changed
+
+- Ordem canónica: Aliado → Vínculo de Sangue → Amizade → Inimizade → Adversário → Romance → Família → Conhecido
+
+## [0.15.0] — 2026-08-13
+
+Codex **v2.0.0 — Frente D**: internacionalização da interface (spec 080).
+
+### Added
+
+- **i18n**: PT-BR + EN via `react-i18next`; detecção por prefixo (`pt*` / `en*`); seletor PT/EN no `CodexHeader`
+- **Locales**: namespaces `comum`, `mapa`, `relacoes`, `admin` (bundled no build)
+- **Erros API**: códigos estruturados `{ erro, detalhes }` nos erros surfaced; frontend mapeia para `comum:errors.*`
+
+### Changed
+
+- Mapa, Relações, digitalização de rotas e diálogos GM traduzidos; conteúdo do mestre inalterado
+- Hub estático (`hub/`) permanece PT-only (follow-up planeado)
+
+## [0.14.0] — 2026-08-13
+
+Codex **v2.0.0 — Frente C**: UX Nocturne e débitos (spec 079).
+
+### Added
+
+- **Digitalização**: coluna lateral (~236px) com busca, secções Waypoints/Arestas colapsáveis e clique para centrar no mapa; ≤800px vira bottom sheet retrátil
+- **Rede**: pinch-zoom nativo (`usePinchZoom`) no palco do grafo, partilhando o mesmo `scale` que a roda
+- **Nocturne**: tokens `--elevation-column`, `--elevation-panel`, `--elevation-modal`; agrupamento `.dialog__group` nos diálogos GM (personagem, vínculo, local, NPC, arco)
+
+### Changed
+
+- Colunas e painéis separam por elevação (sombra) em vez de borda pesada; accent blurple reservado a interactivos
+- Backdrop de diálogos escurecido (~55% preto); Mapa confirma pinch via `react-zoom-pan-pinch`
+
+## [0.13.0] — 2026-08-13
+
+Codex **v2.0.0 — Frente B**: multi-deploy e hub índice (spec 078).
+
+### Added
+
+- **Scaffold** `scripts/nova-campanha.sh`: pasta `codex-<slug>`, `.env`, override Compose, snippets Caddy/cloudflared/hub (não aplica proxy nem sobe containers)
+- **Hub** estático em `hub/` com fetch de `campanhas.json` em runtime
+- **Migração WFRP** `scripts/migrar-wfrp.sh` → `codex-wfrp` (copia dados; não edita Caddy nem o JSON do hub)
+- **Runbook** `docs/runbook-instancias.md` (`git pull` + rebuild por pasta)
+
+## [0.12.0] — 2026-08-13
+
+Codex **v2.0.0 — Frente A**: motor agnóstico de sistema (spec 077).
+
+### Added
+
+- **Config por deploy**: `SISTEMA` e `MODULOS_ATIVOS` (defaults por sistema; override explícito); `GET /api/config` público com `sistema`, `modulos_ativos`, `has_map_image`
+- **Personagem**: `extensoes_mecanica` JSON (primeiro módulo: **fadiga** 0–6 na ficha GM); chaves inactivas ignoradas silenciosamente na API
+- **Landing**: instância sem ficheiro de mapa abre em **Relações** (`has_map_image: false`)
+- **GM**: aviso discreto quando módulo activo no `.env` ainda não tem widget
+
+### Changed
+
+- Migração deploy-1: coluna `extensoes_mecanica`; copia legado `npc.fadiga` se existir (deploy-2: `MIGRATE_DROP_LEGACY_FADIGA=true` após validação prod)
+
 ## [0.11.1] — 2026-08-13
 
 ### Changed

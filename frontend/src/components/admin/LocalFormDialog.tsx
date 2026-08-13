@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Arco, Local, NPC, Waypoint } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
 
@@ -45,196 +46,215 @@ export function LocalFormDialog({
   onCancel,
   onStartReposition,
 }: LocalFormDialogProps) {
+  const { t } = useTranslation('admin')
+  const { t: tc } = useTranslation('comum')
   const colorOk = HEX_PIN.test(draft.cor_pin)
   const canSave = Boolean(draft.nome.trim()) && colorOk
   const destinoOptions = locais.filter((l) => l.id !== draft.id)
   const waypointsElegiveis = waypoints.filter(
     (w) => w.local_id == null || w.local_id === draft.id,
   )
+  const dialogTitle = draft.isNew ? t('localForm.new') : t('localForm.edit')
 
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
-      <div className="dialog" role="dialog" aria-label={draft.isNew ? 'Novo local' : 'Editar local'}>
-        <div className="dialog-title">{draft.isNew ? 'Novo local' : 'Editar local'}</div>
+      <div className="dialog" role="dialog" aria-label={dialogTitle}>
+        <div className="dialog-title">{dialogTitle}</div>
         <div className="dialog__body">
-          <ImageSlot
-            src={draft.imagem_url}
-            placeholder="Imagem do local"
-            shape="rounded"
-            editable
-            category="locals"
-            fit="contain"
-            className={`local-form__image${draft.imagem_url ? '' : ' local-form__image--empty'}`}
-            onUploaded={(url) => onChange({ imagem_url: url })}
-          />
-          <div className="field">
-            <label>Nome</label>
-            <input
-              className="input"
-              value={draft.nome}
-              onChange={(e) => onChange({ nome: e.target.value })}
-            />
-          </div>
-          <div className="field">
-            <label>
-              Descrição <span className="text-muted">(Markdown opcional)</span>
-            </label>
-            <textarea
-              className="input"
-              rows={3}
-              value={draft.descricao}
-              onChange={(e) => onChange({ descricao: e.target.value })}
-              placeholder="Texto livre ou Markdown"
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="local-cor-pin">Cor do pin</label>
-            <div className="gm-row" style={{ alignItems: 'center', marginTop: 0 }}>
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('localForm.identidade')}</h6>
+            <div className="field">
+              <label>{tc('form.nome')}</label>
               <input
-                id="local-cor-pin"
-                type="color"
-                value={colorOk ? draft.cor_pin : PIN_COLOR_KNOWN}
-                onChange={(e) => onChange({ cor_pin: e.target.value.toLowerCase() })}
-                aria-label="Seletor de cor do pin"
+                className="input"
+                value={draft.nome}
+                onChange={(e) => onChange({ nome: e.target.value })}
               />
-              <button
-                type="button"
-                className="btn btn-secondary"
-                title="Visitado (sugestão)"
-                onClick={() => onChange({ cor_pin: PIN_COLOR_VISITED })}
-              >
-                Visitado
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                title="Conhecido não visitado (sugestão)"
-                onClick={() => onChange({ cor_pin: PIN_COLOR_KNOWN })}
-              >
-                Conhecido
-              </button>
             </div>
-            {!colorOk && (
-              <p className="map-page__inline-error" role="alert">
-                Escolha uma cor válida para o pin.
-              </p>
-            )}
+            <div className="field">
+              <label>
+                {tc('form.descricao')}{' '}
+                <span className="text-muted">{t('localForm.descMarkdown')}</span>
+              </label>
+              <textarea
+                className="input"
+                rows={3}
+                value={draft.descricao}
+                onChange={(e) => onChange({ descricao: e.target.value })}
+                placeholder={t('localForm.descPlaceholder')}
+              />
+            </div>
+            <div className="field">
+              <label>{t('localForm.sessaoLabel')}</label>
+              <input
+                className="input"
+                value={draft.data_sessao}
+                placeholder={t('localForm.sessaoPlaceholder')}
+                onChange={(e) => onChange({ data_sessao: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label>{t('localForm.arco')}</label>
+              <select
+                className="input"
+                value={draft.arco_id ?? ''}
+                onChange={(e) =>
+                  onChange({ arco_id: e.target.value ? Number(e.target.value) : null })
+                }
+              >
+                <option value="">{t('localForm.nenhum')}</option>
+                {arcos.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.titulo}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="local-cor-pin">{t('localForm.corPin')}</label>
+              <div className="gm-row" style={{ alignItems: 'center', marginTop: 0 }}>
+                <input
+                  id="local-cor-pin"
+                  type="color"
+                  value={colorOk ? draft.cor_pin : PIN_COLOR_KNOWN}
+                  onChange={(e) => onChange({ cor_pin: e.target.value.toLowerCase() })}
+                  aria-label={t('localForm.corPinAria')}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  title={t('localForm.visitadoTitle')}
+                  onClick={() => onChange({ cor_pin: PIN_COLOR_VISITED })}
+                >
+                  {t('localForm.visitado')}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  title={t('localForm.conhecidoTitle')}
+                  onClick={() => onChange({ cor_pin: PIN_COLOR_KNOWN })}
+                >
+                  {t('localForm.conhecido')}
+                </button>
+              </div>
+              {!colorOk && (
+                <p className="map-page__inline-error" role="alert">
+                  {t('localForm.corInvalida')}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="field">
-            <label>Rótulo da sessão (opcional)</label>
-            <input
-              className="input"
-              value={draft.data_sessao}
-              placeholder="ex.: Sessão 3"
-              onChange={(e) => onChange({ data_sessao: e.target.value })}
+
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('localForm.imagem')}</h6>
+            <ImageSlot
+              src={draft.imagem_url}
+              placeholder={t('localForm.imagemPlaceholder')}
+              shape="rounded"
+              editable
+              category="locals"
+              fit="contain"
+              className={`local-form__image${draft.imagem_url ? '' : ' local-form__image--empty'}`}
+              onUploaded={(url) => onChange({ imagem_url: url })}
             />
           </div>
-          <div className="field">
-            <label>Arco</label>
-            <select
-              className="input"
-              value={draft.arco_id ?? ''}
-              onChange={(e) =>
-                onChange({ arco_id: e.target.value ? Number(e.target.value) : null })
-              }
-            >
-              <option value="">— nenhum —</option>
-              {arcos.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.titulo}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="local-waypoint">Nó da rede</label>
-            <select
-              id="local-waypoint"
-              className="input"
-              value={draft.waypoint_id ?? ''}
-              onChange={(e) => {
-                const wid = e.target.value ? Number(e.target.value) : null
-                const wp = wid != null ? waypoints.find((w) => w.id === wid) : undefined
-                onChange({
-                  waypoint_id: wid,
-                  ...(wp ? { x: wp.x, y: wp.y } : {}),
-                })
-              }}
-            >
-              <option value="">Sem nó</option>
-              {waypointsElegiveis.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.nome?.trim() || `Nó ${w.id}`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label>NPCs presentes</label>
-            <div className="gm-chips">
-              {npcs.map((n) => {
-                const on = draft.npc_ids.includes(n.id)
-                return (
-                  <button
-                    key={n.id}
-                    type="button"
-                    className={on ? 'tag tag-accent' : 'tag tag-outline'}
-                    onClick={() =>
-                      onChange({
-                        npc_ids: on
-                          ? draft.npc_ids.filter((id) => id !== n.id)
-                          : [...draft.npc_ids, n.id],
-                      })
-                    }
-                  >
-                    {n.nome}
-                  </button>
-                )
-              })}
+
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('localForm.vinculos')}</h6>
+            <div className="field">
+              <label htmlFor="local-waypoint">{t('localForm.noRede')}</label>
+              <select
+                id="local-waypoint"
+                className="input"
+                value={draft.waypoint_id ?? ''}
+                onChange={(e) => {
+                  const wid = e.target.value ? Number(e.target.value) : null
+                  const wp = wid != null ? waypoints.find((w) => w.id === wid) : undefined
+                  onChange({
+                    waypoint_id: wid,
+                    ...(wp ? { x: wp.x, y: wp.y } : {}),
+                  })
+                }}
+              >
+                <option value="">{t('localForm.semNo')}</option>
+                {waypointsElegiveis.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.nome?.trim() || t('localForm.noFallback', { id: w.id })}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>{t('localForm.npcsPresentes')}</label>
+              <div className="gm-chips">
+                {npcs.map((n) => {
+                  const on = draft.npc_ids.includes(n.id)
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      className={on ? 'tag tag-accent' : 'tag tag-outline'}
+                      onClick={() =>
+                        onChange({
+                          npc_ids: on
+                            ? draft.npc_ids.filter((id) => id !== n.id)
+                            : [...draft.npc_ids, n.id],
+                        })
+                      }
+                    >
+                      {n.nome}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="field">
+              <label>{t('localForm.saidas')}</label>
+              <div className="gm-chips">
+                {destinoOptions.length === 0 && (
+                  <span className="card-meta">{t('localForm.cadastreLocais')}</span>
+                )}
+                {destinoOptions.map((loc) => {
+                  const on = draft.saida_ids.includes(loc.id)
+                  return (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      className={on ? 'tag tag-accent' : 'tag tag-outline'}
+                      onClick={() =>
+                        onChange({
+                          saida_ids: on
+                            ? draft.saida_ids.filter((id) => id !== loc.id)
+                            : [...draft.saida_ids, loc.id],
+                        })
+                      }
+                    >
+                      {loc.nome}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
-          <div className="field">
-            <label>Saídas (para onde o grupo foi)</label>
-            <div className="gm-chips">
-              {destinoOptions.length === 0 && (
-                <span className="card-meta">Cadastre outros locais para definir saídas.</span>
+
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('localForm.posicao')}</h6>
+            <p className="card-meta">
+              x {draft.x.toFixed(2)} · y {draft.y.toFixed(2)}{' '}
+              {!draft.isNew && (
+                <button type="button" className="btn btn-ghost" onClick={onStartReposition}>
+                  {t('localForm.reposicionar')}
+                </button>
               )}
-              {destinoOptions.map((loc) => {
-                const on = draft.saida_ids.includes(loc.id)
-                return (
-                  <button
-                    key={loc.id}
-                    type="button"
-                    className={on ? 'tag tag-accent' : 'tag tag-outline'}
-                    onClick={() =>
-                      onChange({
-                        saida_ids: on
-                          ? draft.saida_ids.filter((id) => id !== loc.id)
-                          : [...draft.saida_ids, loc.id],
-                      })
-                    }
-                  >
-                    {loc.nome}
-                  </button>
-                )
-              })}
-            </div>
+            </p>
           </div>
-          <p className="card-meta">
-            Posição: x {draft.x.toFixed(2)} · y {draft.y.toFixed(2)}{' '}
-            {!draft.isNew && (
-              <button type="button" className="btn btn-ghost" onClick={onStartReposition}>
-                Reposicionar no mapa
-              </button>
-            )}
-          </p>
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>
-            Cancelar
+            {tc('buttons.cancel')}
           </button>
           <button type="button" className="btn btn-primary" onClick={onSave} disabled={!canSave}>
-            Salvar
+            {tc('buttons.save')}
           </button>
         </div>
       </div>

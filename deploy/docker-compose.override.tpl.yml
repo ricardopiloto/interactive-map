@@ -1,0 +1,13 @@
+# Gerado por scripts/nova-campanha.sh — não editar o Caddyfile do host a partir daqui.
+# Publica API/web no host para o reverse proxy (Caddy) em 127.0.0.1.
+
+services:
+  api:
+    container_name: __COMPOSE_PROJECT_NAME__-api
+    ports:
+      - "__PORTA_API__:8000"
+
+  web:
+    container_name: __COMPOSE_PROJECT_NAME__-web
+    ports:
+      - "__PORTA_WEB__:80"

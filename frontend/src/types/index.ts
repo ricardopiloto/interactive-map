@@ -2,8 +2,10 @@ export type NPCStatus = 'vivo' | 'morto' | 'desaparecido' | 'desconhecido'
 export type PersonagemTipo = 'pj' | 'npc'
 export type VinculoTipo =
   | 'aliado'
+  | 'vinculo_sangue'
   | 'amizade'
   | 'inimizade'
+  | 'adversario'
   | 'romance'
   | 'familia'
   | 'conhecido'
@@ -15,6 +17,13 @@ export type OrdenacaoRota = 'mais_rapida' | 'mais_barata'
 export type ModoTransporte = 'pago' | 'proprio'
 export type PreferenciaVia = 'nenhuma' | 'rio' | 'estrada'
 
+export interface InstanceConfig {
+  sistema: string
+  modulos_ativos: string[]
+  has_map_image: boolean
+}
+
+export type ExtensoesMecanica = Record<string, number | string | boolean>
 
 export interface Local {
   id: number
@@ -41,6 +50,7 @@ export interface NPC {
   status: NPCStatus | null
   retrato_url: string | null
   local_ids: number[]
+  extensoes_mecanica?: ExtensoesMecanica
 }
 
 /** Personagem unificado (PJ|NPC) — mesma API/shape do NPC evoluído. */

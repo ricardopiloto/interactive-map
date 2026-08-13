@@ -1,8 +1,11 @@
+# Multi-instância (spec 078): defina COMPOSE_PROJECT_NAME=codex-<slug> no .env
+# e use docker-compose.override.yml (ver deploy/docker-compose.override.tpl.yml)
+# para publicar PORTA_API/PORTA_WEB no host. Sem override, nomes default mapa-*.
 services:
   api:
     build:
       context: ./backend
-    container_name: mapa-api
+    container_name: ${COMPOSE_PROJECT_NAME:-mapa}-api
     restart: unless-stopped
     env_file:
       - .env
@@ -26,7 +29,7 @@ services:
   web:
     build:
       context: ./frontend
-    container_name: mapa-web
+    container_name: ${COMPOSE_PROJECT_NAME:-mapa}-web
     restart: unless-stopped
     depends_on:
       api:
@@ -38,7 +41,7 @@ services:
   # Em produção, o Caddy do host (já existente) costuma fazer o reverse proxy.
   caddy:
     image: caddy:2.9-alpine
-    container_name: mapa-caddy
+    container_name: ${COMPOSE_PROJECT_NAME:-mapa}-caddy
     restart: unless-stopped
     profiles: ["with-caddy"]
     ports:

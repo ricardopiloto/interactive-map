@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +13,7 @@ class PersonagemCreate(BaseModel):
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = NPCStatus.desconhecido
     retrato_url: Optional[str] = Field(default=None, max_length=500)
+    extensoes_mecanica: dict[str, Any] = Field(default_factory=dict)
 
 
 class PersonagemUpdate(BaseModel):
@@ -23,6 +24,7 @@ class PersonagemUpdate(BaseModel):
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = None
     retrato_url: Optional[str] = Field(default=None, max_length=500)
+    extensoes_mecanica: Optional[dict[str, Any]] = None
 
 
 class PersonagemRead(BaseModel):
@@ -36,4 +38,5 @@ class PersonagemRead(BaseModel):
     faccao: Optional[str]
     status: Optional[NPCStatus]
     retrato_url: Optional[str]
+    extensoes_mecanica: dict[str, Any] = Field(default_factory=dict)
     local_ids: list[int] = Field(default_factory=list)

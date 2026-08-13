@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.arco import Arco
 from app.schemas.arco import ArcoRead
 
@@ -18,5 +19,5 @@ def list_arcos(session: Session = Depends(get_session)) -> list[Arco]:
 def get_arco(arco_id: int, session: Session = Depends(get_session)) -> Arco:
     arco = session.get(Arco, arco_id)
     if not arco:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Arco não encontrado")
+        raise_api_error("ARCO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     return arco

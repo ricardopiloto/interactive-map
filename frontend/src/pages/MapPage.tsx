@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { adminApi } from '../api/admin'
 import { campaignApi } from '../api/campaign'
@@ -20,7 +21,9 @@ import { LocalFormDialog, localToDraft, type LocalFormDraft } from '../component
 import { NpcAdminList, NpcFormDialog } from '../components/admin/NpcAdminList'
 import { ArcoAdminList, ArcoFormDialog } from '../components/admin/ArcoAdminList'
 import { GrupoAdminPanel } from '../components/admin/GrupoAdminPanel'
+import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
 import { useCampaignData } from '../hooks/useCampaignData'
+import { useInstanceConfig } from '../hooks/useInstanceConfig'
 import type { GrupoFormato, NPCStatus, RoutePlanItem, Waypoint } from '../types'
 import { labelMatchesQuery } from '../utils/textMatch'
 import './MapPage.css'
@@ -32,6 +35,10 @@ const MOBILE_BP = 800
 type Placement = 'none' | 'add-pin' | 'reposition' | 'move-group'
 
 export function MapPage() {
+  const { t } = useTranslation('mapa')
+  const { t: tc } = useTranslation('comum')
+  const apiErrorMessage = useApiErrorMessage()
+  const { config: instanceConfig } = useInstanceConfig()
   const [searchParams, setSearchParams] = useSearchParams()
   const { locais, npcs, arcos, grupo, loading, error, refresh } = useCampaignData()
   const [tab, setTab] = useState<SideTab>('locais')
@@ -76,6 +83,12 @@ export function MapPage() {
     ordem: number
     isNew: boolean
   } | null>(null)
+
+  useEffect(() => {
+    if (instanceConfig && !instanceConfig.has_map_image) {
+      setMapUrl('')
+    }
+  }, [instanceConfig])
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < MOBILE_BP)
@@ -221,7 +234,7 @@ export function MapPage() {
       setPlacement('none')
       refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao salvar local')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
@@ -242,7 +255,7 @@ export function MapPage() {
       setNpcDraft(null)
       refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao salvar NPC')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
@@ -259,7 +272,7 @@ export function MapPage() {
       setArcoDraft(null)
       refresh()
     } catch (e) {
-      setBusyError(e instanceof Error ? e.message : 'Erro ao salvar arco')
+      setBusyError(apiErrorMessage(e))
     }
   }
 
@@ -452,14 +465,14 @@ export function MapPage() {
                     setTravelSelectedIndex(0)
                   }}
                 >
-                  Rede de rotas
+                  {t('mapPage.routeNetwork')}
                 </button>
               )}
             </>
           }
         />
 
-        {loading && <p className="map-page__status">Carregando campanha…</p>}
+        {loading && <p className="map-page__status">{tc('loading.campaign')}</p>}
         {error && <p className="map-page__status map-page__status--error">{error}</p>}
         <div className="map-page__map">
           {!loading && !error && (
@@ -549,28 +562,20 @@ export function MapPage() {
       </main>
 
       {isMobile && (
-        <nav className="map-page__bottom" aria-label="Navegação">
+        <nav className="map-page__bottom" aria-label={t('mapPage.navLabel')}>
           {tabs
-            .filter((t) => t !== 'grupo' || isGm)
-            .map((t) => (
+            .filter((tabId) => tabId !== 'grupo' || isGm)
+            .map((tabId) => (
               <button
-                key={t}
+                key={tabId}
                 type="button"
-                className={tab === t && mobilePanelOpen ? 'active' : ''}
+                className={tab === tabId && mobilePanelOpen ? 'active' : ''}
                 onClick={() => {
-                  setTab(t)
+                  setTab(tabId)
                   setMobilePanelOpen(true)
                 }}
               >
-                {t === 'locais'
-                  ? 'Locais'
-                  : t === 'npcs'
-                    ? 'NPCs'
-                    : t === 'arcos'
-                      ? 'História'
-                      : t === 'rota'
-                        ? 'Rota'
-                        : 'Grupo'}
+                {t(`sideMenu.tabs.${tabId === 'arcos' ? 'historia' : tabId}`)}
               </button>
             ))}
         </nav>
@@ -606,7 +611,7 @@ export function MapPage() {
 
       {npcDraft && (
         <NpcFormDialog
-          title={npcDraft.isNew ? 'Novo NPC' : 'Editar NPC'}
+          title={npcDraft.isNew ? t('mapPage.newNpc') : t('mapPage.editNpc')}
           nome={npcDraft.nome}
           papel={npcDraft.papel}
           descricao={npcDraft.descricao}
@@ -621,7 +626,7 @@ export function MapPage() {
 
       {arcoDraft && (
         <ArcoFormDialog
-          title={arcoDraft.isNew ? 'Novo arco' : 'Editar arco'}
+          title={arcoDraft.isNew ? t('mapPage.newArco') : t('mapPage.editArco')}
           titulo={arcoDraft.titulo}
           resumo={arcoDraft.resumo}
           ordem={arcoDraft.ordem}

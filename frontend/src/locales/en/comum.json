@@ -1,0 +1,105 @@
+{
+  "brand": "Campaign Codex",
+  "nav": {
+    "mainAria": "Main navigation",
+    "mapa": "Map",
+    "relacoes": "Relations"
+  },
+  "gm": {
+    "modeTag": "GM Mode",
+    "exit": "GM Mode · Exit",
+    "restricted": "Restricted access (GM)"
+  },
+  "language": {
+    "aria": "Interface language",
+    "pt": "Portuguese",
+    "en": "English"
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "remove": "Remove",
+    "delete": "Delete",
+    "close": "Close",
+    "enter": "Enter",
+    "back": "‹ Map"
+  },
+  "status": {
+    "vivo": "Alive",
+    "morto": "Dead",
+    "desaparecido": "Missing",
+    "desconhecido": "Unknown"
+  },
+  "tipo": {
+    "pj": "PC",
+    "npc": "NPC"
+  },
+  "empty": {
+    "semDescricao": "No description.",
+    "nenhumaCorrespondencia": "No matches.",
+    "nenhumItem": "No items."
+  },
+  "form": {
+    "nome": "Name",
+    "descricao": "Description",
+    "faccaoOpcional": "Faction (optional)",
+    "papelOpcional": "Role (optional)",
+    "status": "Status",
+    "senha": "Password",
+    "titulo": "Title",
+    "resumo": "Summary",
+    "ordem": "Order"
+  },
+  "image": {
+    "dragHere": "Drag image here",
+    "uploadFail": "Upload failed",
+    "portrait": "Portrait",
+    "noPortrait": "No portrait"
+  },
+  "gate": {
+    "title": "GM Access",
+    "body": "Restricted campaign editing area.",
+    "wrongPassword": "Incorrect password."
+  },
+  "loading": {
+    "campaign": "Loading campaign…",
+    "network": "Loading relationship network…"
+  },
+  "errors": {
+    "loadData": "Failed to load data",
+    "loadConfig": "Failed to load configuration",
+    "GENERICO": "Something went wrong. Please try again.",
+    "ADMIN_NAO_CONFIGURADO": "Admin not configured (ADMIN_USER / ADMIN_PASSWORD)",
+    "AUTENTICACAO_NECESSARIA": "Authentication required",
+    "CREDENCIAIS_INVALIDAS": "Invalid credentials",
+    "CATEGORIA_UPLOAD_INVALIDA": "Invalid category. Use: {{categorias}}",
+    "TIPO_ARQUIVO_NAO_PERMITIDO": "File type not allowed: {{content_type}}",
+    "ARQUIVO_EXCEDE_TAMANHO_MAXIMO": "File exceeds the {{limite_bytes}} byte limit",
+    "FADIGA_INVALIDA": "Fatigue must be an integer",
+    "FADIGA_FORA_INTERVALO": "Fatigue must be between {{min}} and {{max}}",
+    "MODULO_MECANICA_DESCONHECIDO": "Unknown mechanics module: {{modulo}}",
+    "PERSONAGEM_NAO_ENCONTRADO": "Character not found",
+    "VINCULO_NAO_ENCONTRADO": "Bond not found",
+    "VINCULO_JA_EXISTE": "Bond already exists",
+    "VINCULO_MESMO_PERSONAGEM": "A bond cannot link a character to themselves",
+    "PERSONAGEM_INVALIDO": "Invalid character",
+    "LOCAL_NAO_ENCONTRADO": "Location not found",
+    "LOCAL_SEM_ID": "Location has no id to sync exits",
+    "LOCAL_SAIDA_PARA_SI": "Location cannot exit to itself",
+    "NPCS_NAO_ENCONTRADOS": "NPCs not found: {{ids}}",
+    "LOCAIS_DESTINO_NAO_ENCONTRADOS": "Destination locations not found: {{ids}}",
+    "NPC_NAO_ENCONTRADO": "NPC not found",
+    "ARCO_NAO_ENCONTRADO": "Arc not found",
+    "WAYPOINT_NAO_ENCONTRADO": "Waypoint not found",
+    "WAYPOINT_INVALIDO": "Invalid waypoint",
+    "SEGMENTO_NAO_ENCONTRADO": "Segment not found",
+    "SEGMENTO_SELF_LOOP_INVALIDO": "Invalid self-loop",
+    "LOCAL_JA_VINCULADO_WAYPOINT": "Location already linked to another waypoint",
+    "WAYPOINT_JA_VINCULADO_LOCAL": "Waypoint already linked to another location",
+    "ROTA_ORIGEM_DESTINO_IGUAIS": "Origin and destination must differ",
+    "ROTA_ORIGEM_INVALIDA": "Invalid origin (node not found)",
+    "ROTA_DESTINO_INVALIDO": "Invalid destination (node not found)",
+    "ROTA_CALCULO_FALHOU": "Failed to calculate route"
+  }
+}

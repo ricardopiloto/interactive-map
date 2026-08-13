@@ -1,0 +1,97 @@
+{
+  "page": {
+    "loadError": "Erro ao carregar a rede de relações",
+    "addPersonagem": "+ Personagem",
+    "addConexao": "+ Conexão",
+    "newPersonagem": "Novo personagem",
+    "editPersonagem": "Editar personagem",
+    "newConexao": "Nova conexão",
+    "editConexao": "Editar conexão",
+    "confirmRemovePersonagem": "Remover este personagem? Isso também remove seus vínculos.",
+    "confirmRemoveVinculo": "Remover este vínculo?",
+    "savePersonagemError": "Erro ao salvar personagem",
+    "removePersonagemError": "Erro ao remover personagem",
+    "saveVinculoError": "Erro ao salvar vínculo",
+    "removeVinculoError": "Erro ao remover vínculo"
+  },
+  "graph": {
+    "zoomIn": "Aumentar zoom",
+    "zoomOut": "Diminuir zoom"
+  },
+  "column": {
+    "search": "Buscar personagem…",
+    "tiposVinculo": "Tipos de vínculo",
+    "isolate": "Isolar seleção",
+    "legend": "Legenda"
+  },
+  "vinculoTipo": {
+    "aliado": "Aliado",
+    "vinculo_sangue": "Vínculo de Sangue",
+    "amizade": "Amizade",
+    "inimizade": "Inimizade",
+    "adversario": "Adversário",
+    "romance": "Romance",
+    "familia": "Família",
+    "conhecido": "Conhecido"
+  },
+  "detail": {
+    "removed": "Personagem removido",
+    "vinculosCount": "Vínculos ({{count}})",
+    "noVinculos": "Nenhum vínculo visível.",
+    "veTeComo": "Vê-te como"
+  },
+  "personagemForm": {
+    "moduloIndisponivel": "Módulo(s) activo(s) indisponível(is) nesta versão:",
+    "identidade": "Identidade",
+    "retrato": "Retrato do personagem",
+    "tipoPersonagem": "Tipo de personagem",
+    "atributos": "Atributos",
+    "mecanicas": "Mecânicas",
+    "notas": "Notas",
+    "papelExemplo": "ex: Caçadora de Recompensas"
+  },
+  "vinculoForm": {
+    "personagens": "Personagens",
+    "personagemA": "Personagem A",
+    "personagemB": "Personagem B",
+    "selecione": "Selecione…",
+    "doisPersonagens": "Escolha dois personagens diferentes.",
+    "tipoDirecao": "Tipo e direção",
+    "modo": "Modo",
+    "modoReciproco": "Recíproco",
+    "modoDuasVias": "Duas vias",
+    "tipoVinculo": "Tipo de vínculo",
+    "veComo": "{{a}} vê {{b}} como",
+    "qualificador": "Qualificador ({{a}} → {{b}})",
+    "qualificadorOpcional": "Qualificador (opcional)",
+    "qualExMedo": "ex: Medo, Rival…",
+    "qualExAdmiracao": "ex: Admiração, Rival…",
+    "qualExMentor": "ex: Mentor, Medo, Rival…",
+    "conhecidoJogadores": "Conhecido pelos jogadores ({{a}} → {{b}})",
+    "direcao": "Direção",
+    "direcaoMutuo": "Mútuo",
+    "visivelJogadores": "Visível para jogadores",
+    "notaOpcional": "Nota (opcional)",
+    "notaDirecional": "Nota ({{a}} → {{b}})",
+    "notaExSalvou": "ex: Salvou a vida dela em Bögenhafen",
+    "notaExSonha": "ex: Sonha com mais do que amizade"
+  },
+  "qualificador": {
+    "mentor": "Mentor",
+    "protegido": "Protegido",
+    "patrono": "Patrono",
+    "devedor": "Devedor",
+    "segredo": "Segredo",
+    "companheiroGuerra": "Companheiro de guerra",
+    "rival": "Rival",
+    "traidor": "Traidor",
+    "antigoAliado": "Antigo aliado",
+    "paiMae": "Pai/Mãe",
+    "irmao": "Irmão/Irmã",
+    "tutor": "Tutor",
+    "desconfianca": "Desconfiança",
+    "contato": "Contato",
+    "medo": "Medo",
+    "lacaio": "Lacaio"
+  }
+}

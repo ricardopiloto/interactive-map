@@ -1,17 +1,11 @@
 import type { ReactNode } from 'react'
-import type { Arco, Local, NPC } from '../../types'
+import { useTranslation } from 'react-i18next'
+import type { Arco, Local, NPC, NPCStatus } from '../../types'
 import { labelMatchesQuery } from '../../utils/textMatch'
 import { ImageSlot } from '../media/ImageSlot'
 import './SideMenu.css'
 
 export type SideTab = 'locais' | 'npcs' | 'arcos' | 'grupo' | 'rota'
-
-const STATUS_LABEL: Record<string, string> = {
-  vivo: 'Vivo',
-  morto: 'Morto',
-  desaparecido: 'Desaparecido',
-  desconhecido: 'Desconhecido',
-}
 
 function arcoMatchesQuery(arco: Arco, locais: Local[], query: string): boolean {
   if (labelMatchesQuery(arco.titulo, query)) return true
@@ -58,7 +52,7 @@ export function SideMenu({
   onSelectArco,
   onLocalHover,
   tabs = ['locais', 'npcs', 'arcos'],
-  brand = 'Codex da Campanha',
+  brand,
   onCloseMobile,
   isMobileOverlay,
   isGm = false,
@@ -66,6 +60,16 @@ export function SideMenu({
   adminPanel,
   rotaPanel,
 }: SideMenuProps) {
+  const { t } = useTranslation('mapa')
+  const { t: tc } = useTranslation('comum')
+
+  const displayBrand = brand ?? tc('brand')
+
+  function statusLabel(status: NPCStatus | null | undefined): string {
+    const key = status ?? 'desconhecido'
+    return tc(`status.${key}`)
+  }
+
   const filtering = query.trim().length > 0
   const filteredLocais = locais.filter((l) => labelMatchesQuery(l.nome, query))
   const filteredNpcs = npcs.filter((n) => labelMatchesQuery(n.nome, query))
@@ -76,14 +80,18 @@ export function SideMenu({
   const showSearch = tab === 'locais' || tab === 'npcs' || tab === 'arcos'
 
   const searchPlaceholder =
-    tab === 'locais' ? 'Buscar local…' : tab === 'npcs' ? 'Buscar NPC…' : 'Buscar arco ou local…'
+    tab === 'locais'
+      ? t('sideMenu.search.local')
+      : tab === 'npcs'
+        ? t('sideMenu.search.npc')
+        : t('sideMenu.search.arco')
 
   const tabLabel: Record<SideTab, string> = {
-    locais: 'Locais',
-    npcs: 'NPCs',
-    arcos: 'História',
-    grupo: 'Grupo',
-    rota: 'Rota',
+    locais: t('sideMenu.tabs.locais'),
+    npcs: t('sideMenu.tabs.npcs'),
+    arcos: t('sideMenu.tabs.historia'),
+    grupo: t('sideMenu.tabs.grupo'),
+    rota: t('sideMenu.tabs.rota'),
   }
 
   return (
@@ -91,28 +99,28 @@ export function SideMenu({
       <header className="side-menu__header">
         {isMobileOverlay && onCloseMobile ? (
           <button type="button" className="btn btn-ghost" onClick={onCloseMobile}>
-            ‹ Mapa
+            {tc('buttons.back')}
           </button>
         ) : (
           <div className="side-menu__brand-row">
-            <div className="side-menu__brand">{brand}</div>
-            {isGm && <span className="tag tag-accent">Modo GM</span>}
+            <div className="side-menu__brand">{displayBrand}</div>
+            {isGm && <span className="tag tag-accent">{tc('gm.modeTag')}</span>}
           </div>
         )}
         {headerExtra}
       </header>
 
       <div className="side-menu__seg-wrap">
-        <div className="seg" role="tablist" aria-label="Seções">
-          {tabs.map((t) => (
-            <label key={t} className="seg-opt">
+        <div className="seg" role="tablist" aria-label={t('sideMenu.sections')}>
+          {tabs.map((tabId) => (
+            <label key={tabId} className="seg-opt">
               <input
                 type="radio"
                 name="side-tab"
-                checked={tab === t}
-                onChange={() => onTabChange(t)}
+                checked={tab === tabId}
+                onChange={() => onTabChange(tabId)}
               />
-              {tabLabel[t]}
+              {tabLabel[tabId]}
             </label>
           ))}
         </div>
@@ -148,7 +156,7 @@ export function SideMenu({
               <div className="side-menu__stack">
                 {filteredLocais.length === 0 && (
                   <p className="text-muted">
-                    {filtering ? 'Nenhuma correspondência.' : 'Nenhum local visitado ainda.'}
+                    {filtering ? tc('empty.nenhumaCorrespondencia') : t('sideMenu.empty.locais')}
                   </p>
                 )}
                 {filteredLocais.map((local) => {
@@ -174,7 +182,7 @@ export function SideMenu({
               <div className="side-menu__stack">
                 {filteredNpcs.length === 0 && (
                   <p className="text-muted">
-                    {filtering ? 'Nenhuma correspondência.' : 'Nenhum NPC conhecido ainda.'}
+                    {filtering ? tc('empty.nenhumaCorrespondencia') : t('sideMenu.empty.npcs')}
                   </p>
                 )}
                 {filteredNpcs.map((npc) => {
@@ -189,7 +197,7 @@ export function SideMenu({
                       >
                         <ImageSlot
                           src={npc.retrato_url}
-                          placeholder="Retrato"
+                          placeholder={tc('image.portrait')}
                           shape="circle"
                           style={{ width: 40, height: 40, flexShrink: 0, padding: 0 }}
                         />
@@ -198,7 +206,7 @@ export function SideMenu({
                             {npc.nome}
                           </span>
                           <span className="tag tag-outline" style={{ marginTop: 4 }}>
-                            {STATUS_LABEL[npc.status ?? 'desconhecido']}
+                            {statusLabel(npc.status)}
                           </span>
                         </span>
                       </button>
@@ -212,12 +220,16 @@ export function SideMenu({
                               className="side-menu__npc-portrait"
                             />
                           )}
-                          <p className="card-body">{npc.descricao || 'Sem descrição.'}</p>
-                          {npc.faccao && <p className="card-meta">Facção: {npc.faccao}</p>}
-                          <p className="card-meta">Locais onde apareceu</p>
+                          <p className="card-body">{npc.descricao || tc('empty.semDescricao')}</p>
+                          {npc.faccao && (
+                            <p className="card-meta">
+                              {t('sideMenu.faccaoPrefix')} {npc.faccao}
+                            </p>
+                          )}
+                          <p className="card-meta">{t('sideMenu.empty.locaisNpc')}</p>
                           <div className="side-menu__chips">
                             {related.length === 0 && (
-                              <span className="text-muted">Nenhum ainda.</span>
+                              <span className="text-muted">{t('sideMenu.empty.nenhumAinda')}</span>
                             )}
                             {related.map((loc) => (
                               <button
@@ -242,7 +254,7 @@ export function SideMenu({
               <div className="side-menu__stack">
                 {filteredArcos.length === 0 && (
                   <p className="text-muted">
-                    {filtering ? 'Nenhuma correspondência.' : 'Nenhum arco registrado ainda.'}
+                    {filtering ? tc('empty.nenhumaCorrespondencia') : t('sideMenu.empty.historia')}
                   </p>
                 )}
                 {filteredArcos.map((arco) => {
@@ -257,14 +269,14 @@ export function SideMenu({
                         className="side-menu__card-btn"
                         onClick={() => onSelectArco(arco.id)}
                       >
-                        <div className="card-kicker">Arco {arco.ordem}</div>
+                        <div className="card-kicker">{t('sideMenu.arcoOrdem', { ordem: arco.ordem })}</div>
                         <div className="card-title">{arco.titulo}</div>
                         <p className="card-body">{arco.resumo}</p>
                       </button>
                       {expanded && (
                         <div className="side-menu__npc-body">
                           {events.length === 0 && (
-                            <p className="text-muted">Sem locais neste arco.</p>
+                            <p className="text-muted">{t('sideMenu.empty.semLocaisArco')}</p>
                           )}
                           {events.map((ev) => (
                             <button

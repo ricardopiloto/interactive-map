@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.npc import NPC
 from app.models.vinculo import Vinculo, VinculoDirecao, VinculoTipo
 from app.routers.public.vinculos import vinculo_to_admin_read
@@ -17,7 +18,7 @@ def _canonical_pair(a: int, b: int) -> tuple[int, int]:
 
 def _ensure_pair_exists(session: Session, a: int, b: int) -> None:
     if not session.get(NPC, a) or not session.get(NPC, b):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Personagem inválido")
+        raise_api_error("PERSONAGEM_INVALIDO", status_code=status.HTTP_400_BAD_REQUEST)
 
 
 def _to_canonical_fields(
@@ -102,7 +103,7 @@ def create_vinculo(
         select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
     ).first()
     if existing:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Vínculo já existe")
+        raise_api_error("VINCULO_JA_EXISTE", status_code=status.HTTP_409_CONFLICT)
 
     row = Vinculo(
         personagem_a_id=a,
@@ -134,14 +135,14 @@ def update_vinculo(
 ) -> VinculoRead:
     row = session.get(Vinculo, vinculo_id)
     if not row:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vínculo não encontrado")
+        raise_api_error("VINCULO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
 
     raw_a = payload.personagem_a_id if payload.personagem_a_id is not None else row.personagem_a_id
     raw_b = payload.personagem_b_id if payload.personagem_b_id is not None else row.personagem_b_id
     if raw_a == raw_b:
-        raise HTTPException(
+        raise_api_error(
+            "VINCULO_MESMO_PERSONAGEM",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Vínculo não pode ligar um personagem a si mesmo",
         )
 
     tipo_ab = payload.tipo_ab if payload.tipo_ab is not None else row.tipo_ab
@@ -195,7 +196,7 @@ def update_vinculo(
         )
     ).first()
     if clash:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Vínculo já existe")
+        raise_api_error("VINCULO_JA_EXISTE", status_code=status.HTTP_409_CONFLICT)
 
     row.personagem_a_id = a
     row.personagem_b_id = b
@@ -226,6 +227,6 @@ def delete_vinculo(
 ) -> None:
     row = session.get(Vinculo, vinculo_id)
     if not row:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vínculo não encontrado")
+        raise_api_error("VINCULO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(row)
     session.commit()

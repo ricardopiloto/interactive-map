@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.waypoint import Waypoint
 from app.schemas.routes import WaypointCreate, WaypointRead, WaypointUpdate
 from app.services.rate_limit import limiter
@@ -48,7 +49,11 @@ def update_waypoint(
 ) -> Waypoint:
     wp = session.get(Waypoint, waypoint_id)
     if not wp:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Waypoint não encontrado")
+        raise_api_error(
+            "WAYPOINT_NAO_ENCONTRADO",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detalhes={"waypoint_id": waypoint_id},
+        )
     data = payload.model_dump(exclude_unset=True)
     local_id_provided = "local_id" in data
     local_id_val = data.pop("local_id", None) if local_id_provided else None
@@ -74,7 +79,11 @@ def delete_waypoint(
 
     wp = session.get(Waypoint, waypoint_id)
     if not wp:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Waypoint não encontrado")
+        raise_api_error(
+            "WAYPOINT_NAO_ENCONTRADO",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detalhes={"waypoint_id": waypoint_id},
+        )
     for seg in session.exec(
         select(RouteSegment).where(
             (RouteSegment.waypoint_a_id == waypoint_id)

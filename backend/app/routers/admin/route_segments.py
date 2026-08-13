@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.errors import raise_api_error
 from app.models.waypoint import RouteSegment, Waypoint
 from app.schemas.routes import RouteSegmentCreate, RouteSegmentRead, RouteSegmentUpdate
 from app.services.rate_limit import limiter
@@ -42,7 +43,7 @@ def create_segment(
     a = session.get(Waypoint, payload.waypoint_a_id)
     b = session.get(Waypoint, payload.waypoint_b_id)
     if not a or not b:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Waypoint inválido")
+        raise_api_error("WAYPOINT_INVALIDO", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
     scale = get_or_create_scale(session)
     dist = compute_distancia_milhas(a, b, payload.pontos_intermediarios, scale.miles_per_map_unit)
     seg = RouteSegment(
@@ -69,7 +70,7 @@ def update_segment(
 ) -> RouteSegmentRead:
     seg = session.get(RouteSegment, segment_id)
     if not seg:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Segmento não encontrado")
+        raise_api_error("SEGMENTO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     data = payload.model_dump(exclude_unset=True)
     mid = parse_pontos(seg.pontos_intermediarios)
     if "pontos_intermediarios" in data and data["pontos_intermediarios"] is not None:
@@ -78,11 +79,11 @@ def update_segment(
     for key, value in data.items():
         setattr(seg, key, value)
     if seg.waypoint_a_id == seg.waypoint_b_id:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Self-loop inválido")
+        raise_api_error("SEGMENTO_SELF_LOOP_INVALIDO", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
     a = session.get(Waypoint, seg.waypoint_a_id)
     b = session.get(Waypoint, seg.waypoint_b_id)
     if not a or not b:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Waypoint inválido")
+        raise_api_error("WAYPOINT_INVALIDO", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
     scale = get_or_create_scale(session)
     seg.distancia_milhas = compute_distancia_milhas(a, b, mid, scale.miles_per_map_unit)
     session.add(seg)
@@ -100,6 +101,6 @@ def delete_segment(
 ) -> None:
     seg = session.get(RouteSegment, segment_id)
     if not seg:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Segmento não encontrado")
+        raise_api_error("SEGMENTO_NAO_ENCONTRADO", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(seg)
     session.commit()

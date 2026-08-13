@@ -1,5 +1,11 @@
-import type { NPCStatus, PersonagemTipo } from '../../types'
+import { useTranslation } from 'react-i18next'
+import type { InstanceConfig, NPCStatus, PersonagemTipo } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
+import {
+  activeImplementedModules,
+  componentesPorModulo,
+  unimplementedActiveModules,
+} from '../../modules/registry'
 
 export interface PersonagemDraft {
   id?: number
@@ -10,12 +16,15 @@ export interface PersonagemDraft {
   descricao: string
   status: NPCStatus
   retrato_url: string | null
+  extensoes_mecanica: Record<string, unknown>
   isNew: boolean
 }
 
 interface PersonagemFormDialogProps {
   title: string
   draft: PersonagemDraft
+  instanceConfig: InstanceConfig | null
+  isGm: boolean
   onChange: (patch: Partial<PersonagemDraft>) => void
   onSave: () => void
   onCancel: () => void
@@ -24,10 +33,17 @@ interface PersonagemFormDialogProps {
 export function PersonagemFormDialog({
   title,
   draft,
+  instanceConfig,
+  isGm,
   onChange,
   onSave,
   onCancel,
 }: PersonagemFormDialogProps) {
+  const { t } = useTranslation('relacoes')
+  const { t: tc } = useTranslation('comum')
+  const implemented = instanceConfig ? activeImplementedModules(instanceConfig) : []
+  const missing = instanceConfig && isGm ? unimplementedActiveModules(instanceConfig) : []
+
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
       <div className="dialog" role="dialog" aria-labelledby="personagem-form-title">
@@ -35,97 +51,129 @@ export function PersonagemFormDialog({
           {title}
         </div>
         <div className="dialog__body">
-          <ImageSlot
-            src={draft.retrato_url}
-            placeholder="Retrato do personagem"
-            shape="rounded"
-            editable
-            category="portraits"
-            fit="contain"
-            className={`npc-form__portrait${draft.retrato_url ? '' : ' npc-form__portrait--empty'}`}
-            onUploaded={(url) => onChange({ retrato_url: url })}
-          />
+          {missing.length > 0 && (
+            <p className="tag tag-accent" role="status">
+              {t('personagemForm.moduloIndisponivel')} {missing.join(', ')}
+            </p>
+          )}
 
-          <div className="field">
-            <label>Nome</label>
-            <input
-              className="input"
-              value={draft.nome}
-              onChange={(e) => onChange({ nome: e.target.value })}
-              autoFocus
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('personagemForm.identidade')}</h6>
+            <ImageSlot
+              src={draft.retrato_url}
+              placeholder={t('personagemForm.retrato')}
+              shape="rounded"
+              editable
+              category="portraits"
+              fit="contain"
+              className={`npc-form__portrait${draft.retrato_url ? '' : ' npc-form__portrait--empty'}`}
+              onUploaded={(url) => onChange({ retrato_url: url })}
             />
-          </div>
-
-          <div className="field">
-            <label>Tipo</label>
-            <div className="seg" role="radiogroup" aria-label="Tipo de personagem">
-              <label className="seg-opt">
-                <input
-                  type="radio"
-                  name="personagem-tipo"
-                  checked={draft.tipo === 'pj'}
-                  onChange={() => onChange({ tipo: 'pj' })}
-                />
-                PJ
-              </label>
-              <label className="seg-opt">
-                <input
-                  type="radio"
-                  name="personagem-tipo"
-                  checked={draft.tipo === 'npc'}
-                  onChange={() => onChange({ tipo: 'npc' })}
-                />
-                NPC
-              </label>
+            <div className="field">
+              <label>{tc('form.nome')}</label>
+              <input
+                className="input"
+                value={draft.nome}
+                onChange={(e) => onChange({ nome: e.target.value })}
+                autoFocus
+              />
+            </div>
+            <div className="field">
+              <label>{tc('tipo.pj')}/{tc('tipo.npc')}</label>
+              <div className="seg" role="radiogroup" aria-label={t('personagemForm.tipoPersonagem')}>
+                <label className="seg-opt">
+                  <input
+                    type="radio"
+                    name="personagem-tipo"
+                    checked={draft.tipo === 'pj'}
+                    onChange={() => onChange({ tipo: 'pj' })}
+                  />
+                  {tc('tipo.pj')}
+                </label>
+                <label className="seg-opt">
+                  <input
+                    type="radio"
+                    name="personagem-tipo"
+                    checked={draft.tipo === 'npc'}
+                    onChange={() => onChange({ tipo: 'npc' })}
+                  />
+                  {tc('tipo.npc')}
+                </label>
+              </div>
+            </div>
+            <div className="field">
+              <label>{tc('form.papelOpcional')}</label>
+              <input
+                className="input"
+                placeholder={t('personagemForm.papelExemplo')}
+                value={draft.papel}
+                onChange={(e) => onChange({ papel: e.target.value })}
+              />
             </div>
           </div>
 
-          <div className="field">
-            <label>Papel (opcional)</label>
-            <input
-              className="input"
-              placeholder="ex: Caçadora de Recompensas"
-              value={draft.papel}
-              onChange={(e) => onChange({ papel: e.target.value })}
-            />
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('personagemForm.atributos')}</h6>
+            <div className="field">
+              <label>{tc('form.faccaoOpcional')}</label>
+              <input
+                className="input"
+                value={draft.faccao}
+                onChange={(e) => onChange({ faccao: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label>{tc('form.status')}</label>
+              <select
+                className="input"
+                value={draft.status}
+                onChange={(e) => onChange({ status: e.target.value as NPCStatus })}
+              >
+                <option value="vivo">{tc('status.vivo')}</option>
+                <option value="morto">{tc('status.morto')}</option>
+                <option value="desaparecido">{tc('status.desaparecido')}</option>
+                <option value="desconhecido">{tc('status.desconhecido')}</option>
+              </select>
+            </div>
           </div>
 
-          <div className="field">
-            <label>Facção (opcional)</label>
-            <input
-              className="input"
-              value={draft.faccao}
-              onChange={(e) => onChange({ faccao: e.target.value })}
-            />
-          </div>
+          {implemented.length > 0 && (
+            <div className="dialog__group">
+              <h6 className="dialog__group-title">{t('personagemForm.mecanicas')}</h6>
+              {implemented.map((modulo) => {
+                const Widget = componentesPorModulo[modulo]
+                if (!Widget) return null
+                return (
+                  <Widget
+                    key={modulo}
+                    value={draft.extensoes_mecanica}
+                    onChange={(patch) =>
+                      onChange({
+                        extensoes_mecanica: { ...draft.extensoes_mecanica, ...patch },
+                      })
+                    }
+                  />
+                )
+              })}
+            </div>
+          )}
 
-          <div className="field">
-            <label>Descrição</label>
-            <textarea
-              className="input"
-              rows={3}
-              value={draft.descricao}
-              onChange={(e) => onChange({ descricao: e.target.value })}
-            />
-          </div>
-
-          <div className="field">
-            <label>Status</label>
-            <select
-              className="input"
-              value={draft.status}
-              onChange={(e) => onChange({ status: e.target.value as NPCStatus })}
-            >
-              <option value="vivo">Vivo</option>
-              <option value="morto">Morto</option>
-              <option value="desaparecido">Desaparecido</option>
-              <option value="desconhecido">Desconhecido</option>
-            </select>
+          <div className="dialog__group">
+            <h6 className="dialog__group-title">{t('personagemForm.notas')}</h6>
+            <div className="field">
+              <label>{tc('form.descricao')}</label>
+              <textarea
+                className="input"
+                rows={3}
+                value={draft.descricao}
+                onChange={(e) => onChange({ descricao: e.target.value })}
+              />
+            </div>
           </div>
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>
-            Cancelar
+            {tc('buttons.cancel')}
           </button>
           <button
             type="button"
@@ -133,7 +181,7 @@ export function PersonagemFormDialog({
             onClick={onSave}
             disabled={!draft.nome.trim()}
           >
-            Salvar
+            {tc('buttons.save')}
           </button>
         </div>
       </div>

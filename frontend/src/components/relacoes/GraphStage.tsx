@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -6,6 +7,8 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react'
+import { useTranslation } from 'react-i18next'
+import { usePinchZoom } from '../../hooks/usePinchZoom'
 import type { Personagem, Vinculo, VinculoTipo } from '../../types'
 import { labelMatchesQuery } from '../../utils/textMatch'
 import {
@@ -21,7 +24,7 @@ import {
   type Point,
 } from './graphLayout'
 import { estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
-import { vinculoStyle } from './vinculoStyles'
+import { getVinculoTipoLabel, vinculoStyle } from './vinculoStyles'
 import {
   edgeDisplayTipo,
   edgeIsDashed,
@@ -101,6 +104,7 @@ export function GraphStage({
   espacamento = 240,
   searchQuery = '',
 }: GraphStageProps) {
+  const { t } = useTranslation('relacoes')
   const containerRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [scale, setScale] = useState(1)
@@ -182,6 +186,14 @@ export function GraphStage({
     return Math.min(MAX_SCALE, Math.max(MIN_SCALE, next))
   }
 
+  const onPinch = useCallback(
+    (factor: number) => {
+      setScale((s) => clampScale(s * factor))
+    },
+    [],
+  )
+  const { handlers: pinchHandlers, isPinching } = usePinchZoom(onPinch)
+
   function handleWheel(e: ReactWheelEvent<HTMLDivElement>) {
     e.preventDefault()
     const factor = e.deltaY > 0 ? 0.9 : 1.1
@@ -197,6 +209,11 @@ export function GraphStage({
   }
 
   function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
+    pinchHandlers.onPointerDown(e)
+    if (isPinching()) {
+      dragRef.current = null
+      return
+    }
     if (e.button !== 0) return
     const nodeId = findNodeId(e.target)
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -223,6 +240,8 @@ export function GraphStage({
   }
 
   function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    pinchHandlers.onPointerMove(e)
+    if (isPinching()) return
     const drag = dragRef.current
     if (!drag) return
     const dx = e.clientX - drag.startClientX
@@ -247,6 +266,8 @@ export function GraphStage({
   }
 
   function handlePointerUp(e: ReactPointerEvent<HTMLDivElement>) {
+    pinchHandlers.onPointerUp(e)
+    if (isPinching()) return
     const drag = dragRef.current
     dragRef.current = null
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
@@ -278,6 +299,7 @@ export function GraphStage({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={pinchHandlers.onPointerCancel}
     >
       <div
         className="graph-stage__world"
@@ -336,12 +358,18 @@ export function GraphStage({
                   showAlwaysLabels ||
                   (rotulosVinculo === 'hover' && hoveredEdgeId === v.id))
               const reciprocalText = formatVinculoTipoLabel(
-                style.label,
+                getVinculoTipoLabel(t, displayTipo),
                 v.qualificador_ab,
                 v.direcao,
               )
-              const tipALabel = formatVinculoTipoLabel(styleA.label, v.qualificador_ab)
-              const tipBLabel = formatVinculoTipoLabel(styleB.label, v.qualificador_ba)
+              const tipALabel = formatVinculoTipoLabel(
+                getVinculoTipoLabel(t, v.tipo_ab!),
+                v.qualificador_ab,
+              )
+              const tipBLabel = formatVinculoTipoLabel(
+                getVinculoTipoLabel(t, v.tipo_ba!),
+                v.qualificador_ba,
+              )
               const midDuasText = v.direcao ? '→' : ''
               const stroke = duas ? `url(#vinculo-grad-${v.id})` : style.color
               return (
@@ -530,7 +558,7 @@ export function GraphStage({
           type="button"
           className="btn btn-secondary btn-icon"
           onClick={() => zoomBy(1.2)}
-          aria-label="Aumentar zoom"
+          aria-label={t('graph.zoomIn')}
         >
           +
         </button>
@@ -538,7 +566,7 @@ export function GraphStage({
           type="button"
           className="btn btn-secondary btn-icon"
           onClick={() => zoomBy(1 / 1.2)}
-          aria-label="Diminuir zoom"
+          aria-label={t('graph.zoomOut')}
         >
           −
         </button>

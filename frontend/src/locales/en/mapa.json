@@ -1,0 +1,92 @@
+{
+  "sideMenu": {
+    "sections": "Sections",
+    "tabs": {
+      "locais": "Locations",
+      "npcs": "NPCs",
+      "historia": "Story",
+      "grupo": "Party",
+      "rota": "Route"
+    },
+    "search": {
+      "local": "Search location…",
+      "npc": "Search NPC…",
+      "arco": "Search arc or location…"
+    },
+    "empty": {
+      "locais": "No visited locations yet.",
+      "npcs": "No known NPCs yet.",
+      "historia": "No arcs recorded yet.",
+      "locaisNpc": "Locations appeared at",
+      "nenhumAinda": "None yet.",
+      "semLocaisArco": "No locations in this arc."
+    },
+    "faccaoPrefix": "Faction:",
+    "arcoOrdem": "Arc {{ordem}}"
+  },
+  "mapPage": {
+    "routeNetwork": "Route network",
+    "navLabel": "Navigation",
+    "saveLocalError": "Failed to save location",
+    "saveNpcError": "Failed to save NPC",
+    "saveArcoError": "Failed to save arc",
+    "newNpc": "New NPC",
+    "editNpc": "Edit NPC",
+    "newArco": "New arc",
+    "editArco": "Edit arc"
+  },
+  "pinModal": {
+    "localImage": "Location image"
+  },
+  "routePlanner": {
+    "title": "Calculate route",
+    "from": "From",
+    "to": "To",
+    "calculating": "Calculating…",
+    "calculate": "Calculate",
+    "options": "Travel options",
+    "transport": "Transport",
+    "pace": "Pace",
+    "sortBy": "Sort by",
+    "pathPref": "Path preference",
+    "speedMph": "Desired speed (mph)",
+    "route": "Route",
+    "badgeFastest": "fastest",
+    "badgeCheapest": "cheapest",
+    "meta": "{{dist}} mi · {{tempo}} · On {{dentro}} · Off {{fora}}",
+    "noNodes": "No nodes in the route network yet.",
+    "noNamedNodes": "No named nodes available for origin/destination.",
+    "errOriginDest": "Choose origin and destination.",
+    "errDifferent": "Origin and destination must differ.",
+    "errSpeedRequired": "Enter desired speed (mph).",
+    "errSpeedInvalid": "Desired speed must be a number greater than zero.",
+    "errNoRoute": "No route found between these nodes.",
+    "errCalculate": "Failed to calculate route"
+  },
+  "routeEnums": {
+    "ritmo": {
+      "normal": "Normal",
+      "normalHint": "6 h/day",
+      "intenso": "Intense",
+      "intensoHint": "8 h/day"
+    },
+    "ordenacao": {
+      "maisRapida": "Fastest",
+      "maisBarata": "Cheapest"
+    },
+    "modo": {
+      "pago": "Paid",
+      "proprio": "Own"
+    },
+    "preferencia": {
+      "nenhuma": "No preference",
+      "rio": "By river",
+      "estrada": "By road"
+    },
+    "tipoVia": {
+      "estrada": "Road",
+      "rio": "River",
+      "trilha": "Trail"
+    }
+  }
+}

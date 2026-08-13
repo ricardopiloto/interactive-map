@@ -1,0 +1,105 @@
+{
+  "brand": "Codex da Campanha",
+  "nav": {
+    "mainAria": "Navegação principal",
+    "mapa": "Mapa",
+    "relacoes": "Relações"
+  },
+  "gm": {
+    "modeTag": "Modo GM",
+    "exit": "Modo GM · Sair",
+    "restricted": "Acesso restrito (GM)"
+  },
+  "language": {
+    "aria": "Idioma da interface",
+    "pt": "Português",
+    "en": "Inglês"
+  },
+  "buttons": {
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "remove": "Remover",
+    "delete": "Excluir",
+    "close": "Fechar",
+    "enter": "Entrar",
+    "back": "‹ Mapa"
+  },
+  "status": {
+    "vivo": "Vivo",
+    "morto": "Morto",
+    "desaparecido": "Desaparecido",
+    "desconhecido": "Desconhecido"
+  },
+  "tipo": {
+    "pj": "PJ",
+    "npc": "NPC"
+  },
+  "empty": {
+    "semDescricao": "Sem descrição.",
+    "nenhumaCorrespondencia": "Nenhuma correspondência.",
+    "nenhumItem": "Nenhum item."
+  },
+  "form": {
+    "nome": "Nome",
+    "descricao": "Descrição",
+    "faccaoOpcional": "Facção (opcional)",
+    "papelOpcional": "Papel (opcional)",
+    "status": "Status",
+    "senha": "Senha",
+    "titulo": "Título",
+    "resumo": "Resumo",
+    "ordem": "Ordem"
+  },
+  "image": {
+    "dragHere": "Arraste a imagem aqui",
+    "uploadFail": "Falha no upload",
+    "portrait": "Retrato",
+    "noPortrait": "Sem retrato"
+  },
+  "gate": {
+    "title": "Acesso do Mestre",
+    "body": "Área restrita de edição da campanha.",
+    "wrongPassword": "Senha incorreta."
+  },
+  "loading": {
+    "campaign": "Carregando campanha…",
+    "network": "Carregando rede de relações…"
+  },
+  "errors": {
+    "loadData": "Falha ao carregar dados",
+    "loadConfig": "Erro ao carregar configuração",
+    "GENERICO": "Ocorreu um erro. Tente novamente.",
+    "ADMIN_NAO_CONFIGURADO": "Admin não configurado (ADMIN_USER / ADMIN_PASSWORD)",
+    "AUTENTICACAO_NECESSARIA": "Autenticação necessária",
+    "CREDENCIAIS_INVALIDAS": "Credenciais inválidas",
+    "CATEGORIA_UPLOAD_INVALIDA": "Categoria inválida. Use: {{categorias}}",
+    "TIPO_ARQUIVO_NAO_PERMITIDO": "Tipo de arquivo não permitido: {{content_type}}",
+    "ARQUIVO_EXCEDE_TAMANHO_MAXIMO": "Arquivo excede o limite de {{limite_bytes}} bytes",
+    "FADIGA_INVALIDA": "Fadiga deve ser um número inteiro",
+    "FADIGA_FORA_INTERVALO": "Fadiga deve estar entre {{min}} e {{max}}",
+    "MODULO_MECANICA_DESCONHECIDO": "Módulo de mecânica desconhecido: {{modulo}}",
+    "PERSONAGEM_NAO_ENCONTRADO": "Personagem não encontrado",
+    "VINCULO_NAO_ENCONTRADO": "Vínculo não encontrado",
+    "VINCULO_JA_EXISTE": "Vínculo já existe",
+    "VINCULO_MESMO_PERSONAGEM": "Vínculo não pode ligar um personagem a si mesmo",
+    "PERSONAGEM_INVALIDO": "Personagem inválido",
+    "LOCAL_NAO_ENCONTRADO": "Local não encontrado",
+    "LOCAL_SEM_ID": "Local sem id para sincronizar saídas",
+    "LOCAL_SAIDA_PARA_SI": "Local não pode ter saída para si mesmo",
+    "NPCS_NAO_ENCONTRADOS": "NPCs não encontrados: {{ids}}",
+    "LOCAIS_DESTINO_NAO_ENCONTRADOS": "Locais destino não encontrados: {{ids}}",
+    "NPC_NAO_ENCONTRADO": "NPC não encontrado",
+    "ARCO_NAO_ENCONTRADO": "Arco não encontrado",
+    "WAYPOINT_NAO_ENCONTRADO": "Waypoint não encontrado",
+    "WAYPOINT_INVALIDO": "Waypoint inválido",
+    "SEGMENTO_NAO_ENCONTRADO": "Segmento não encontrado",
+    "SEGMENTO_SELF_LOOP_INVALIDO": "Self-loop inválido",
+    "LOCAL_JA_VINCULADO_WAYPOINT": "Local já vinculado a outro waypoint",
+    "WAYPOINT_JA_VINCULADO_LOCAL": "Waypoint já vinculado a outro local",
+    "ROTA_ORIGEM_DESTINO_IGUAIS": "Origem e destino devem ser diferentes",
+    "ROTA_ORIGEM_INVALIDA": "Origem inválida (nó não encontrado)",
+    "ROTA_DESTINO_INVALIDO": "Destino inválido (nó não encontrado)",
+    "ROTA_CALCULO_FALHOU": "Falha ao calcular rota"
+  }
+}

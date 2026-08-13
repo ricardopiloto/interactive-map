@@ -145,6 +145,36 @@ def _migrate_sqlite() -> None:
                 )
             )
 
+        npc_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(npc)")).fetchall()}
+        if npc_cols and "extensoes_mecanica" not in npc_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE npc ADD COLUMN extensoes_mecanica TEXT NOT NULL DEFAULT '{}'"
+                )
+            )
+            npc_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(npc)")).fetchall()}
+
+        if npc_cols and "fadiga" in npc_cols and "extensoes_mecanica" in npc_cols:
+            conn.execute(
+                text(
+                    """
+                    UPDATE npc
+                    SET extensoes_mecanica = json_object('fadiga', fadiga)
+                    WHERE fadiga IS NOT NULL
+                      AND (extensoes_mecanica IS NULL OR extensoes_mecanica = '{}' OR extensoes_mecanica = '')
+                    """
+                )
+            )
+
+        if (
+            settings.migrate_drop_legacy_fadiga
+            and npc_cols
+            and "fadiga" in npc_cols
+            and "extensoes_mecanica" in npc_cols
+        ):
+            # Deploy 2 only — set MIGRATE_DROP_LEGACY_FADIGA=true after prod validation.
+            conn.execute(text("ALTER TABLE npc DROP COLUMN fadiga"))
+
 
 def init_db() -> None:
     # Register all table models on SQLModel.metadata before create_all.

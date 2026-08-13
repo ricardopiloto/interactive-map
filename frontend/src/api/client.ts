@@ -1,3 +1,5 @@
+import { parseApiError } from './parseApiError'
+
 const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 const AUTH_KEY = 'codex_admin_basic'
 
@@ -38,7 +40,7 @@ async function request<T>(path: string, init?: RequestInit, withAdmin = false): 
 
   if (!response.ok) {
     const detail = await response.text()
-    throw new Error(detail || `HTTP ${response.status}`)
+    throw parseApiError(detail, response.status)
   }
 
   if (response.status === 204) {

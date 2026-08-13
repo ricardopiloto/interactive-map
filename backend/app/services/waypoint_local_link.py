@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import HTTPException, status
+from fastapi import status
 from sqlmodel import Session, select
 
+from app.errors import raise_api_error
 from app.models.local import Local
 from app.models.waypoint import Waypoint
 
@@ -28,9 +29,10 @@ def set_waypoint_local_id(
 
     local = session.get(Local, local_id)
     if local is None:
-        raise HTTPException(
+        raise_api_error(
+            "LOCAL_NAO_ENCONTRADO",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Local {local_id} não encontrado",
+            detalhes={"local_id": local_id},
         )
 
     existing = session.exec(
@@ -40,9 +42,9 @@ def set_waypoint_local_id(
         )
     ).first()
     if existing:
-        raise HTTPException(
+        raise_api_error(
+            "LOCAL_JA_VINCULADO_WAYPOINT",
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Local já vinculado a outro waypoint",
         )
 
     waypoint.local_id = local_id
@@ -60,9 +62,9 @@ def set_local_waypoint_id(
     node. If the target waypoint is linked to another Local → 422.
     """
     if local.id is None:
-        raise HTTPException(
+        raise_api_error(
+            "LOCAL_SEM_ID",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Local sem id para vincular waypoint",
         )
     local_id = int(local.id)
 
@@ -75,15 +77,16 @@ def set_local_waypoint_id(
 
     waypoint = session.get(Waypoint, waypoint_id)
     if waypoint is None:
-        raise HTTPException(
+        raise_api_error(
+            "WAYPOINT_NAO_ENCONTRADO",
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Waypoint {waypoint_id} não encontrado",
+            detalhes={"waypoint_id": waypoint_id},
         )
 
     if waypoint.local_id is not None and waypoint.local_id != local_id:
-        raise HTTPException(
+        raise_api_error(
+            "WAYPOINT_JA_VINCULADO_LOCAL",
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Waypoint já vinculado a outro local",
         )
 
     previous = session.exec(select(Waypoint).where(Waypoint.local_id == local_id)).first()

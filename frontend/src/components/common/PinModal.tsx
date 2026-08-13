@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Arco, Local, NPC } from '../../types'
 import { FOCUS_ANIM_MS } from '../map/CampaignMap'
 import { ImageSlot } from '../media/ImageSlot'
@@ -45,13 +46,14 @@ function computePlacement(pinEl: HTMLElement, panelEl: HTMLElement | null): Pane
   const fitsRight = rightLeft + panelW <= vw - VIEWPORT_PAD_PX
   const fitsLeft = leftLeft >= VIEWPORT_PAD_PX
 
-  // Prefer right of pin (opposite left side menu); flip left if needed.
   if (fitsRight) return { mode: 'beside', top, left: rightLeft }
   if (fitsLeft) return { mode: 'beside', top, left: leftLeft }
   return { mode: 'centered' }
 }
 
 export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: PinModalProps) {
+  const { t } = useTranslation('mapa')
+  const { t: tc } = useTranslation('comum')
   const linkedNpcs = npcs.filter((n) => local.npc_ids.includes(n.id))
   const descricao = local.descricao.trim()
   const panelRef = useRef<HTMLDivElement>(null)
@@ -115,7 +117,7 @@ export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: 
           {local.imagem_url ? (
             <ImageSlot
               src={local.imagem_url}
-              placeholder="Imagem do local"
+              placeholder={t('pinModal.localImage')}
               shape="rounded"
               fit="contain"
               className="pin-modal__image"
@@ -125,7 +127,7 @@ export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: 
           {descricao ? (
             <MarkdownSafe className="dialog-body pin-modal__markdown">{descricao}</MarkdownSafe>
           ) : (
-            <div className="dialog-body">Sem descrição.</div>
+            <div className="dialog-body">{tc('empty.semDescricao')}</div>
           )}
           <div className="pin-modal__chips">
             {arco && (
@@ -147,7 +149,7 @@ export function PinModal({ local, npcs, arco, onClose, onOpenNpc, onOpenArco }: 
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn btn-secondary" onClick={onClose}>
-            Fechar
+            {tc('buttons.close')}
           </button>
         </div>
       </div>

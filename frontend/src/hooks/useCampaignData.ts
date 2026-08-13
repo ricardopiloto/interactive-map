@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { campaignApi } from '../api/campaign'
 import type { Arco, GrupoPosicao, Local, NPC } from '../types'
 
@@ -13,6 +14,7 @@ interface CampaignData {
 }
 
 export function useCampaignData(): CampaignData {
+  const { t } = useTranslation('comum')
   const [locais, setLocais] = useState<Local[]>([])
   const [npcs, setNpcs] = useState<NPC[]>([])
   const [arcos, setArcos] = useState<Arco[]>([])
@@ -39,9 +41,9 @@ export function useCampaignData(): CampaignData {
         setNpcs(npcsData.filter((n) => (n.tipo ?? 'npc') === 'npc'))
         setArcos(arcosData)
         setGrupo(grupoData)
-      } catch (err) {
+      } catch {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Falha ao carregar dados')
+          setError(t('errors.loadData'))
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -52,7 +54,7 @@ export function useCampaignData(): CampaignData {
     return () => {
       cancelled = true
     }
-  }, [tick])
+  }, [tick, t])
 
   return {
     locais,
