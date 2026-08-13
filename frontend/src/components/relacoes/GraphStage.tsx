@@ -20,7 +20,7 @@ import {
   NODE_W,
   type Point,
 } from './graphLayout'
-import { estimateLabelWidth, formatVinculoTipoLabel, midQualDirFragment } from './vinculoLabel'
+import { estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
 import { vinculoStyle } from './vinculoStyles'
 import {
   edgeDisplayTipo,
@@ -337,10 +337,12 @@ export function GraphStage({
                   (rotulosVinculo === 'hover' && hoveredEdgeId === v.id))
               const reciprocalText = formatVinculoTipoLabel(
                 style.label,
-                v.qualificador,
+                v.qualificador_ab,
                 v.direcao,
               )
-              const midDuasText = midQualDirFragment(v.qualificador, v.direcao)
+              const tipALabel = formatVinculoTipoLabel(styleA.label, v.qualificador_ab)
+              const tipBLabel = formatVinculoTipoLabel(styleB.label, v.qualificador_ba)
+              const midDuasText = v.direcao ? '→' : ''
               const stroke = duas ? `url(#vinculo-grad-${v.id})` : style.color
               return (
                 <g key={v.id} className="graph-stage__edge-group">
@@ -373,40 +375,54 @@ export function GraphStage({
                   {duas && (
                     <>
                       <g transform={`translate(${nearA.x}, ${nearA.y})`} opacity={opacity}>
-                        <rect
-                          x={-36}
-                          y={-10}
-                          width={72}
-                          height={20}
-                          rx={6}
-                          className="graph-stage__edge-label-bg"
-                        />
-                        <text
-                          textAnchor="middle"
-                          dy="4"
-                          className="graph-stage__edge-label"
-                          fill={styleA.color}
-                        >
-                          {styleA.label}
-                        </text>
+                        {(() => {
+                          const w = estimateLabelWidth(tipALabel)
+                          return (
+                            <>
+                              <rect
+                                x={-w / 2}
+                                y={-10}
+                                width={w}
+                                height={20}
+                                rx={6}
+                                className="graph-stage__edge-label-bg"
+                              />
+                              <text
+                                textAnchor="middle"
+                                dy="4"
+                                className="graph-stage__edge-label"
+                                fill={styleA.color}
+                              >
+                                {tipALabel}
+                              </text>
+                            </>
+                          )
+                        })()}
                       </g>
                       <g transform={`translate(${nearB.x}, ${nearB.y})`} opacity={opacity}>
-                        <rect
-                          x={-36}
-                          y={-10}
-                          width={72}
-                          height={20}
-                          rx={6}
-                          className="graph-stage__edge-label-bg"
-                        />
-                        <text
-                          textAnchor="middle"
-                          dy="4"
-                          className="graph-stage__edge-label"
-                          fill={styleB.color}
-                        >
-                          {styleB.label}
-                        </text>
+                        {(() => {
+                          const w = estimateLabelWidth(tipBLabel)
+                          return (
+                            <>
+                              <rect
+                                x={-w / 2}
+                                y={-10}
+                                width={w}
+                                height={20}
+                                rx={6}
+                                className="graph-stage__edge-label-bg"
+                              />
+                              <text
+                                textAnchor="middle"
+                                dy="4"
+                                className="graph-stage__edge-label"
+                                fill={styleB.color}
+                              >
+                                {tipBLabel}
+                              </text>
+                            </>
+                          )
+                        })()}
                       </g>
                       {midDuasText && midLabelVisible && (
                         <g transform={`translate(${midX}, ${midY})`} opacity={opacity}>

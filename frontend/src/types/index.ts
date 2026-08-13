@@ -57,7 +57,8 @@ export interface Vinculo {
   publico: boolean
   conhecido_ab?: boolean | null
   conhecido_ba?: boolean | null
-  qualificador?: string
+  qualificador_ab?: string
+  qualificador_ba?: string
   direcao?: VinculoDirecao | null
 }
 

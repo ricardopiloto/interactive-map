@@ -59,7 +59,8 @@ export interface VinculoPayload {
   publico?: boolean
   conhecido_ab?: boolean
   conhecido_ba?: boolean
-  qualificador?: string
+  qualificador_ab?: string
+  qualificador_ba?: string
   direcao?: 'a_para_b' | 'b_para_a' | null
 }
 

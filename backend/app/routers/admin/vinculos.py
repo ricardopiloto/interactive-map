@@ -30,29 +30,45 @@ def _to_canonical_fields(
     conhecido_ab: bool = True,
     conhecido_ba: bool = True,
     direcao: VinculoDirecao | None = None,
-) -> tuple[int, int, VinculoTipo, VinculoTipo | None, str, str, bool, bool, VinculoDirecao | None]:
+    qualificador_ab: str = "",
+    qualificador_ba: str = "",
+) -> tuple[
+    int,
+    int,
+    VinculoTipo,
+    VinculoTipo | None,
+    str,
+    str,
+    bool,
+    bool,
+    VinculoDirecao | None,
+    str,
+    str,
+]:
     """Map form order (raw_a vê raw_b) onto persisted a_id < b_id."""
     a, b = _canonical_pair(raw_a, raw_b)
     if raw_a < raw_b:
         t_ab, t_ba, n_ab, n_ba = tipo_ab, tipo_ba, nota_ab, nota_ba
         c_ab, c_ba = conhecido_ab, conhecido_ba
         d = direcao
+        q_ab, q_ba = qualificador_ab, qualificador_ba
     else:
-        # raw_a is stored as personagem_b
         t_ab = tipo_ba if tipo_ba is not None else tipo_ab
         t_ba = tipo_ab if tipo_ba is not None else None
         n_ab, n_ba = nota_ba, nota_ab
         c_ab, c_ba = conhecido_ba, conhecido_ab
         d = flip_direcao(direcao)
+        q_ab, q_ba = qualificador_ba, qualificador_ab
         if tipo_ba is None:
-            # reciprocal: both directions same
             t_ab, t_ba, n_ab, n_ba = tipo_ab, None, nota_ab, ""
             c_ab, c_ba = conhecido_ab, True
             d = flip_direcao(direcao)
+            q_ab, q_ba = qualificador_ab, ""
     t_ab, t_ba = normalize_tipos(t_ab, t_ba)
     if t_ba is None:
         n_ba = ""
-    return a, b, t_ab, t_ba, n_ab, n_ba, c_ab, c_ba, d
+        q_ba = ""
+    return a, b, t_ab, t_ba, n_ab, n_ba, c_ab, c_ba, d, q_ab, q_ba
 
 
 @router.get("/vinculos", response_model=list[VinculoRead])
@@ -68,7 +84,7 @@ def create_vinculo(
     payload: VinculoCreate,
     session: Session = Depends(get_session),
 ) -> VinculoRead:
-    a, b, tipo_ab, tipo_ba, nota_ab, nota_ba, c_ab, c_ba, direcao = _to_canonical_fields(
+    a, b, tipo_ab, tipo_ba, nota_ab, nota_ba, c_ab, c_ba, direcao, q_ab, q_ba = _to_canonical_fields(
         payload.personagem_a_id,
         payload.personagem_b_id,
         payload.tipo_ab,
@@ -78,6 +94,8 @@ def create_vinculo(
         payload.conhecido_ab,
         payload.conhecido_ba,
         payload.direcao,
+        payload.qualificador_ab,
+        payload.qualificador_ba,
     )
     _ensure_pair_exists(session, a, b)
     existing = session.exec(
@@ -96,7 +114,8 @@ def create_vinculo(
         publico=payload.publico,
         conhecido_ab=c_ab,
         conhecido_ba=c_ba,
-        qualificador=payload.qualificador,
+        qualificador_ab=q_ab,
+        qualificador_ba=q_ba,
         direcao=direcao,
     )
     session.add(row)
@@ -142,8 +161,18 @@ def update_vinculo(
         direcao = payload.direcao
     else:
         direcao = row.direcao
+    qualificador_ab = (
+        payload.qualificador_ab
+        if payload.qualificador_ab is not None
+        else row.qualificador_ab
+    )
+    qualificador_ba = (
+        payload.qualificador_ba
+        if payload.qualificador_ba is not None
+        else row.qualificador_ba
+    )
 
-    a, b, tipo_ab, tipo_ba, nota_ab, nota_ba, c_ab, c_ba, direcao = _to_canonical_fields(
+    a, b, tipo_ab, tipo_ba, nota_ab, nota_ba, c_ab, c_ba, direcao, q_ab, q_ba = _to_canonical_fields(
         raw_a,
         raw_b,
         tipo_ab,
@@ -153,6 +182,8 @@ def update_vinculo(
         conhecido_ab,
         conhecido_ba,
         direcao,
+        qualificador_ab,
+        qualificador_ba,
     )
     _ensure_pair_exists(session, a, b)
 
@@ -175,10 +206,10 @@ def update_vinculo(
     row.conhecido_ab = c_ab
     row.conhecido_ba = c_ba
     row.direcao = direcao
+    row.qualificador_ab = q_ab
+    row.qualificador_ba = q_ba
     if payload.publico is not None:
         row.publico = payload.publico
-    if payload.qualificador is not None:
-        row.qualificador = payload.qualificador
 
     session.add(row)
     session.commit()

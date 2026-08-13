@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.11.1] — 2026-08-13
+
+### Changed
+
+- **Relações**: qualificador **por sentido** (`qualificador_ab` / `qualificador_ba`); em duas vias cada extremo mostra `Tipo (Qual)` (ex. `Inimizade (Medo)` / `Romance (Admiração)`); formulário GM com um campo por sentido; seta de direção no meio sem qualificador órfão (spec 076)
+
 ## [0.11.0] — 2026-08-12
 
 ### Added

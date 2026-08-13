@@ -26,6 +26,10 @@ def flip_direcao(direcao: Optional[VinculoDirecao]) -> Optional[VinculoDirecao]:
     return VinculoDirecao.a_para_b
 
 
+def _trim_qual(v: str) -> str:
+    return (v or "").strip()
+
+
 class VinculoCreate(BaseModel):
     personagem_a_id: int
     personagem_b_id: int
@@ -36,13 +40,14 @@ class VinculoCreate(BaseModel):
     publico: bool = False
     conhecido_ab: bool = True
     conhecido_ba: bool = True
-    qualificador: str = Field(default="", max_length=80)
+    qualificador_ab: str = Field(default="", max_length=80)
+    qualificador_ba: str = Field(default="", max_length=80)
     direcao: Optional[VinculoDirecao] = None
 
-    @field_validator("qualificador")
+    @field_validator("qualificador_ab", "qualificador_ba")
     @classmethod
-    def trim_qualificador(cls, v: str) -> str:
-        return (v or "").strip()
+    def trim_qualificadores(cls, v: str) -> str:
+        return _trim_qual(v)
 
     @model_validator(mode="after")
     def reject_self_link_and_normalize(self) -> "VinculoCreate":
@@ -53,6 +58,7 @@ class VinculoCreate(BaseModel):
         self.tipo_ba = tipo_ba
         if tipo_ba is None:
             self.nota_ba = ""
+            self.qualificador_ba = ""
         return self
 
 
@@ -66,15 +72,16 @@ class VinculoUpdate(BaseModel):
     publico: Optional[bool] = None
     conhecido_ab: Optional[bool] = None
     conhecido_ba: Optional[bool] = None
-    qualificador: Optional[str] = Field(default=None, max_length=80)
+    qualificador_ab: Optional[str] = Field(default=None, max_length=80)
+    qualificador_ba: Optional[str] = Field(default=None, max_length=80)
     direcao: Optional[VinculoDirecao] = None
 
-    @field_validator("qualificador")
+    @field_validator("qualificador_ab", "qualificador_ba")
     @classmethod
-    def trim_qualificador(cls, v: Optional[str]) -> Optional[str]:
+    def trim_qualificadores(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return None
-        return v.strip()
+        return _trim_qual(v)
 
 
 class VinculoRead(BaseModel):
@@ -90,5 +97,6 @@ class VinculoRead(BaseModel):
     publico: bool
     conhecido_ab: Optional[bool] = None
     conhecido_ba: Optional[bool] = None
-    qualificador: str = ""
+    qualificador_ab: str = ""
+    qualificador_ba: str = ""
     direcao: Optional[VinculoDirecao] = None

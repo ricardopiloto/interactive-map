@@ -3,6 +3,7 @@ import { ImageSlot } from '../media/ImageSlot'
 import {
   isDuasVias,
   notaFromPerspective,
+  qualFromPerspective,
   tipoFromPerspective,
 } from './vinculoDirection'
 import { formatVinculoTipoLabel } from './vinculoLabel'
@@ -122,6 +123,8 @@ export function RelacoesDetailPanel({
           const theirTipo = tipoFromPerspective(v, otherId)
           const myNota = notaFromPerspective(v, personagem.id)
           const theirNota = notaFromPerspective(v, otherId)
+          const myQual = qualFromPerspective(v, personagem.id)
+          const theirQual = qualFromPerspective(v, otherId)
           const showPrimary = myTipo != null
           const showReturn = theirTipo != null && (isDuasVias(v) || myTipo == null)
           const style = vinculoStyle(myTipo ?? theirTipo ?? 'conhecido')
@@ -142,7 +145,11 @@ export function RelacoesDetailPanel({
                 </button>
                 {showPrimary && (
                   <span className="relacoes-detail__vinculo-tipo" style={{ color: style.color }}>
-                    {formatVinculoTipoLabel(style.label, v.qualificador, v.direcao)}
+                    {formatVinculoTipoLabel(
+                      style.label,
+                      myQual,
+                      isDuasVias(v) ? null : v.direcao,
+                    )}
                   </span>
                 )}
               </div>
@@ -151,7 +158,7 @@ export function RelacoesDetailPanel({
                 <p className="relacoes-detail__vinculo-return">
                   Vê-te como{' '}
                   <span style={{ color: vinculoStyle(theirTipo).color }}>
-                    {vinculoStyle(theirTipo).label}
+                    {formatVinculoTipoLabel(vinculoStyle(theirTipo).label, theirQual)}
                   </span>
                   {theirNota ? ` — ${theirNota}` : ''}
                 </p>

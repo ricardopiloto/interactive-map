@@ -35,6 +35,16 @@ export function notaFromPerspective(v: Vinculo, fromId: number): string {
   return v.nota_ab
 }
 
+/** Qualifier for how `fromId` sees the other endpoint; empty when tip hidden. */
+export function qualFromPerspective(v: Vinculo, fromId: number): string {
+  if (fromId === v.personagem_a_id) return v.qualificador_ab ?? ''
+  if (fromId === v.personagem_b_id) {
+    if (v.tipo_ba != null) return v.qualificador_ba ?? ''
+    return v.qualificador_ab ?? ''
+  }
+  return v.qualificador_ab ?? ''
+}
+
 export function edgeMatchesTipos(v: Vinculo, active: Set<VinculoTipo>): boolean {
   if (v.tipo_ab != null && active.has(v.tipo_ab)) return true
   if (v.tipo_ba != null && active.has(v.tipo_ba)) return true

@@ -34,7 +34,8 @@ def _ensure_qualifier_direction_demos(session: Session) -> None:
             select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
         ).first()
         if row:
-            row.qualificador = "Mentor"
+            row.qualificador_ab = "Mentor"
+            row.qualificador_ba = ""
             row.direcao = None
             session.add(row)
 
@@ -46,8 +47,12 @@ def _ensure_qualifier_direction_demos(session: Session) -> None:
             select(Vinculo).where(Vinculo.personagem_a_id == a, Vinculo.personagem_b_id == b)
         ).first()
         if row:
-            row.qualificador = "Medo"
-            # Helga → Ranulf relative to canonical a/b
+            if helga.id < ranulf.id:
+                row.qualificador_ab = "Medo"
+                row.qualificador_ba = ""
+            else:
+                row.qualificador_ab = ""
+                row.qualificador_ba = "Medo"
             row.direcao = (
                 VinculoDirecao.a_para_b if helga.id < ranulf.id else VinculoDirecao.b_para_a
             )

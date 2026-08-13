@@ -20,7 +20,8 @@ def vinculo_to_admin_read(v: Vinculo) -> VinculoRead:
         publico=v.publico,
         conhecido_ab=v.conhecido_ab,
         conhecido_ba=v.conhecido_ba,
-        qualificador=v.qualificador or "",
+        qualificador_ab=v.qualificador_ab or "",
+        qualificador_ba=v.qualificador_ba or "",
         direcao=v.direcao,
     )
 
@@ -35,7 +36,8 @@ def player_visible(v: Vinculo) -> bool:
 
 def vinculo_to_public_read(v: Vinculo) -> VinculoRead:
     """Redact unknown tips so secret tipos never reach players."""
-    qual = v.qualificador or ""
+    qual_ab = v.qualificador_ab or ""
+    qual_ba = v.qualificador_ba or ""
     direcao = v.direcao
     if not is_duas_vias(v.tipo_ab, v.tipo_ba):
         return VinculoRead(
@@ -47,7 +49,8 @@ def vinculo_to_public_read(v: Vinculo) -> VinculoRead:
             nota_ab=v.nota_ab,
             nota_ba="",
             publico=v.publico,
-            qualificador=qual,
+            qualificador_ab=qual_ab,
+            qualificador_ba="",
             direcao=direcao,
         )
 
@@ -55,7 +58,8 @@ def vinculo_to_public_read(v: Vinculo) -> VinculoRead:
     tipo_ba = v.tipo_ba if v.conhecido_ba else None
     nota_ab = v.nota_ab if v.conhecido_ab else ""
     nota_ba = v.nota_ba if v.conhecido_ba else ""
-    # Only-AB known → look reciprocal (tipo_ba null)
+    redact_ab = qual_ab if v.conhecido_ab else ""
+    redact_ba = qual_ba if v.conhecido_ba else ""
     if tipo_ab is not None and tipo_ba is None:
         return VinculoRead(
             id=v.id,  # type: ignore[arg-type]
@@ -66,7 +70,8 @@ def vinculo_to_public_read(v: Vinculo) -> VinculoRead:
             nota_ab=nota_ab,
             nota_ba="",
             publico=v.publico,
-            qualificador=qual,
+            qualificador_ab=redact_ab,
+            qualificador_ba="",
             direcao=direcao,
         )
     return VinculoRead(
@@ -78,7 +83,8 @@ def vinculo_to_public_read(v: Vinculo) -> VinculoRead:
         nota_ab=nota_ab,
         nota_ba=nota_ba,
         publico=v.publico,
-        qualificador=qual,
+        qualificador_ab=redact_ab,
+        qualificador_ba=redact_ba,
         direcao=direcao,
     )
 

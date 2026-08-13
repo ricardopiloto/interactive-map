@@ -35,5 +35,6 @@ class Vinculo(SQLModel, table=True):
     publico: bool = Field(default=False)
     conhecido_ab: bool = Field(default=True)
     conhecido_ba: bool = Field(default=True)
-    qualificador: str = Field(default="", max_length=80)
+    qualificador_ab: str = Field(default="", max_length=80)
+    qualificador_ba: str = Field(default="", max_length=80)
     direcao: Optional[VinculoDirecao] = Field(default=None, max_length=20)

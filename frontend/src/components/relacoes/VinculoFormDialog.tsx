@@ -16,7 +16,8 @@ export interface VinculoDraft {
   nota_ba: string
   conhecido_ab: boolean
   conhecido_ba: boolean
-  qualificador: string
+  qualificador_ab: string
+  qualificador_ba: string
   direcao: VinculoDirecao | null
   publico: boolean
   isNew: boolean
@@ -53,10 +54,8 @@ export function VinculoFormDialog({
   const nameA = nomeOf(personagens, draft.personagem_a_id)
   const nameB = nomeOf(personagens, draft.personagem_b_id)
   const duas = draft.modo === 'duas_vias'
-  const suggestions = duas
-    ? suggestionsForTipos(draft.tipo_ab, draft.tipo_ba)
-    : suggestionsForTipos(draft.tipo_ab)
-  const listId = 'vinculo-qualificador-suggestions'
+  const suggestionsAb = suggestionsForTipos(draft.tipo_ab)
+  const suggestionsBa = suggestionsForTipos(draft.tipo_ba)
 
   return (
     <div className="dialog-backdrop" style={{ zIndex: 95 }}>
@@ -110,7 +109,14 @@ export function VinculoFormDialog({
                   type="radio"
                   name="vinculo-modo"
                   checked={!duas}
-                  onChange={() => onChange({ modo: 'reciproco', tipo_ba: draft.tipo_ab, nota_ba: '' })}
+                  onChange={() =>
+                    onChange({
+                      modo: 'reciproco',
+                      tipo_ba: draft.tipo_ab,
+                      nota_ba: '',
+                      qualificador_ba: '',
+                    })
+                  }
                 />
                 Recíproco
               </label>
@@ -124,6 +130,7 @@ export function VinculoFormDialog({
                       modo: 'duas_vias',
                       conhecido_ab: true,
                       conhecido_ba: true,
+                      qualificador_ba: '',
                     })
                   }
                 />
@@ -149,6 +156,25 @@ export function VinculoFormDialog({
               ))}
             </select>
           </div>
+
+          {duas && (
+            <div className="field">
+              <label>Qualificador ({nameA} → {nameB})</label>
+              <input
+                className="input"
+                list="vinculo-qualificador-ab"
+                maxLength={80}
+                placeholder="ex: Medo, Rival…"
+                value={draft.qualificador_ab}
+                onChange={(e) => onChange({ qualificador_ab: e.target.value })}
+              />
+              <datalist id="vinculo-qualificador-ab">
+                {suggestionsAb.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            </div>
+          )}
 
           <div className="field">
             <label>{duas ? `Nota (${nameA} → ${nameB})` : 'Nota (opcional)'}</label>
@@ -192,6 +218,23 @@ export function VinculoFormDialog({
               </div>
 
               <div className="field">
+                <label>Qualificador ({nameB} → {nameA})</label>
+                <input
+                  className="input"
+                  list="vinculo-qualificador-ba"
+                  maxLength={80}
+                  placeholder="ex: Admiração, Rival…"
+                  value={draft.qualificador_ba}
+                  onChange={(e) => onChange({ qualificador_ba: e.target.value })}
+                />
+                <datalist id="vinculo-qualificador-ba">
+                  {suggestionsBa.map((s) => (
+                    <option key={s} value={s} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div className="field">
                 <label>
                   Nota ({nameB} → {nameA})
                 </label>
@@ -215,22 +258,24 @@ export function VinculoFormDialog({
             </>
           )}
 
-          <div className="field">
-            <label>Qualificador (opcional)</label>
-            <input
-              className="input"
-              list={listId}
-              maxLength={80}
-              placeholder="ex: Mentor, Medo, Rival…"
-              value={draft.qualificador}
-              onChange={(e) => onChange({ qualificador: e.target.value })}
-            />
-            <datalist id={listId}>
-              {suggestions.map((s) => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
-          </div>
+          {!duas && (
+            <div className="field">
+              <label>Qualificador (opcional)</label>
+              <input
+                className="input"
+                list="vinculo-qualificador-ab"
+                maxLength={80}
+                placeholder="ex: Mentor, Medo, Rival…"
+                value={draft.qualificador_ab}
+                onChange={(e) => onChange({ qualificador_ab: e.target.value })}
+              />
+              <datalist id="vinculo-qualificador-ab">
+                {suggestionsAb.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            </div>
+          )}
 
           <div className="field">
             <label>Direção</label>

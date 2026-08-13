@@ -112,6 +112,39 @@ def _migrate_sqlite() -> None:
         if vinculo_cols and "direcao" not in vinculo_cols:
             conn.execute(text("ALTER TABLE vinculo ADD COLUMN direcao VARCHAR(20)"))
 
+        vinculo_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(vinculo)")).fetchall()
+        }
+        if vinculo_cols and "qualificador_ab" not in vinculo_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE vinculo ADD COLUMN qualificador_ab VARCHAR(80) NOT NULL DEFAULT ''"
+                )
+            )
+        if vinculo_cols and "qualificador_ba" not in vinculo_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE vinculo ADD COLUMN qualificador_ba VARCHAR(80) NOT NULL DEFAULT ''"
+                )
+            )
+        vinculo_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(vinculo)")).fetchall()
+        }
+        if vinculo_cols and "qualificador" in vinculo_cols and "qualificador_ab" in vinculo_cols:
+            conn.execute(
+                text(
+                    """
+                    UPDATE vinculo SET
+                        qualificador_ab = qualificador,
+                        qualificador_ba = CASE
+                            WHEN tipo_ba IS NOT NULL AND tipo_ba != tipo_ab THEN qualificador
+                            ELSE ''
+                        END
+                    WHERE qualificador != ''
+                    """
+                )
+            )
+
 
 def init_db() -> None:
     # Register all table models on SQLModel.metadata before create_all.
