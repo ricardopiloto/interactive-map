@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { adminApi } from '../api/admin'
 import { campaignApi } from '../api/campaign'
 import {
@@ -23,7 +23,7 @@ import { ArcoAdminList, ArcoFormDialog } from '../components/admin/ArcoAdminList
 import { GrupoAdminPanel } from '../components/admin/GrupoAdminPanel'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
 import { useCampaignData } from '../hooks/useCampaignData'
-import { useInstanceConfig } from '../hooks/useInstanceConfig'
+import { markHasMapImageInCache, useInstanceConfig } from '../hooks/useInstanceConfig'
 import type { GrupoFormato, NPCStatus, RoutePlanItem, Waypoint } from '../types'
 import { labelMatchesQuery } from '../utils/textMatch'
 import './MapPage.css'
@@ -37,6 +37,7 @@ type Placement = 'none' | 'add-pin' | 'reposition' | 'move-group'
 export function MapPage() {
   const { t } = useTranslation('mapa')
   const { t: tc } = useTranslation('comum')
+  const navigate = useNavigate()
   const apiErrorMessage = useApiErrorMessage()
   const { config: instanceConfig } = useInstanceConfig()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -54,6 +55,10 @@ export function MapPage() {
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
 
   const [isGm, setIsGm] = useState(false)
+  const [gmSessionChecked, setGmSessionChecked] = useState(() => !hasAdminCredentials())
+  const [mapImagePresent, setMapImagePresent] = useState(
+    () => Boolean(instanceConfig?.has_map_image),
+  )
   const [showGate, setShowGate] = useState(false)
   const [gateError, setGateError] = useState(false)
   const [placement, setPlacement] = useState<Placement>('none')
@@ -85,10 +90,13 @@ export function MapPage() {
   } | null>(null)
 
   useEffect(() => {
-    if (instanceConfig && !instanceConfig.has_map_image) {
+    if (instanceConfig && !instanceConfig.has_map_image && !mapImagePresent) {
       setMapUrl('')
     }
-  }, [instanceConfig])
+    if (instanceConfig?.has_map_image) {
+      setMapImagePresent(true)
+    }
+  }, [instanceConfig, mapImagePresent])
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < MOBILE_BP)
@@ -107,15 +115,35 @@ export function MapPage() {
   }, [searchParams, setSearchParams])
 
   useEffect(() => {
-    if (!hasAdminCredentials()) return
+    if (!hasAdminCredentials()) {
+      setGmSessionChecked(true)
+      return
+    }
+    let cancelled = false
     void adminApi
       .session()
-      .then(() => setIsGm(true))
+      .then(() => {
+        if (!cancelled) setIsGm(true)
+      })
       .catch(() => {
         clearAdminCredentials()
-        setIsGm(false)
+        if (!cancelled) setIsGm(false)
       })
+      .finally(() => {
+        if (!cancelled) setGmSessionChecked(true)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
+
+  useEffect(() => {
+    if (!gmSessionChecked) return
+    const hasMap = Boolean(instanceConfig?.has_map_image) || mapImagePresent
+    if (instanceConfig && !hasMap && !isGm) {
+      navigate('/relacoes', { replace: true })
+    }
+  }, [gmSessionChecked, instanceConfig, mapImagePresent, isGm, navigate])
 
   useEffect(() => {
     void campaignApi
@@ -209,6 +237,10 @@ export function MapPage() {
     setNpcDraft(null)
     setArcoDraft(null)
     setTab('locais')
+    const hasMap = Boolean(instanceConfig?.has_map_image) || mapImagePresent
+    if (!hasMap) {
+      navigate('/relacoes', { replace: true })
+    }
   }
 
   async function saveLocal() {
@@ -445,6 +477,7 @@ export function MapPage() {
       <main className="map-page__main">
         <CodexHeader
           isGm={isGm}
+          showMapNav={Boolean(instanceConfig?.has_map_image) || mapImagePresent || isGm}
           onToggleGm={() => {
             if (isGm) logoutGm()
             else {
@@ -495,7 +528,11 @@ export function MapPage() {
                 onCancelPlacement={
                   isGm && placement === 'reposition' ? () => setPlacement('none') : undefined
                 }
-                onMapUploaded={(url) => setMapUrl(`${url}?t=${Date.now()}`)}
+                onMapUploaded={(url) => {
+                  setMapUrl(`${url}?t=${Date.now()}`)
+                  setMapImagePresent(true)
+                  markHasMapImageInCache()
+                }}
                 onMapClickRelative={async (x, y) => {
                   if (!isGm) return
                   if (placement === 'add-pin') {

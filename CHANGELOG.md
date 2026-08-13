@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.16.2] — 2026-08-13
+
+### Fixed
+
+- Sem imagem de mapa: jogadores vão para Relações e o botão «Mapa» fica oculto; o GM (após acesso restrito em Relações) continua a poder abrir o Mapa para enviar a imagem; sair do modo GM no Mapa sem imagem redirecciona para Relações (spec 083)
+
 ## [0.16.1] — 2026-08-13
 
 ### Changed

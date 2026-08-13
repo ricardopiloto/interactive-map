@@ -23,6 +23,7 @@
 |------|---------|--------|
 | [081-novos-tipos-vinculo](../081-novos-tipos-vinculo/spec.md) | 0.16.0 | Adversário + Vínculo de Sangue |
 | [082-language-combobox](../082-language-combobox/spec.md) | 0.16.1 | Seletor de idioma em combo-box |
+| [083-map-absent-gm-access](../083-map-absent-gm-access/spec.md) | 0.16.2 | Sem mapa: esconder Mapa (não-GM); GM pode abrir para upload |
 
 ## Restrições globais (brief)
 

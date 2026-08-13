@@ -20,7 +20,7 @@ import { VinculoFormDialog, type VinculoDraft } from '../components/relacoes/Vin
 import { isDuasVias } from '../components/relacoes/vinculoDirection'
 import { VINCULO_TIPOS } from '../components/relacoes/vinculoStyles'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
-import { useInstanceConfig } from '../hooks/useInstanceConfig'
+import { useInstanceConfig, getCachedInstanceConfig } from '../hooks/useInstanceConfig'
 import type { Personagem, Vinculo, VinculoTipo } from '../types'
 import './RelacoesPage.css'
 
@@ -323,6 +323,9 @@ export function RelacoesPage() {
     <div className="relacoes-page">
       <CodexHeader
         isGm={isGm}
+        showMapNav={
+          Boolean(getCachedInstanceConfig()?.has_map_image ?? instanceConfig?.has_map_image) || isGm
+        }
         onToggleGm={() => {
           if (isGm) logoutGm()
           else {

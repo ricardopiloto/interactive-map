@@ -1,21 +1,30 @@
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { useInstanceConfig } from './hooks/useInstanceConfig'
+import { hasAdminCredentials } from './api/client'
+import { getCachedInstanceConfig, useInstanceConfig } from './hooks/useInstanceConfig'
 import { MapPage } from './pages/MapPage'
 import { RelacoesPage } from './pages/RelacoesPage'
 
 function AdminRedirect() {
   const navigate = useNavigate()
+  const { config, loading } = useInstanceConfig()
   useEffect(() => {
+    if (loading) return
+    const cfg = getCachedInstanceConfig() ?? config
+    if (cfg && !cfg.has_map_image) {
+      navigate('/relacoes', { replace: true })
+      return
+    }
     navigate('/?gm=1', { replace: true })
-  }, [navigate])
+  }, [navigate, config, loading])
   return null
 }
 
 function RootRoute() {
   const { config, loading } = useInstanceConfig()
-  if (loading) return null
-  if (config && !config.has_map_image) {
+  const cfg = getCachedInstanceConfig() ?? config
+  if (loading && !cfg) return null
+  if (cfg && !cfg.has_map_image && !hasAdminCredentials()) {
     return <Navigate to="/relacoes" replace />
   }
   return <MapPage />
@@ -23,8 +32,9 @@ function RootRoute() {
 
 function CatchAllRoute() {
   const { config, loading } = useInstanceConfig()
-  if (loading) return null
-  const target = config?.has_map_image ? '/' : '/relacoes'
+  const cfg = getCachedInstanceConfig() ?? config
+  if (loading && !cfg) return null
+  const target = cfg?.has_map_image ? '/' : '/relacoes'
   return <Navigate to={target} replace />
 }
 

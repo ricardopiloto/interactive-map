@@ -49,3 +49,16 @@ export function useInstanceConfig() {
 export function getCachedInstanceConfig(): InstanceConfig | null {
   return cachedConfig
 }
+
+/** Clear module cache so the next loadConfig() hits the network. */
+export function clearInstanceConfigCache(): void {
+  cachedConfig = null
+  inflight = null
+}
+
+/** Optimistic update after GM uploads a campaign map image. */
+export function markHasMapImageInCache(): void {
+  if (cachedConfig) {
+    cachedConfig = { ...cachedConfig, has_map_image: true }
+  }
+}

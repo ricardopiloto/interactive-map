@@ -7,11 +7,19 @@ import './CodexHeader.css'
 interface CodexHeaderProps {
   isGm: boolean
   onToggleGm: () => void
+  /** When false, hide the Mapa nav link (no map image and not GM). Default true. */
+  showMapNav?: boolean
   children?: ReactNode
   extraLeft?: ReactNode
 }
 
-export function CodexHeader({ isGm, onToggleGm, children, extraLeft }: CodexHeaderProps) {
+export function CodexHeader({
+  isGm,
+  onToggleGm,
+  showMapNav = true,
+  children,
+  extraLeft,
+}: CodexHeaderProps) {
   const { t } = useTranslation('comum')
   const location = useLocation()
   const isRelacoes = location.pathname.startsWith('/relacoes')
@@ -22,12 +30,14 @@ export function CodexHeader({ isGm, onToggleGm, children, extraLeft }: CodexHead
       <div className="codex-header__left">
         <span className="codex-header__brand">{t('brand')}</span>
         <nav className="codex-header__nav" aria-label={t('nav.mainAria')}>
-          <Link
-            to="/"
-            className={`codex-header__link${isMapa ? ' codex-header__link--active' : ''}`}
-          >
-            {t('nav.mapa')}
-          </Link>
+          {showMapNav && (
+            <Link
+              to="/"
+              className={`codex-header__link${isMapa ? ' codex-header__link--active' : ''}`}
+            >
+              {t('nav.mapa')}
+            </Link>
+          )}
           <Link
             to="/relacoes"
             className={`codex-header__link${isRelacoes ? ' codex-header__link--active' : ''}`}
