@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.17.1] — 2026-08-13
+
+### Changed
+
+- Paleta de vínculos: **Vínculo de Sangue** passa a borgonha `#9e2436`; **Inimizade** passa a magenta/fúcsia `#d12d9a`; **Adversário** mantém cobre `#c86b3c` (spec 085)
+
 ## [0.17.0] — 2026-08-13
 
 ### Added

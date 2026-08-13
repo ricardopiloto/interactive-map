@@ -10,9 +10,9 @@ export interface VinculoStyleDef {
  *  chips, legend, and the dot next to each vínculo in the detail panel. */
 export const VINCULO_STYLES: Record<VinculoTipo, VinculoStyleDef> = {
   aliado: { color: 'var(--color-accent)', dashed: false },
-  vinculo_sangue: { color: '#6a3d8c', dashed: false },
+  vinculo_sangue: { color: '#791E2C', dashed: false },
   amizade: { color: '#79c48f', dashed: false },
-  inimizade: { color: '#e0707a', dashed: false },
+  inimizade: { color: '#C73E3E', dashed: false },
   adversario: { color: '#c86b3c', dashed: false },
   romance: { color: '#e08fc0', dashed: false },
   familia: { color: '#d9a35b', dashed: false },
