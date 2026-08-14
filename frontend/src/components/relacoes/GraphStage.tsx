@@ -14,13 +14,12 @@ import { labelMatchesQuery } from '../../utils/textMatch'
 import {
   computeFocusLayout,
   computeInitialLayout,
-  compactInnerSpacing,
   discCenterFromNodePos,
-  COMPACT_INNER_THRESHOLD,
   DISC,
   EDGE_OPACITY_DIM,
   EDGE_OPACITY_DIM_SELECTED,
   EDGE_OPACITY_FOCUS,
+  focusInnerSpacing,
   NODE_H,
   NODE_W,
   OVERVIEW_SPACING,
@@ -147,10 +146,7 @@ export function GraphStage({
     const allIds = personagens.map((p) => p.id)
     if (selectedId != null && allIds.includes(selectedId)) {
       const otherIds = allIds.filter((id) => id !== selectedId && !directIds.has(id))
-      const innerSpacing =
-        directIds.size > COMPACT_INNER_THRESHOLD
-          ? compactInnerSpacing(espacamento)
-          : espacamento
+      const innerSpacing = focusInnerSpacing(espacamento, directIds.size)
       return computeFocusLayout(
         selectedId,
         [...directIds],

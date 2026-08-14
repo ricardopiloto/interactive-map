@@ -23,7 +23,7 @@ A barra é a mesma do resto da app: **Mapa** | **Relações**, idioma, **Acesso 
 - **Arrastar um disco** = reposicionar na sessão (não grava; no próximo carregamento o layout volta ao automático)
 - **Clique num disco** = selecciona; as linhas desse personagem destacam-se após um instante
 - **Clique de novo** no mesmo disco, no fundo, ou no **×** do painel = fecha o detalhe
-- Com alguém seleccionado e **mais de 6** conexões visíveis, o anel interior fica ainda mais junto; os textos nas linhas de vínculo continuam legíveis
+- Com alguém seleccionado e **3 ou menos** conexões visíveis, o anel interior fica mais aberto; com **mais de 6**, fica mais junto (textos nas linhas continuam legíveis)
 - Sem selecção, PJs e NPCs ficam mais juntos (ainda sem nomes/discos a tapar-se); no zoom out máximo a campanha típica cabe no palco
 
 ### Coluna esquerda

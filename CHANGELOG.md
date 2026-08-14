@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.18.3] — 2026-08-14
+
+### Changed
+
+- Rede de Relações: anel interior de foco com 3 ou menos conexões mais aberto (folga 240→312) para melhor leitura (spec 089)
+
 ## [0.18.2] — 2026-08-14
 
 ### Changed

@@ -26,7 +26,7 @@ export const COMPACT_INNER_FACTOR = 2 / 3
 /** Floor so name/disc boxes still clear each other (086/087). Do not clamp 088 to this. */
 export const COMPACT_INNER_SPACING_MIN = 120
 /** Further −30% after the 086 compact (spec 088). 160 × 0.7 = 112. */
-export const COMPACT_INNER_TIGHTEN = 0.85
+export const COMPACT_INNER_TIGHTEN = 0.75
 /** Unselected (overview) ring gap — same floor as COMPACT_INNER_SPACING_MIN (spec 087). */
 export const OVERVIEW_SPACING = COMPACT_INNER_SPACING_MIN
 
@@ -36,6 +36,24 @@ export function compactInnerSpacing(spacing: number): number {
     Math.round(spacing * COMPACT_INNER_FACTOR),
   )
   return Math.round(after086 * COMPACT_INNER_TIGHTEN)
+}
+
+/** Spread the focus inner ring when visible directs are at or below this count. */
+export const SPARSE_INNER_THRESHOLD = 3
+/** +30% vs default focus gap (spec 089). 240 × 1.3 = 312. */
+export const SPARSE_INNER_FACTOR = 1.3
+
+export function sparseInnerSpacing(spacing: number): number {
+  return Math.round(spacing * SPARSE_INNER_FACTOR)
+}
+
+/** Inner-ring gap for focus layout: 1–3 sparse, 4–6 default, >6 compact. */
+export function focusInnerSpacing(spacing: number, directCount: number): number {
+  if (directCount > COMPACT_INNER_THRESHOLD) return compactInnerSpacing(spacing)
+  if (directCount > 0 && directCount <= SPARSE_INNER_THRESHOLD) {
+    return sparseInnerSpacing(spacing)
+  }
+  return spacing
 }
 
 /** Geometric centre of the initials disc, given the layout point (node-box centre). */

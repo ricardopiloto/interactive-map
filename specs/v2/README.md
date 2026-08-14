@@ -29,6 +29,7 @@
 | [086-relacoes-list-compact](../086-relacoes-list-compact/spec.md) | 0.18.0 | Lista na coluna, hover-preview, anel interior compacto (>6) |
 | [087-relacoes-overview-compact](../087-relacoes-overview-compact/spec.md) | 0.18.1 | Vista geral mais compacta (folga 120; foco intacto) |
 | [088-relacoes-focus-tighter](../088-relacoes-focus-tighter/spec.md) | 0.18.2 | Anel interior de foco >6 ainda mais compacto (160→112) |
+| [089-relacoes-few-spread](../089-relacoes-few-spread/spec.md) | 0.18.3 | Anel interior de foco ≤3 mais aberto (240→312) |
 
 ## Restrições globais (brief)
 
