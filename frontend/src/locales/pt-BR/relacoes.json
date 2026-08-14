@@ -25,6 +25,9 @@
     "personagens": "Personagens",
     "listEmpty": "Nenhum personagem visível.",
     "listEmptySearch": "Nenhum personagem corresponde à busca.",
+    "listEmptyStatus": "Nenhum personagem neste estado.",
+    "statusFilter": "Estado",
+    "statusFilterTodos": "Todos",
     "isolate": "Isolar seleção",
     "legend": "Legenda"
   },

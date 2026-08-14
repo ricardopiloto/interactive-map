@@ -17,6 +17,10 @@ import {
   type PersonagemDraft,
 } from '../components/relacoes/PersonagemFormDialog'
 import { VinculoFormDialog, type VinculoDraft } from '../components/relacoes/VinculoFormDialog'
+import {
+  matchesStatusFilter,
+  type RelacoesStatusFilter,
+} from '../components/relacoes/statusFilter'
 import { isDuasVias } from '../components/relacoes/vinculoDirection'
 import { VINCULO_TIPOS } from '../components/relacoes/vinculoStyles'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
@@ -40,6 +44,7 @@ export function RelacoesPage() {
   const [query, setQuery] = useState('')
   const [activeTipos, setActiveTipos] = useState<Set<VinculoTipo>>(new Set(VINCULO_TIPOS))
   const [isolate, setIsolate] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<RelacoesStatusFilter>('todos')
 
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
@@ -97,6 +102,22 @@ export function RelacoesPage() {
     )
   }, [vinculos, selectedId])
 
+  const visiblePersonagens = useMemo(
+    () => personagens.filter((p) => matchesStatusFilter(p, statusFilter)),
+    [personagens, statusFilter],
+  )
+  const visibleIds = useMemo(
+    () => new Set(visiblePersonagens.map((p) => p.id)),
+    [visiblePersonagens],
+  )
+  const visibleVinculos = useMemo(
+    () =>
+      vinculos.filter(
+        (v) => visibleIds.has(v.personagem_a_id) && visibleIds.has(v.personagem_b_id),
+      ),
+    [vinculos, visibleIds],
+  )
+
   function clearSelectionTimer() {
     if (selectionTimer.current != null) {
       window.clearTimeout(selectionTimer.current)
@@ -121,6 +142,15 @@ export function RelacoesPage() {
     setSelectedId(null)
     setIsolate(false)
   }
+
+  useEffect(() => {
+    if (selectedId == null) return
+    if (visibleIds.has(selectedId)) return
+    clearSelectionTimer()
+    setShowEdges(false)
+    setSelectedId(null)
+    setIsolate(false)
+  }, [selectedId, visibleIds])
 
   function toggleTipo(tipo: VinculoTipo) {
     setActiveTipos((prev) => {
@@ -320,7 +350,9 @@ export function RelacoesPage() {
       isolate={isolate}
       onToggleIsolate={setIsolate}
       isolateDisabled={selectedId == null}
-      personagens={personagens}
+      statusFilter={statusFilter}
+      onStatusFilterChange={setStatusFilter}
+      personagens={visiblePersonagens}
       selectedId={selectedId}
       onSelectPersonagem={selectPersonagem}
       onPersonagemHover={setHoveredId}
@@ -369,8 +401,8 @@ export function RelacoesPage() {
 
           {!loading && !error && (
             <GraphStage
-              personagens={personagens}
-              vinculos={vinculos}
+              personagens={visiblePersonagens}
+              vinculos={visibleVinculos}
               selectedId={selectedId}
               onSelect={selectPersonagem}
               onDeselect={deselectPersonagem}

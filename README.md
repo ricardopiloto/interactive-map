@@ -2,7 +2,7 @@
 
 Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas**, **rede de relações** entre personagens e **Modo GM** na mesma interface.
 
-**Versão:** 0.18.3 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.19.1 — [`CHANGELOG.md`](CHANGELOG.md)  
 **Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) · multi-instância: [`docs/runbook-instancias.md`](docs/runbook-instancias.md) · upgrade `/opt/map-campaign`: [`docs/migracao-producao-map-campaign.md`](docs/migracao-producao-map-campaign.md)
 
 ---

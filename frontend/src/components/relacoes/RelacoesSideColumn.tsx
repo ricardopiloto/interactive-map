@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, type CSSProperties, type MouseEvent } from 
 import { useTranslation } from 'react-i18next'
 import type { Personagem, VinculoTipo } from '../../types'
 import { labelMatchesQuery } from '../../utils/textMatch'
+import {
+  STATUS_FILTER_OPTIONS,
+  isRelacoesStatusFilter,
+  type RelacoesStatusFilter,
+} from './statusFilter'
 import { VINCULO_STYLES, VINCULO_TIPOS, getVinculoTipoLabel } from './vinculoStyles'
 import './RelacoesSideColumn.css'
 
@@ -16,6 +21,8 @@ interface RelacoesSideColumnProps {
   isolate: boolean
   onToggleIsolate: (value: boolean) => void
   isolateDisabled?: boolean
+  statusFilter: RelacoesStatusFilter
+  onStatusFilterChange: (value: RelacoesStatusFilter) => void
   personagens: Personagem[]
   selectedId: number | null
   onSelectPersonagem: (id: number) => void
@@ -31,6 +38,8 @@ export function RelacoesSideColumn({
   isolate,
   onToggleIsolate,
   isolateDisabled = false,
+  statusFilter,
+  onStatusFilterChange,
   personagens,
   selectedId,
   onSelectPersonagem,
@@ -117,7 +126,11 @@ export function RelacoesSideColumn({
         <h6>{t('column.personagens')}</h6>
         {listItems.length === 0 ? (
           <p className="relacoes-side__list-empty">
-            {hasQuery ? t('column.listEmptySearch') : t('column.listEmpty')}
+            {hasQuery
+              ? t('column.listEmptySearch')
+              : statusFilter === 'todos'
+                ? t('column.listEmpty')
+                : t('column.listEmptyStatus')}
           </p>
         ) : (
           <ul className="relacoes-side__list">
@@ -151,6 +164,23 @@ export function RelacoesSideColumn({
       </div>
 
       <div className="relacoes-side__section">
+        <label className="relacoes-side__status-filter">
+          {t('column.statusFilter')}
+          <select
+            className="input"
+            value={statusFilter}
+            onChange={(e) => {
+              const value = e.target.value
+              if (isRelacoesStatusFilter(value)) onStatusFilterChange(value)
+            }}
+          >
+            {STATUS_FILTER_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt === 'todos' ? t('column.statusFilterTodos') : tc(`status.${opt}`)}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="relacoes-side__isolate">
           <input
             type="checkbox"
@@ -160,31 +190,6 @@ export function RelacoesSideColumn({
           />
           {t('column.isolate')}
         </label>
-      </div>
-
-      <div className="relacoes-side__legend">
-        <h6>{t('column.legend')}</h6>
-        <div className="relacoes-side__legend-row">
-          <span className="relacoes-side__legend-disc relacoes-side__legend-disc--pj" />
-          {tc('tipo.pj')}
-        </div>
-        <div className="relacoes-side__legend-row">
-          <span className="relacoes-side__legend-disc relacoes-side__legend-disc--npc" />
-          {tc('tipo.npc')}
-        </div>
-        <div className="hr" />
-        {VINCULO_TIPOS.map((tipo) => {
-          const style = VINCULO_STYLES[tipo]
-          return (
-            <div key={tipo} className="relacoes-side__legend-row">
-              <span
-                className={`relacoes-side__legend-line${style.dashed ? ' relacoes-side__legend-line--dashed' : ''}`}
-                style={{ '--chip-color': style.color } as CSSProperties}
-              />
-              {getVinculoTipoLabel(t, tipo)}
-            </div>
-          )
-        })}
       </div>
     </aside>
   )

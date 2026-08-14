@@ -4,6 +4,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react'
@@ -26,7 +27,7 @@ import {
   type Point,
 } from './graphLayout'
 import { estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
-import { getVinculoTipoLabel, vinculoStyle } from './vinculoStyles'
+import { VINCULO_STYLES, VINCULO_TIPOS, getVinculoTipoLabel, vinculoStyle } from './vinculoStyles'
 import {
   edgeDisplayTipo,
   edgeIsDashed,
@@ -109,6 +110,7 @@ export function GraphStage({
   hoveredId = null,
 }: GraphStageProps) {
   const { t } = useTranslation('relacoes')
+  const { t: tc } = useTranslation('comum')
   const containerRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [scale, setScale] = useState(1)
@@ -580,6 +582,29 @@ export function GraphStage({
               </div>
             )
           })}
+      </div>
+
+      <div className="graph-stage__legend" role="group" aria-label={t('column.legend')}>
+        <div className="graph-stage__legend-row">
+          <span className="graph-stage__legend-disc graph-stage__legend-disc--pj" />
+          {tc('tipo.pj')}
+        </div>
+        <div className="graph-stage__legend-row">
+          <span className="graph-stage__legend-disc graph-stage__legend-disc--npc" />
+          {tc('tipo.npc')}
+        </div>
+        {VINCULO_TIPOS.map((tipo) => {
+          const style = VINCULO_STYLES[tipo]
+          return (
+            <div key={tipo} className="graph-stage__legend-row">
+              <span
+                className={`graph-stage__legend-line${style.dashed ? ' graph-stage__legend-line--dashed' : ''}`}
+                style={{ '--chip-color': style.color } as CSSProperties}
+              />
+              {getVinculoTipoLabel(t, tipo)}
+            </div>
+          )
+        })}
       </div>
 
       <div className="graph-stage__zoom">

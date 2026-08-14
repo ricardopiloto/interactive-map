@@ -5,6 +5,18 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.19.1] — 2026-08-14
+
+### Changed
+
+- Rede de Relações: chave PJ/NPC e tipos de vínculo no canto inferior esquerdo do palco (como no mapa); lista vertical compacta, sem fundo; a coluna já não tem bloco de legenda (spec 091)
+
+## [0.19.0] — 2026-08-14
+
+### Added
+
+- Rede de Relações: filtro de estado (Todos / Vivos / Mortos / Desconhecidos / Desaparecido) na coluna, junto a Isolar; palco e lista recalculam só com quem passa no filtro (spec 090)
+
 ## [0.18.3] — 2026-08-14
 
 ### Changed

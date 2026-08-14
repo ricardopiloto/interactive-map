@@ -30,6 +30,8 @@
 | [087-relacoes-overview-compact](../087-relacoes-overview-compact/spec.md) | 0.18.1 | Vista geral mais compacta (folga 120; foco intacto) |
 | [088-relacoes-focus-tighter](../088-relacoes-focus-tighter/spec.md) | 0.18.2 | Anel interior de foco >6 ainda mais compacto (160→112) |
 | [089-relacoes-few-spread](../089-relacoes-few-spread/spec.md) | 0.18.3 | Anel interior de foco ≤3 mais aberto (240→312) |
+| [090-relacoes-status-filter](../090-relacoes-status-filter/spec.md) | 0.19.0 | Filtro de estado (Todos / Vivos / Mortos / Desconhecidos / Desaparecido) |
+| [091-relacoes-legend-position](../091-relacoes-legend-position/spec.md) | 0.19.1 | Chave da Rede no palco (canto inferior esquerdo, como no mapa) |
 
 ## Restrições globais (brief)
 

@@ -18,13 +18,14 @@ A barra é a mesma do resto da app: **Mapa** | **Relações**, idioma, **Acesso 
 
 ### Palco
 
-- **Roda** / pinch = zoom; **+** / **−** no canto
+- **Roda** / pinch = zoom; **+** / **−** / **1:1** no canto inferior direito
 - **Arrastar o fundo** = pan
 - **Arrastar um disco** = reposicionar na sessão (não grava; no próximo carregamento o layout volta ao automático)
 - **Clique num disco** = selecciona; as linhas desse personagem destacam-se após um instante
 - **Clique de novo** no mesmo disco, no fundo, ou no **×** do painel = fecha o detalhe
 - Com alguém seleccionado e **3 ou menos** conexões visíveis, o anel interior fica mais aberto; com **mais de 6**, fica mais junto (textos nas linhas continuam legíveis)
 - Sem selecção, PJs e NPCs ficam mais juntos (ainda sem nomes/discos a tapar-se); no zoom out máximo a campanha típica cabe no palco
+- **Chave** (canto inferior esquerdo, como no mapa): lista vertical compacta de PJ vs NPC e das cores de tipo; sem fundo; não intercepta cliques no grafo
 
 ### Coluna esquerda
 
@@ -32,11 +33,11 @@ A barra é a mesma do resto da app: **Mapa** | **Relações**, idioma, **Acesso 
 - **Tipos de vínculo** (chips coloridos):
   - **Clique** — liga / desliga aquele tipo
   - **Duplo clique** — isola só aquele tipo; duplo clique de novo no mesmo chip restaura todos
-- **Personagens** — lista com scroll de todos os PJ e NPC visíveis ao papel (A→Z), **abaixo** dos tipos e **antes** de Isolar / legenda
+- **Personagens** — lista com scroll de todos os PJ e NPC visíveis ao papel (A→Z), **abaixo** dos tipos e **antes** de Estado / Isolar
   - **Clique** no nome = o mesmo que clicar no disco (selecciona e abre o detalhe)
   - **Passar o rato** no nome destaca o disco e as linhas de vínculo **directas** visíveis; não abre o detalhe nem muda o layout
-- **Isolar seleção** — com alguém seleccionado, o palco mostra só esse personagem e os vínculos **directos**; a lista da coluna **não** se reduz
-- **Legenda** — PJ vs NPC e as 8 cores de tipo
+- **Estado** — Todos (omissão) / Vivos / Mortos / Desconhecidos / Desaparecido. Filtra **lista e palco**; os anéis recalculam só com quem passa (sem buracos). Personagem sem estado conta como Desconhecido. Não grava: recarregar a página volta a Todos. A busca aplica-se **dentro** deste conjunto
+- **Isolar seleção** — com alguém seleccionado, o palco mostra só esse personagem e os vínculos **directos**; a lista da coluna **não** se reduz. Isolar aplica-se **depois** do filtro de estado
 
 ### Painel de detalhe
 

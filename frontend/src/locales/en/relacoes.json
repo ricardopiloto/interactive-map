@@ -25,6 +25,9 @@
     "personagens": "Characters",
     "listEmpty": "No visible characters.",
     "listEmptySearch": "No characters match the search.",
+    "listEmptyStatus": "No characters in this status.",
+    "statusFilter": "Status",
+    "statusFilterTodos": "All",
     "isolate": "Isolate selection",
     "legend": "Legend"
   },

@@ -26,7 +26,7 @@ export const COMPACT_INNER_FACTOR = 2 / 3
 /** Floor so name/disc boxes still clear each other (086/087). Do not clamp 088 to this. */
 export const COMPACT_INNER_SPACING_MIN = 120
 /** Further −30% after the 086 compact (spec 088). 160 × 0.7 = 112. */
-export const COMPACT_INNER_TIGHTEN = 0.75
+export const COMPACT_INNER_TIGHTEN = 0.6
 /** Unselected (overview) ring gap — same floor as COMPACT_INNER_SPACING_MIN (spec 087). */
 export const OVERVIEW_SPACING = COMPACT_INNER_SPACING_MIN
 
