@@ -23,6 +23,7 @@ import {
   EDGE_OPACITY_FOCUS,
   NODE_H,
   NODE_W,
+  OVERVIEW_SPACING,
   type Point,
 } from './graphLayout'
 import { estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
@@ -161,7 +162,7 @@ export function GraphStage({
     }
     const pjIds = personagens.filter((p) => p.tipo === 'pj').map((p) => p.id)
     const npcIds = personagens.filter((p) => p.tipo === 'npc').map((p) => p.id)
-    return computeInitialLayout(pjIds, npcIds, CENTER, espacamento)
+    return computeInitialLayout(pjIds, npcIds, CENTER, OVERVIEW_SPACING)
   }, [personagens, selectedId, directIds, espacamento])
 
   const positions = useMemo(() => {

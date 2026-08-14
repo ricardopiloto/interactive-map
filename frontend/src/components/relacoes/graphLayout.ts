@@ -23,11 +23,19 @@ export const EDGE_OPACITY_FOCUS = 0.9
 export const COMPACT_INNER_THRESHOLD = 6
 /** «About one third less» than the default ring gap (spec 086). */
 export const COMPACT_INNER_FACTOR = 2 / 3
-/** Floor so name/disc boxes still clear each other. */
+/** Floor so name/disc boxes still clear each other (086/087). Do not clamp 088 to this. */
 export const COMPACT_INNER_SPACING_MIN = 120
+/** Further −30% after the 086 compact (spec 088). 160 × 0.7 = 112. */
+export const COMPACT_INNER_TIGHTEN = 0.85
+/** Unselected (overview) ring gap — same floor as COMPACT_INNER_SPACING_MIN (spec 087). */
+export const OVERVIEW_SPACING = COMPACT_INNER_SPACING_MIN
 
 export function compactInnerSpacing(spacing: number): number {
-  return Math.max(COMPACT_INNER_SPACING_MIN, Math.round(spacing * COMPACT_INNER_FACTOR))
+  const after086 = Math.max(
+    COMPACT_INNER_SPACING_MIN,
+    Math.round(spacing * COMPACT_INNER_FACTOR),
+  )
+  return Math.round(after086 * COMPACT_INNER_TIGHTEN)
 }
 
 /** Geometric centre of the initials disc, given the layout point (node-box centre). */

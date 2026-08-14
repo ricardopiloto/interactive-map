@@ -27,6 +27,8 @@
 | [084-personagem-visibility](../084-personagem-visibility/spec.md) | 0.17.0 | Visibilidade de personagem (GM) |
 | [085-vinculo-color-rethink](../085-vinculo-color-rethink/spec.md) | 0.17.1 | Paleta: Sangue borgonha, Inimizade magenta, Adversário cobre |
 | [086-relacoes-list-compact](../086-relacoes-list-compact/spec.md) | 0.18.0 | Lista na coluna, hover-preview, anel interior compacto (>6) |
+| [087-relacoes-overview-compact](../087-relacoes-overview-compact/spec.md) | 0.18.1 | Vista geral mais compacta (folga 120; foco intacto) |
+| [088-relacoes-focus-tighter](../088-relacoes-focus-tighter/spec.md) | 0.18.2 | Anel interior de foco >6 ainda mais compacto (160→112) |
 
 ## Restrições globais (brief)
 
