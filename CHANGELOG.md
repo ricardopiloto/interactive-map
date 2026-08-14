@@ -5,6 +5,12 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.18.0] — 2026-08-14
+
+### Added
+
+- Rede de Relações: lista de personagens (PJ e NPC) na coluna, abaixo dos tipos de vínculo, com scroll e clique igual ao disco; hover no nome destaca o disco e as conexões directas visíveis; anel interior mais compacto só no foco com mais de 6 conexões (spec 086)
+
 ## [0.17.1] — 2026-08-13
 
 ### Changed

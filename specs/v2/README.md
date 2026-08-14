@@ -26,6 +26,7 @@
 | [083-map-absent-gm-access](../083-map-absent-gm-access/spec.md) | 0.16.2 | Sem mapa: esconder Mapa (não-GM); GM pode abrir para upload |
 | [084-personagem-visibility](../084-personagem-visibility/spec.md) | 0.17.0 | Visibilidade de personagem (GM) |
 | [085-vinculo-color-rethink](../085-vinculo-color-rethink/spec.md) | 0.17.1 | Paleta: Sangue borgonha, Inimizade magenta, Adversário cobre |
+| [086-relacoes-list-compact](../086-relacoes-list-compact/spec.md) | 0.18.0 | Lista na coluna, hover-preview, anel interior compacto (>6) |
 
 ## Restrições globais (brief)
 

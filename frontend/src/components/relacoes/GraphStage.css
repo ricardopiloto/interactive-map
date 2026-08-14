@@ -139,6 +139,19 @@
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 
+.graph-node--preview .graph-node__disc {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.graph-node--selected.graph-node--preview .graph-node__disc {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+.graph-node--preview,
+.graph-node--selected {
+  z-index: 2;
+}
+
 .graph-node--morto .graph-node__disc {
   filter: grayscale(1);
   opacity: 0.75;

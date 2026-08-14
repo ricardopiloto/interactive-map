@@ -1,6 +1,7 @@
-import { useEffect, useRef, type CSSProperties, type MouseEvent } from 'react'
+import { useEffect, useMemo, useRef, type CSSProperties, type MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { VinculoTipo } from '../../types'
+import type { Personagem, VinculoTipo } from '../../types'
+import { labelMatchesQuery } from '../../utils/textMatch'
 import { VINCULO_STYLES, VINCULO_TIPOS, getVinculoTipoLabel } from './vinculoStyles'
 import './RelacoesSideColumn.css'
 
@@ -15,6 +16,10 @@ interface RelacoesSideColumnProps {
   isolate: boolean
   onToggleIsolate: (value: boolean) => void
   isolateDisabled?: boolean
+  personagens: Personagem[]
+  selectedId: number | null
+  onSelectPersonagem: (id: number) => void
+  onPersonagemHover?: (id: number | null) => void
 }
 
 export function RelacoesSideColumn({
@@ -26,6 +31,10 @@ export function RelacoesSideColumn({
   isolate,
   onToggleIsolate,
   isolateDisabled = false,
+  personagens,
+  selectedId,
+  onSelectPersonagem,
+  onPersonagemHover,
 }: RelacoesSideColumnProps) {
   const { t } = useTranslation('relacoes')
   const { t: tc } = useTranslation('comum')
@@ -34,8 +43,16 @@ export function RelacoesSideColumn({
   useEffect(() => {
     return () => {
       if (pendingClick.current != null) clearTimeout(pendingClick.current)
+      onPersonagemHover?.(null)
     }
-  }, [])
+  }, [onPersonagemHover])
+
+  const listItems = useMemo(() => {
+    return personagens
+      .filter((p) => labelMatchesQuery(p.nome, query))
+      .slice()
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }))
+  }, [personagens, query])
 
   function clearPendingClick() {
     if (pendingClick.current != null) {
@@ -57,6 +74,8 @@ export function RelacoesSideColumn({
     clearPendingClick()
     onDoubleClickTipo(tipo)
   }
+
+  const hasQuery = query.trim().length > 0
 
   return (
     <aside className="relacoes-side">
@@ -92,6 +111,43 @@ export function RelacoesSideColumn({
             )
           })}
         </div>
+      </div>
+
+      <div className="relacoes-side__section relacoes-side__list-section">
+        <h6>{t('column.personagens')}</h6>
+        {listItems.length === 0 ? (
+          <p className="relacoes-side__list-empty">
+            {hasQuery ? t('column.listEmptySearch') : t('column.listEmpty')}
+          </p>
+        ) : (
+          <ul className="relacoes-side__list">
+            {listItems.map((p) => {
+              const selected = p.id === selectedId
+              const oculto = p.visivel_para_todos === false
+              return (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    className={`relacoes-side__list-item${selected ? ' relacoes-side__list-item--selected' : ''}`}
+                    aria-current={selected ? 'true' : undefined}
+                    onClick={() => onSelectPersonagem(p.id)}
+                    onPointerEnter={() => onPersonagemHover?.(p.id)}
+                    onPointerLeave={() => onPersonagemHover?.(null)}
+                  >
+                    <span className="relacoes-side__list-name">{p.nome}</span>
+                    {oculto ? (
+                      <span
+                        className="relacoes-side__list-oculto"
+                        title={t('graph.ocultoAria')}
+                        aria-label={t('graph.ocultoAria')}
+                      />
+                    ) : null}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </div>
 
       <div className="relacoes-side__section">

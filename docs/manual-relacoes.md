@@ -23,14 +23,18 @@ A barra é a mesma do resto da app: **Mapa** | **Relações**, idioma, **Acesso 
 - **Arrastar um disco** = reposicionar na sessão (não grava; no próximo carregamento o layout volta ao automático)
 - **Clique num disco** = selecciona; as linhas desse personagem destacam-se após um instante
 - **Clique de novo** no mesmo disco, no fundo, ou no **×** do painel = fecha o detalhe
+- Com alguém seleccionado e **mais de 6** conexões visíveis, o anel interior fica mais junto; a vista geral (sem selecção) não muda
 
 ### Coluna esquerda
 
-- **Buscar personagem…** — filtra quem aparece no palco
+- **Buscar personagem…** — filtra a lista da coluna e atenua no palco quem não corresponde
 - **Tipos de vínculo** (chips coloridos):
   - **Clique** — liga / desliga aquele tipo
   - **Duplo clique** — isola só aquele tipo; duplo clique de novo no mesmo chip restaura todos
-- **Isolar seleção** — com alguém seleccionado, mostra só esse personagem e os vínculos **directos**
+- **Personagens** — lista com scroll de todos os PJ e NPC visíveis ao papel (A→Z), **abaixo** dos tipos e **antes** de Isolar / legenda
+  - **Clique** no nome = o mesmo que clicar no disco (selecciona e abre o detalhe)
+  - **Passar o rato** no nome destaca o disco e as linhas de vínculo **directas** visíveis; não abre o detalhe nem muda o layout
+- **Isolar seleção** — com alguém seleccionado, o palco mostra só esse personagem e os vínculos **directos**; a lista da coluna **não** se reduz
 - **Legenda** — PJ vs NPC e as 8 cores de tipo
 
 ### Painel de detalhe

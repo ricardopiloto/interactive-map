@@ -22,6 +22,9 @@
   "column": {
     "search": "Search character…",
     "tiposVinculo": "Bond types",
+    "personagens": "Characters",
+    "listEmpty": "No visible characters.",
+    "listEmptySearch": "No characters match the search.",
     "isolate": "Isolate selection",
     "legend": "Legend"
   },

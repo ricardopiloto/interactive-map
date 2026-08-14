@@ -19,6 +19,16 @@ export const EDGE_OPACITY_DIM = 0.18
 export const EDGE_OPACITY_DIM_SELECTED = 0.08
 /** Highlighted focus-edge opacity after layout animation (spec 068). */
 export const EDGE_OPACITY_FOCUS = 0.9
+/** Compact the focus inner ring only when visible directs exceed this count. */
+export const COMPACT_INNER_THRESHOLD = 6
+/** «About one third less» than the default ring gap (spec 086). */
+export const COMPACT_INNER_FACTOR = 2 / 3
+/** Floor so name/disc boxes still clear each other. */
+export const COMPACT_INNER_SPACING_MIN = 120
+
+export function compactInnerSpacing(spacing: number): number {
+  return Math.max(COMPACT_INNER_SPACING_MIN, Math.round(spacing * COMPACT_INNER_FACTOR))
+}
 
 /** Geometric centre of the initials disc, given the layout point (node-box centre). */
 export function discCenterFromNodePos(pos: Point): Point {
@@ -88,14 +98,15 @@ export function computeFocusLayout(
   otherIds: number[],
   center: Point,
   spacing: number,
+  innerSpacing: number = spacing,
 ): Map<number, Point> {
   const positions = new Map<number, Point>()
   positions.set(selectedId, { ...center })
 
-  const innerRadius = Math.max(NODE_W, ringMinRadius(directIds.length, spacing))
+  const innerRadius = Math.max(NODE_W, ringMinRadius(directIds.length, innerSpacing))
   const outerRadius = innerRadius + NODE_H + spacing
 
-  for (const [id, p] of layoutRings(directIds, center, innerRadius, spacing)) {
+  for (const [id, p] of layoutRings(directIds, center, innerRadius, innerSpacing)) {
     positions.set(id, p)
   }
   for (const [id, p] of layoutRings(otherIds, center, outerRadius, spacing)) {

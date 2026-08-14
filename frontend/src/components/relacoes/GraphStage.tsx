@@ -14,7 +14,9 @@ import { labelMatchesQuery } from '../../utils/textMatch'
 import {
   computeFocusLayout,
   computeInitialLayout,
+  compactInnerSpacing,
   discCenterFromNodePos,
+  COMPACT_INNER_THRESHOLD,
   DISC,
   EDGE_OPACITY_DIM,
   EDGE_OPACITY_DIM_SELECTED,
@@ -54,6 +56,7 @@ interface GraphStageProps {
   rotulosVinculo?: RotulosVinculo
   espacamento?: number
   searchQuery?: string
+  hoveredId?: number | null
 }
 
 interface DragSession {
@@ -103,6 +106,7 @@ export function GraphStage({
   rotulosVinculo = 'foco',
   espacamento = 240,
   searchQuery = '',
+  hoveredId = null,
 }: GraphStageProps) {
   const { t } = useTranslation('relacoes')
   const containerRef = useRef<HTMLDivElement>(null)
@@ -142,7 +146,18 @@ export function GraphStage({
     const allIds = personagens.map((p) => p.id)
     if (selectedId != null && allIds.includes(selectedId)) {
       const otherIds = allIds.filter((id) => id !== selectedId && !directIds.has(id))
-      return computeFocusLayout(selectedId, [...directIds], otherIds, CENTER, espacamento)
+      const innerSpacing =
+        directIds.size > COMPACT_INNER_THRESHOLD
+          ? compactInnerSpacing(espacamento)
+          : espacamento
+      return computeFocusLayout(
+        selectedId,
+        [...directIds],
+        otherIds,
+        CENTER,
+        espacamento,
+        innerSpacing,
+      )
     }
     const pjIds = personagens.filter((p) => p.tipo === 'pj').map((p) => p.id)
     const npcIds = personagens.filter((p) => p.tipo === 'npc').map((p) => p.id)
@@ -181,6 +196,12 @@ export function GraphStage({
   function isFocusEdge(v: Vinculo): boolean {
     return selectedId != null && (v.personagem_a_id === selectedId || v.personagem_b_id === selectedId)
   }
+
+  function isPreviewEdge(v: Vinculo, id: number): boolean {
+    return v.personagem_a_id === id || v.personagem_b_id === id
+  }
+
+  const previewId = hoveredId != null && isVisible(hoveredId) ? hoveredId : null
 
   function clampScale(next: number): number {
     return Math.min(MAX_SCALE, Math.max(MIN_SCALE, next))
@@ -345,7 +366,10 @@ export function GraphStage({
               const styleA = duas ? vinculoStyle(v.tipo_ab!) : vinculoStyle(displayTipo)
               const styleB = duas ? vinculoStyle(v.tipo_ba!) : styleA
               const style = styleA
-              const highlighted = showEdges && isFocusEdge(v)
+              const highlighted =
+                previewId != null
+                  ? isPreviewEdge(v, previewId)
+                  : showEdges && isFocusEdge(v)
               const dimOpacity = selectedId != null ? EDGE_OPACITY_DIM_SELECTED : EDGE_OPACITY_DIM
               const opacity = highlighted ? EDGE_OPACITY_FOCUS : dimOpacity
               const midX = (a.x + b.x) / 2
@@ -519,7 +543,7 @@ export function GraphStage({
             const pos = positions.get(p.id)
             if (!pos) return null
             const related = selectedId != null && (p.id === selectedId || directIds.has(p.id))
-            const dimByFocus = selectedId != null && !related
+            const dimByFocus = selectedId != null && !related && previewId !== p.id
             const dimBySearch = matchedIds != null && !matchedIds.has(p.id)
             const opacity = dimByFocus ? 0.28 : dimBySearch ? 0.4 : 1
             const isMorto = p.status === 'morto'
@@ -528,6 +552,7 @@ export function GraphStage({
               'graph-node',
               p.tipo === 'pj' ? 'graph-node--pj' : 'graph-node--npc',
               p.id === selectedId ? 'graph-node--selected' : '',
+              previewId === p.id ? 'graph-node--preview' : '',
               isMorto ? 'graph-node--morto' : '',
               isOculto ? 'graph-node--oculto' : '',
             ]

@@ -22,6 +22,9 @@
   "column": {
     "search": "Buscar personagem…",
     "tiposVinculo": "Tipos de vínculo",
+    "personagens": "Personagens",
+    "listEmpty": "Nenhum personagem visível.",
+    "listEmptySearch": "Nenhum personagem corresponde à busca.",
     "isolate": "Isolar seleção",
     "legend": "Legenda"
   },

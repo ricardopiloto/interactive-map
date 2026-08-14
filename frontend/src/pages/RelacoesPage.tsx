@@ -42,6 +42,7 @@ export function RelacoesPage() {
   const [isolate, setIsolate] = useState(false)
 
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [hoveredId, setHoveredId] = useState<number | null>(null)
   /** After layout animation: focus edges may highlight (GraphStage). Idle/mid-move stay dim. */
   const [showEdges, setShowEdges] = useState(false)
   const selectionTimer = useRef<number | undefined>(undefined)
@@ -319,6 +320,10 @@ export function RelacoesPage() {
       isolate={isolate}
       onToggleIsolate={setIsolate}
       isolateDisabled={selectedId == null}
+      personagens={personagens}
+      selectedId={selectedId}
+      onSelectPersonagem={selectPersonagem}
+      onPersonagemHover={setHoveredId}
     />
   )
 
@@ -374,6 +379,7 @@ export function RelacoesPage() {
               activeTipos={activeTipos}
               onEdgeClick={isGm ? startEditVinculo : undefined}
               searchQuery={query}
+              hoveredId={hoveredId}
             />
           )}
 
