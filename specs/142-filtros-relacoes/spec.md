@@ -1,7 +1,7 @@
 # Feature Specification: Filtros consistentes em Relações
 
 **Feature Branch**: `142-filtros-relacoes`
-**Backlog**: [BKLG-032](../../docs/v2/backlog.md#bklg-032-bug--filtros-de-vínculo-em-relações-devem-manter-paridade-entre-sidepanel-e-grafo)
+**Backlog**: [BKLG-032](../../docs/backlog/backlog.md#bklg-032-bug--filtros-de-vínculo-em-relações-devem-manter-paridade-entre-sidepanel-e-grafo)
 **Created**: 2026-09-24
 **Status**: Draft
 

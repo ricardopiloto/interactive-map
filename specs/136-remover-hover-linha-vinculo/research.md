@@ -1,6 +1,6 @@
 # Research: Remover destaque de hover na linha de vínculo (Relações)
 
-Sem `[NEEDS CLARIFICATION]` — causa raiz e direcção confirmadas em [BKLG-025](../../docs/v2/backlog.md#bklg-025-design--remover-destaque-ao-passar-o-mouse-sobre-uma-linha-de-vínculo-grafo-de-relações) e na [spec.md](./spec.md).
+Sem `[NEEDS CLARIFICATION]` — causa raiz e direcção confirmadas em [BKLG-025](../../docs/backlog/backlog.md#bklg-025-design--remover-destaque-ao-passar-o-mouse-sobre-uma-linha-de-vínculo-grafo-de-relações) e na [spec.md](./spec.md).
 
 ## Decisão 1 — Apagar `hoveredEdgeId` por completo
 

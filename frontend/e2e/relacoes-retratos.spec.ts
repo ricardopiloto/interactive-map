@@ -35,7 +35,7 @@ test('relations character list uses portraits and preserves filtering and select
     const brokenPortraitRow = page.locator('.relacoes-page__row').filter({ hasText: fixture.characters.brokenPortrait.name })
     await brokenImageResponse
     await expect(brokenPortraitRow.locator('.relacoes-page__avatar img')).toHaveCount(0)
-    await expect(brokenPortraitRow.locator('.relacoes-page__avatar')).toHaveText('R')
+    await expect(brokenPortraitRow.locator('.relacoes-page__avatar')).toHaveText('S')
 
     const statusFilter = page.locator('.relacoes-page__status-filter select')
     await statusFilter.selectOption('morto')

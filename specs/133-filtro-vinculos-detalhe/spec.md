@@ -1,7 +1,7 @@
 # Feature Specification: Filtro de tipo de vínculo no painel de detalhe (Relações)
 
 **Feature Branch**: `133-filtro-vinculos-detalhe`
-**Backlog**: [BKLG-022](../../docs/v2/backlog.md#bklg-022-design--painel-de-detalhe-de-personagem-relações-não-tem-filtro-de-tipo-de-vínculo)
+**Backlog**: [BKLG-022](../../docs/backlog/backlog.md#bklg-022-design--painel-de-detalhe-de-personagem-relações-não-tem-filtro-de-tipo-de-vínculo)
 **Created**: 2026-09-24
 **Status**: Draft
 

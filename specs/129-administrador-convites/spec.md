@@ -1,7 +1,7 @@
 # Feature Specification: Administrador da aplicação e convites de mestres
 
 **Feature Branch**: `129-administrador-convites`
-**Backlog**: [BKLG-006](../../docs/v2/backlog.md#bklg-006-produto--administrador-da-aplicação-e-convites-de-novos-mestres)
+**Backlog**: [BKLG-006](../../docs/backlog/backlog.md#bklg-006-produto--administrador-da-aplicação-e-convites-de-novos-mestres)
 **Created**: 2026-09-23
 **Status**: Draft
 

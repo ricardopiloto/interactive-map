@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-019`/`docs/v2/backlog.md` — este documento não reabre a investigação, só formaliza o escopo da correção.
+- Causa raiz já confirmada em `BKLG-019`/`docs/backlog/backlog.md` — este documento não reabre a investigação, só formaliza o escopo da correção.

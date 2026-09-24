@@ -1,7 +1,7 @@
 # Feature Specification: CTAs da Home respeitam sessão já autenticada
 
 **Feature Branch**: `132-home-cta-autenticado`
-**Backlog**: [BKLG-021](../../docs/v2/backlog.md#bklg-021-bugdesign--home-marketing-manda-usuário-já-logado-pro-login-de-novo)
+**Backlog**: [BKLG-021](../../docs/backlog/backlog.md#bklg-021-bugdesign--home-marketing-manda-usuário-já-logado-pro-login-de-novo)
 **Created**: 2026-09-24
 **Status**: Draft
 

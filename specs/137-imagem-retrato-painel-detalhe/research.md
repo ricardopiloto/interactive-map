@@ -1,6 +1,6 @@
 # Research: Exibição da imagem do personagem no painel de detalhe (Relações)
 
-Sem `[NEEDS CLARIFICATION]` — causa raiz e direcção confirmadas em [BKLG-026](../../docs/v2/backlog.md#bklg-026-bugdesign--exibição-da-imagem-do-personagem-no-painel-de-detalhe-relações-desproporcional) e na [spec.md](./spec.md).
+Sem `[NEEDS CLARIFICATION]` — causa raiz e direcção confirmadas em [BKLG-026](../../docs/backlog/backlog.md#bklg-026-bugdesign--exibição-da-imagem-do-personagem-no-painel-de-detalhe-relações-desproporcional) e na [spec.md](./spec.md).
 
 ## Decisão 1 — Replicar a receita CSS dos forms, com `max-height: 140px`
 

@@ -7,6 +7,16 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.22.0] — 2026-09-24
+
+### Changed
+
+- Dono pode alterar o tema visual (gênero) de uma campanha existente no Painel; `PATCH /api/campanhas/{slug}/genero` grava a escolha e a mesa/cartões passam a refletir o tema salvo (antes imutável após a criação).
+
+### Fixed
+
+- Seleção de personagem no Mapa abre a ficha correspondente; em Relações, escolher pela lista ou pelo nó do grafo mantém o mesmo personagem selecionado e os detalhes no painel (BUG-001).
+
 ## [0.21.1] — 2026-09-24
 
 ### Changed

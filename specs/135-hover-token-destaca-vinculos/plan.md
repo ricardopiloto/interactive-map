@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/135-hover-token-destaca-vinculos/spec.md`
 
-**Backlog**: [BKLG-024](../../docs/v2/backlog.md#bklg-024-design--hover-no-token-do-personagem-grafo-de-relações-não-destaca-os-vínculos-dele)
+**Backlog**: [BKLG-024](../../docs/backlog/backlog.md#bklg-024-design--hover-no-token-do-personagem-grafo-de-relações-não-destaca-os-vínculos-dele)
 
 ## Summary
 

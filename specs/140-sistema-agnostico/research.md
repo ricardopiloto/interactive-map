@@ -1,6 +1,6 @@
 # Research: Sistema de RPG system agnostic (aceitar qualquer nome)
 
-Sem `[NEEDS CLARIFICATION]` — causa raiz e direcção confirmadas em [BKLG-029](../../docs/v2/backlog.md#bklg-029-produto--sistema-de-rpg-deveria-ser-system-agnostic-aceitar-qualquer-nome) e na [spec.md](./spec.md).
+Sem `[NEEDS CLARIFICATION]` — causa raiz e direcção confirmadas em [BKLG-029](../../docs/backlog/backlog.md#bklg-029-produto--sistema-de-rpg-deveria-ser-system-agnostic-aceitar-qualquer-nome) e na [spec.md](./spec.md).
 
 ## Decisão 1 — Remover allowlist; manter mapa de módulos
 

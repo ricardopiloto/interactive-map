@@ -1,7 +1,7 @@
 # Feature Specification: Diminuir a distância entre tokens no grafo de Relações
 
 **Feature Branch**: `138-diminuir-distancia-tokens`
-**Backlog**: [BKLG-027](../../docs/v2/backlog.md#bklg-027-design--diminuir-a-distância-entre-os-tokens-no-grafo-de-relações-em-30)
+**Backlog**: [BKLG-027](../../docs/backlog/backlog.md#bklg-027-design--diminuir-a-distância-entre-os-tokens-no-grafo-de-relações-em-30)
 **Created**: 2026-09-24
 **Status**: Draft
 

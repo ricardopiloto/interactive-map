@@ -1,7 +1,7 @@
 # Feature Specification: Campos de texto padronizados em Sessões e Linha do Tempo
 
 **Feature Branch**: `143-campos-texto-sessoes-linha-tempo`
-**Backlog**: [BKLG-033](../../docs/v2/backlog.md#bklg-033-design--campos-de-texto-de-sessões-e-linha-do-tempo-divergem-do-padrão-visual)
+**Backlog**: [BKLG-033](../../docs/backlog/backlog.md#bklg-033-design--campos-de-texto-de-sessões-e-linha-do-tempo-divergem-do-padrão-visual)
 **Created**: 2026-09-24
 **Status**: Draft
 

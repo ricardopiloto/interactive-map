@@ -31,5 +31,5 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-028`/`docs/v2/backlog.md`.
+- Causa raiz já confirmada em `BKLG-028`/`docs/backlog/backlog.md`.
 - **Correção (2026-09-24):** a v1 desta spec deixava em aberto se o rótulo do botão mudaria de "1:1" — o usuário corrigiu: o texto MUST continuar "1:1", só o comportamento do clique muda. FR-001 e Assumptions atualizados.

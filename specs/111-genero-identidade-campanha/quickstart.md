@@ -17,15 +17,17 @@ uv run alembic -c alembic_control.ini upgrade head
 
 **Expect**: every `campanha.genero` NOT NULL; WFRP → `fantasia`; WoD → `gotico`.
 
-## 2. API create + immutability
+## 2. API create + owner-only update
 
 ```bash
 # POST /api/campanhas with genero=scifi → 201 + genero in body
 # POST without genero → error
-# No API to PATCH genero
+# PATCH /api/campanhas/{slug}/genero — owner updates any of the 4 genre ids
+# anonymous / non-owner denied; invalid genero rejected without changing saved value
+# GET /api/c/{slug}/config reflects the saved genero
 ```
 
-**Expect**: FR-001/002/010.
+**Expect**: campaign genre creation and the post-creation owner update work; prior palette, migration, and export/import behavior remains unchanged.
 
 ## 3. Capa only
 

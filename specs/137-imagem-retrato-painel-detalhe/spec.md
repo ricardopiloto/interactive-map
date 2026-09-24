@@ -1,7 +1,7 @@
 # Feature Specification: Exibição da imagem do personagem no painel de detalhe (Relações)
 
 **Feature Branch**: `137-imagem-retrato-painel-detalhe`
-**Backlog**: [BKLG-026](../../docs/v2/backlog.md#bklg-026-bugdesign--exibição-da-imagem-do-personagem-no-painel-de-detalhe-relações-desproporcional)
+**Backlog**: [BKLG-026](../../docs/backlog/backlog.md#bklg-026-bugdesign--exibição-da-imagem-do-personagem-no-painel-de-detalhe-relações-desproporcional)
 **Created**: 2026-09-24
 **Status**: Draft
 

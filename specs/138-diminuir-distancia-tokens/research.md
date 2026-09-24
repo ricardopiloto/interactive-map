@@ -1,6 +1,6 @@
 # Research: Diminuir a distância entre tokens no grafo de Relações
 
-Sem `[NEEDS CLARIFICATION]` bloqueante — a spec permite afinar o valor exacto com QA visual desde que ~30% e sem sobreposição. Decisões abaixo fecham o “não totalmente decidido” do [BKLG-027](../../docs/v2/backlog.md#bklg-027-design--diminuir-a-distância-entre-os-tokens-no-grafo-de-relações-em-30).
+Sem `[NEEDS CLARIFICATION]` bloqueante — a spec permite afinar o valor exacto com QA visual desde que ~30% e sem sobreposição. Decisões abaixo fecham o “não totalmente decidido” do [BKLG-027](../../docs/backlog/backlog.md#bklg-027-design--diminuir-a-distância-entre-os-tokens-no-grafo-de-relações-em-30).
 
 ## Decisão 1 — Cortar as **duas** bases (overview 120 e foco 240), não só `OVERVIEW_SPACING`
 

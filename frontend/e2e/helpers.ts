@@ -32,6 +32,12 @@ export async function applyAuth(context: BrowserContext, session = loadSession()
       sameSite: 'Lax',
     },
   ])
+  // page.request/context.request make plain Node-side HTTP calls — they never carry a
+  // browser-derived Origin header, so mutating admin calls made via fixtures before any
+  // page.goto() (e.g. seedCharacterPortraits, seedRelations, seedTimeline) hit the backend's
+  // CsrfOriginMiddleware (app/middleware/csrf.py) and get 403 CSRF_ORIGIN_INVALIDA. Setting it
+  // here once covers every fixture/spec that calls applyAuth first.
+  await context.setExtraHTTPHeaders({ origin: session.origin })
 }
 
 export async function setLocale(page: Page, locale: 'pt-BR' | 'en') {

@@ -1,6 +1,6 @@
 ---
 stepsCompleted: [1, 2, 3, 4]
-inputDocuments: ['docs/v2/backlog.md#bklg-030']
+inputDocuments: ['docs/backlog/backlog.md#bklg-030']
 session_topic: 'BKLG-030 — Linha do Tempo vertical da campanha (Codex da Campanha)'
 session_goals: 'Fechar as perguntas em aberto (dado derivado vs. entidade nova, formato de data/calendário, o que aparece em cada ponto, visibilidade mestre/jogador) e chegar numa direção de protótipo de tela antes de qualquer TR/spec formal.'
 selected_approach: 'ai-recommended'
@@ -9,7 +9,7 @@ ideas_generated: 6
 technique_execution_complete: true
 session_active: false
 workflow_completed: true
-context_file: 'docs/v2/backlog.md'
+context_file: 'docs/backlog/backlog.md'
 ---
 
 # Brainstorming Session Results
@@ -25,7 +25,7 @@ context_file: 'docs/v2/backlog.md'
 
 ### Context Guidance
 
-Levantamento técnico feito antes da sessão (ver `BKLG-030` em `docs/v2/backlog.md`): hoje não existe calendário de ficção estruturado — `Sessao.data_rotulo` e `Local.data_sessao` são só rótulos de texto livre. `Local` já tem relação N:N com `NPC` (via `LocalNPCLink`), mas sem "quando". `Sessao` já é uma cronologia numerada com `visivel_para_todos`.
+Levantamento técnico feito antes da sessão (ver `BKLG-030` em `docs/backlog/backlog.md`): hoje não existe calendário de ficção estruturado — `Sessao.data_rotulo` e `Local.data_sessao` são só rótulos de texto livre. `Local` já tem relação N:N com `NPC` (via `LocalNPCLink`), mas sem "quando". `Sessao` já é uma cronologia numerada com `visivel_para_todos`.
 
 ### Session Setup
 
@@ -88,7 +88,7 @@ Sessão convergente (não divergente) — as 6 decisões já formam um único pa
 - Jogador: mesma tela, somente leitura, sem botão de criar.
 - Navegação cruzada: clicar num Local/Personagem citado leva direto ao perfil dele (mesmo padrão já usado em Relações/Mapa).
 
-**Ação imediata:** registrar essas decisões no `BKLG-030` (`docs/v2/backlog.md`) e montar um protótipo visual da tela, conforme pedido original do usuário. De lá, o item fica pronto para `/speckit-specify`.
+**Ação imediata:** registrar essas decisões no `BKLG-030` (`docs/backlog/backlog.md`) e montar um protótipo visual da tela, conforme pedido original do usuário. De lá, o item fica pronto para `/speckit-specify`.
 
 ## Session Summary and Insights
 

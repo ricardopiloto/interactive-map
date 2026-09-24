@@ -1,6 +1,6 @@
 # Research: Hover no token do personagem destaca seus vínculos (Relações)
 
-Sem `[NEEDS CLARIFICATION]` — causa raiz e direção confirmadas em [BKLG-024](../../docs/v2/backlog.md#bklg-024-design--hover-no-token-do-personagem-grafo-de-relações-não-destaca-os-vínculos-dele) e na [spec.md](./spec.md).
+Sem `[NEEDS CLARIFICATION]` — causa raiz e direção confirmadas em [BKLG-024](../../docs/backlog/backlog.md#bklg-024-design--hover-no-token-do-personagem-grafo-de-relações-não-destaca-os-vínculos-dele) e na [spec.md](./spec.md).
 
 ## Decisão 1 — Callback `onHoverPersonagem` no GraphStage → `setHoveredId` no pai
 
@@ -30,6 +30,6 @@ Sem `[NEEDS CLARIFICATION]` — causa raiz e direção confirmadas em [BKLG-024]
 
 ## Decisão 4 — Fora de escopo: hover em aresta (`hoveredEdgeId`)
 
-**Decisão**: Não tocar em `hoveredEdgeId` / label mid-edge (isso é [BKLG-025](../../docs/v2/backlog.md) / spec 136).
+**Decisão**: Não tocar em `hoveredEdgeId` / label mid-edge (isso é [BKLG-025](../../docs/backlog/backlog.md) / spec 136).
 
 **Rationale**: Pedido desta feature é só token → vínculos via `hoveredId`. Misturar remoção de hover de linha aumenta risco e acopla duas specs.

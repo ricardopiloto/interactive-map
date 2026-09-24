@@ -74,6 +74,12 @@ export const campanhasApi = {
       { method: 'PATCH', body: JSON.stringify({ unidade_distancia }) },
       true,
     ),
+  patchGenero: (slug: string, genero: GenreId) =>
+    req<{ slug: string; genero: GenreId }>(
+      `/api/campanhas/${encodeURIComponent(slug)}/genero`,
+      { method: 'PATCH', body: JSON.stringify({ genero }) },
+      true,
+    ),
   patchCapa: (
     slug: string,
     body: {

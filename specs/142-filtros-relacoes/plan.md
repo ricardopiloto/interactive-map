@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/142-filtros-relacoes/spec.md`
 
-**Backlog**: [BKLG-032](../../docs/v2/backlog.md#bklg-032-bug--filtros-de-vínculo-em-relações-devem-manter-paridade-entre-sidepanel-e-grafo)
+**Backlog**: [BKLG-032](../../docs/backlog/backlog.md#bklg-032-bug--filtros-de-vínculo-em-relações-devem-manter-paridade-entre-sidepanel-e-grafo)
 
 ## Summary
 

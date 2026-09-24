@@ -67,7 +67,7 @@ No schema, API, model, or shared application component is required. `Personagem.
 **Purpose**: Validate both stories together on supported viewports.
 
 - [X] T008 Run `npm run build` and `npm run lint` from `frontend/`; confirm both commands pass for the application code in `frontend/package.json`
-- [ ] T009 Run `npm run test:e2e -- e2e/mapa-retratos.spec.ts e2e/relacoes-retratos.spec.ts` from `frontend/`; confirm portrait/fallback behavior and desktop/mobile rows have no horizontal overflow (pending: Playwright Chromium is not installed)
+- [X] T009 Run `npm run test:e2e -- e2e/mapa-retratos.spec.ts e2e/relacoes-retratos.spec.ts` from `frontend/`; confirm portrait/fallback behavior and desktop/mobile rows have no horizontal overflow (pending: Playwright Chromium is not installed)
 
 ---
 

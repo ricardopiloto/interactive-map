@@ -1,7 +1,7 @@
 # Feature Specification: Remover destaque de hover na linha de vínculo (Relações)
 
 **Feature Branch**: `136-remover-hover-linha-vinculo`
-**Backlog**: [BKLG-025](../../docs/v2/backlog.md#bklg-025-design--remover-destaque-ao-passar-o-mouse-sobre-uma-linha-de-vínculo-grafo-de-relações)
+**Backlog**: [BKLG-025](../../docs/backlog/backlog.md#bklg-025-design--remover-destaque-ao-passar-o-mouse-sobre-uma-linha-de-vínculo-grafo-de-relações)
 **Created**: 2026-09-24
 **Status**: Draft
 

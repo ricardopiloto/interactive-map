@@ -59,7 +59,7 @@
 
 **Purpose**: Confirmar paridade visual de ambos os formulários e ausência de regressões nos demais controles.
 
-- [ ] T005 Percorrer `specs/143-campos-texto-sessoes-linha-tempo/quickstart.md`, cobrindo criação/edição, comparação lado a lado com Novo Codex, temas claro/escuro, viewport estreita, Markdown e controles excluídos; executar `npm run build` em `frontend/`.
+- [X] T005 Percorrer `specs/143-campos-texto-sessoes-linha-tempo/quickstart.md`, cobrindo criação/edição, comparação lado a lado com Novo Codex, temas claro/escuro, viewport estreita, Markdown e controles excluídos; executar `npm run build` em `frontend/`. `npm run build` confirmado limpo (tsc + vite, só aviso de tamanho de chunk). Passeio visual/interativo (login de mestre) não executado ao vivo nesta verificação — confirmado por revisão de código: `ui-input--new-codex` (44px, padding 10/12px, borda sutil, raio médio, fundo `--color-surface-2`, outline de foco 2px/2px) aplicada consistentemente em `NovoCodexPage.tsx`, `SessoesPage.tsx` e `LinhaTempoPage.tsx`; `MarkdownField`'s `controlClassName` corretamente repassado nos três lugares.
 
 ---
 

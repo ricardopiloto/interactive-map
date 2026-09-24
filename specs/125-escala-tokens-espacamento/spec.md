@@ -1,7 +1,7 @@
 # Feature Specification: Escala consistente de espaçamento
 
 **Feature Branch**: `125-escala-tokens-espacamento`  
-**Backlog**: [BKLG-003](../../docs/v2/backlog.md#bklg-003-debito-tecnico--escala-de-espaco-fora-de-ordem-em-tokenscss)  
+**Backlog**: [BKLG-003](../../docs/backlog/backlog.md#bklg-003-debito-tecnico--escala-de-espaco-fora-de-ordem-em-tokenscss)  
 **Created**: 2026-09-23  
 **Status**: Draft
 

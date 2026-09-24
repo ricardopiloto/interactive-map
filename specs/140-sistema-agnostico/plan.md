@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/140-sistema-agnostico/spec.md`
 
-**Backlog**: [BKLG-029](../../docs/v2/backlog.md#bklg-029-produto--sistema-de-rpg-deveria-ser-system-agnostic-aceitar-qualquer-nome)
+**Backlog**: [BKLG-029](../../docs/backlog/backlog.md#bklg-029-produto--sistema-de-rpg-deveria-ser-system-agnostic-aceitar-qualquer-nome)
 
 ## Summary
 

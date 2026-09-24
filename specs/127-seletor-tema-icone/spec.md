@@ -1,7 +1,7 @@
 # Feature Specification: Seletor de tema compacto
 
 **Feature Branch**: `127-seletor-tema-icone`  
-**Backlog**: [BKLG-009](../../docs/v2/backlog.md#bklg-009-design--botao-de-tema-so-com-icone-tres-estados)  
+**Backlog**: [BKLG-009](../../docs/backlog/backlog.md#bklg-009-design--botao-de-tema-so-com-icone-tres-estados)  
 **Created**: 2026-09-23  
 **Status**: Draft
 

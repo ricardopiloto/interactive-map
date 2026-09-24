@@ -1,7 +1,7 @@
 # Feature Specification: Gestão de arcos narrativos
 
 **Feature Branch**: `123-gestao-arcos`  
-**Backlog**: [BKLG-001](../../docs/v2/backlog.md#bklg-001-gap--gestao-de-arcos-nao-foi-desenhada-no-frontend-next)  
+**Backlog**: [BKLG-001](../../docs/backlog/backlog.md#bklg-001-gap--gestao-de-arcos-nao-foi-desenhada-no-frontend-next)  
 **Created**: 2026-09-23  
 **Status**: Draft
 

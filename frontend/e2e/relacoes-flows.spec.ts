@@ -14,7 +14,9 @@ test('search, type filters, list selection, graph selection, and mobile panel st
     await search.fill(`${fixture.prefix}-11`)
     await expect(page.locator('.relacoes-page__row-title')).toHaveText(`${fixture.prefix}-11`)
     await search.clear()
-    await expect(page.locator('.relacoes-page__row-title')).toContainText(fixture.prefix)
+    await expect(
+      page.locator('.relacoes-page__row-title').filter({ hasText: fixture.prefix }),
+    ).toHaveCount(fixture.characterIds.length)
 
     const friendChip = page.getByRole('button', { name: 'Amizade' })
     await friendChip.dblclick()
@@ -25,14 +27,16 @@ test('search, type filters, list selection, graph selection, and mobile panel st
     const listed = page.locator('.relacoes-page__row-title').filter({ hasText: `${fixture.prefix}-11` })
     await listed.click()
     await expect(page.locator(`[data-node-id="${fixture.characterIds[11]}"]`)).toHaveClass(/graph-node--selected/)
+    await expect(page.locator('.relacoes-page__detail-title')).toHaveText(`${fixture.prefix}-11`)
     await page.locator(`[data-node-id="${fixture.characterIds[0]}"]`).click()
     await expect(page.locator(`[data-node-id="${fixture.characterIds[0]}"]`)).toHaveClass(/graph-node--selected/)
+    await expect(page.locator('.relacoes-page__detail-title')).toHaveText(`${fixture.prefix}-0`)
 
     if (testInfo.project.name === 'mobile') {
       const expand = page.getByRole('button', { name: 'Expand panel' })
       if (await expand.isVisible()) await expand.click()
       await expect(page.locator('.map-panel[data-expanded="true"]')).toBeVisible()
-      await expect(page.getByPlaceholder('Buscar personagem…')).toBeVisible()
+      await expect(page.locator('.relacoes-page__detail-title')).toHaveText(`${fixture.prefix}-0`)
     }
 
     await page.getByTitle('Modo edição desligado — clicar para editar').click()
@@ -41,4 +45,3 @@ test('search, type filters, list selection, graph selection, and mobile panel st
     await fixture.cleanup()
   }
 })
-

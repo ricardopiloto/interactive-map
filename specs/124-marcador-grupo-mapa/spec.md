@@ -1,7 +1,7 @@
 # Feature Specification: Posição e formato do marcador do grupo
 
 **Feature Branch**: `124-marcador-grupo-mapa`  
-**Backlog**: [BKLG-002](../../docs/v2/backlog.md#bklg-002-gap--mover-o-marcador-do-grupo-e-trocar-formato-bandeirabrasao-nao-existe-no-frontend-next)  
+**Backlog**: [BKLG-002](../../docs/backlog/backlog.md#bklg-002-gap--mover-o-marcador-do-grupo-e-trocar-formato-bandeirabrasao-nao-existe-no-frontend-next)  
 **Created**: 2026-09-23  
 **Status**: Draft
 

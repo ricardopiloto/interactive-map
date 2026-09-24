@@ -1,6 +1,6 @@
 # Research: Linha do Tempo vertical da campanha
 
-Sem `[NEEDS CLARIFICATION]` — decisões fechadas no [BP](../../docs/brainstorming/brainstorming-session-2026-09-24-1154.md) / [BKLG-030](../../docs/v2/backlog.md#bklg-030-produto--linha-do-tempo-vertical-da-campanha-novo-menu-ao-lado-de-sessões) e confirmadas contra o código (padrão Sessão).
+Sem `[NEEDS CLARIFICATION]` — decisões fechadas no [BP](../../docs/brainstorming/brainstorming-session-2026-09-24-1154.md) / [BKLG-030](../../docs/backlog/backlog.md#bklg-030-produto--linha-do-tempo-vertical-da-campanha-novo-menu-ao-lado-de-sessões) e confirmadas contra o código (padrão Sessão).
 
 ## Decisão 1 — Espelhar Sessão, não derivar de Sessão/Local
 

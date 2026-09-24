@@ -31,5 +31,5 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-029`/`docs/v2/backlog.md` — hoje só `wfrp4e`/`wod` passam na validação (`KNOWN_SISTEMAS`), apesar do campo do formulário já ser texto livre.
+- Causa raiz já confirmada em `BKLG-029`/`docs/backlog/backlog.md` — hoje só `wfrp4e`/`wod` passam na validação (`KNOWN_SISTEMAS`), apesar do campo do formulário já ser texto livre.
 - Testes automatizados existentes que hoje esperam `SISTEMA_INVALIDO`/`SISTEMA_DESCONHECIDO` pra nomes fora da lista precisarão ser atualizados durante a implementação — sinalizado na Constitution desta spec.

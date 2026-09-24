@@ -1,7 +1,7 @@
 # Feature Specification: MapSidePanel colapsável no desktop
 
 **Feature Branch**: `130-painel-colapsavel-mapa`
-**Backlog**: [BKLG-004](../../docs/v2/backlog.md#bklg-004-design--mapsidepanel-colapsável)
+**Backlog**: [BKLG-004](../../docs/backlog/backlog.md#bklg-004-design--mapsidepanel-colapsável)
 **Created**: 2026-09-23
 **Status**: Draft
 
@@ -100,5 +100,5 @@ Não aplicável — mudança de comportamento de interface sobre um componente e
 
 - O estado colapsado/expandido não é lembrado entre visitas — é sempre reconstruído a partir da interação corrente, conforme fechado na sessão de brainstorming.
 - Esta feature cobre apenas o comportamento em desktop; o comportamento móvel já resolvido (folha inferior) permanece como está.
-- O item [`BKLG-016`](../../docs/v2/backlog.md#bklg-016-produtodesign--unificar-mapa-e-rota-numa-única-tela) (unificar Mapa e Rota) pode alterar novamente o comportamento inicial da Rota no futuro — esta spec não antecipa nem depende dele, só alinha a Rota ao mesmo padrão das outras duas telas por ora.
+- O item [`BKLG-016`](../../docs/backlog/backlog.md#bklg-016-produtodesign--unificar-mapa-e-rota-numa-única-tela) (unificar Mapa e Rota) pode alterar novamente o comportamento inicial da Rota no futuro — esta spec não antecipa nem depende dele, só alinha a Rota ao mesmo padrão das outras duas telas por ora.
 - Sem string de i18n nova — reaproveita as chaves `panel.expand`/`panel.collapse` já existentes no componente.

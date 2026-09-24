@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/137-imagem-retrato-painel-detalhe/spec.md`
 
-**Backlog**: [BKLG-026](../../docs/v2/backlog.md#bklg-026-bugdesign--exibição-da-imagem-do-personagem-no-painel-de-detalhe-relações-desproporcional)
+**Backlog**: [BKLG-026](../../docs/backlog/backlog.md#bklg-026-bugdesign--exibição-da-imagem-do-personagem-no-painel-de-detalhe-relações-desproporcional)
 
 ## Summary
 

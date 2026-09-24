@@ -11,6 +11,8 @@ from app.schemas.campanhas import (
     CapaResponse,
     CriarCampanhaRequest,
     CriarCampanhaResponse,
+    GeneroRequest,
+    GeneroResponse,
     MinhasResponse,
     UnidadeDistanciaRequest,
     UnidadeDistanciaResponse,
@@ -24,6 +26,7 @@ from app.services.campanha_admin import (
     list_catalogo_publico,
     list_minhas_campanhas,
     set_capa,
+    set_genero,
     set_unidade_distancia,
     set_visibilidade,
 )
@@ -129,6 +132,19 @@ def patch_capa(
         capa_arquivo=capa,
         capa_url=media_url(camp.slug, "covers", capa) if capa else None,
     )
+
+
+@router.patch("/{slug}/genero", response_model=GeneroResponse)
+def patch_genero(
+    slug: str,
+    body: GeneroRequest,
+    _ctx: MembroContext = Depends(require_dono),
+) -> GeneroResponse:
+    try:
+        camp = set_genero(slug, body.genero)
+    except CampanhaAdminError as exc:
+        raise_api_error(exc.codigo, status_code=_admin_error_status(exc.codigo))
+    return GeneroResponse(slug=camp.slug, genero=camp.genero)
 
 
 @router.post("/import", status_code=status.HTTP_201_CREATED)

@@ -10,6 +10,7 @@ import { CampaignCard } from '../components/campaign/CampaignCard'
 import { SiteChrome } from '../components/layout/SiteChrome'
 import { clearInstanceConfigCache } from '../hooks/useInstanceConfig'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
+import { GENRE_IDS, type GenreId, resolveGenreId } from '../theme/genres'
 import './PainelPage.css'
 import { Button } from '../components/ui'
 import { createLoginModalState, publicLoginBackground } from '../utils/loginNavigation'
@@ -29,6 +30,8 @@ export function PainelPage() {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [genreDrafts, setGenreDrafts] = useState<Record<string, GenreId>>({})
+  const [savingGenreSlugs, setSavingGenreSlugs] = useState<Set<string>>(() => new Set())
   const [importSlug, setImportSlug] = useState('')
 
   const refresh = useCallback(async () => {
@@ -76,6 +79,41 @@ export function PainelPage() {
       await refresh()
     } catch (err) {
       setError(errMsg(err))
+    }
+  }
+
+  function cancelGenreChange(slug: string) {
+    setGenreDrafts((current) => {
+      const next = { ...current }
+      delete next[slug]
+      return next
+    })
+    setError(null)
+  }
+
+  async function saveGenreChange(item: PainelItem) {
+    const genero = genreDrafts[item.slug]
+    if (!genero || genero === resolveGenreId(item.genero)) return
+
+    setSavingGenreSlugs((current) => new Set(current).add(item.slug))
+    setError(null)
+    try {
+      const updated = await campanhasApi.patchGenero(item.slug, genero)
+      clearInstanceConfigCache(item.slug)
+      setItems((current) =>
+        current?.map((campaign) =>
+          campaign.slug === item.slug ? { ...campaign, genero: updated.genero } : campaign,
+        ) ?? null,
+      )
+      cancelGenreChange(item.slug)
+    } catch (err) {
+      setError(errMsg(err))
+    } finally {
+      setSavingGenreSlugs((current) => {
+        const next = new Set(current)
+        next.delete(item.slug)
+        return next
+      })
     }
   }
 
@@ -157,6 +195,10 @@ export function PainelPage() {
         <div className="painel-page__grid">
           {items?.map((c) => {
             const pct = Math.min(100, Math.round((c.bytes_usados / Math.max(1, c.cota_bytes)) * 100))
+            const savedGenre = resolveGenreId(c.genero)
+            const selectedGenre = genreDrafts[c.slug] ?? savedGenre
+            const hasGenreChange = selectedGenre !== savedGenre
+            const savingThisGenre = savingGenreSlugs.has(c.slug)
             return (
               <CampaignCard
                 key={c.slug}
@@ -194,6 +236,48 @@ export function PainelPage() {
                       </Button>
                     </div>
                     <div className="painel-page__identidade">
+                      <label className="painel-page__genre">
+                        {t('painel.genreEdit')}
+                        <select
+                          value={selectedGenre}
+                          aria-label={t('painel.genreEdit')}
+                          disabled={savingThisGenre}
+                          onChange={(event) =>
+                            setGenreDrafts((current) => ({
+                              ...current,
+                              [c.slug]: event.target.value as GenreId,
+                            }))
+                          }
+                        >
+                          {GENRE_IDS.map((genre) => (
+                            <option key={genre} value={genre}>
+                              {t(`painel.genre_${genre}`)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {hasGenreChange ? (
+                        <div className="painel-page__genre-actions">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            type="button"
+                            disabled={savingThisGenre}
+                            onClick={() => void saveGenreChange(c)}
+                          >
+                            {savingThisGenre ? t('painel.genreSaving') : t('painel.genreSave')}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            type="button"
+                            disabled={savingThisGenre}
+                            onClick={() => cancelGenreChange(c.slug)}
+                          >
+                            {t('painel.genreCancel')}
+                          </Button>
+                        </div>
+                      ) : null}
                       <label className="painel-page__capa">
                         {t('painel.cover')}
                         <input

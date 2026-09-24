@@ -245,3 +245,22 @@ def set_capa(
         session.refresh(row)
         session.expunge(row)
         return row
+
+
+def set_genero(slug: str, genero: str) -> Campanha:
+    try:
+        genero_n = normalize_genero(genero)
+    except ValueError as exc:
+        raise CampanhaAdminError(str(exc)) from None
+
+    init_control()
+    with Session(get_control_engine()) as session:
+        row = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
+        if row is None or not row.activa:
+            raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
+        row.genero = genero_n
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        session.expunge(row)
+        return row

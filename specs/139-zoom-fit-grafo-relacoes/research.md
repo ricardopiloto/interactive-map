@@ -1,6 +1,6 @@
 # Research: Botão "1:1" ajusta a tela pra mostrar todos os tokens (Relações)
 
-Sem `[NEEDS CLARIFICATION]` — causa raiz em [BKLG-028](../../docs/v2/backlog.md#bklg-028-bugdesign--botão-11-no-grafo-de-relações-não-ajusta-a-tela-para-mostrar-todos-os-tokens); assunção da spec deixa o rótulo ao plan.
+Sem `[NEEDS CLARIFICATION]` — causa raiz em [BKLG-028](../../docs/backlog/backlog.md#bklg-028-bugdesign--botão-11-no-grafo-de-relações-não-ajusta-a-tela-para-mostrar-todos-os-tokens); assunção da spec deixa o rótulo ao plan.
 
 ## Decisão 1 — Fit-to-view com o transform actual (não reinventar o sistema de coords)
 

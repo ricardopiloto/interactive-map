@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-026`/`docs/v2/backlog.md`, com print anexado pelo usuário como evidência visual do problema.
+- Causa raiz já confirmada em `BKLG-026`/`docs/backlog/backlog.md`, com print anexado pelo usuário como evidência visual do problema.

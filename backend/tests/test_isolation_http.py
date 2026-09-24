@@ -106,3 +106,34 @@ def test_config_differs_per_campaign(client: TestClient, data_root: Path) -> Non
     assert b["sistema"] == "wod"
     assert "fadiga" in a["modulos_ativos"]
     assert b["modulos_ativos"] == []
+
+
+def test_patch_genero_is_isolated_to_campaign_slug(client: TestClient, data_root: Path) -> None:
+    _create_campanha(
+        slug="tema-a",
+        nome="Tema A",
+        sistema="wfrp4e",
+        genero="fantasia",
+    )
+    _create_campanha(
+        slug="tema-b",
+        nome="Tema B",
+        sistema="wod",
+        genero="urbano",
+    )
+    with Session(get_control_engine()) as control:
+        assign_owner(control, "tema-a", TEST_GM_EMAIL)
+        assign_owner(control, "tema-b", TEST_GM_EMAIL)
+
+    changed = client.patch(
+        "/api/campanhas/tema-a/genero",
+        json={"genero": "gotico"},
+    )
+
+    assert changed.status_code == 200, changed.text
+    config_a = client.get("/api/c/tema-a/config").json()
+    config_b = client.get("/api/c/tema-b/config").json()
+    assert config_a["genero"] == "gotico"
+    assert config_a["sistema"] == "wfrp4e"
+    assert config_b["genero"] == "urbano"
+    assert config_b["sistema"] == "wod"

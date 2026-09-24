@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/141-linha-tempo-eventos/spec.md`
 
-**Backlog**: [BKLG-030](../../docs/v2/backlog.md#bklg-030-produto--linha-do-tempo-vertical-da-campanha-novo-menu-ao-lado-de-sessões)
+**Backlog**: [BKLG-030](../../docs/backlog/backlog.md#bklg-030-produto--linha-do-tempo-vertical-da-campanha-novo-menu-ao-lado-de-sessões)
 
 ## Summary
 

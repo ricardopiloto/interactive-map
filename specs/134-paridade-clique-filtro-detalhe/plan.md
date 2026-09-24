@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/134-paridade-clique-filtro-detalhe/spec.md`
 
-**Backlog**: [BKLG-023](../../docs/v2/backlog.md#bklg-023-bugdesign--filtro-do-painel-de-detalhe-relações-não-tem-paridade-de-clique-com-o-filtro-do-grafo-geral)
+**Backlog**: [BKLG-023](../../docs/backlog/backlog.md#bklg-023-bugdesign--filtro-do-painel-de-detalhe-relações-não-tem-paridade-de-clique-com-o-filtro-do-grafo-geral)
 
 ## Summary
 

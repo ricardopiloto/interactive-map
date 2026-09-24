@@ -1,7 +1,7 @@
 # Feature Specification: Botão "1:1" ajusta a tela pra mostrar todos os tokens (Relações)
 
 **Feature Branch**: `139-zoom-fit-grafo-relacoes`
-**Backlog**: [BKLG-028](../../docs/v2/backlog.md#bklg-028-bugdesign--botão-11-no-grafo-de-relações-não-ajusta-a-tela-para-mostrar-todos-os-tokens)
+**Backlog**: [BKLG-028](../../docs/backlog/backlog.md#bklg-028-bugdesign--botão-11-no-grafo-de-relações-não-ajusta-a-tela-para-mostrar-todos-os-tokens)
 **Created**: 2026-09-24
 **Status**: Draft
 

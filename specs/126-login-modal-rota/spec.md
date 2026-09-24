@@ -1,7 +1,7 @@
 # Feature Specification: Login em modal com retorno ao contexto
 
 **Feature Branch**: `126-login-modal-rota`
-**Backlog**: [BKLG-008](../../docs/v2/backlog.md#bklg-008-design--login-em-modal-flutuante-em-vez-de-pagina-separada)
+**Backlog**: [BKLG-008](../../docs/backlog/backlog.md#bklg-008-design--login-em-modal-flutuante-em-vez-de-pagina-separada)
 **Created**: 2026-09-23
 **Status**: Draft
 

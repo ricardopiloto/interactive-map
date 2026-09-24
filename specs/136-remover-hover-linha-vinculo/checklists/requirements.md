@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-025`/`docs/v2/backlog.md` — é uma remoção pontual de comportamento existente, sem TR necessário.
+- Causa raiz já confirmada em `BKLG-025`/`docs/backlog/backlog.md` — é uma remoção pontual de comportamento existente, sem TR necessário.

@@ -1,7 +1,7 @@
 # Feature Specification: Sistema de RPG system agnostic (aceitar qualquer nome)
 
 **Feature Branch**: `140-sistema-agnostico`
-**Backlog**: [BKLG-029](../../docs/v2/backlog.md#bklg-029-produto--sistema-de-rpg-deveria-ser-system-agnostic-aceitar-qualquer-nome)
+**Backlog**: [BKLG-029](../../docs/backlog/backlog.md#bklg-029-produto--sistema-de-rpg-deveria-ser-system-agnostic-aceitar-qualquer-nome)
 **Created**: 2026-09-24
 **Status**: Draft
 

@@ -155,6 +155,29 @@
   border-top: 1px solid var(--color-divider);
 }
 
+.painel-page__genre {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  min-width: 12rem;
+}
+
+.painel-page__genre select {
+  min-height: 36px;
+  padding: 0.35rem 0.55rem;
+  color: inherit;
+  background: var(--color-surface, var(--color-bg));
+  border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.painel-page__genre-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
 .painel-page__capa {
   display: flex;
   flex-direction: column;

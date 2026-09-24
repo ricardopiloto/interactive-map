@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-024`/`docs/v2/backlog.md` — o mecanismo de destaque (`hoveredId`/`previewId`) já existe e já funciona pela lista lateral; esta spec só cobre o gatilho novo no canvas.
+- Causa raiz já confirmada em `BKLG-024`/`docs/backlog/backlog.md` — o mecanismo de destaque (`hoveredId`/`previewId`) já existe e já funciona pela lista lateral; esta spec só cobre o gatilho novo no canvas.

@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/143-campos-texto-sessoes-linha-tempo/spec.md`
 
-**Backlog**: [BKLG-033](../../docs/v2/backlog.md#bklg-033-design--campos-de-texto-de-sessões-e-linha-do-tempo-divergem-do-padrão-visual)
+**Backlog**: [BKLG-033](../../docs/backlog/backlog.md#bklg-033-design--campos-de-texto-de-sessões-e-linha-do-tempo-divergem-do-padrão-visual)
 
 ## Summary
 

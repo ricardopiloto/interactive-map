@@ -1,6 +1,6 @@
 # Research: Paridade de clique no filtro do painel de detalhe (Relações)
 
-Sem `[NEEDS CLARIFICATION]` — causa raiz e direção já confirmadas em [BKLG-023](../../docs/v2/backlog.md#bklg-023-bugdesign--filtro-do-painel-de-detalhe-relações-não-tem-paridade-de-clique-com-o-filtro-do-grafo-geral) e na [spec.md](./spec.md).
+Sem `[NEEDS CLARIFICATION]` — causa raiz e direção já confirmadas em [BKLG-023](../../docs/backlog/backlog.md#bklg-023-bugdesign--filtro-do-painel-de-detalhe-relações-não-tem-paridade-de-clique-com-o-filtro-do-grafo-geral) e na [spec.md](./spec.md).
 
 ## Decisão 1 — Extrair a mecânica de clique; não copiar o bloco duas vezes
 

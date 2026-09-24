@@ -1,7 +1,7 @@
 # Feature Specification: Corrigir travamento ao entrar numa campanha vindo de fora
 
 **Feature Branch**: `131-corrida-slug-campanha`
-**Backlog**: [BKLG-019](../../docs/v2/backlog.md#bklg-019-bug--sair-de-explorar-direto-pra-uma-campanha-trava-a-tela-campaign_slug_required)
+**Backlog**: [BKLG-019](../../docs/backlog/backlog.md#bklg-019-bug--sair-de-explorar-direto-pra-uma-campanha-trava-a-tela-campaign_slug_required)
 **Created**: 2026-09-24
 **Status**: Draft
 

@@ -35,10 +35,14 @@ test('map character list shows portraits and keeps initials as fallback', async 
     const brokenPortraitRow = page.locator('.map-page__row').filter({ hasText: fixture.characters.brokenPortrait.name })
     await brokenImageResponse
     await expect(brokenPortraitRow.locator('.map-page__avatar img')).toHaveCount(0)
-    await expect(brokenPortraitRow.locator('.map-page__avatar')).toHaveText('R')
+    await expect(brokenPortraitRow.locator('.map-page__avatar')).toHaveText('S')
 
     await portraitRow.click()
     await expect(page.locator('.map-page__detail-title')).toHaveText(fixture.characters.withPortrait.name)
+
+    await page.getByRole('button', { name: 'Voltar à lista' }).click()
+    await noPortraitRow.click()
+    await expect(page.locator('.map-page__detail-title')).toHaveText(fixture.characters.withoutPortrait.name)
   } finally {
     await fixture.cleanup()
   }

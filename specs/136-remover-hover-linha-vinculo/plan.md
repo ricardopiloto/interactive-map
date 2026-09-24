@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/136-remover-hover-linha-vinculo/spec.md`
 
-**Backlog**: [BKLG-025](../../docs/v2/backlog.md#bklg-025-design--remover-destaque-ao-passar-o-mouse-sobre-uma-linha-de-vínculo-grafo-de-relações)
+**Backlog**: [BKLG-025](../../docs/backlog/backlog.md#bklg-025-design--remover-destaque-ao-passar-o-mouse-sobre-uma-linha-de-vínculo-grafo-de-relações)
 
 ## Summary
 

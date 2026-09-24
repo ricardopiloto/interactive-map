@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Causa raiz já confirmada em `BKLG-027`/`docs/v2/backlog.md` — o valor exato (30% vs. ajuste fino) fica sujeito à checagem visual durante o `/speckit-plan`, conforme já registrado no backlog.
+- Causa raiz já confirmada em `BKLG-027`/`docs/backlog/backlog.md` — o valor exato (30% vs. ajuste fino) fica sujeito à checagem visual durante o `/speckit-plan`, conforme já registrado no backlog.

@@ -1,7 +1,7 @@
 # Feature Specification: Filtro de tipo de vínculo passa a isolar/somar tipos ao clicar (Relações)
 
 **Feature Branch**: `134-paridade-clique-filtro-detalhe`
-**Backlog**: [BKLG-023](../../docs/v2/backlog.md#bklg-023-bugdesign--filtro-do-painel-de-detalhe-relações-não-tem-paridade-de-clique-com-o-filtro-do-grafo-geral)
+**Backlog**: [BKLG-023](../../docs/backlog/backlog.md#bklg-023-bugdesign--filtro-do-painel-de-detalhe-relações-não-tem-paridade-de-clique-com-o-filtro-do-grafo-geral)
 **Created**: 2026-09-24
 **Status**: Implementado
 

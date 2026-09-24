@@ -78,3 +78,12 @@ class CapaResponse(BaseModel):
     slug: str
     capa_arquivo: str = ""
     capa_url: str | None = None
+
+
+class GeneroRequest(BaseModel):
+    genero: str
+
+
+class GeneroResponse(BaseModel):
+    slug: str
+    genero: str

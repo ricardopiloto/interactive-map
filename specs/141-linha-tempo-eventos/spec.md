@@ -1,12 +1,12 @@
 # Feature Specification: Linha do Tempo vertical da campanha
 
 **Feature Branch**: `141-linha-tempo-eventos`  
-**Backlog**: [BKLG-030](../../docs/v2/backlog.md#bklg-030-produto--linha-do-tempo-vertical-da-campanha-novo-menu-ao-lado-de-sessões)  
+**Backlog**: [BKLG-030](../../docs/backlog/backlog.md#bklg-030-produto--linha-do-tempo-vertical-da-campanha-novo-menu-ao-lado-de-sessões)  
 **Brainstorm**: [sessão 2026-09-24](../../docs/brainstorming/brainstorming-session-2026-09-24-1154.md)  
 **Created**: 2026-09-24  
 **Status**: Draft
 
-**Input**: User description: "Crie uma spec com base no item BKLG-030 no docs/v2/backlog.md — Linha do Tempo vertical da campanha (novo menu ao lado de Sessões), entidade Evento, ordenação por ano, visibilidade e protótipo de tela fechados no BP."
+**Input**: User description: "Crie uma spec com base no item BKLG-030 no docs/backlog/backlog.md — Linha do Tempo vertical da campanha (novo menu ao lado de Sessões), entidade Evento, ordenação por ano, visibilidade e protótipo de tela fechados no BP."
 
 ## Constitution *(constraints; not implementation)*
 

@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/139-zoom-fit-grafo-relacoes/spec.md`
 
-**Backlog**: [BKLG-028](../../docs/v2/backlog.md#bklg-028-bugdesign--botão-11-no-grafo-de-relações-não-ajusta-a-tela-para-mostrar-todos-os-tokens)
+**Backlog**: [BKLG-028](../../docs/backlog/backlog.md#bklg-028-bugdesign--botão-11-no-grafo-de-relações-não-ajusta-a-tela-para-mostrar-todos-os-tokens)
 
 ## Summary
 
