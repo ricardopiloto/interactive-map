@@ -17,7 +17,9 @@
   "graph": {
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "ocultoAria": "Character hidden from players"
+    "ocultoAria": "Character hidden from players",
+    "edgeAria": "{{nomeA}} and {{nomeB}}: {{tipo}}",
+    "edgeAriaOculto": "{{label}} · hidden from players"
   },
   "column": {
     "search": "Search character…",

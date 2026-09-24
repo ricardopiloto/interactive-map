@@ -17,7 +17,9 @@
   "graph": {
     "zoomIn": "Aumentar zoom",
     "zoomOut": "Diminuir zoom",
-    "ocultoAria": "Personagem oculto aos jogadores"
+    "ocultoAria": "Personagem oculto aos jogadores",
+    "edgeAria": "{{nomeA}} e {{nomeB}}: {{tipo}}",
+    "edgeAriaOculto": "{{label}} · oculto aos jogadores"
   },
   "column": {
     "search": "Buscar personagem…",

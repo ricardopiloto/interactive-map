@@ -25,7 +25,7 @@ import {
   OVERVIEW_SPACING,
   type Point,
 } from './graphLayout'
-import { estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
+import { edgeAccessibleLabel, estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
 import { getVinculoTipoLabel, strokeDasharray, vinculoStyle } from './vinculoStyles'
 import {
   edgeDisplayTipo,
@@ -143,7 +143,7 @@ export function GraphStage({
   const { t: tc } = useTranslation('comum')
   void _rotulosVinculo // UX-6: labels on selection/hover only; prop kept for API compat
   const containerRef = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [, setSize] = useState({ width: 0, height: 0 })
   const [viewportCenter, setViewportCenter] = useState<Point>(() => ({
     x: typeof window === 'undefined' ? 0 : window.innerWidth / 2,
     y: typeof window === 'undefined' ? 0 : (window.innerHeight - 56) / 2,
