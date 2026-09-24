@@ -14,10 +14,11 @@ import type {
   Vinculo,
   Waypoint,
   Sessao,
+  Evento,
 } from '../types'
 
-function p(path: string): string {
-  return `${campaignApiPrefix()}${path}`
+function p(path: string, slug?: string): string {
+  return `${campaignApiPrefix(slug)}${path}`
 }
 
 export const campaignApi = {
@@ -36,10 +37,12 @@ export const campaignApi = {
   listArcos: () => api.get<Arco[]>(p('/arcos')),
   getArco: (id: number) => api.get<Arco>(p(`/arcos/${id}`)),
   getGrupo: () => api.get<GrupoPosicao>(p('/grupo')),
-  listWaypoints: (linkedOnly = false) =>
-    api.get<Waypoint[]>(`${p('/waypoints')}${linkedOnly ? '?linked_only=true' : ''}`),
+  listWaypoints: (linkedOnly = false, slug?: string) =>
+    api.get<Waypoint[]>(`${p('/waypoints', slug)}${linkedOnly ? '?linked_only=true' : ''}`),
   listSessoes: () => api.get<{ sessoes: Sessao[] }>(p('/sessoes')),
   getSessao: (id: number) => api.get<Sessao>(p(`/sessoes/${id}`)),
+  listEventos: () => api.get<{ eventos: Evento[] }>(p('/eventos')),
+  getEvento: (id: number) => api.get<Evento>(p(`/eventos/${id}`)),
   planRoute: (
     origemWaypointId: number,
     destinoWaypointId: number,

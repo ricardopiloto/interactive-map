@@ -13,7 +13,9 @@ from app.services.auth_admin import (
     assign_owner,
     create_usuario_with_invite,
     deactivate_usuario,
+    demote_admin,
     invite_url,
+    promote_admin,
     reset_usuario,
 )
 from app.services.campanha_admin import (
@@ -117,6 +119,12 @@ def main(argv: list[str] | None = None) -> int:
     u_deact = user_sub.add_parser("desactivar", help="Desactivar utilizador e revogar sessões")
     u_deact.add_argument("--email", required=True)
 
+    u_promote = user_sub.add_parser("promover-admin", help="Promover utilizador a administrador")
+    u_promote.add_argument("--email", required=True)
+
+    u_demote = user_sub.add_parser("rebaixar-admin", help="Rebaixar administrador")
+    u_demote.add_argument("--email", required=True)
+
     args = parser.parse_args(argv)
     try:
         if args.entity == "campanha" and args.action == "criar":
@@ -207,6 +215,18 @@ def main(argv: list[str] | None = None) -> int:
             with Session(get_control_engine()) as session:
                 deactivate_usuario(session, args.email)
             print(f"OK desactivado {args.email}")
+            return 0
+        if args.entity == "usuario" and args.action == "promover-admin":
+            init_control()
+            with Session(get_control_engine()) as session:
+                promote_admin(session, args.email)
+            print(f"OK admin={args.email}")
+            return 0
+        if args.entity == "usuario" and args.action == "rebaixar-admin":
+            init_control()
+            with Session(get_control_engine()) as session:
+                demote_admin(session, args.email)
+            print(f"OK removido admin={args.email}")
             return 0
     except CampanhaAdminError as exc:
         print(f"ERRO {exc.codigo}", file=sys.stderr)

@@ -78,7 +78,7 @@ def logout(request: Request, response: Response) -> None:
 
 @router.get("/me")
 def me(usuario: Usuario = Depends(require_session_user)) -> dict:
-    return {"email": usuario.email, "id": usuario.id}
+    return {"email": usuario.email, "id": usuario.id, "is_admin": usuario.is_admin}
 
 
 @router.post("/convite/aceitar")

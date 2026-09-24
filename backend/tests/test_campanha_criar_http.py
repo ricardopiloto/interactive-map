@@ -37,6 +37,7 @@ def test_criar_success_default_listada(client, data_root) -> None:
     with Session(get_control_engine()) as session:
         camp = session.exec(select(Campanha).where(Campanha.slug == "nova-mesa")).first()
         assert camp and camp.visibilidade == "listada"
+        assert "fadiga" in (camp.modulos_ativos or [])
         user = session.exec(select(Usuario).where(Usuario.email == TEST_GM_EMAIL)).first()
         dono = session.exec(
             select(Membro).where(
@@ -91,5 +92,10 @@ def test_criar_so_link_and_slug_errors(client, data_root) -> None:
         "/api/campanhas",
         json={"nome": "D", "slug": "ok-slug", "sistema": "desconhecido", "genero": "fantasia"},
     )
-    assert sis.status_code == 400
-    assert sis.json()["detail"]["erro"] == "SISTEMA_INVALIDO"
+    assert sis.status_code == 201, sis.text
+    assert sis.json()["sistema"] == "desconhecido"
+    with Session(get_control_engine()) as session:
+        camp = session.exec(select(Campanha).where(Campanha.slug == "ok-slug")).first()
+        assert camp is not None
+        assert camp.sistema == "desconhecido"
+        assert list(camp.modulos_ativos or []) == []

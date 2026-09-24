@@ -15,6 +15,7 @@ class Usuario(ControlSQLModel, table=True):
     email: str = Field(max_length=320, unique=True, index=True)
     senha_hash: Optional[str] = Field(default=None, max_length=500)
     activo: bool = Field(default=False)
+    is_admin: bool = Field(default=False)
     criado_em: datetime = Field(default_factory=datetime.utcnow)
     actualizado_em: datetime = Field(default_factory=datetime.utcnow)
 

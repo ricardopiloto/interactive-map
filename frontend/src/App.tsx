@@ -12,6 +12,7 @@ import {
 import { setCampaignSlug } from './api/campaignSlug'
 import { EditModeProvider } from './context/EditModeContext'
 import { getCachedInstanceConfig, useInstanceConfig } from './hooks/useInstanceConfig'
+import { AdminConvitesPage } from './pages/AdminConvitesPage'
 import { ContaPage, ConvitePage, LoginPage, ResetPage } from './pages/AuthPages'
 import { CampaignMissingPage } from './pages/CampaignMissingPage'
 import { HomePage } from './pages/HomePage'
@@ -22,6 +23,7 @@ import { NovoCodexPage } from './pages/NovoCodexPage'
 import { RelacoesPage } from './pages/RelacoesPage'
 import { RotaPage } from './pages/RotaPage'
 import { SessoesPage } from './pages/SessoesPage'
+import { LinhaTempoPage } from './pages/LinhaTempoPage'
 import { StyleGuidePage } from './pages/StyleGuidePage'
 import { createLoginModalState, publicLoginBackground, readLoginModalState } from './utils/loginNavigation'
 import { applyCampaignGenre, clearCampaignGenre } from './theme/campaignGenre'
@@ -88,6 +90,7 @@ function AppRoutes() {
         <Route path="/explorar" element={<ExplorarPage />} />
         <Route path="/painel" element={<PainelPage />} />
         <Route path="/painel/novo" element={<NovoCodexPage />} />
+        <Route path="/admin/convites" element={<AdminConvitesPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/convite/:token" element={<ConvitePage />} />
         <Route path="/reset/:token" element={<ResetPage />} />
@@ -122,6 +125,14 @@ function AppRoutes() {
           element={
             <CampaignShell>
               <SessoesPage />
+            </CampaignShell>
+          }
+        />
+        <Route
+          path="/c/:slug/linha-do-tempo"
+          element={
+            <CampaignShell>
+              <LinhaTempoPage />
             </CampaignShell>
           }
         />

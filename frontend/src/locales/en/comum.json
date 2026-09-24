@@ -6,6 +6,7 @@
     "relacoes": "Relations",
     "rota": "Route",
     "sessoes": "Sessions",
+    "linhaTempo": "Timeline",
     "bottomAria": "Campaign sections"
   },
   "campaignSwitcher": {
@@ -190,6 +191,18 @@
     "accountHint": "Session active. Open a campaign at /c/slug to edit.",
     "logout": "Sign out"
   },
+  "adminConvites": {
+    "title": "Invite a game master",
+    "hint": "Generate a single-use invite link for a new game master.",
+    "emailLabel": "New game master's email",
+    "submit": "Generate invite",
+    "linkLabel": "Generated invite link",
+    "linkHint": "Copy and send this link to the invitee — it expires and can only be used once.",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "another": "Invite another game master",
+    "navLabel": "Invite game master"
+  },
   "loading": {
     "campaign": "Loading campaign…",
     "network": "Loading relationship network…"
@@ -245,7 +258,13 @@
     "SCHEMA_FUTURO": "Unsupported package schema version",
     "MANIFESTO_INVALIDO": "Invalid package manifest",
     "NUMERO_DUPLICADO": "A session with this number already exists",
-    "SESSAO_NAO_ENCONTRADA": "Session not found"
+    "SESSAO_NAO_ENCONTRADA": "Session not found",
+    "EVENTO_NAO_ENCONTRADO": "Event not found",
+    "EMAIL_INVALIDO": "Invalid email",
+    "EMAIL_DUPLICADO": "An account with this email already exists",
+    "NAO_ADMINISTRADOR": "Only the administrator can do this",
+    "USUARIO_NAO_ENCONTRADO": "User not found",
+    "USUARIO_INACTIVO": "Inactive user"
   },
   "campaignMissing": {
     "title": "Campaign not found",

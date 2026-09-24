@@ -125,11 +125,11 @@ export function NovoCodexPage() {
                 <p className="novo-codex__muted">{t('painel.wizard.identityLead')}</p>
                 <label className="novo-codex__field">
                   {t('painel.wizard.name')}
-                  <input autoFocus value={nome} onChange={(event) => updateName(event.target.value)} placeholder={t('painel.wizard.namePlaceholder')} />
+                  <input className="ui-input ui-input--new-codex" autoFocus value={nome} onChange={(event) => updateName(event.target.value)} placeholder={t('painel.wizard.namePlaceholder')} />
                 </label>
                 <label className="novo-codex__field">
                   {t('painel.wizard.slugLabel')}
-                  <span className="novo-codex__slug"><span>/c/</span><input value={slug} onChange={(event) => updateSlug(event.target.value)} /></span>
+                  <span className="novo-codex__slug"><span>/c/</span><input className="ui-input ui-input--new-codex" value={slug} onChange={(event) => updateSlug(event.target.value)} /></span>
                   <span className="novo-codex__hint">{t('painel.wizard.slugImmutable')}</span>
                 </label>
               </div>}
@@ -138,7 +138,7 @@ export function NovoCodexPage() {
                 <p className="novo-codex__muted">{t('painel.wizard.systemLead')}</p>
                 <label className="novo-codex__field">
                   {t('painel.sistema')}
-                  <input list="novo-codex-sistemas" value={sistema} onChange={(event) => setSistema(event.target.value)} placeholder={t('painel.wizard.systemPlaceholder')} />
+                  <input className="ui-input ui-input--new-codex" list="novo-codex-sistemas" value={sistema} onChange={(event) => setSistema(event.target.value)} placeholder={t('painel.wizard.systemPlaceholder')} />
                   <datalist id="novo-codex-sistemas">{genreMeta.suggestedSystems.map((item) => <option key={item} value={item} />)}</datalist>
                   <span className="novo-codex__hint">{t('painel.suggestedSystems')}</span>
                 </label>

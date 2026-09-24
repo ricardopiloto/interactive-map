@@ -17,6 +17,8 @@
   "graph": {
     "zoomIn": "Aumentar zoom",
     "zoomOut": "Diminuir zoom",
+    "fitView": "1:1",
+    "fitViewAria": "Ajustar a vista para mostrar todos os personagens (1:1)",
     "ocultoAria": "Personagem oculto aos jogadores",
     "edgeAria": "{{nomeA}} e {{nomeB}}: {{tipo}}",
     "edgeAriaOculto": "{{label}} · oculto aos jogadores"

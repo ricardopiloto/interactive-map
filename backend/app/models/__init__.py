@@ -1,6 +1,14 @@
 from app.models.arco import Arco
+from app.models.evento import Evento
 from app.models.grupo import GrupoPosicao
-from app.models.links import LocalConexaoLink, LocalNPCLink, SessaoLocalLink, SessaoNpcLink
+from app.models.links import (
+    EventoLocalLink,
+    EventoNpcLink,
+    LocalConexaoLink,
+    LocalNPCLink,
+    SessaoLocalLink,
+    SessaoNpcLink,
+)
 from app.models.local import Local
 from app.models.npc import NPC
 from app.models.sessao import Sessao
@@ -9,6 +17,9 @@ from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
 
 __all__ = [
     "Arco",
+    "Evento",
+    "EventoLocalLink",
+    "EventoNpcLink",
     "GrupoPosicao",
     "Local",
     "LocalConexaoLink",

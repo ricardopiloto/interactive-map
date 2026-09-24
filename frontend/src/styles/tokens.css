@@ -31,14 +31,17 @@ html[data-theme='dark'] {
   --vinculo-laco: #da91b2;
   --vinculo-hostil: #e2736e;
   --vinculo-neutro: #b2ada5;
-  --vinculo-aliado: var(--vinculo-afinidade);
-  --vinculo-amizade: var(--vinculo-afinidade);
-  --vinculo-romance: var(--vinculo-laco);
-  --vinculo-familia: var(--vinculo-laco);
-  --vinculo-sangue: var(--vinculo-laco);
-  --vinculo-inimizade: var(--vinculo-hostil);
-  --vinculo-adversario: var(--vinculo-hostil);
-  --vinculo-conhecido: var(--vinculo-neutro);
+  /* 8 cores distintas por tipo (cada tipo já tinha padrão/largura próprios; agora a cor também é única).
+     Vínculo de Sangue é hard-locked num vermelho-sangue, deliberadamente mais saturado/puro
+     que o vermelho-coral de Inimizade/Adversário, pra não ser confundido com eles. */
+  --vinculo-aliado: #6fbfa1;
+  --vinculo-amizade: #a8c96a;
+  --vinculo-romance: #e08fc4;
+  --vinculo-familia: #dba24f;
+  --vinculo-sangue: #e14b4f;
+  --vinculo-inimizade: #e2736e;
+  --vinculo-adversario: #dd7f43;
+  --vinculo-conhecido: #b2ada5;
 
   --route-fatigue-1: #e2736e;
   --route-fatigue-2: #e2736e;
@@ -89,14 +92,14 @@ html[data-theme='light'] {
   --vinculo-laco: #a94775;
   --vinculo-hostil: #ab3832;
   --vinculo-neutro: #6e6447;
-  --vinculo-aliado: var(--vinculo-afinidade);
-  --vinculo-amizade: var(--vinculo-afinidade);
-  --vinculo-romance: var(--vinculo-laco);
-  --vinculo-familia: var(--vinculo-laco);
-  --vinculo-sangue: var(--vinculo-laco);
-  --vinculo-inimizade: var(--vinculo-hostil);
-  --vinculo-adversario: var(--vinculo-hostil);
-  --vinculo-conhecido: var(--vinculo-neutro);
+  --vinculo-aliado: #2d784c;
+  --vinculo-amizade: #5c7a1f;
+  --vinculo-romance: #a83d80;
+  --vinculo-familia: #8a6412;
+  --vinculo-sangue: #9c1c26;
+  --vinculo-inimizade: #ab3832;
+  --vinculo-adversario: #8f4310;
+  --vinculo-conhecido: #6e6447;
 
   --route-fatigue-1: #ab3832;
   --route-fatigue-2: #ab3832;

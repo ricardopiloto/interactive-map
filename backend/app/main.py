@@ -10,7 +10,7 @@ from app.campaign_db import init_control
 from app.config import settings
 from app.errors import raise_api_error
 from app.middleware.csrf import CsrfOriginMiddleware
-from app.routers import admin, auth, campanhas, public
+from app.routers import admin, administrador, auth, campanhas, public
 from app.services.rate_limit import limiter
 
 
@@ -43,6 +43,7 @@ app.add_middleware(
 
 app.include_router(public.router)
 app.include_router(admin.router)
+app.include_router(administrador.router)
 app.include_router(auth.router)
 app.include_router(campanhas.router)
 

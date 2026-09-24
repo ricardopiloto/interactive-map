@@ -37,7 +37,8 @@ export function RotaPage() {
   const [waypoints, setWaypoints] = useState<Waypoint[]>([])
   const [plan, setPlan] = useState<RoutePlanItem[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
+  const [formFocused, setFormFocused] = useState(false)
   const [digitizerOpen, setDigitizerOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < MOBILE_BP : false,
@@ -82,9 +83,15 @@ export function RotaPage() {
     if (!isGm) setDigitizerOpen(false)
   }, [isGm])
 
+  /** Expande com rota calculada; colapsa quando a ação termina — formulário sem foco
+   *  e nenhuma rota calculada (BKLG-004, equivalente de "busca"/"seleção" para a Rota). */
   useEffect(() => {
-    if (plan.length > 0) setExpanded(true)
-  }, [plan.length])
+    if (plan.length > 0) {
+      setExpanded(true)
+      return
+    }
+    if (!formFocused) setExpanded(false)
+  }, [plan.length, formFocused])
 
   const showMapNav = Boolean(cfg?.has_map_image) || canEdit
 
@@ -143,7 +150,18 @@ export function RotaPage() {
                 expanded={expanded}
                 onToggleExpand={() => setExpanded((v) => !v)}
                 head={
-                  <div className="rota-page__panel-head">
+                  <div
+                    className="rota-page__panel-head"
+                    onFocus={() => {
+                      setFormFocused(true)
+                      setExpanded(true)
+                    }}
+                    onBlur={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                        setFormFocused(false)
+                      }
+                    }}
+                  >
                     <h2 className="rota-page__panel-title">{tm('routePlanner.title')}</h2>
                     {form}
                   </div>

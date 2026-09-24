@@ -11,6 +11,7 @@ interface MarkdownFieldProps {
   placeholder?: string
   error?: string
   rows?: number
+  controlClassName?: string
 }
 
 export function MarkdownField({
@@ -20,6 +21,7 @@ export function MarkdownField({
   placeholder,
   error,
   rows = 5,
+  controlClassName,
 }: MarkdownFieldProps) {
   const { t } = useTranslation('comum')
   const [tab, setTab] = useState<'write' | 'preview'>('write')
@@ -40,6 +42,7 @@ export function MarkdownField({
           rows={rows}
           value={value}
           placeholder={placeholder}
+          className={controlClassName}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={Boolean(error)}
         />

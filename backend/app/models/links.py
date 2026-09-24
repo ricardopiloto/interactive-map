@@ -29,3 +29,17 @@ class SessaoNpcLink(SQLModel, table=True):
 
     sessao_id: int = Field(foreign_key="sessao.id", primary_key=True)
     npc_id: int = Field(foreign_key="npc.id", primary_key=True)
+
+
+class EventoLocalLink(SQLModel, table=True):
+    __tablename__ = "evento_local"
+
+    evento_id: int = Field(foreign_key="evento.id", primary_key=True)
+    local_id: int = Field(foreign_key="local.id", primary_key=True)
+
+
+class EventoNpcLink(SQLModel, table=True):
+    __tablename__ = "evento_npc"
+
+    evento_id: int = Field(foreign_key="evento.id", primary_key=True)
+    npc_id: int = Field(foreign_key="npc.id", primary_key=True)

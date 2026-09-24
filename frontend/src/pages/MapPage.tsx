@@ -58,6 +58,7 @@ export function MapPage() {
   const [filter, setFilter] = useState<PanelFilter>('todos')
   const [selected, setSelected] = useState<PanelSelection>(null)
   const [expanded, setExpanded] = useState(false)
+  const [panelFocused, setPanelFocused] = useState(false)
   const [hoveredLocalId, setHoveredLocalId] = useState<number | null>(null)
   const [focusRequest, setFocusRequest] = useState<PinFocusRequest | null>(null)
   const [isMobile, setIsMobile] = useState(
@@ -166,10 +167,15 @@ export function MapPage() {
 
   useEffect(() => {
     void campaignApi
-      .listWaypoints(false)
+      .listWaypoints(false, slug)
       .then(setRouteWaypoints)
       .catch(() => setRouteWaypoints([]))
-  }, [locais])
+  }, [locais, slug])
+
+  /** Colapsa o painel quando a ação termina — busca sem foco e nada selecionado (BKLG-004). */
+  useEffect(() => {
+    if (!panelFocused && !selected) setExpanded(false)
+  }, [panelFocused, selected])
 
   useEffect(() => {
     if (!selected) return
@@ -386,7 +392,12 @@ export function MapPage() {
       <IconArrowLeft size={15} aria-hidden /> {t('panel.backToList')}
     </Button>
   ) : !selected ? (
-    <>
+    <div
+      onFocus={() => setPanelFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPanelFocused(false)
+      }}
+    >
       <div className="map-page__search">
         <IconSearch size={17} aria-hidden />
         <input
@@ -404,26 +415,35 @@ export function MapPage() {
         <button
           type="button"
           className={`map-page__chip${filter === 'todos' ? ' is-active' : ''}`}
-          onClick={() => setFilter('todos')}
+          onClick={() => {
+            setFilter('todos')
+            setExpanded(true)
+          }}
         >
           {t('panel.filterAll')}
         </button>
         <button
           type="button"
           className={`map-page__chip${filter === 'locais' ? ' is-active' : ''}`}
-          onClick={() => setFilter('locais')}
+          onClick={() => {
+            setFilter('locais')
+            setExpanded(true)
+          }}
         >
           <IconMapPin size={14} aria-hidden /> {t('panel.filterLocais')}
         </button>
         <button
           type="button"
           className={`map-page__chip${filter === 'npcs' ? ' is-active' : ''}`}
-          onClick={() => setFilter('npcs')}
+          onClick={() => {
+            setFilter('npcs')
+            setExpanded(true)
+          }}
         >
           <IconUsers size={14} aria-hidden /> {t('panel.filterPersonagens')}
         </button>
       </div>
-    </>
+    </div>
   ) : (
     <Button variant="ghost" size="sm" className="map-page__back" type="button" onClick={clearSelection}>
       <IconArrowLeft size={15} aria-hidden /> {t('panel.backToList')}

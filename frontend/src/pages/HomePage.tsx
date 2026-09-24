@@ -8,6 +8,7 @@ import {
   IconRoute2,
   IconUsers,
 } from '@tabler/icons-react'
+import { authApi } from '../api/client'
 import { campanhasApi, type CatalogoItem } from '../api/campanhas'
 import { CampaignCard } from '../components/campaign/CampaignCard'
 import { SiteChrome } from '../components/layout/SiteChrome'
@@ -22,6 +23,22 @@ export function HomePage() {
   const location = useLocation()
   const [featured, setFeatured] = useState<CatalogoItem[]>([])
   const [previewGenre, setPreviewGenre] = useState<GenreId>('fantasia')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    void authApi
+      .me()
+      .then(() => {
+        if (!cancelled) setIsAuthenticated(true)
+      })
+      .catch(() => {
+        if (!cancelled) setIsAuthenticated(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     applyCampaignGenre(previewGenre)
@@ -55,8 +72,8 @@ export function HomePage() {
               <div className="landing__ctas">
                 <Link
                   className="ui-btn ui-touch ui-btn--primary"
-                  to="/login?next=/painel"
-                  state={createLoginModalState(location, '/painel')}
+                  to={isAuthenticated ? '/painel' : '/login?next=/painel'}
+                  state={isAuthenticated ? undefined : createLoginModalState(location, '/painel')}
                 >
                   {t('landing.ctaMaster')}
                   <IconArrowRight size={17} aria-hidden />
@@ -176,8 +193,8 @@ export function HomePage() {
           <h2>{t('landing.ctaFinalTitle')}</h2>
           <Link
             className="ui-btn ui-touch ui-btn--primary"
-            to="/login?next=/painel%23criar"
-            state={createLoginModalState(location, '/painel#criar')}
+            to={isAuthenticated ? '/painel#criar' : '/login?next=/painel%23criar'}
+            state={isAuthenticated ? undefined : createLoginModalState(location, '/painel#criar')}
           >
             {t('landing.ctaFinal')}
           </Link>

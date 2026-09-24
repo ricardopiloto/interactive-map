@@ -21,10 +21,17 @@ from tests.conftest import (
 
 
 def _admin_openapi_routes() -> list[tuple[str, set[str]]]:
+    """Campaign-scoped admin routes (require_membro), i.e. `/api/c/{slug}/admin/...`.
+
+    App-scoped admin routes (`/api/admin/...`, require_admin/is_admin — spec 129)
+    are a different authorization surface (no campanha/slug, error code
+    NAO_ADMINISTRADOR, not NAO_MEMBRO) and have their own matrix in
+    test_admin_convites_route_matrix.py.
+    """
     paths = app.openapi()["paths"]
     out: list[tuple[str, set[str]]] = []
     for path, methods in paths.items():
-        if "/admin" not in path:
+        if "/admin" not in path or "{slug}" not in path:
             continue
         verbs = {m.upper() for m in methods if m.upper() in {"GET", "POST", "PUT", "PATCH", "DELETE"}}
         if verbs:

@@ -244,7 +244,9 @@
   position: absolute;
   right: var(--space-4);
   bottom: var(--space-4);
-  z-index: 4;
+  /* Acima do MapSidePanel (z-index 25) — o painel cobre esse canto da tela mesmo
+     colapsado em telas estreitas, o que deixava os controles de zoom inacessíveis. */
+  z-index: 26;
   display: flex;
   gap: var(--space-2);
   background: color-mix(in srgb, var(--color-surface) 90%, transparent);

@@ -6,6 +6,7 @@
     "relacoes": "Relações",
     "rota": "Rota",
     "sessoes": "Sessões",
+    "linhaTempo": "Linha do Tempo",
     "bottomAria": "Secções da campanha"
   },
   "campaignSwitcher": {
@@ -190,6 +191,18 @@
     "accountHint": "Sessão activa. Abra uma campanha com /c/slug para editar.",
     "logout": "Terminar sessão"
   },
+  "adminConvites": {
+    "title": "Convidar mestre",
+    "hint": "Gere um link de convite de uso único para um novo mestre.",
+    "emailLabel": "E-mail do novo mestre",
+    "submit": "Gerar convite",
+    "linkLabel": "Link de convite gerado",
+    "linkHint": "Copie e envie este link ao convidado — ele expira e só pode ser usado uma vez.",
+    "copy": "Copiar",
+    "copied": "Copiado!",
+    "another": "Convidar outro mestre",
+    "navLabel": "Convidar mestre"
+  },
   "loading": {
     "campaign": "Carregando campanha…",
     "network": "Carregando rede de relações…"
@@ -245,7 +258,13 @@
     "SCHEMA_FUTURO": "Versão de schema do pacote não suportada",
     "MANIFESTO_INVALIDO": "Manifesto do pacote inválido",
     "NUMERO_DUPLICADO": "Já existe uma sessão com este número",
-    "SESSAO_NAO_ENCONTRADA": "Sessão não encontrada"
+    "SESSAO_NAO_ENCONTRADA": "Sessão não encontrada",
+    "EVENTO_NAO_ENCONTRADO": "Evento não encontrado",
+    "EMAIL_INVALIDO": "E-mail inválido",
+    "EMAIL_DUPLICADO": "Já existe uma conta com este e-mail",
+    "NAO_ADMINISTRADOR": "Apenas o administrador pode fazer esta ação",
+    "USUARIO_NAO_ENCONTRADO": "Usuário não encontrado",
+    "USUARIO_INACTIVO": "Usuário inativo"
   },
   "campaignMissing": {
     "title": "Campanha não encontrada",

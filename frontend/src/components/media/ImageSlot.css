@@ -76,6 +76,29 @@
   display: block;
 }
 
+/* Relações detail panel portrait — same recipe as forms, panel height cap, no empty-state chrome */
+.relacoes-page__detail-portrait.image-slot {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 140px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.relacoes-page__detail-portrait.image-slot img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 140px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
 .npc-form__portrait--empty.image-slot,
 .local-form__image--empty.image-slot {
   min-height: 110px;

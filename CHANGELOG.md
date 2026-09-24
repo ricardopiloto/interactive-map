@@ -7,6 +7,24 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.21.0] — 2026-09-24
+
+### Added
+
+- Linha do Tempo da campanha: entidade Evento (ano, mês opcional numeral livre, era, descrição, vínculos a locais/personagens/sessão), menu ao lado de Sessões, consulta ordenada (`ano` → `mês` → sessão → `id`) e CRUD mestre; export ZIP de eventos fora de escopo nesta versão.
+
+### Changed
+
+- Linha do Tempo alinhada ao protótipo: subtítulos por papel, cards colapsáveis (resumo: ano/mês, era, título e sessão; detalhe: descrição e associações) com tokens `surface-2`/`accent`, nota de eventos não revelados para jogador, e mês oculto no formulário sem apagar valores legados.
+- Filtros de tipo em Relações: uma seleção partilhada entre SidePanel (lista/detalhe) e Grafo; conjunto vazio = todos os tipos; status restringe personagens e busca destaca sem ocultar nós.
+- Filtro de tipos no painel de detalhe de Relações agora usa o mesmo clique com atraso (280 ms) e duplo-clique para isolar/restaurar tipos que o filtro do grafo.
+- Hover no token do personagem no grafo de Relações reutiliza o mesmo preview (`hoveredId`) da lista lateral, destacando os vínculos do personagem.
+- Passar o mouse sobre a linha de vínculo no grafo de Relações já não mostra rótulo mid-edge; rótulos no foco (seleção/preview) e clique para editar permanecem.
+- Retrato no painel de detalhe de Relações preenche a largura do painel com proporção preservada (max-height 140px), sem moldura dashed de placeholder.
+- Distância entre tokens no grafo de Relações reduzida ~30% (overview 84, foco 168); factores compact/sparse 086–089 inalterados.
+- Controlo de vista no grafo de Relações ajusta escala/pan para caber todos os tokens visíveis (ex-«1:1»; rótulo i18n «Ajustar»/«Fit»).
+- Campo `sistema` da campanha aceita qualquer nome (criação e import); defaults de módulos `wfrp4e`/`wod` inalterados.
+
 ## [0.20.3] — 2026-09-23
 
 ### Fixed

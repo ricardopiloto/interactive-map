@@ -1,6 +1,18 @@
 from fastapi import APIRouter
 
-from app.routers.public import arcos, config, grupo, locais, media, npcs, personagens, routes, sessoes, vinculos
+from app.routers.public import (
+    arcos,
+    config,
+    eventos,
+    grupo,
+    locais,
+    media,
+    npcs,
+    personagens,
+    routes,
+    sessoes,
+    vinculos,
+)
 
 router = APIRouter(prefix="/api/c/{slug}")
 router.include_router(config.router, tags=["config"])
@@ -13,3 +25,4 @@ router.include_router(arcos.router, tags=["arcos"])
 router.include_router(grupo.router, tags=["grupo"])
 router.include_router(routes.router, tags=["routes"])
 router.include_router(sessoes.router, tags=["sessoes"])
+router.include_router(eventos.router, tags=["eventos"])

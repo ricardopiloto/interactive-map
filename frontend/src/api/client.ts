@@ -74,7 +74,8 @@ export const authApi = {
     ),
   logout: () =>
     request<void>('/api/auth/logout', { method: 'POST' }, true),
-  me: () => request<{ email: string; id: number }>('/api/auth/me', undefined, true),
+  me: () =>
+    request<{ email: string; id: number; is_admin: boolean }>('/api/auth/me', undefined, true),
   aceitarConvite: (token: string, password: string) =>
     request<{ email: string }>(
       '/api/auth/convite/aceitar',
@@ -87,4 +88,9 @@ export const authApi = {
       { method: 'POST', body: JSON.stringify({ token, password }) },
       true,
     ),
+}
+
+export const adminConvitesApi = {
+  criar: (email: string) =>
+    api.adminPost<{ email: string; link: string }>('/api/admin/convites', { email }),
 }

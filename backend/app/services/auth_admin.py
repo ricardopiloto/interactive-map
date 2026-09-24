@@ -81,6 +81,40 @@ def deactivate_usuario(session: Session, email: str) -> None:
     revoke_all_user_sessions(session, user.id)  # type: ignore[arg-type]
 
 
+def _lookup_active_usuario(session: Session, email: str) -> Usuario:
+    norm = normalize_email(email)
+    user = session.exec(select(Usuario).where(Usuario.email == norm)).first()
+    if user is None:
+        raise AuthAdminError("USUARIO_NAO_ENCONTRADO")
+    if not user.activo:
+        raise AuthAdminError("USUARIO_INACTIVO")
+    return user
+
+
+def promote_admin(session: Session, email: str) -> Usuario:
+    """CLI-only bootstrap/recovery path (spec 129) — no HTTP route writes is_admin."""
+    user = _lookup_active_usuario(session, email)
+    user.is_admin = True
+    user.actualizado_em = datetime.utcnow()
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    session.expunge(user)
+    return user
+
+
+def demote_admin(session: Session, email: str) -> Usuario:
+    """CLI-only — inverse of promote_admin (spec 129)."""
+    user = _lookup_active_usuario(session, email)
+    user.is_admin = False
+    user.actualizado_em = datetime.utcnow()
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    session.expunge(user)
+    return user
+
+
 class AssignOwnerResult(NamedTuple):
     campanha_id: int
     usuario_id: int

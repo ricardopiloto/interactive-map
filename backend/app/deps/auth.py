@@ -66,6 +66,13 @@ def require_dono(slug: str, request: Request) -> MembroContext:
     return ctx
 
 
+def require_admin(usuario: Usuario = Depends(require_session_user)) -> Usuario:
+    """Session + is_admin (spec 129). App-scoped — no campanha/slug involved."""
+    if not usuario.is_admin:
+        raise_api_error("NAO_ADMINISTRADOR", status_code=403)
+    return usuario
+
+
 # Back-compat name unused — kept import sites migrating to require_membro
 def verify_admin(ctx: MembroContext = Depends(require_membro)) -> str:
     return ctx.usuario.email

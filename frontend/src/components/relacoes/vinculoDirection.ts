@@ -46,11 +46,9 @@ export function qualFromPerspective(v: Vinculo, fromId: number): string {
 }
 
 export function edgeMatchesTipos(v: Vinculo, active: Set<VinculoTipo>): boolean {
+  if (active.size === 0) return true
   if (v.tipo_ab != null && active.has(v.tipo_ab)) return true
   if (v.tipo_ba != null && active.has(v.tipo_ba)) return true
-  if (v.tipo_ab == null && v.tipo_ba == null) return false
-  // reciprocal-like: only ab or only effective
-  if (v.tipo_ab != null && v.tipo_ba == null) return active.has(v.tipo_ab)
   return false
 }
 

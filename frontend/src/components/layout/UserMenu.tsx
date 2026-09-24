@@ -20,6 +20,7 @@ export function UserMenu({ includeTheme = true }: { includeTheme?: boolean }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [email, setEmail] = useState<string | null | undefined>(undefined)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [theme, setTheme] = useState<ThemePreference>(() => readThemePreference())
 
   useEffect(() => {
@@ -27,10 +28,15 @@ export function UserMenu({ includeTheme = true }: { includeTheme?: boolean }) {
     void authApi
       .me()
       .then((me) => {
-        if (!cancelled) setEmail(me.email)
+        if (cancelled) return
+        setEmail(me.email)
+        setIsAdmin(me.is_admin)
       })
       .catch(() => {
-        if (!cancelled) setEmail(null)
+        if (!cancelled) {
+          setEmail(null)
+          setIsAdmin(false)
+        }
       })
     return () => {
       cancelled = true
@@ -52,6 +58,13 @@ export function UserMenu({ includeTheme = true }: { includeTheme?: boolean }) {
   const items: { id: string; label: string; onSelect: () => void; danger?: boolean }[] = []
 
   if (email) {
+    if (isAdmin) {
+      items.push({
+        id: 'admin-convites',
+        label: t('adminConvites.navLabel'),
+        onSelect: () => navigate('/admin/convites'),
+      })
+    }
     items.push({
       id: 'logout',
       label: t('auth.logout'),

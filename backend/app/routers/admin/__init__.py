@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.deps.auth import MembroContext, require_membro
 from app.routers.admin import (
     arcos,
+    eventos,
     export,
     grupo,
     locais,
@@ -29,6 +30,7 @@ router.include_router(route_segments.router, tags=["admin-route-segments"])
 router.include_router(map_scale.router, tags=["admin-map-scale"])
 router.include_router(export.router, tags=["admin-export"])
 router.include_router(sessoes.router, tags=["admin-sessoes"])
+router.include_router(eventos.router, tags=["admin-eventos"])
 
 
 @router.get("/session")

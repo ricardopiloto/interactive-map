@@ -16,6 +16,8 @@ import type {
   Waypoint,
   Sessao,
   SessaoPayload,
+  Evento,
+  EventoPayload,
 } from '../types'
 
 export interface LocalPayload {
@@ -161,4 +163,12 @@ export const adminApi = {
   updateSessao: (id: number, body: Partial<SessaoPayload>) =>
     api.adminPatch<Sessao>(`${campaignAdminPrefix()}/sessoes/${id}`, body),
   deleteSessao: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/sessoes/${id}`),
+
+  listEventosAdmin: () =>
+    api.adminGet<{ eventos: Evento[] }>(campaignAdminPrefix() + '/eventos'),
+  createEvento: (body: EventoPayload) =>
+    api.adminPost<Evento>(campaignAdminPrefix() + '/eventos', body),
+  updateEvento: (id: number, body: Partial<EventoPayload>) =>
+    api.adminPatch<Evento>(`${campaignAdminPrefix()}/eventos/${id}`, body),
+  deleteEvento: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/eventos/${id}`),
 }

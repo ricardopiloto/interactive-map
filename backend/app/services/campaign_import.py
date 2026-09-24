@@ -36,7 +36,6 @@ from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
 from app.services.auth_admin import assign_owner
 from app.services.campanha_admin import (
     DEFAULT_COTA_BYTES,
-    KNOWN_SISTEMAS,
     ensure_upload_tree,
     validate_slug,
     CampanhaAdminError,
@@ -52,7 +51,6 @@ from app.services.package_schema import (
     PACKAGE_FORMAT,
     PACOTE_INVALIDO,
     PackageError,
-    SISTEMA_DESCONHECIDO,
     SLUG_INVALIDO,
     SLUG_OCUPADO,
     UPLOAD_CATEGORIES,
@@ -224,8 +222,6 @@ def validate_package_members(
     members: dict[str, bytes],
 ) -> tuple[dict[str, Any], dict[str, Any], dict[tuple[str, str], bytes]]:
     manifest, content, images = _parse_manifest_content(members)
-    if manifest["sistema"] not in KNOWN_SISTEMAS:
-        raise PackageError(SISTEMA_DESCONHECIDO)
     manifest, content = migrate_to_head(manifest, content)
     _validate_fks(content)
     refs = _referenced_images(manifest, content)

@@ -27,6 +27,7 @@ import {
 } from '../components/relacoes/statusFilter'
 import {
   isDuasVias,
+  edgeMatchesTipos,
   notaFromPerspective,
   qualFromPerspective,
   tipoFromPerspective,
@@ -38,6 +39,7 @@ import {
   VINCULO_TIPOS,
   vinculoStyle,
 } from '../components/relacoes/vinculoStyles'
+import { useVinculoTipoChipClicks } from '../components/relacoes/useVinculoTipoChipClicks'
 import { ImageSlot } from '../components/media/ImageSlot'
 import { ConfirmDialog, Button, Chip, Select} from '../components/ui'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
@@ -48,7 +50,6 @@ import type { Personagem, Vinculo, VinculoTipo } from '../types'
 import './RelacoesPage.css'
 
 const SELECTION_ANIMATION_MS = 600
-const CHIP_CLICK_DELAY_MS = 280
 const MOBILE_BP = 860
 
 function neighbourId(v: Vinculo, selfId: number): number {
@@ -85,10 +86,11 @@ export function RelacoesPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [query, setQuery] = useState('')
-  const [activeTipos, setActiveTipos] = useState<Set<VinculoTipo>>(new Set(VINCULO_TIPOS))
+  const [activeTipos, setActiveTipos] = useState<Set<VinculoTipo>>(() => new Set())
   const [isolate, setIsolate] = useState(false)
   const [statusFilter, setStatusFilter] = useState<RelacoesStatusFilter>('todos')
   const [expanded, setExpanded] = useState(false)
+  const [panelFocused, setPanelFocused] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < MOBILE_BP : false,
@@ -98,7 +100,6 @@ export function RelacoesPage() {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [showEdges, setShowEdges] = useState(false)
   const selectionTimer = useRef<number | undefined>(undefined)
-  const pendingChipClick = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { enabled: isGm, canEdit } = useEditMode()
   const [busyError, setBusyError] = useState<string | null>(null)
@@ -172,12 +173,6 @@ export function RelacoesPage() {
 
   const personagemById = useMemo(() => new Map(personagens.map((p) => [p.id, p])), [personagens])
   const selectedPersonagem = selectedId != null ? personagemById.get(selectedId) ?? null : null
-  const selectedVinculos = useMemo(() => {
-    if (selectedId == null) return []
-    return vinculos.filter(
-      (v) => v.personagem_a_id === selectedId || v.personagem_b_id === selectedId,
-    )
-  }, [vinculos, selectedId])
 
   const visiblePersonagens = useMemo(
     () => personagens.filter((p) => matchesStatusFilter(p, statusFilter)),
@@ -194,6 +189,13 @@ export function RelacoesPage() {
       ),
     [vinculos, visibleIds],
   )
+
+  const selectedVinculos = useMemo(() => {
+    if (selectedId == null) return []
+    return visibleVinculos.filter(
+      (v) => v.personagem_a_id === selectedId || v.personagem_b_id === selectedId,
+    )
+  }, [visibleVinculos, selectedId])
 
   const listItems = useMemo(() => {
     return visiblePersonagens
@@ -237,6 +239,11 @@ export function RelacoesPage() {
     setIsolate(false)
   }, [selectedId, visibleIds])
 
+  /** Colapsa o painel quando a ação termina — busca sem foco e nada selecionado (BKLG-004). */
+  useEffect(() => {
+    if (!panelFocused && selectedId == null) setExpanded(false)
+  }, [panelFocused, selectedId])
+
   function toggleTipo(tipo: VinculoTipo) {
     setActiveTipos((prev) => {
       const next = new Set(prev)
@@ -246,33 +253,11 @@ export function RelacoesPage() {
     })
   }
 
-  function soloOrRestoreTipo(tipo: VinculoTipo) {
-    setActiveTipos((prev) => {
-      if (prev.size === 1 && prev.has(tipo)) return new Set(VINCULO_TIPOS)
-      return new Set([tipo])
+  const { onClick: handleChipClick, onDoubleClick: handleChipDoubleClick } =
+    useVinculoTipoChipClicks(setActiveTipos, {
+      toggleTipo,
+      onSingleClickSideEffect: () => setExpanded(true),
     })
-  }
-
-  function clearPendingChipClick() {
-    if (pendingChipClick.current != null) {
-      clearTimeout(pendingChipClick.current)
-      pendingChipClick.current = null
-    }
-  }
-
-  function handleChipClick(tipo: VinculoTipo) {
-    clearPendingChipClick()
-    pendingChipClick.current = setTimeout(() => {
-      pendingChipClick.current = null
-      toggleTipo(tipo)
-    }, CHIP_CLICK_DELAY_MS)
-  }
-
-  function handleChipDoubleClick(e: MouseEvent<HTMLButtonElement>, tipo: VinculoTipo) {
-    e.preventDefault()
-    clearPendingChipClick()
-    soloOrRestoreTipo(tipo)
-  }
 
   function startCreatePersonagem() {
     setFabOpen(false)
@@ -437,7 +422,12 @@ export function RelacoesPage() {
   const hasQuery = query.trim().length > 0
 
   const panelHead = selectedPersonagem == null ? (
-    <>
+    <div
+      onFocus={() => setPanelFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPanelFocused(false)
+      }}
+    >
       <div className="relacoes-page__search">
         <IconSearch size={17} aria-hidden />
         <input
@@ -480,6 +470,7 @@ export function RelacoesPage() {
             onChange={(e) => {
               const value = e.target.value
               if (isRelacoesStatusFilter(value)) setStatusFilter(value)
+              setExpanded(true)
             }}
           >
             {STATUS_FILTER_OPTIONS.map((opt) => (
@@ -494,12 +485,15 @@ export function RelacoesPage() {
             type="checkbox"
             checked={isolate}
             disabled={selectedId == null}
-            onChange={(e) => setIsolate(e.target.checked)}
+            onChange={(e) => {
+              setIsolate(e.target.checked)
+              setExpanded(true)
+            }}
           />
           {t('column.isolate')}
         </label>
       </div>
-    </>
+    </div>
   ) : (
     <Button variant="ghost" size="sm" className="relacoes-page__back" type="button" onClick={deselectPersonagem}>
       <IconArrowLeft size={15} aria-hidden /> {t('panel.backToList')}
@@ -560,9 +554,13 @@ export function RelacoesPage() {
       </div>
     ) : (
       <PersonagemDetailBody
+        key={selectedPersonagem.id}
         personagem={selectedPersonagem}
         vinculos={selectedVinculos}
         personagemById={personagemById}
+        activeTipos={activeTipos}
+        onTipoClick={handleChipClick}
+        onTipoDoubleClick={handleChipDoubleClick}
         isGm={isGm}
         onFocusPersonagem={selectPersonagem}
         onEdit={() => startEditPersonagem(selectedPersonagem)}
@@ -601,6 +599,7 @@ export function RelacoesPage() {
             onEdgeClick={isGm ? startEditVinculo : undefined}
             searchQuery={query}
             hoveredId={hoveredId}
+            onHoverPersonagem={setHoveredId}
           />
         )}
 
@@ -685,6 +684,9 @@ function PersonagemDetailBody({
   personagem,
   vinculos,
   personagemById,
+  activeTipos,
+  onTipoClick,
+  onTipoDoubleClick,
   isGm,
   onFocusPersonagem,
   onEdit,
@@ -695,6 +697,9 @@ function PersonagemDetailBody({
   personagem: Personagem
   vinculos: Vinculo[]
   personagemById: Map<number, Personagem>
+  activeTipos: Set<VinculoTipo>
+  onTipoClick: (tipo: VinculoTipo) => void
+  onTipoDoubleClick: (e: MouseEvent<HTMLButtonElement>, tipo: VinculoTipo) => void
   isGm: boolean
   onFocusPersonagem: (id: number) => void
   onEdit?: () => void
@@ -705,6 +710,7 @@ function PersonagemDetailBody({
   const { t } = useTranslation('relacoes')
   const { t: tc } = useTranslation('comum')
   const sortedVinculos = sortVinculosByNeighbourName(vinculos, personagem.id, personagemById)
+  const filteredVinculos = sortedVinculos.filter((v) => edgeMatchesTipos(v, activeTipos))
 
   return (
     <div className="relacoes-page__detail">
@@ -753,11 +759,36 @@ function PersonagemDetailBody({
       )}
 
       <h3 className="relacoes-page__section-title">
-        {t('detail.vinculosCount', { count: sortedVinculos.length })}
+        {t('detail.vinculosCount', { count: filteredVinculos.length })}
       </h3>
+      {sortedVinculos.length > 0 && (
+        <div className="relacoes-page__chips" role="group" aria-label={t('column.tiposVinculo')}>
+          {VINCULO_TIPOS.map((tipo) => {
+            const style = VINCULO_STYLES[tipo]
+            const active = activeTipos.has(tipo)
+            return (
+              <button
+                key={tipo}
+                type="button"
+                className={`relacoes-page__chip${active ? ' is-active' : ''}`}
+                style={{ '--chip-color': style.color } as CSSProperties}
+                onClick={() => onTipoClick(tipo)}
+                onDoubleClick={(e) => onTipoDoubleClick(e, tipo)}
+                aria-pressed={active}
+              >
+                <span className="relacoes-page__chip-swatch" style={{ background: style.color }} />
+                {getVinculoTipoLabel(t, tipo)}
+              </button>
+            )
+          })}
+        </div>
+      )}
       <div className="relacoes-page__vinculos">
         {sortedVinculos.length === 0 && <p className="text-muted">{t('detail.noVinculos')}</p>}
-        {sortedVinculos.map((v) => {
+        {sortedVinculos.length > 0 && filteredVinculos.length === 0 && (
+          <p className="text-muted">{t('detail.noVinculos')}</p>
+        )}
+        {filteredVinculos.map((v) => {
           const otherId = neighbourId(v, personagem.id)
           const other = personagemById.get(otherId)
           const myTipo = tipoFromPerspective(v, personagem.id)
@@ -807,13 +838,12 @@ function PersonagemDetailBody({
               )}
               {isGm && (
                 <div className="relacoes-page__detail-actions">
-                  <Button size="sm"
-                    type="button"
-                    onClick={() => onEditVinculo?.(v.id)}
-                  >
+                  <Button size="sm" type="button" onClick={() => onEditVinculo?.(v.id)}>
                     {tc('buttons.edit')}
                   </Button>
-                  <Button variant="ghost" size="sm"
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     type="button"
                     onClick={() => onDeleteVinculo?.(v.id)}
                   >
@@ -828,3 +858,4 @@ function PersonagemDetailBody({
     </div>
   )
 }
+

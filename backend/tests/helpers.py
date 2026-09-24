@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from sqlmodel import Session
 
 from app.models.arco import Arco
-from app.models.links import SessaoLocalLink, SessaoNpcLink
+from app.models.evento import Evento
+from app.models.links import EventoLocalLink, EventoNpcLink, SessaoLocalLink, SessaoNpcLink
 from app.models.local import Local
 from app.models.npc import NPC, PersonagemTipo
 from app.models.sessao import Sessao
@@ -102,6 +103,41 @@ def seed_sessao(
         session.add(SessaoLocalLink(sessao_id=row.id, local_id=lid))
     for nid in personagem_ids or []:
         session.add(SessaoNpcLink(sessao_id=row.id, npc_id=nid))
+    if local_ids or personagem_ids:
+        session.commit()
+    return row
+
+
+def seed_evento(
+    session: Session,
+    *,
+    titulo: str = "Evento",
+    ano: int = 2500,
+    mes: int | None = None,
+    visivel: bool = True,
+    rotulo_era: str | None = None,
+    descricao: str = "",
+    sessao_id: int | None = None,
+    local_ids: list[int] | None = None,
+    personagem_ids: list[int] | None = None,
+) -> Evento:
+    row = Evento(
+        titulo=titulo,
+        ano=ano,
+        mes=mes,
+        rotulo_era=rotulo_era,
+        descricao=descricao,
+        sessao_id=sessao_id,
+        visivel_para_todos=visivel,
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    assert row.id is not None
+    for lid in local_ids or []:
+        session.add(EventoLocalLink(evento_id=row.id, local_id=lid))
+    for nid in personagem_ids or []:
+        session.add(EventoNpcLink(evento_id=row.id, npc_id=nid))
     if local_ids or personagem_ids:
         session.commit()
     return row

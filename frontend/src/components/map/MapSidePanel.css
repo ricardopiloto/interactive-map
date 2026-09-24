@@ -27,12 +27,24 @@
   .map-panel {
     top: 12px;
     left: 12px;
-    bottom: 12px;
     width: 372px;
     max-width: calc(100vw - 24px);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-divider);
     overflow: hidden;
+  }
+
+  /* Colapsado (default): só a altura do head (busca), sem esticar até o rodapé (BKLG-004). */
+  .map-panel[data-expanded='false'] {
+    max-height: calc(100vh - 24px);
+  }
+
+  .map-panel[data-expanded='false'] .map-panel__scroll {
+    display: none;
+  }
+
+  .map-panel[data-expanded='true'] {
+    bottom: 12px;
   }
 }
 

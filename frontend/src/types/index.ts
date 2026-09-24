@@ -197,3 +197,40 @@ export interface SessaoPayload {
   local_ids?: number[]
   personagem_ids?: number[]
 }
+
+export interface EventoRefLocal {
+  id: number
+  nome: string
+}
+
+export interface EventoRefPersonagem {
+  id: number
+  nome: string
+  tipo: string
+  retrato_url?: string | null
+}
+
+export interface Evento {
+  id: number
+  titulo: string
+  ano: number
+  mes?: number | null
+  rotulo_era?: string | null
+  descricao: string
+  sessao_id?: number | null
+  locais: EventoRefLocal[]
+  personagens: EventoRefPersonagem[]
+  visivel_para_todos?: boolean
+}
+
+export interface EventoPayload {
+  titulo: string
+  ano: number
+  mes?: number | null
+  rotulo_era?: string | null
+  descricao?: string
+  visivel_para_todos?: boolean
+  sessao_id?: number | null
+  local_ids?: number[]
+  personagem_ids?: number[]
+}

@@ -8,7 +8,7 @@ import { MarkdownSafe } from '../components/common/MarkdownSafe'
 import { FormDrawer } from '../components/forms/FormDrawer'
 import { MarkdownField } from '../components/forms/MarkdownField'
 import { CodexHeader } from '../components/layout/CodexHeader'
-import { ConfirmDialog, EmptyState, IconButton, Button} from '../components/ui'
+import { ConfirmDialog, EmptyState, IconButton, Button, Input } from '../components/ui'
 import { useEditMode } from '../context/EditModeContext'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
 import { getCachedInstanceConfig, useInstanceConfig } from '../hooks/useInstanceConfig'
@@ -264,7 +264,8 @@ export function SessoesPage() {
           </label>
           <label className="field">
             <span>{t('fieldTitulo')}</span>
-            <input
+            <Input
+              className="ui-input--new-codex"
               type="text"
               value={draft.titulo}
               onChange={(e) => setDraft({ ...draft, titulo: e.target.value })}
@@ -273,7 +274,8 @@ export function SessoesPage() {
           </label>
           <label className="field">
             <span>{t('fieldData')}</span>
-            <input
+            <Input
+              className="ui-input--new-codex"
               type="text"
               value={draft.data_rotulo}
               onChange={(e) => setDraft({ ...draft, data_rotulo: e.target.value })}
@@ -283,6 +285,7 @@ export function SessoesPage() {
             label={t('fieldResumo')}
             value={draft.resumo}
             onChange={(resumo) => setDraft({ ...draft, resumo })}
+            controlClassName="ui-input--new-codex"
           />
           <fieldset className="field">
             <legend>{t('fieldLocais')}</legend>

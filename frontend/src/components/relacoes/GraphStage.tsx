@@ -12,6 +12,7 @@ import { usePinchZoom } from '../../hooks/usePinchZoom'
 import type { Personagem, Vinculo, VinculoTipo } from '../../types'
 import { labelMatchesQuery } from '../../utils/textMatch'
 import {
+  bboxFromNodePositions,
   computeFocusLayout,
   computeInitialLayout,
   discCenterFromNodePos,
@@ -19,6 +20,7 @@ import {
   EDGE_OPACITY_DIM,
   EDGE_OPACITY_DIM_SELECTED,
   EDGE_OPACITY_FOCUS,
+  fitScalePan,
   focusInnerSpacing,
   NODE_H,
   NODE_W,
@@ -43,6 +45,45 @@ const MAX_SCALE = 2.5
 const DRAG_THRESHOLD = 4
 const CENTER: Point = { x: 0, y: 0 }
 const DOUBLE_GAP = 2.75
+
+/** Stage rect minus floating `.map-panel` overlap — shared by center measure and fit-view. */
+function readUsableViewport(stage: HTMLElement): {
+  left: number
+  top: number
+  width: number
+  height: number
+  center: Point
+} {
+  const stageRect = stage.getBoundingClientRect()
+  const panel = document.querySelector<HTMLElement>('.map-panel')
+  const panelRect = panel?.getBoundingClientRect()
+  let left = 0
+  let right = stageRect.width
+  let top = 0
+  let bottom = stageRect.height
+
+  if (panelRect && panelRect.width > 0 && panelRect.height > 0) {
+    const panelWidth =
+      Math.min(stageRect.right, panelRect.right) - Math.max(stageRect.left, panelRect.left)
+    const panelHeight =
+      Math.min(stageRect.bottom, panelRect.bottom) - Math.max(stageRect.top, panelRect.top)
+    if (panelWidth > stageRect.width * 0.75 && panelHeight > 0) {
+      bottom = Math.max(0, Math.min(stageRect.height, panelRect.top - stageRect.top))
+    } else if (panelHeight > stageRect.height * 0.75 && panelWidth > 0) {
+      left = Math.max(0, Math.min(stageRect.width, panelRect.right - stageRect.left))
+    }
+  }
+
+  const width = Math.max(1, right - left)
+  const height = Math.max(1, bottom - top)
+  return {
+    left,
+    top,
+    width,
+    height,
+    center: { x: (left + right) / 2, y: (top + bottom) / 2 },
+  }
+}
 
 export type RotulosVinculo = 'foco' | 'sempre' | 'hover'
 
@@ -86,6 +127,8 @@ interface GraphStageProps {
   espacamento?: number
   searchQuery?: string
   hoveredId?: number | null
+  /** Token pointer hover — parent should write the same state as list-row hover. */
+  onHoverPersonagem?: (id: number | null) => void
   isGm?: boolean
 }
 
@@ -134,9 +177,10 @@ export function GraphStage({
   activeTipos,
   onEdgeClick,
   rotulosVinculo: _rotulosVinculo = 'foco',
-  espacamento = 240,
+  espacamento = 168,
   searchQuery = '',
   hoveredId = null,
+  onHoverPersonagem,
   isGm = false,
 }: GraphStageProps) {
   const { t } = useTranslation('relacoes')
@@ -151,7 +195,6 @@ export function GraphStage({
   const [scale, setScale] = useState(1)
   const [pan, setPan] = useState<Point>(CENTER)
   const [dragOffsets, setDragOffsets] = useState<Map<number, Point>>(new Map())
-  const [hoveredEdgeId, setHoveredEdgeId] = useState<number | null>(null)
   const dragRef = useRef<DragSession | null>(null)
 
   useEffect(() => {
@@ -172,24 +215,8 @@ export function GraphStage({
     if (!stage) return
 
     const measureUsableCenter = () => {
-      const stageRect = stage.getBoundingClientRect()
-      const panelRect = panel?.getBoundingClientRect()
-      let left = 0
-      let right = stageRect.width
-      let top = 0
-      let bottom = stageRect.height
-
-      if (panelRect && panelRect.width > 0 && panelRect.height > 0) {
-        const panelWidth = Math.min(stageRect.right, panelRect.right) - Math.max(stageRect.left, panelRect.left)
-        const panelHeight = Math.min(stageRect.bottom, panelRect.bottom) - Math.max(stageRect.top, panelRect.top)
-        if (panelWidth > stageRect.width * 0.75 && panelHeight > 0) {
-          bottom = Math.max(0, Math.min(stageRect.height, panelRect.top - stageRect.top))
-        } else if (panelHeight > stageRect.height * 0.75 && panelWidth > 0) {
-          left = Math.max(0, Math.min(stageRect.width, panelRect.right - stageRect.left))
-        }
-      }
-
-      setViewportCenter({ x: (left + right) / 2, y: (top + bottom) / 2 })
+      const usable = readUsableViewport(stage)
+      setViewportCenter(usable.center)
     }
 
     const observer = new ResizeObserver(measureUsableCenter)
@@ -203,6 +230,7 @@ export function GraphStage({
     }
   }, [])
 
+  // Tipo filter first; isolation/neighbours only see this subset (empty activeTipos = all).
   const filteredVinculos = useMemo(
     () => vinculos.filter((v) => edgeMatchesTipos(v, activeTipos)),
     [vinculos, activeTipos],
@@ -376,9 +404,28 @@ export function GraphStage({
     setScale((s) => clampScale(s * factor))
   }
 
-  function resetView() {
-    setScale(1)
-    setPan({ x: 0, y: 0 })
+  function fitView() {
+    const stage = containerRef.current
+    if (!stage) return
+    const points: Point[] = []
+    for (const p of personagens) {
+      if (!isVisible(p.id)) continue
+      const pos = positions.get(p.id)
+      if (pos) points.push(pos)
+    }
+    const bbox = bboxFromNodePositions(points)
+    if (!bbox) return
+    const usable = readUsableViewport(stage)
+    setViewportCenter(usable.center)
+    const next = fitScalePan({
+      bbox,
+      usableW: usable.width,
+      usableH: usable.height,
+      minScale: MIN_SCALE,
+      maxScale: MAX_SCALE,
+    })
+    setScale(next.scale)
+    setPan(next.pan)
   }
 
   return (
@@ -457,7 +504,7 @@ export function GraphStage({
                   : showEdges && isFocusEdge(v)
               const dimOpacity = selectedId != null ? EDGE_OPACITY_DIM_SELECTED : EDGE_OPACITY_DIM
               const opacity = highlighted ? EDGE_OPACITY_FOCUS : dimOpacity
-              const midLabelVisible = highlighted || hoveredEdgeId === v.id
+              const midLabelVisible = highlighted
               const reciprocalText = formatVinculoTipoLabel(
                 getVinculoTipoLabel(t, displayTipo),
                 v.qualificador_ab,
@@ -513,8 +560,6 @@ export function GraphStage({
                     strokeWidth={18}
                     fill="none"
                     className="graph-stage__edge-hit"
-                    onPointerEnter={() => setHoveredEdgeId(v.id)}
-                    onPointerLeave={() => setHoveredEdgeId((id) => (id === v.id ? null : id))}
                     onClick={(e) => {
                       e.stopPropagation()
                       onEdgeClick?.(v.id)
@@ -696,6 +741,8 @@ export function GraphStage({
                 tabIndex={-1}
                 aria-label={p.nome}
                 aria-pressed={p.id === selectedId}
+                onPointerEnter={() => onHoverPersonagem?.(p.id)}
+                onPointerLeave={() => onHoverPersonagem?.(null)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
@@ -730,7 +777,7 @@ export function GraphStage({
         </div>
       </div>
 
-      <div className="graph-stage__zoom">
+      <div className="graph-stage__zoom" onPointerDown={(e) => e.stopPropagation()}>
         <Button
           type="button"
           onClick={() => zoomBy(1.2)}
@@ -745,8 +792,8 @@ export function GraphStage({
         >
           −
         </Button>
-        <Button type="button" onClick={resetView}>
-          1:1
+        <Button type="button" onClick={fitView} aria-label={t('graph.fitViewAria')}>
+          {t('graph.fitView')}
         </Button>
       </div>
     </div>

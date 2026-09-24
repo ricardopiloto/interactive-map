@@ -47,8 +47,6 @@ RESERVED_SLUGS = frozenset(
     }
 )
 
-KNOWN_SISTEMAS = frozenset(DEFAULT_MODULOS_BY_SISTEMA.keys()) | {"wfrp4e", "wod"}
-
 DEFAULT_COTA_BYTES = 10 * 1024**3
 COTA_AVISO_RATIO = 0.9
 
@@ -86,8 +84,6 @@ def create_campanha(
     modulos: list[str] | None = None,
 ) -> Campanha:
     validate_slug(slug)
-    if sistema not in KNOWN_SISTEMAS:
-        raise CampanhaAdminError("SISTEMA_INVALIDO")
     if visibilidade not in ("listada", "so_link"):
         raise CampanhaAdminError("VISIBILIDADE_INVALIDA")
     try:

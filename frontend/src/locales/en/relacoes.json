@@ -17,6 +17,8 @@
   "graph": {
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
+    "fitView": "1:1",
+    "fitViewAria": "Fit view to show all characters (1:1)",
     "ocultoAria": "Character hidden from players",
     "edgeAria": "{{nomeA}} and {{nomeB}}: {{tipo}}",
     "edgeAriaOculto": "{{label}} · hidden from players"

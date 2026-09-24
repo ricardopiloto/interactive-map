@@ -241,10 +241,6 @@
   opacity: 0.75;
 }
 
-.relacoes-page__detail-portrait {
-  max-height: 140px;
-}
-
 .relacoes-page__detail-tags {
   display: flex;
   flex-wrap: wrap;

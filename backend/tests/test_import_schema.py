@@ -70,3 +70,18 @@ def test_schema_old_migrated(data_root) -> None:
     assert camp.slug == "old-schema"
     with resolve_campaign_session("old-schema") as session:
         assert len(list(session.exec(select(Arco)).all())) == 1
+
+
+def test_free_form_sistema_accepted(data_root) -> None:
+    """Spec 140 — unknown sistema names must not raise SISTEMA_DESCONHECIDO."""
+    members = _members()
+    manifest = json.loads(members[MANIFEST_FILENAME])
+    manifest["sistema"] = "shadowdark"
+    members[MANIFEST_FILENAME] = json.dumps(manifest).encode()
+    camp = import_campaign_from_bytes(
+        _zip(members),
+        owner_email=TEST_GM_EMAIL,
+        slug_override="free-sistema",
+    )
+    assert camp.sistema == "shadowdark"
+    assert camp.slug == "free-sistema"

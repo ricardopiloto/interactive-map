@@ -23,8 +23,9 @@ export const EDGE_OPACITY_FOCUS = 0.9
 export const COMPACT_INNER_THRESHOLD = 6
 /** «About one third less» than the default ring gap (spec 086). */
 export const COMPACT_INNER_FACTOR = 2 / 3
-/** Floor so name/disc boxes still clear each other (086/087). Do not clamp 088 to this. */
-export const COMPACT_INNER_SPACING_MIN = 120
+/** Floor so name/disc boxes still clear each other (086/087). Do not clamp 088 to this.
+ *  Spec 138: was 120 → 84 (−30%). */
+export const COMPACT_INNER_SPACING_MIN = 84
 /** Further −30% after the 086 compact (spec 088). 160 × 0.7 = 112. */
 export const COMPACT_INNER_TIGHTEN = 0.6
 /** Unselected (overview) ring gap — same floor as COMPACT_INNER_SPACING_MIN (spec 087). */
@@ -40,7 +41,7 @@ export function compactInnerSpacing(spacing: number): number {
 
 /** Spread the focus inner ring when visible directs are at or below this count. */
 export const SPARSE_INNER_THRESHOLD = 3
-/** +30% vs default focus gap (spec 089). 240 × 1.3 = 312. */
+/** +30% vs default focus gap (spec 089). With espacamento 168: 168 × 1.3 ≈ 218. */
 export const SPARSE_INNER_FACTOR = 1.3
 
 export function sparseInnerSpacing(spacing: number): number {
@@ -150,4 +151,57 @@ export function outermostRadius(positions: Map<number, Point>, center: Point): n
     if (d > max) max = d
   }
   return max
+}
+
+/** Axis-aligned bbox of node boxes (layout centres ± NODE_W/2, NODE_H/2). */
+export interface BBox {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}
+
+/** Padding (px each side) applied to content size before fit scale (spec 139). */
+export const FIT_PADDING = 28
+
+/** Build AABB from node layout centres. Empty iterable → null. */
+export function bboxFromNodePositions(positions: Iterable<Point>): BBox | null {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  let any = false
+  for (const p of positions) {
+    any = true
+    minX = Math.min(minX, p.x - NODE_W / 2)
+    maxX = Math.max(maxX, p.x + NODE_W / 2)
+    minY = Math.min(minY, p.y - NODE_H / 2)
+    maxY = Math.max(maxY, p.y + NODE_H / 2)
+  }
+  if (!any) return null
+  return { minX, minY, maxX, maxY }
+}
+
+/**
+ * Scale + pan so `bbox` fits in the usable viewport under
+ * `translate(viewportCenter + pan) scale(scale)` with origin (0,0).
+ * Caps zoom-in at 1.0 (never enlarge past “natural” 1∶1).
+ */
+export function fitScalePan(opts: {
+  bbox: BBox
+  usableW: number
+  usableH: number
+  padding?: number
+  minScale: number
+  maxScale: number
+}): { scale: number; pan: Point } {
+  const pad = opts.padding ?? FIT_PADDING
+  const cw = Math.max(1, opts.bbox.maxX - opts.bbox.minX)
+  const ch = Math.max(1, opts.bbox.maxY - opts.bbox.minY)
+  const cx = (opts.bbox.minX + opts.bbox.maxX) / 2
+  const cy = (opts.bbox.minY + opts.bbox.maxY) / 2
+  let scale = Math.min(opts.usableW / (cw + 2 * pad), opts.usableH / (ch + 2 * pad))
+  scale = Math.min(scale, 1)
+  scale = Math.min(opts.maxScale, Math.max(opts.minScale, scale))
+  return { scale, pan: { x: -scale * cx, y: -scale * cy } }
 }
