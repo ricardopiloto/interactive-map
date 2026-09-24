@@ -45,6 +45,7 @@ test('relations character list uses portraits and preserves filtering and select
     await search.fill(fixture.characters.withPortrait.name)
     await portraitRow.click()
     await expect(page.locator(`[data-node-id="${fixture.characters.withPortrait.id}"]`)).toHaveClass(/graph-node--selected/)
+    await expect(page.locator('.relacoes-page__detail-title')).toHaveText(fixture.characters.withPortrait.name)
     await expect(
       page.locator(`[data-node-id="${fixture.characters.withPortrait.id}"] .graph-node__disc img`),
     ).toHaveAttribute('src', validPortraitUrl)

@@ -7,6 +7,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.22.1] — 2026-09-24
+
+### Fixed
+
+- Seleção de personagem no Mapa e em Relações: o rastreamento de foco passou do cabeçalho para toda a superfície do `MapSidePanel`, evitando que o painel recolhesse antes do clique na lista e impedisse abrir a ficha / selecionar o nó (BUG-001).
+
 ## [0.22.0] — 2026-09-24
 
 ### Changed

@@ -443,12 +443,7 @@ export function RelacoesPage() {
   const hasQuery = query.trim().length > 0
 
   const panelHead = selectedPersonagem == null ? (
-    <div
-      onFocus={() => setPanelFocused(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPanelFocused(false)
-      }}
-    >
+    <div>
       <div className="relacoes-page__search">
         <IconSearch size={17} aria-hidden />
         <input
@@ -625,6 +620,7 @@ export function RelacoesPage() {
         <MapSidePanel
           expanded={expanded}
           onToggleExpand={() => setExpanded((v) => !v)}
+          onFocusWithinChange={setPanelFocused}
           head={panelHead}
         >
           {panelBody}

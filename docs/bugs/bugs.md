@@ -145,11 +145,13 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 
 ## [BUG-001] Selecionar personagem não abre ficha nem detalhes
 
-**Status:** Em aberto — [147-selecao-personagem](../../specs/147-selecao-personagem/spec.md) e [tasks.md](../../specs/147-selecao-personagem/tasks.md) (3/6 tarefas concluídas); a reprodução exata relatada ainda não foi confirmada.
+**Status:** Correção implementada; aguarda confirmação nos ambientes de desenvolvimento e produção. O foco do painel agora permanece acompanhado ao entrar nas linhas da lista; [147-selecao-personagem](../../specs/147-selecao-personagem/spec.md) tem E2E atualizado para validar seleção e detalhes em Relações.
 
 **Registrado em:** 2026-09-24.
 
-**Problema:** selecionar um personagem não produz nenhuma ação, tanto na tela do Mapa quanto no Mapa de Relações.
+**Problema observado:**
+- Em **Relações**, clicar em qualquer personagem no painel lateral move/reorganiza o grafo, mas não seleciona o personagem. Clicar diretamente no nó do grafo seleciona corretamente.
+- No **Mapa**, clicar diretamente em um marcador de localidade funciona. Personagens não têm marcadores próprios; a seleção de personagem deve ser feita pela lista do painel lateral. O relato anterior diz que clicar em localidade ou personagem nessa lista não produz efeito.
 
 **Comportamento esperado:**
 - No **Mapa**, selecionar um personagem deve abrir sua ficha.
@@ -157,6 +159,10 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 
 **Escopo:** restaurar o comportamento de seleção nas duas telas, mantendo cada resposta correspondente ao contexto da tela.
 
-**Reprodução E2E (2026-09-24):** a seleção pela lista no Mapa abre o personagem correto nos projetos desktop e mobile (`mapa-retratos.spec.ts`). O mesmo caminho da lista em Relações também passou no projeto desktop (`relacoes-retratos.spec.ts`). A falha original não foi reproduzida nesses casos. A cobertura mais ampla de Relações não chegou às asserções de seleção: o teste existente usa uma expectativa global que falha quando há personagens prévios no banco E2E; a repetição mobile subsequente recebeu HTTP 429 ao semear dados de teste. Esses resultados não demonstram falha dos handlers de seleção.
+**Validação anterior (2026-09-24):** a seleção pela lista no Mapa passou em desktop e mobile (`mapa-retratos.spec.ts`); a seleção pela lista em Relações passou em desktop (`relacoes-retratos.spec.ts`). A falha reportada não foi reproduzida nesses casos, e os resultados não demonstraram falha dos handlers.
+
+**Causa e correção (2026-09-24):** o rastreamento de foco estava no cabeçalho, embora os itens selecionáveis fiquem no corpo do painel. Ao mover o foco para uma linha, o blur do cabeçalho podia marcar o painel como desfocado e recolher a lista antes de concluir o clique. `MapSidePanel` agora rastreia o foco em toda a superfície; assim, os callbacks de seleção de `MapPage` e `RelacoesPage` podem concluir e manter o painel aberto. Em Relações, lista e nó já usam `selectPersonagem`; no Mapa, `selectLocalFromList` seleciona e centraliza a localidade, enquanto `selectNpc` abre os detalhes sem tentar centralizar um marcador inexistente.
+
+**Validação da correção:** `npm run build` passou. `relacoes-retratos.spec.ts` passou em desktop com asserções de nó selecionado e título dos detalhes. `relacoes-flows.spec.ts` continua falhando antes das asserções de seleção por uma expectativa independente de visibilidade de vínculo. A execução de `mapa-retratos.spec.ts` alcançou as asserções de ficha, mas expirou durante a limpeza dos dados. A confirmação nos ambientes de desenvolvimento e produção e a validação mobile permanecem pendentes; T006 continua aberto em `tasks.md`.
 
 ---

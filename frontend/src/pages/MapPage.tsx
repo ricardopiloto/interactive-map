@@ -413,12 +413,7 @@ export function MapPage() {
       <IconArrowLeft size={15} aria-hidden /> {t('panel.backToList')}
     </Button>
   ) : !selected ? (
-    <div
-      onFocus={() => setPanelFocused(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPanelFocused(false)
-      }}
-    >
+    <div>
       <div className="map-page__search">
         <IconSearch size={17} aria-hidden />
         <input
@@ -723,6 +718,7 @@ export function MapPage() {
         <MapSidePanel
           expanded={expanded}
           onToggleExpand={() => setExpanded((v) => !v)}
+          onFocusWithinChange={setPanelFocused}
           head={panelHead}
         >
           {panelBody}

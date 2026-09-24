@@ -366,6 +366,8 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-035] Produto — Tela de administração de usuários e mesas
 
+**Status:** Spec criada — [148-administracao-usuarios-mesas](../../specs/148-administracao-usuarios-mesas/spec.md) (`Draft`; pronta para `speckit-plan`).
+
 **Registrado em:** 2026-09-24.
 
 **Pedido:** criar uma tela completa para administração de usuários e das mesas (campanhas) da aplicação, reunindo operações e informações administrativas em um só lugar.

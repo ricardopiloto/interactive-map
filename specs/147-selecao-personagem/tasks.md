@@ -36,7 +36,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [P] [US1] Se T002 reproduzir seleção sem resposta ou detalhes de personagem incorreto, corrigir a transição de seleção e resolução de ficha em `frontend/src/pages/MapPage.tsx`; se o teste passar sem alteração, registrar a evidência em `docs/bugs/bugs.md` e não duplicar o estado existente.
+- [X] T003 [P] [US1] Corrigir a perda de foco do painel ao transferir foco do cabeçalho para uma linha, mantendo a seleção de personagem/localidade e expansão do painel em `frontend/src/components/map/MapSidePanel.tsx` e `frontend/src/pages/MapPage.tsx`.
 
 **Checkpoint**: História 1 validada independentemente; ficha e seleção correspondem nos casos cobertos.
 
@@ -54,7 +54,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T005 [P] [US2] Se T004 reproduzir divergência, corrigir o estado compartilhado de seleção e os callbacks entre `frontend/src/pages/RelacoesPage.tsx` e `frontend/src/components/relacoes/GraphStage.tsx`; se a sincronização passar sem alteração, registrar a evidência em `docs/bugs/bugs.md` e não criar uma segunda fonte de estado.
+- [X] T005 [P] [US2] Corrigir a perda de foco que colapsava o painel antes do clique na lista em `frontend/src/components/map/MapSidePanel.tsx` e `frontend/src/pages/RelacoesPage.tsx`; manter lista e nó usando a mesma transição de seleção.
 
 **Checkpoint**: História 2 validada independentemente; lista, grafo e painel apontam para o mesmo personagem.
 
