@@ -18,6 +18,10 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app ./app
+COPY alembic_control ./alembic_control
+COPY alembic_control.ini ./alembic_control.ini
+COPY alembic_campaign ./alembic_campaign
+COPY alembic_campaign.ini ./alembic_campaign.ini
 RUN mkdir -p /app/data /app/uploads/map /app/uploads/portraits /app/uploads/locals \
     && chown -R appuser:appuser /app
 
