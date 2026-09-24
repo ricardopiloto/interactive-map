@@ -7,6 +7,26 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.20.3] — 2026-09-23
+
+### Fixed
+
+- Adicionei SQLModel.metadata.create_all(conn, checkfirst=True) no início da ponte — cria qualquer tabela que esteja totalmente faltando (com o schema atual completo), sem tocar nas que já existem.
+- Adicionei o ALTER TABLE local ADD COLUMN visivel_para_todos que faltava — mesmo padrão que já existia pra npc.
+- Por precaução, adicionei o mesmo patch pra arco e sessao (mesma coluna, mesmo padrão) — já que esse exato bug já apareceu uma vez, é barato garantir que não se repete nas outras três tabelas que têm essa coluna.
+
+## [0.20.2] — 2026-09-23
+
+### Fixed
+
+- O Dockerfile só copiava app ./app, mas nunca copiava as pastas alembic_control/ e alembic_campaign/ (onde vivem as migrações reais) — confirmei que _BACKEND_ROOT em backend/app/campaign_db.py#L20 resolve pra /app dentro do container, e o código espera /app/alembic_control existir ali. Provavelmente um esquecimento de quando essas pastas de migração foram adicionadas depois que o Dockerfile já existia.
+
+## [0.20.1] — 2026-09-23
+
+### Fixed
+
+- Código incompleto em GraphStage.tsx, relacionado exatamente ao trabalho da spec 128 (auditoria de paridade de Relações, BKLG-018) — alguém começou a cablear um aria-label acessível pra GM identificar vínculos privados/secretos no grafo, mas a função nunca foi escrita, e sobrou um estado não utilizado.
+
 ## [0.20.0] — 2026-09-23
 
 ### Added

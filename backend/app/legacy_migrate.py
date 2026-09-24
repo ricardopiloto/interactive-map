@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
+from sqlmodel import SQLModel
 
+import app.models  # noqa: F401 — registers every table on SQLModel.metadata before create_all
 from app.config import settings
 
 
@@ -14,6 +16,11 @@ def migrate_sqlite_legacy(engine: Engine) -> None:
     if not url.startswith("sqlite"):
         return
     with engine.begin() as conn:
+        # Tables added after the legacy baseline (arco/sessao/waypoint/route_segment/…)
+        # may be entirely absent from an old mapa.db. checkfirst=True only creates what's
+        # missing — existing tables (and their rows) are left untouched.
+        SQLModel.metadata.create_all(conn, checkfirst=True)
+
         grupo_cols = {
             row[1]
             for row in conn.execute(text("PRAGMA table_info(grupo_posicao)")).fetchall()
@@ -34,6 +41,33 @@ def migrate_sqlite_legacy(engine: Engine) -> None:
                 text(
                     "ALTER TABLE local ADD COLUMN cor_pin VARCHAR(7) "
                     "NOT NULL DEFAULT '#c4b5fd'"
+                )
+            )
+        if local_cols and "visivel_para_todos" not in local_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE local ADD COLUMN visivel_para_todos BOOLEAN "
+                    "NOT NULL DEFAULT 1"
+                )
+            )
+
+        arco_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(arco)")).fetchall()}
+        if arco_cols and "visivel_para_todos" not in arco_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE arco ADD COLUMN visivel_para_todos BOOLEAN "
+                    "NOT NULL DEFAULT 1"
+                )
+            )
+
+        sessao_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(sessao)")).fetchall()
+        }
+        if sessao_cols and "visivel_para_todos" not in sessao_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE sessao ADD COLUMN visivel_para_todos BOOLEAN "
+                    "NOT NULL DEFAULT 1"
                 )
             )
 
