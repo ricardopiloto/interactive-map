@@ -13,5 +13,6 @@ class Arco(SQLModel, table=True):
     titulo: str = Field(max_length=200, index=True)
     resumo: str = Field(default="", max_length=5000)
     ordem: int = Field(default=0, index=True)
+    visivel_para_todos: bool = Field(default=True)
 
     locais: list["Local"] = Relationship(back_populates="arco")

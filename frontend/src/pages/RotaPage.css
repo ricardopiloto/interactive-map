@@ -1,0 +1,106 @@
+.rota-page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.rota-page__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.rota-page__digitizer-btn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-elevated, var(--color-surface));
+  box-shadow: var(--shadow-md);
+}
+
+.rota-page__status {
+  position: absolute;
+  inset: auto 1rem 1rem 1rem;
+  z-index: 4;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+
+.rota-page__status--error {
+  color: var(--color-danger, #b33);
+}
+
+.rota-page__panel-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rota-page__panel-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-family: var(--font-heading);
+}
+
+.rota-page .route-planner__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rota-page .route-planner__results {
+  min-height: 0;
+}
+
+.rota-page .route-planner__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rota-page .route-planner__item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-divider);
+  background: var(--color-elevated, var(--color-surface));
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.rota-page .route-planner__item.is-selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.rota-page .route-planner__item-title {
+  font-size: var(--font-size-sm);
+}
+
+.rota-page .route-planner__item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}

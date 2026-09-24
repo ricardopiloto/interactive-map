@@ -1,26 +1,9 @@
 import { parseApiError } from './parseApiError'
+import { campaignAdminPrefix } from './campaignSlug'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? ''
-const AUTH_KEY = 'codex_admin_basic'
 
-export function getAdminAuthHeader(): string | null {
-  return sessionStorage.getItem(AUTH_KEY)
-}
-
-export function setAdminCredentials(user: string, password: string): void {
-  const token = btoa(`${user}:${password}`)
-  sessionStorage.setItem(AUTH_KEY, `Basic ${token}`)
-}
-
-export function clearAdminCredentials(): void {
-  sessionStorage.removeItem(AUTH_KEY)
-}
-
-export function hasAdminCredentials(): boolean {
-  return Boolean(sessionStorage.getItem(AUTH_KEY))
-}
-
-async function request<T>(path: string, init?: RequestInit, withAdmin = false): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, withCredentials = false): Promise<T> {
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...(init?.body && !(init.body instanceof FormData)
@@ -28,14 +11,11 @@ async function request<T>(path: string, init?: RequestInit, withAdmin = false): 
       : {}),
     ...(init?.headers as Record<string, string> | undefined),
   }
-  if (withAdmin) {
-    const auth = getAdminAuthHeader()
-    if (auth) headers.Authorization = auth
-  }
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers,
+    credentials: withCredentials ? 'include' : (init?.credentials ?? 'same-origin'),
   })
 
   if (!response.ok) {
@@ -62,15 +42,49 @@ export const api = {
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }, true),
   adminPut: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }, true),
+  adminPatch: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }, true),
   adminDelete: (path: string) => request<void>(path, { method: 'DELETE' }, true),
-  adminUpload: async (category: string, file: File): Promise<{ url: string }> => {
+  adminUpload: async (
+    category: string,
+    file: File,
+  ): Promise<{
+    url: string
+    aviso_cota?: boolean
+    bytes_usados?: number
+    cota_bytes?: number
+  }> => {
     const body = new FormData()
     body.append('category', category)
     body.append('file', file)
-    return request<{ url: string }>(
-      '/api/admin/uploads',
+    return request(
+      `${campaignAdminPrefix()}/uploads`,
       { method: 'POST', body },
       true,
     )
   },
+}
+
+export const authApi = {
+  login: (email: string, password: string) =>
+    request<{ email: string }>(
+      '/api/auth/login',
+      { method: 'POST', body: JSON.stringify({ email, password }) },
+      true,
+    ),
+  logout: () =>
+    request<void>('/api/auth/logout', { method: 'POST' }, true),
+  me: () => request<{ email: string; id: number }>('/api/auth/me', undefined, true),
+  aceitarConvite: (token: string, password: string) =>
+    request<{ email: string }>(
+      '/api/auth/convite/aceitar',
+      { method: 'POST', body: JSON.stringify({ token, password }) },
+      true,
+    ),
+  confirmarReset: (token: string, password: string) =>
+    request<{ email: string }>(
+      '/api/auth/reset/confirmar',
+      { method: 'POST', body: JSON.stringify({ token, password }) },
+      true,
+    ),
 }

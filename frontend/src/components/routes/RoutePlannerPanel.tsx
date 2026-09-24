@@ -1,8 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { campaignApi } from '../../api/campaign'
+import { getCampaignSlug } from '../../api/campaignSlug'
 import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
+import { getCachedInstanceConfig } from '../../hooks/useInstanceConfig'
+import { Chip, Button, Input} from '../ui'
 import type { Local, ModoTransporte, OrdenacaoRota, PreferenciaVia, Ritmo, RoutePlanItem, Waypoint } from '../../types'
+import {
+  formatBp,
+  formatDistancia,
+  formatTempoHumanizado,
+  horasPorDia,
+  type UnidadeDistancia,
+} from '../../utils/routeFormat'
 import { WaypointCombobox } from './WaypointCombobox'
 import {
   isNamedWaypoint,
@@ -39,7 +49,7 @@ function disambiguateRouteTitles(bases: string[]): string[] {
   })
 }
 
-/** Non-default option fragments for collapsed header (research §2). */
+/** Collapsed header chips — always show current values (clarify 106 B). */
 function formatOptionsSummary(
   t: (key: string) => string,
   modo: ModoTransporte,
@@ -48,18 +58,20 @@ function formatOptionsSummary(
   preferenciaVia: PreferenciaVia,
   velocidade: string,
 ): string[] {
-  const fragments: string[] = []
+  const fragments: string[] = [
+    t(`routeEnums.modo.${modo}`),
+    t(`routeEnums.ritmo.${ritmo}`),
+    t(
+      ordenacao === 'mais_barata'
+        ? 'routeEnums.ordenacao.maisBarata'
+        : 'routeEnums.ordenacao.maisRapida',
+    ),
+    t(`routeEnums.preferencia.${preferenciaVia}`),
+  ]
   if (modo === 'proprio') {
-    fragments.push(t('routeEnums.modo.proprio'))
-    const trimmed = velocidade.trim()
-    if (trimmed !== '' && trimmed !== DEFAULT_PROPRIO_SPEED) {
-      fragments.push(`${trimmed} mi/h`)
-    }
+    const trimmed = velocidade.trim() || DEFAULT_PROPRIO_SPEED
+    fragments.push(`${trimmed} mi/h`)
   }
-  if (ritmo === 'intenso') fragments.push(t('routeEnums.ritmo.intenso'))
-  if (ordenacao === 'mais_barata') fragments.push(t('routeEnums.ordenacao.maisBarata'))
-  if (preferenciaVia === 'rio') fragments.push(t('routeEnums.preferencia.rio'))
-  if (preferenciaVia === 'estrada') fragments.push(t('routeEnums.preferencia.estrada'))
   return fragments
 }
 
@@ -77,6 +89,8 @@ interface Props {
   mapPick?: RouteMapPick | null
   /** Render inside side menu (no floating chrome). */
   embedded?: boolean
+  /** Spec 116: split form/results for MapSidePanel slots (keeps plan API logic). */
+  renderShell?: (parts: { form: ReactNode; results: ReactNode }) => ReactNode
 }
 
 export function RoutePlannerPanel({
@@ -90,6 +104,7 @@ export function RoutePlannerPanel({
   onSelectIndex,
   mapPick = null,
   embedded = false,
+  renderShell,
 }: Props) {
   const { t } = useTranslation('mapa')
   const { t: tc } = useTranslation('comum')
@@ -324,19 +339,18 @@ export function RoutePlannerPanel({
     ordenacao === 'mais_barata' ? t('routePlanner.badgeCheapest') : t('routePlanner.badgeFastest')
   const ritmoHint = ritmos.find((r) => r.value === ritmo)?.hint
 
-  return (
-    <aside
-      className={embedded ? 'route-planner route-planner--embedded' : 'route-planner'}
-      aria-label={t('routePlanner.title')}
-    >
-      <div className="route-planner__head">
-        <h2 className="route-planner__title">{t('routePlanner.title')}</h2>
-        {onClose ? (
-          <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label={tc('buttons.close')}>
-            ×
-          </button>
-        ) : null}
-      </div>
+  const form = (
+    <div className="route-planner__form" aria-label={t('routePlanner.title')}>
+      {!renderShell && (
+        <div className="route-planner__head">
+          <h2 className="route-planner__title">{t('routePlanner.title')}</h2>
+          {onClose ? (
+            <Button variant="ghost" type="button" onClick={onClose} aria-label={tc('buttons.close')}>
+              ×
+            </Button>
+          ) : null}
+        </div>
+      )}
       <WaypointCombobox
         label={t('routePlanner.from')}
         options={options}
@@ -365,14 +379,21 @@ export function RoutePlannerPanel({
           setDestinoQuery(label)
         }}
       />
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void calcular()}>
+      <Button variant="primary" type="button" disabled={busy} onClick={() => void calcular()}>
         {busy ? t('routePlanner.calculating') : t('routePlanner.calculate')}
-      </button>
+      </Button>
       {error && (
         <p className="route-planner__error" role="alert">
           {error}
         </p>
       )}
+      <p className="visually-hidden" aria-live="polite" aria-atomic="true">
+        {busy
+          ? t('routePlanner.calculating')
+          : plan.length > 0
+            ? t('routePlanner.liveResults', { count: plan.length })
+            : ''}
+      </p>
       <div className="route-planner__options">
         <button
           type="button"
@@ -388,7 +409,11 @@ export function RoutePlannerPanel({
             </span>
           </span>
           {!optionsOpen && summaryFragments.length > 0 && (
-            <span className="route-planner__options-summary">{summaryFragments.join(' · ')}</span>
+            <span className="route-planner__options-summary">
+              {summaryFragments.map((frag, i) => (
+                <Chip key={`${i}-${frag}`}>{frag}</Chip>
+              ))}
+            </span>
           )}
         </button>
         <div
@@ -468,8 +493,7 @@ export function RoutePlannerPanel({
           {modo === 'proprio' && (
             <label className="route-planner__field">
               <span>{t('routePlanner.speedMph')}</span>
-              <input
-                className="input"
+              <Input
                 type="number"
                 min={0.1}
                 step={0.1}
@@ -480,15 +504,28 @@ export function RoutePlannerPanel({
           )}
         </div>
       </div>
-      {plan.length > 0 && (
+    </div>
+  )
+
+  const results = (
+    <div className="route-planner__results">
+      {plan.length > 0 ? (
         <ul className="route-planner__list">
           {plan.map((r, i) => {
-            const tempo = r.tempo_texto || `${r.tempo_horas} h`
+            const slug = getCampaignSlug() ?? undefined
+            const unidade: UnidadeDistancia =
+              getCachedInstanceConfig(slug)?.unidade_distancia === 'km' ? 'km' : 'mi'
+            const dist = formatDistancia(r.distancia_milhas, unidade)
+            const tempo = formatTempoHumanizado(r.tempo_horas, horasPorDia(ritmo), {
+              day: t('routePlanner.timeDay'),
+              days: t('routePlanner.timeDays'),
+              hour: t('routePlanner.timeHour'),
+            })
             const meta = t('routePlanner.meta', {
-              dist: r.distancia_milhas,
+              dist: dist.text,
               tempo,
-              dentro: r.custo_dentro_bp,
-              fora: r.custo_fora_bp,
+              via: t('routePlanner.viaBp', { n: formatBp(r.custo_dentro_bp) }),
+              fora: t('routePlanner.foraBp', { n: formatBp(r.custo_fora_bp) }),
             })
             const itemClass = [
               'route-planner__item',
@@ -496,6 +533,7 @@ export function RoutePlannerPanel({
             ]
               .filter(Boolean)
               .join(' ')
+            const pernoites = i === selectedIndex ? (r.pernoites ?? []) : []
             return (
               <li key={`${r.waypoint_ids.join('-')}-${r.tipos.join('-')}-${i}`}>
                 <button
@@ -509,18 +547,51 @@ export function RoutePlannerPanel({
                   </strong>
                   <span className="route-planner__item-meta">{meta}</span>
                 </button>
+                {pernoites.length > 0 && (
+                  <ol className="route-planner__overnights" aria-label={t('routePlanner.overnightTitle')}>
+                    {pernoites.map((p) => (
+                      <li key={`${p.dia}-${p.tipo}-${p.local_id ?? 'wild'}`}>
+                        <span className="route-planner__overnight-night">
+                          {t('routePlanner.overnightNight', { n: p.dia })}
+                        </span>
+                        <span className="route-planner__overnight-place">
+                          {p.tipo === 'local' && p.nome
+                            ? p.nome
+                            : t('routePlanner.overnightWild')}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </li>
             )
           })}
         </ul>
-      )}
-      {options.length === 0 && (
+      ) : (
         <p className="text-muted">
-          {waypoints.length === 0
-            ? t('routePlanner.noNodes')
-            : t('routePlanner.noNamedNodes')}
+          {busy
+            ? t('routePlanner.calculating')
+            : options.length === 0
+              ? waypoints.length === 0
+                ? t('routePlanner.noNodes')
+                : t('routePlanner.noNamedNodes')
+              : t('routePlanner.resultsHint')}
         </p>
       )}
+    </div>
+  )
+
+  if (renderShell) {
+    return <>{renderShell({ form, results })}</>
+  }
+
+  return (
+    <aside
+      className={embedded ? 'route-planner route-planner--embedded' : 'route-planner'}
+      aria-label={t('routePlanner.title')}
+    >
+      {form}
+      {results}
     </aside>
   )
 }

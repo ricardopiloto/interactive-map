@@ -32,11 +32,15 @@
   color: var(--color-accent);
 }
 
-.image-slot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.image-slot__quota {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4px 6px;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--color-warning) 85%, transparent);
+  color: var(--color-on-accent);
 }
 
 .image-slot--contain img {
@@ -47,4 +51,33 @@
   pointer-events: none;
   padding: var(--space-2);
   line-height: 1.35;
+}
+
+/* Form portrait/image chrome (was nocturne.css) */
+.npc-form__portrait.image-slot,
+.local-form__image.image-slot {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  padding: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.npc-form__portrait.image-slot img,
+.local-form__image.image-slot img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.npc-form__portrait--empty.image-slot,
+.local-form__image--empty.image-slot {
+  min-height: 110px;
+  padding: var(--space-2);
 }

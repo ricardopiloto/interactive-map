@@ -1,26 +1,22 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+from app.campaign_db import init_control
 from app.config import settings
-from app.database import init_db
-from app.routers import admin, public
+from app.errors import raise_api_error
+from app.middleware.csrf import CsrfOriginMiddleware
+from app.routers import admin, auth, campanhas, public
 from app.services.rate_limit import limiter
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    Path(settings.uploads_dir).mkdir(parents=True, exist_ok=True)
-    for sub in ("map", "portraits", "locals"):
-        (Path(settings.uploads_dir) / sub).mkdir(parents=True, exist_ok=True)
-    Path("./data").mkdir(parents=True, exist_ok=True)
-    init_db()
+    init_control()
     yield
 
 
@@ -36,6 +32,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(CsrfOriginMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -46,7 +43,18 @@ app.add_middleware(
 
 app.include_router(public.router)
 app.include_router(admin.router)
-app.mount("/uploads", StaticFiles(directory=str(settings.uploads_dir)), name="uploads")
+app.include_router(auth.router)
+app.include_router(campanhas.router)
+
+
+@app.get("/uploads/c/{slug}/{file_path:path}")
+def uploads_c_gone(slug: str, file_path: str) -> None:
+    raise_api_error("CAMPANHA_NAO_ENCONTRADA", status_code=404)
+
+
+@app.get("/uploads/{file_path:path}")
+def uploads_bare_gone(file_path: str) -> None:
+    raise_api_error("CAMPANHA_NAO_ENCONTRADA", status_code=404)
 
 
 @app.get("/api/health")

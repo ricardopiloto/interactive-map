@@ -1,6 +1,10 @@
-# Hub — índice de campanhas
+# Hub — índice de campanhas (histórico, spec 078)
 
-Página estática que lista instâncias Codex a partir de `campanhas.json` (fetch em runtime, sem rebuild).
+Página estática que listava instâncias Codex a partir de `campanhas.json`. **Já não é o procedimento corrente.** Campanhas novas e o corte WFRP/WoD usam o Campaign Codex: [`docs/runbook-corte-campaign-codex.md`](../docs/runbook-corte-campaign-codex.md).
+
+`scripts/nova-campanha.sh` está aposentado (recusa criar pastas).
+
+Os ficheiros abaixo permanecem no git só como arquivo.
 
 ## Ficheiros
 
@@ -13,10 +17,10 @@ Página estática que lista instâncias Codex a partir de `campanhas.json` (fetc
 | `Caddyfile.example` | Exemplo de proxy para o hub |
 | `capas/` | Imagens de capa opcionais |
 
-## Uso
+## Uso (histórico)
 
-1. Servir esta pasta como site estático (Caddy, nginx, etc.).
-2. Após `./scripts/nova-campanha.sh`, colar a entrada gerada em `campanhas.json`.
-3. Refrescar o browser — o hub lê o JSON em runtime.
+1. Isto **não** é o caminho para campanhas novas.
+2. Campaign Codex: uma instância, home `/`, mesas `/c/<slug>`.
+3. Não editar `campanhas.json` como procedimento actual.
 
-O hub **não** está coberto pela i18n da app (permanece PT). Detalhes de deploy: [`docs/runbook-instancias.md`](../docs/runbook-instancias.md).
+O hub **não** está coberto pela i18n da app (permanece PT).

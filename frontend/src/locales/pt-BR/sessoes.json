@@ -1,0 +1,22 @@
+{
+  "title": "Crônica",
+  "empty": "Ainda não há sessões visíveis nesta campanha.",
+  "emptyGm": "Ainda não há sessões. Crie a primeira em Modo edição.",
+  "loadError": "Não foi possível carregar as sessões.",
+  "new": "Nova sessão",
+  "edit": "Editar sessão",
+  "delete": "Excluir sessão",
+  "deleteConfirmTitle": "Excluir esta sessão?",
+  "deleteConfirmBody": "A sessão e as suas ligações a locais e personagens serão removidas. Esta acção não pode ser desfeita.",
+  "fieldNumero": "Número",
+  "fieldTitulo": "Título",
+  "fieldData": "Rótulo de data",
+  "fieldResumo": "Resumo",
+  "fieldLocais": "Locais",
+  "fieldPersonagens": "Personagens",
+  "fieldVisivel": "Visível para todos",
+  "chipLocal": "Local",
+  "chipPersonagem": "Personagem",
+  "hiddenBadge": "Oculta",
+  "sessionLabel": "Sessão {{numero}}"
+}

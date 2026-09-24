@@ -1,8 +1,12 @@
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Personagem, VinculoDirecao, VinculoTipo } from '../../types'
+import { formSnapshot, isFormDirty } from '../forms/dirty'
+import { FormDrawer } from '../forms/FormDrawer'
 import { suggestionsForTipos } from './qualificadorSuggestions'
 import { VINCULO_TIPOS, getVinculoTipoLabel } from './vinculoStyles'
 import './VinculoFormDialog.css'
+import { Input, Select, Textarea } from '../ui'
 
 export type VinculoModo = 'reciproco' | 'duas_vias'
 
@@ -53,6 +57,19 @@ export function VinculoFormDialog({
     draft.personagem_a_id != null &&
     draft.personagem_b_id != null &&
     draft.personagem_a_id !== draft.personagem_b_id
+  const baseline = useRef(formSnapshot(draft))
+  const [submitted, setSubmitted] = useState(false)
+  const dirty = isFormDirty(baseline.current, draft)
+  const samePerson =
+    draft.personagem_a_id != null && draft.personagem_a_id === draft.personagem_b_id
+  const aError =
+    submitted && draft.personagem_a_id == null ? tc('form.required') : undefined
+  const bError =
+    submitted && draft.personagem_b_id == null
+      ? tc('form.required')
+      : submitted && samePerson
+        ? t('vinculoForm.doisPersonagens')
+        : undefined
 
   const nameA = nomeOf(personagens, draft.personagem_a_id)
   const nameB = nomeOf(personagens, draft.personagem_b_id)
@@ -60,55 +77,54 @@ export function VinculoFormDialog({
   const suggestionsAb = suggestionsForTipos(draft.tipo_ab)
   const suggestionsBa = suggestionsForTipos(draft.tipo_ba)
 
-  return (
-    <div className="dialog-backdrop" style={{ zIndex: 95 }}>
-      <div className="dialog" role="dialog" aria-labelledby="vinculo-form-title">
-        <div className="dialog-title" id="vinculo-form-title">
-          {title}
-        </div>
-        <div className="dialog__body">
-          <div className="dialog__group">
-            <h6 className="dialog__group-title">{t('vinculoForm.personagens')}</h6>
-            <div className="dialog__group-row">
-              <div className="field">
-                <label>{t('vinculoForm.personagemA')}</label>
-                <select
-                  className="input"
-                  value={draft.personagem_a_id ?? ''}
-                  onChange={(e) => onChange({ personagem_a_id: Number(e.target.value) || null })}
-                >
-                  <option value="">{t('vinculoForm.selecione')}</option>
-                  {sorted.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>{t('vinculoForm.personagemB')}</label>
-                <select
-                  className="input"
-                  value={draft.personagem_b_id ?? ''}
-                  onChange={(e) => onChange({ personagem_b_id: Number(e.target.value) || null })}
-                >
-                  <option value="">{t('vinculoForm.selecione')}</option>
-                  {sorted.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            {draft.personagem_a_id != null &&
-              draft.personagem_a_id === draft.personagem_b_id && (
-                <p className="map-page__inline-error">{t('vinculoForm.doisPersonagens')}</p>
-              )}
-          </div>
+  function handleSave() {
+    setSubmitted(true)
+    if (!valid) return
+    onSave()
+  }
 
-          <div className="dialog__group">
-            <h6 className="dialog__group-title">{t('vinculoForm.tipoDirecao')}</h6>
+  return (
+    <FormDrawer open title={title} dirty={dirty} onClose={onCancel} onSave={handleSave}>
+      <section className="form-drawer__section">
+        <h6 className="form-drawer__section-title">{t('vinculoForm.personagens')}</h6>
+        <div className="vinculo-form__group-row">
+          <div className="field">
+            <label>{t('vinculoForm.personagemA')}</label>
+            <Select
+              value={draft.personagem_a_id ?? ''}
+              onChange={(e) => onChange({ personagem_a_id: Number(e.target.value) || null })}
+              aria-invalid={Boolean(aError)}
+            >
+              <option value="">{t('vinculoForm.selecione')}</option>
+              {sorted.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nome}
+                </option>
+              ))}
+            </Select>
+            {aError ? <p className="field-error">{aError}</p> : null}
+          </div>
+          <div className="field">
+            <label>{t('vinculoForm.personagemB')}</label>
+            <Select
+              value={draft.personagem_b_id ?? ''}
+              onChange={(e) => onChange({ personagem_b_id: Number(e.target.value) || null })}
+              aria-invalid={Boolean(bError)}
+            >
+              <option value="">{t('vinculoForm.selecione')}</option>
+              {sorted.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nome}
+                </option>
+              ))}
+            </Select>
+            {bError ? <p className="field-error">{bError}</p> : null}
+          </div>
+        </div>
+      </section>
+
+      <section className="form-drawer__section">
+        <h6 className="form-drawer__section-title">{t('vinculoForm.tipoDirecao')}</h6>
             <div className="field">
               <label>{t('vinculoForm.modo')}</label>
               <div className="vinculo-form__modo">
@@ -151,8 +167,7 @@ export function VinculoFormDialog({
               <label>
                 {duas ? t('vinculoForm.veComo', { a: nameA, b: nameB }) : t('vinculoForm.tipoVinculo')}
               </label>
-              <select
-                className="input"
+              <Select
                 value={draft.tipo_ab}
                 onChange={(e) => {
                   const tipo_ab = e.target.value as VinculoTipo
@@ -172,14 +187,13 @@ export function VinculoFormDialog({
                     {getVinculoTipoLabel(t, tipo)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             {duas && (
               <div className="field">
                 <label>{t('vinculoForm.qualificador', { a: nameA, b: nameB })}</label>
-                <input
-                  className="input"
+                <Input
                   list="vinculo-qualificador-ab"
                   maxLength={80}
                   placeholder={t('vinculoForm.qualExMedo')}
@@ -198,8 +212,7 @@ export function VinculoFormDialog({
               <>
                 <div className="field">
                   <label>{t('vinculoForm.veComo', { a: nameB, b: nameA })}</label>
-                  <select
-                    className="input"
+                  <Select
                     value={draft.tipo_ba}
                     onChange={(e) => onChange({ tipo_ba: e.target.value as VinculoTipo })}
                   >
@@ -208,13 +221,12 @@ export function VinculoFormDialog({
                         {getVinculoTipoLabel(t, tipo)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="field">
                   <label>{t('vinculoForm.qualificador', { a: nameB, b: nameA })}</label>
-                  <input
-                    className="input"
+                  <Input
                     list="vinculo-qualificador-ba"
                     maxLength={80}
                     placeholder={t('vinculoForm.qualExAdmiracao')}
@@ -251,8 +263,7 @@ export function VinculoFormDialog({
             {!duas && (
               <div className="field">
                 <label>{t('vinculoForm.qualificadorOpcional')}</label>
-                <input
-                  className="input"
+                <Input
                   list="vinculo-qualificador-ab"
                   maxLength={80}
                   placeholder={t('vinculoForm.qualExMentor')}
@@ -308,47 +319,35 @@ export function VinculoFormDialog({
               />
               {t('vinculoForm.visivelJogadores')}
             </label>
-          </div>
+      </section>
 
-          <div className="dialog__group">
-            <h6 className="dialog__group-title">{t('personagemForm.notas')}</h6>
+      <section className="form-drawer__section">
+        <h6 className="form-drawer__section-title">{t('personagemForm.notas')}</h6>
+          <div className="field">
+            <label>
+              {duas
+                ? t('vinculoForm.notaDirecional', { a: nameA, b: nameB })
+                : t('vinculoForm.notaOpcional')}
+            </label>
+            <Textarea
+              rows={2}
+              placeholder={t('vinculoForm.notaExSalvou')}
+              value={draft.nota_ab}
+              onChange={(e) => onChange({ nota_ab: e.target.value })}
+            />
+          </div>
+          {duas && (
             <div className="field">
-              <label>
-                {duas
-                  ? t('vinculoForm.notaDirecional', { a: nameA, b: nameB })
-                  : t('vinculoForm.notaOpcional')}
-              </label>
-              <textarea
-                className="input"
+              <label>{t('vinculoForm.notaDirecional', { a: nameB, b: nameA })}</label>
+              <Textarea
                 rows={2}
-                placeholder={t('vinculoForm.notaExSalvou')}
-                value={draft.nota_ab}
-                onChange={(e) => onChange({ nota_ab: e.target.value })}
+                placeholder={t('vinculoForm.notaExSonha')}
+                value={draft.nota_ba}
+                onChange={(e) => onChange({ nota_ba: e.target.value })}
               />
             </div>
-            {duas && (
-              <div className="field">
-                <label>{t('vinculoForm.notaDirecional', { a: nameB, b: nameA })}</label>
-                <textarea
-                  className="input"
-                  rows={2}
-                  placeholder={t('vinculoForm.notaExSonha')}
-                  value={draft.nota_ba}
-                  onChange={(e) => onChange({ nota_ba: e.target.value })}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="dialog-actions">
-          <button type="button" className="btn btn-secondary" onClick={onCancel}>
-            {tc('buttons.cancel')}
-          </button>
-          <button type="button" className="btn btn-primary" onClick={onSave} disabled={!valid}>
-            {tc('buttons.save')}
-          </button>
-        </div>
-      </div>
-    </div>
+          )}
+        </section>
+    </FormDrawer>
   )
 }

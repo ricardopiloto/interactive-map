@@ -6,14 +6,23 @@ from app.errors import raise_api_error
 from app.models.npc import NPC, PersonagemTipo
 from app.schemas.personagem import PersonagemRead
 from app.services.mecanica import filter_extensoes
-from app.services.personagem_visibility import is_visivel_para_jogador
+from app.services.url_rewrite import rewrite_media_url
+from app.services.visibility import is_visivel_para_jogador
 
 router = APIRouter()
 
 
-def personagem_to_read(npc: NPC) -> PersonagemRead:
+def personagem_to_read(npc: NPC, *, for_player: bool = True) -> PersonagemRead:
     tipo = npc.tipo if npc.tipo is not None else PersonagemTipo.npc
     raw_ext = npc.extensoes_mecanica if isinstance(npc.extensoes_mecanica, dict) else {}
+    if for_player:
+        local_ids = [
+            loc.id
+            for loc in npc.locais
+            if loc.id is not None and is_visivel_para_jogador(loc)
+        ]
+    else:
+        local_ids = [loc.id for loc in npc.locais if loc.id is not None]
     return PersonagemRead(
         id=npc.id,  # type: ignore[arg-type]
         nome=npc.nome,
@@ -22,10 +31,10 @@ def personagem_to_read(npc: NPC) -> PersonagemRead:
         descricao=npc.descricao,
         faccao=npc.faccao,
         status=npc.status,
-        retrato_url=npc.retrato_url,
+        retrato_url=rewrite_media_url(npc.retrato_url),
         visivel_para_todos=bool(getattr(npc, "visivel_para_todos", True)),
         extensoes_mecanica=filter_extensoes(raw_ext),
-        local_ids=[loc.id for loc in npc.locais if loc.id is not None],
+        local_ids=local_ids,
     )
 
 

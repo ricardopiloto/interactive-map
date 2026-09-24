@@ -1,10 +1,11 @@
 # Codex v2 — Multi-Sistema & Multi-Campanha
 
-**Target version:** **2.0.0** (major — frentes A–D)  
-**Estado:** frentes A–D **implementadas** (0.12.0–0.15.0); follow-ups 081/082 em 0.16.x.
+**Target version:** **2.0.0** (major — frentes A–D) + evolução **Campaign Codex** (specs 092–099)  
+**Estado:** frentes A–D **implementadas** (0.12.0–0.15.0); follow-ups 081–091 em 0.16.x–0.19.x. Frente B (multi-deploy + hub) **substituída** pelo Campaign Codex para campanhas novas.
 
 **Source:** [`docs/v2/`](../../docs/v2/)  
-**Brief:** [`product-brief-codex-multissistema.md`](../../docs/v2/product-brief-codex-multissistema.md)
+**Brief v2 (A–D):** [`product-brief-codex-multissistema.md`](../../docs/v2/product-brief-codex-multissistema.md)  
+**Brief Campaign Codex:** [`product-brief-campaign-codex.md`](../../docs/v2/product-brief-campaign-codex.md) · RFC: [`rfc-campaign-codex.md`](../../docs/v2/rfc-campaign-codex.md)
 
 ## Frentes e specs
 
@@ -33,17 +34,35 @@
 | [090-relacoes-status-filter](../090-relacoes-status-filter/spec.md) | 0.19.0 | Filtro de estado (Todos / Vivos / Mortos / Desconhecidos / Desaparecido) |
 | [091-relacoes-legend-position](../091-relacoes-legend-position/spec.md) | 0.19.1 | Chave da Rede no palco (canto inferior esquerdo, como no mapa) |
 
+### Campaign Codex (instância única multi-campanha)
+
+Specs 092–099 — uma por fase. Brief + RFC acima. Frente B deixa de ser o modelo de deploy para campanhas novas.
+
+| Spec | Fase | Estado |
+|------|------|--------|
+| [092-fundacao-testes](../092-fundacao-testes/spec.md) | Fundação de testes | Implemented |
+| [093-controle-alembic-sqlite](../093-controle-alembic-sqlite/spec.md) | Banco de controle + Alembic + SQLite por campanha | Implemented |
+| [094-roteamento-campanha](../094-roteamento-campanha/spec.md) | Roteamento por campanha | Implemented |
+| [095-contas-sessao-permissoes](../095-contas-sessao-permissoes/spec.md) | Contas, convite, sessão, permissões | Implemented |
+| [096-uploads-cota](../096-uploads-cota/spec.md) | Uploads controlados e cota | Implemented |
+| [097-exportar-importar](../097-exportar-importar/spec.md) | Exportar / importar | Implemented |
+| [098-home-painel-mestre](../098-home-painel-mestre/spec.md) | Página inicial e painel do mestre | Implemented |
+| [099-migracao-legado-corte](../099-migracao-legado-corte/spec.md) | Migração legada e corte | Implemented |
+
 ## Restrições globais (brief)
 
-- Campanha WFRP em produção **não pode parar** — migração só após validação
+- Campanha WFRP em produção **não pode parar** — migração só após validação; instâncias antigas intactas na janela de retorno
 - Evolução in-place (não reescrita)
-- Sem contas de jogador, multi-tenant na app, monetização, ou tradução de conteúdo do mestre
+- **Multi-tenant na app** (SQLite por campanha + banco de controle) e **contas de mestre** (convite, sem cadastro aberto) **fazem parte do escopo**
+- Jogadores **continuam sem conta**; sem monetização; sem tradução de conteúdo do mestre
 
 ## Documento de referência (não spec nova)
 
 - [`docs/v2/feature-rede-relacoes.md`](../../docs/v2/feature-rede-relacoes.md) — notas visuais Nocturne; implementação coberta por specs 066–076 + 079 + 081
 
 ## Pipeline Speckit
+
+Constituição: [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) (v1.0.0). Planos MUST passar o Constitution Check (isolamento, testes de segurança/dados, legado intacto, SQLite, i18n, Alembic).
 
 ```
 /speckit-clarify → /speckit-plan → /speckit-tasks → /speckit-implement

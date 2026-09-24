@@ -1,0 +1,19 @@
+.rel-graph { width: 100%; height: 100%; display: block; }
+
+.rel-graph__edge { transition: opacity var(--dur-base) var(--ease-out); opacity: 0.85; }
+.rel-graph__edge.is-dim { opacity: 0.12; }
+
+.rel-graph__node { cursor: pointer; transition: opacity var(--dur-base) var(--ease-out); }
+.rel-graph__node.is-dim { opacity: 0.25; }
+.rel-graph__node-circle {
+  fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1.5;
+  transition: stroke var(--dur-fast), fill var(--dur-fast), r var(--dur-fast);
+}
+.rel-graph__node.is-pj .rel-graph__node-circle { stroke: var(--color-accent); stroke-width: 2.2; }
+.rel-graph__node.is-focus .rel-graph__node-circle { fill: var(--color-accent-wash); stroke: var(--color-accent); stroke-width: 2.6; }
+.rel-graph__node.is-hovered .rel-graph__node-circle { stroke: var(--color-accent); }
+.rel-graph__node-initials { fill: var(--color-text-1); font-size: 13px; font-weight: 700; font-family: var(--font-sans); pointer-events: none; }
+.rel-graph__node-label { fill: var(--color-text-2); font-size: 12px; font-weight: 600; font-family: var(--font-sans); pointer-events: none; }
+.rel-graph__node.is-focus .rel-graph__node-label { fill: var(--color-text-1); }
+.rel-graph__status-badge circle { fill: var(--color-elevated); stroke: var(--color-surface); stroke-width: 2; }
+.rel-graph__status-badge { color: var(--color-text-2); }

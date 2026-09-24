@@ -3,7 +3,7 @@
 Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas**, **rede de relações** entre personagens e **Modo GM** na mesma interface.
 
 **Versão:** 0.19.1 — [`CHANGELOG.md`](CHANGELOG.md)  
-**Produção:** [`docs/plano-producao.md`](docs/plano-producao.md) · multi-instância: [`docs/runbook-instancias.md`](docs/runbook-instancias.md) · upgrade `/opt/map-campaign`: [`docs/migracao-producao-map-campaign.md`](docs/migracao-producao-map-campaign.md)
+**Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/wfrp` e `/c/wod`
 
 ---
 
@@ -80,10 +80,11 @@ Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** i
 
 ### Multi-sistema e multi-campanha
 
-- Config por deploy: `SISTEMA`, `MODULOS_ATIVOS`; `GET /api/config`
+- Uma instância Campaign Codex: várias mesas (`/c/<slug>`), catálogo em `/`, painel do mestre em `/painel`
+- Sistema e módulos por campanha (`control.db`); `GET /api/c/{slug}/config`
 - Extensões mecânicas por personagem (ex. **fadiga** 0–6 quando o módulo está activo)
-- Scaffold `./scripts/nova-campanha.sh` e hub índice estático em [`hub/`](hub/)
-- Migração WFRP: `./scripts/migrar-wfrp.sh`
+- Campanha nova: UI `/painel` ou `uv run python -m app.cli campanha criar` (os scripts `nova-campanha.sh` / `migrar-wfrp.sh` estão **aposentados**)
+- Import de instância legada: `campanha importar-legado` — ver [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
 
 ### Interface
 
@@ -131,10 +132,12 @@ http://localhost:5173 — proxy `/api` e `/uploads` → `:8000`
 
 Detalhes: [`frontend/README.md`](frontend/README.md)
 
-- `/` — Mapa (jogador + Modo GM in-page)
-- `/relacoes` — Rede de Relações
-- `/admin` — redireciona para `/?gm=1`
-- Credenciais: senha = `ADMIN_PASSWORD`; usuário Basic = `ADMIN_USER` / `VITE_ADMIN_USER` (default `gm`)
+- `/` — catálogo público
+- `/c/<slug>` — mapa da mesa (ex. `/c/wfrp`, `/c/wod`)
+- `/c/<slug>/relacoes` — rede de relações
+- `/painel` — minhas campanhas (mestre)
+- `/login` — sessão de mestre
+- `/admin` — redireciona para o mapa da mesa com Modo GM
 
 ### Docker
 
@@ -146,11 +149,13 @@ docker compose up --build
 docker compose --profile with-caddy up --build   # porta 8080
 ```
 
-### Multi-instância
+### Campaign Codex (uma instância)
 
-- Scaffold: `./scripts/nova-campanha.sh <nome> <porta-api> <porta-web> <sistema>`
-- Hub: pasta [`hub/`](hub/)
-- Runbook: [`docs/runbook-instancias.md`](docs/runbook-instancias.md)
+- Criar mesa: `/painel` ou `uv run python -m app.cli campanha criar …`
+- Import legado: `uv run python -m app.cli campanha importar-legado …` (ver runbook de corte)
+- Snippets Caddy/Tunnel: `./scripts/imprimir-snippets-codex.sh --porta-api PORT --porta-web PORT`
+- `scripts/nova-campanha.sh` e `scripts/migrar-wfrp.sh` recusam (aposentados). O hub em [`hub/`](hub/) é histórico (078).
+- Runbook: [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
 
 ---
 

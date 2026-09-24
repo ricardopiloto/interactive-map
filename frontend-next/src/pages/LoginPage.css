@@ -1,0 +1,5 @@
+.login-page {
+  min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+  background: var(--map-gradient); padding: var(--space-4);
+}
+.login-page__card { width: min(380px, 100%); padding: var(--space-5); }

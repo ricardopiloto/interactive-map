@@ -4,7 +4,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react'
@@ -27,22 +26,51 @@ import {
   type Point,
 } from './graphLayout'
 import { estimateLabelWidth, formatVinculoTipoLabel } from './vinculoLabel'
-import { VINCULO_STYLES, VINCULO_TIPOS, getVinculoTipoLabel, vinculoStyle } from './vinculoStyles'
+import { getVinculoTipoLabel, strokeDasharray, vinculoStyle } from './vinculoStyles'
 import {
   edgeDisplayTipo,
-  edgeIsDashed,
   edgeMatchesTipos,
+  edgePattern,
+  edgeWidth,
   isDuasVias,
   tipColors,
 } from './vinculoDirection'
 import './GraphStage.css'
+import { Button } from '../ui'
 
 const MIN_SCALE = 0.35
 const MAX_SCALE = 2.5
 const DRAG_THRESHOLD = 4
 const CENTER: Point = { x: 0, y: 0 }
+const DOUBLE_GAP = 2.75
 
 export type RotulosVinculo = 'foco' | 'sempre' | 'hover'
+
+function offsetPt(p: Point, nx: number, ny: number, d: number): Point {
+  return { x: p.x + nx * d, y: p.y + ny * d }
+}
+
+function straightPath(a: Point, b: Point): string {
+  return `M ${a.x} ${a.y} L ${b.x} ${b.y}`
+}
+
+function EdgeStatus({
+  point,
+  text,
+  label,
+}: {
+  point: Point
+  text: string
+  label: string
+}) {
+  const width = estimateLabelWidth(text, 6.4, 12)
+  return (
+    <g transform={`translate(${point.x}, ${point.y})`} className="graph-stage__edge-status" aria-label={label}>
+      <rect x={-width / 2} y={-9} width={width} height={18} rx={7} />
+      <text textAnchor="middle" dy="3">{text}</text>
+    </g>
+  )
+}
 
 interface GraphStageProps {
   personagens: Personagem[]
@@ -58,6 +86,7 @@ interface GraphStageProps {
   espacamento?: number
   searchQuery?: string
   hoveredId?: number | null
+  isGm?: boolean
 }
 
 interface DragSession {
@@ -104,15 +133,21 @@ export function GraphStage({
   isolate,
   activeTipos,
   onEdgeClick,
-  rotulosVinculo = 'foco',
+  rotulosVinculo: _rotulosVinculo = 'foco',
   espacamento = 240,
   searchQuery = '',
   hoveredId = null,
+  isGm = false,
 }: GraphStageProps) {
   const { t } = useTranslation('relacoes')
   const { t: tc } = useTranslation('comum')
+  void _rotulosVinculo // UX-6: labels on selection/hover only; prop kept for API compat
   const containerRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
+  const [viewportCenter, setViewportCenter] = useState<Point>(() => ({
+    x: typeof window === 'undefined' ? 0 : window.innerWidth / 2,
+    y: typeof window === 'undefined' ? 0 : (window.innerHeight - 56) / 2,
+  }))
   const [scale, setScale] = useState(1)
   const [pan, setPan] = useState<Point>(CENTER)
   const [dragOffsets, setDragOffsets] = useState<Map<number, Point>>(new Map())
@@ -129,6 +164,43 @@ export function GraphStage({
     })
     observer.observe(el)
     return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const stage = containerRef.current
+    const panel = document.querySelector<HTMLElement>('.map-panel')
+    if (!stage) return
+
+    const measureUsableCenter = () => {
+      const stageRect = stage.getBoundingClientRect()
+      const panelRect = panel?.getBoundingClientRect()
+      let left = 0
+      let right = stageRect.width
+      let top = 0
+      let bottom = stageRect.height
+
+      if (panelRect && panelRect.width > 0 && panelRect.height > 0) {
+        const panelWidth = Math.min(stageRect.right, panelRect.right) - Math.max(stageRect.left, panelRect.left)
+        const panelHeight = Math.min(stageRect.bottom, panelRect.bottom) - Math.max(stageRect.top, panelRect.top)
+        if (panelWidth > stageRect.width * 0.75 && panelHeight > 0) {
+          bottom = Math.max(0, Math.min(stageRect.height, panelRect.top - stageRect.top))
+        } else if (panelHeight > stageRect.height * 0.75 && panelWidth > 0) {
+          left = Math.max(0, Math.min(stageRect.width, panelRect.right - stageRect.left))
+        }
+      }
+
+      setViewportCenter({ x: (left + right) / 2, y: (top + bottom) / 2 })
+    }
+
+    const observer = new ResizeObserver(measureUsableCenter)
+    observer.observe(stage)
+    if (panel) observer.observe(panel)
+    window.addEventListener('resize', measureUsableCenter)
+    measureUsableCenter()
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', measureUsableCenter)
+    }
   }, [])
 
   const filteredVinculos = useMemo(
@@ -309,8 +381,6 @@ export function GraphStage({
     setPan({ x: 0, y: 0 })
   }
 
-  const showAlwaysLabels = rotulosVinculo === 'sempre'
-
   return (
     <div
       ref={containerRef}
@@ -324,10 +394,15 @@ export function GraphStage({
       <div
         className="graph-stage__world"
         style={{
-          transform: `translate(${size.width / 2 + pan.x}px, ${size.height / 2 + pan.y}px) scale(${scale})`,
+          transform: `translate(${viewportCenter.x + pan.x}px, ${viewportCenter.y + pan.y}px) scale(${scale})`,
         }}
       >
-        <svg className="graph-stage__edges" aria-hidden="true">
+        <svg
+          className="graph-stage__edges"
+          role={isGm ? 'group' : undefined}
+          aria-label={isGm ? t('graph.gmEdgesAria') : undefined}
+          aria-hidden={!isGm}
+        >
           <defs>
             {visibleEdges.filter(isDuasVias).map((v) => {
               const aPos = positions.get(v.personagem_a_id)
@@ -365,21 +440,24 @@ export function GraphStage({
               const styleA = duas ? vinculoStyle(v.tipo_ab!) : vinculoStyle(displayTipo)
               const styleB = duas ? vinculoStyle(v.tipo_ba!) : styleA
               const style = styleA
+              const pattern = edgePattern(v)
+              const baseWidth = edgeWidth(v)
+              const dx = b.x - a.x
+              const dy = b.y - a.y
+              const length = Math.hypot(dx, dy) || 1
+              const nx = -dy / length
+              const ny = dx / length
+              const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+              const nearA = { x: a.x + dx * 0.22, y: a.y + dy * 0.22 }
+              const nearB = { x: a.x + dx * 0.78, y: a.y + dy * 0.78 }
+              const pathD = straightPath(a, b)
               const highlighted =
                 previewId != null
                   ? isPreviewEdge(v, previewId)
                   : showEdges && isFocusEdge(v)
               const dimOpacity = selectedId != null ? EDGE_OPACITY_DIM_SELECTED : EDGE_OPACITY_DIM
               const opacity = highlighted ? EDGE_OPACITY_FOCUS : dimOpacity
-              const midX = (a.x + b.x) / 2
-              const midY = (a.y + b.y) / 2
-              const nearA = { x: a.x + (b.x - a.x) * 0.22, y: a.y + (b.y - a.y) * 0.22 }
-              const nearB = { x: a.x + (b.x - a.x) * 0.78, y: a.y + (b.y - a.y) * 0.78 }
-              const midLabelVisible =
-                highlighted &&
-                (rotulosVinculo === 'foco' ||
-                  showAlwaysLabels ||
-                  (rotulosVinculo === 'hover' && hoveredEdgeId === v.id))
+              const midLabelVisible = highlighted || hoveredEdgeId === v.id
               const reciprocalText = formatVinculoTipoLabel(
                 getVinculoTipoLabel(t, displayTipo),
                 v.qualificador_ab,
@@ -393,28 +471,47 @@ export function GraphStage({
                 getVinculoTipoLabel(t, v.tipo_ba!),
                 v.qualificador_ba,
               )
-              const midDuasText = v.direcao ? '→' : ''
+              const midDuasText = ''
               const stroke = duas ? `url(#vinculo-grad-${v.id})` : style.color
+              const sw = highlighted ? baseWidth + 0.35 : baseWidth
+              const dash = strokeDasharray(pattern)
+              const strokeProps = {
+                stroke,
+                strokeWidth: sw,
+                strokeDasharray: dash,
+                strokeLinecap: 'round' as const,
+                fill: 'none' as const,
+                opacity,
+                className: 'graph-stage__edge-line',
+              }
               return (
-                <g key={v.id} className="graph-stage__edge-group">
-                  <line
-                    x1={a.x}
-                    y1={a.y}
-                    x2={b.x}
-                    y2={b.y}
-                    stroke={stroke}
-                    strokeWidth={highlighted ? 2.25 : 2}
-                    strokeDasharray={edgeIsDashed(v) ? '6 5' : undefined}
-                    opacity={opacity}
-                    className="graph-stage__edge-line"
-                  />
-                  <line
-                    x1={a.x}
-                    y1={a.y}
-                    x2={b.x}
-                    y2={b.y}
+                <g
+                  key={v.id}
+                  className="graph-stage__edge-group"
+                  data-vinculo-id={v.id}
+                  data-direction={v.direcao ?? undefined}
+                  role={isGm ? 'img' : undefined}
+                  aria-label={isGm ? edgeAccessibleLabel(v, personagens, t) : undefined}
+                >
+                  {pattern === 'double' ? (
+                    <>
+                      <path
+                        d={straightPath(offsetPt(a, nx, ny, DOUBLE_GAP), offsetPt(b, nx, ny, DOUBLE_GAP))}
+                        {...strokeProps}
+                      />
+                      <path
+                        d={straightPath(offsetPt(a, nx, ny, -DOUBLE_GAP), offsetPt(b, nx, ny, -DOUBLE_GAP))}
+                        {...strokeProps}
+                      />
+                    </>
+                  ) : (
+                    <path d={pathD} {...strokeProps} />
+                  )}
+                  <path
+                    d={pathD}
                     stroke="transparent"
                     strokeWidth={18}
+                    fill="none"
                     className="graph-stage__edge-hit"
                     onPointerEnter={() => setHoveredEdgeId(v.id)}
                     onPointerLeave={() => setHoveredEdgeId((id) => (id === v.id ? null : id))}
@@ -423,7 +520,34 @@ export function GraphStage({
                       onEdgeClick?.(v.id)
                     }}
                   />
-                  {duas && (
+                  {isGm && !v.publico ? (
+                    <EdgeStatus
+                      point={offsetPt(mid, nx, ny, 16)}
+                      text={t('graph.privateMarker')}
+                      label={t('graph.privateEdgeAria')}
+                    />
+                  ) : null}
+                  {isGm && duas && v.conhecido_ab === false ? (
+                    <EdgeStatus
+                      point={offsetPt(nearA, nx, ny, -16)}
+                      text={t('graph.unknownMarker')}
+                      label={t('graph.unknownDirectionAria', {
+                        from: personagens.find((p) => p.id === v.personagem_a_id)?.nome ?? '',
+                        to: personagens.find((p) => p.id === v.personagem_b_id)?.nome ?? '',
+                      })}
+                    />
+                  ) : null}
+                  {isGm && duas && v.conhecido_ba === false ? (
+                    <EdgeStatus
+                      point={offsetPt(nearB, nx, ny, 16)}
+                      text={t('graph.unknownMarker')}
+                      label={t('graph.unknownDirectionAria', {
+                        from: personagens.find((p) => p.id === v.personagem_b_id)?.nome ?? '',
+                        to: personagens.find((p) => p.id === v.personagem_a_id)?.nome ?? '',
+                      })}
+                    />
+                  ) : null}
+                  {duas && midLabelVisible && (
                     <>
                       <g transform={`translate(${nearA.x}, ${nearA.y})`} opacity={opacity}>
                         {(() => {
@@ -475,8 +599,8 @@ export function GraphStage({
                           )
                         })()}
                       </g>
-                      {midDuasText && midLabelVisible && (
-                        <g transform={`translate(${midX}, ${midY})`} opacity={opacity}>
+                      {midDuasText && (
+                        <g transform={`translate(${mid.x}, ${mid.y})`} opacity={opacity}>
                           {(() => {
                             const w = estimateLabelWidth(midDuasText)
                             return (
@@ -493,7 +617,7 @@ export function GraphStage({
                                   textAnchor="middle"
                                   dy="4"
                                   className="graph-stage__edge-label"
-                                  fill="var(--text-muted, #9aa3b2)"
+                                  fill="var(--color-text-tertiary)"
                                 >
                                   {midDuasText}
                                 </text>
@@ -505,7 +629,7 @@ export function GraphStage({
                     </>
                   )}
                   {!duas && midLabelVisible && (
-                    <g transform={`translate(${midX}, ${midY})`}>
+                    <g transform={`translate(${mid.x}, ${mid.y})`}>
                       {(() => {
                         const w = estimateLabelWidth(reciprocalText)
                         return (
@@ -568,6 +692,17 @@ export function GraphStage({
                   height: NODE_H,
                   opacity,
                 }}
+                role="button"
+                tabIndex={-1}
+                aria-label={p.nome}
+                aria-pressed={p.id === selectedId}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onSelect(p.id)
+                  }
+                }}
               >
                 <div className="graph-node__disc" style={{ width: DISC, height: DISC }}>
                   <DiscAvatar nome={p.nome} retratoUrl={p.retrato_url} />
@@ -593,40 +728,26 @@ export function GraphStage({
           <span className="graph-stage__legend-disc graph-stage__legend-disc--npc" />
           {tc('tipo.npc')}
         </div>
-        {VINCULO_TIPOS.map((tipo) => {
-          const style = VINCULO_STYLES[tipo]
-          return (
-            <div key={tipo} className="graph-stage__legend-row">
-              <span
-                className={`graph-stage__legend-line${style.dashed ? ' graph-stage__legend-line--dashed' : ''}`}
-                style={{ '--chip-color': style.color } as CSSProperties}
-              />
-              {getVinculoTipoLabel(t, tipo)}
-            </div>
-          )
-        })}
       </div>
 
       <div className="graph-stage__zoom">
-        <button
+        <Button
           type="button"
-          className="btn btn-secondary btn-icon"
           onClick={() => zoomBy(1.2)}
           aria-label={t('graph.zoomIn')}
         >
           +
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="btn btn-secondary btn-icon"
           onClick={() => zoomBy(1 / 1.2)}
           aria-label={t('graph.zoomOut')}
         >
           −
-        </button>
-        <button type="button" className="btn btn-secondary" onClick={resetView}>
+        </Button>
+        <Button type="button" onClick={resetView}>
           1:1
-        </button>
+        </Button>
       </div>
     </div>
   )

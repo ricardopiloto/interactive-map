@@ -1,0 +1,184 @@
+/*
+  Compass — tokens do Campaign Codex (protótipo).
+  Cada gênero de jogo é uma família de cor completa (fundo, superfícies,
+  texto, acento, semânticas), gerada com o mesmo par de fórmulas HSL —
+  só o matiz muda entre gêneros, saturação e luminosidade ficam fixas.
+  Isso garante que todo gênero novo nasça com os mesmos contrastes
+  validados (AA), sem precisar recalibrar cor a cor.
+
+  Uso: <html data-genre="fantasia|gotico|scifi|urbano" data-mode="dark|light">
+  Modo escuro é o padrão em todos os gêneros (mesa de RPG costuma jogar
+  com pouca luz); "fantasia" também define um tema claro completo.
+*/
+
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.38), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+
+/* ── Fantasia medieval — âmbar sobre carvão quente (padrão) ────────── */
+:root,
+[data-genre='fantasia'] {
+  --genre-label: 'Fantasia medieval';
+  --color-bg: #191610;
+  --color-surface: #211d17;
+  --color-surface-2: #2c2820;
+  --color-elevated: #342f25;
+  --color-text-1: #efeeec;
+  --color-text-2: #b4afa7;
+  --color-text-3: #958f83;
+  --color-border: color-mix(in srgb, #877a64 55%, transparent);
+  --color-border-field: color-mix(in srgb, #786f5e 70%, transparent);
+  --color-accent: #d8aa5a;
+  --color-accent-hover: #e0bb7b;
+  --color-accent-active: #c9964a;
+  --color-on-accent: #1b160e;
+  --color-accent-wash: color-mix(in srgb, #d8aa5a 14%, transparent);
+  --map-gradient: radial-gradient(120% 90% at 20% 10%, #2c2415 0%, #191610 55%, #100e0a 100%);
+  --map-vein: #3a3122;
+}
+
+[data-genre='fantasia'][data-mode='light'] {
+  --color-bg: #f3ecd9;
+  --color-surface: #faf5e8;
+  --color-surface-2: #ffffff;
+  --color-elevated: #ffffff;
+  --color-text-1: #26200f;
+  --color-text-2: #5b5138;
+  --color-text-3: #756a4c;
+  --color-border: color-mix(in srgb, #26200f 14%, transparent);
+  --color-border-field: color-mix(in srgb, #26200f 30%, transparent);
+  --color-accent: #8a5a12;
+  --color-accent-hover: #714a0e;
+  --color-accent-active: #5e3d0b;
+  --color-on-accent: #fff8ec;
+  --color-accent-wash: color-mix(in srgb, #8a5a12 12%, transparent);
+  --map-gradient: radial-gradient(120% 90% at 20% 0%, #eadfc0 0%, #ddcfa4 55%, #cdbb8a 100%);
+  --map-vein: #b8a172;
+}
+
+/* ── Gótico / horror pessoal — carmesim sobre breu ──────────────────── */
+[data-genre='gotico'] {
+  --genre-label: 'Gótico contemporâneo';
+  --color-bg: #191011;
+  --color-surface: #211719;
+  --color-surface-2: #2c2022;
+  --color-elevated: #342528;
+  --color-text-1: #efecec;
+  --color-text-2: #b4a7a9;
+  --color-text-3: #958386;
+  --color-border: color-mix(in srgb, #87646a 55%, transparent);
+  --color-border-field: color-mix(in srgb, #785e63 70%, transparent);
+  --color-accent: #de7384;
+  --color-accent-hover: #e694a1;
+  --color-accent-active: #cf5b6f;
+  --color-on-accent: #1b0e10;
+  --color-accent-wash: color-mix(in srgb, #de7384 14%, transparent);
+  --map-gradient: radial-gradient(120% 90% at 80% 90%, #2c1417 0%, #191011 55%, #0d0809 100%);
+  --map-vein: #3a2024;
+}
+
+/* ── Ficção científica — ciano sobre grafite ────────────────────────── */
+[data-genre='scifi'] {
+  --genre-label: 'Ficção científica';
+  --color-bg: #101719;
+  --color-surface: #171f21;
+  --color-surface-2: #202a2c;
+  --color-elevated: #263236;
+  --color-text-1: #eceeef;
+  --color-text-2: #a7b2b4;
+  --color-text-3: #839295;
+  --color-border: color-mix(in srgb, #648187 55%, transparent);
+  --color-border-field: color-mix(in srgb, #5e7478 70%, transparent);
+  --color-accent: #51c0d6;
+  --color-accent-hover: #73ccde;
+  --color-accent-active: #3ba9c0;
+  --color-on-accent: #0e181b;
+  --color-accent-wash: color-mix(in srgb, #51c0d6 14%, transparent);
+  --map-gradient: radial-gradient(120% 90% at 15% 85%, #142a2d 0%, #101719 55%, #090e10 100%);
+  --map-vein: #203438;
+}
+
+/* ── Urbano contemporâneo — azul sobre ardósia ──────────────────────── */
+[data-genre='urbano'] {
+  --genre-label: 'Urbano contemporâneo';
+  --color-bg: #101419;
+  --color-surface: #171c21;
+  --color-surface-2: #20262c;
+  --color-elevated: #262d34;
+  --color-text-1: #ecedef;
+  --color-text-2: #a7adb4;
+  --color-text-3: #838c95;
+  --color-border: color-mix(in srgb, #647487 55%, transparent);
+  --color-border-field: color-mix(in srgb, #5e6a78 70%, transparent);
+  --color-accent: #73a5de;
+  --color-accent-hover: #94bae6;
+  --color-accent-active: #5a8fcb;
+  --color-on-accent: #0e141b;
+  --color-accent-wash: color-mix(in srgb, #73a5de 14%, transparent);
+  --map-gradient: radial-gradient(120% 90% at 85% 10%, #1a2530 0%, #101419 55%, #0a0d10 100%);
+  --map-vein: #26313a;
+}
+
+/* ── Semânticas — mesma fórmula, matiz fixo por papel (não por gênero) ─ */
+:root {
+  --color-success: #7bc48f;
+  --color-success-on: #0f2015;
+  --color-warning: #e3b04b;
+  --color-warning-on: #221a05;
+  --color-danger: #e0706a;
+  --color-danger-on: #230e0c;
+  --color-info: #7aa2d6;
+  --color-info-on: #0d1826;
+}
+
+[data-mode='light'] {
+  --color-success: #2f7d4f;
+  --color-warning: #8a5a00;
+  --color-danger: #b23a34;
+  --color-info: #2f5f9e;
+  --color-success-on: #ffffff;
+  --color-warning-on: #ffffff;
+  --color-danger-on: #ffffff;
+  --color-info-on: #ffffff;
+}
+
+/* ── Famílias de vínculo (Rede de Relações) — 4 famílias, distintas por
+     traço, não só por cor; hue relativo ao acento do gênero ativo ───── */
+:root {
+  --link-affinity: #6fbfa1;
+  --link-bond: #d98fb0;
+  --link-hostile: #e0706a;
+  --link-neutral: var(--color-text-3);
+}

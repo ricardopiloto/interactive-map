@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.errors import raise_api_error
+from app.models.local import Local
 from app.models.waypoint import Waypoint
 from app.schemas.routes import (
     ModoTransporte,
@@ -13,6 +14,7 @@ from app.schemas.routes import (
     WaypointRead,
 )
 from app.services.route_planner import plan_routes
+from app.services.visibility import is_visivel_para_jogador
 
 router = APIRouter()
 
@@ -75,9 +77,25 @@ def plan(
 def list_public_waypoints(
     linked_only: bool = Query(False),
     session: Session = Depends(get_session),
-) -> list[Waypoint]:
+) -> list[WaypointRead]:
     stmt = select(Waypoint).order_by(Waypoint.id)
     rows = list(session.exec(stmt).all())
-    if linked_only:
-        rows = [w for w in rows if w.local_id is not None]
-    return rows
+    out: list[WaypointRead] = []
+    for w in rows:
+        local_id = w.local_id
+        if local_id is not None:
+            loc = session.get(Local, local_id)
+            if not is_visivel_para_jogador(loc):
+                local_id = None
+        if linked_only and local_id is None:
+            continue
+        out.append(
+            WaypointRead(
+                id=w.id,  # type: ignore[arg-type]
+                nome=w.nome,
+                x=w.x,
+                y=w.y,
+                local_id=local_id,
+            )
+        )
+    return out

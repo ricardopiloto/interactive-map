@@ -1,0 +1,10 @@
+.sessoes-page { height: 100%; overflow: auto; background: var(--color-bg); }
+.sessoes-page__intro { max-width: 640px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-3); }
+.sessoes-page__timeline { max-width: 640px; margin: 0 auto; padding: 0 var(--space-4) var(--space-7); display: flex; flex-direction: column; gap: var(--space-3); }
+
+.sessao-card { display: flex; gap: var(--space-3); padding: var(--space-4); }
+.sessao-card__rail {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--color-accent-wash); color: var(--color-accent);
+}

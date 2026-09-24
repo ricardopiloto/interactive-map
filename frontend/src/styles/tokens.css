@@ -1,0 +1,273 @@
+/* Campaign Codex design tokens — fantasia base (110) + data-genre skins (111).
+   Hex literals live ONLY in this file (plus documented pin-color exceptions). */
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #191610;
+  --color-column: #211d17;
+  --color-surface: #211d17;
+  --color-elevated: #302b22;
+  --color-surface-2: #2c2820;
+  --color-text: #efeeec;
+  --color-text-secondary: #b4afa7;
+  --color-text-tertiary: #958f83;
+  --color-border-subtle: color-mix(in srgb, #877a64 55%, transparent);
+  --color-border-field: #7a7261;
+  --color-accent: #d8aa5a;
+  --color-accent-hover: #e0bb7b;
+  --color-accent-fill: #d8aa5a;
+  --color-on-accent: #1b160e;
+  --color-accent-label-bg: color-mix(in srgb, #d8aa5a 14%, transparent);
+  --color-success: #7bc48f;
+  --color-warning: #e3b04b;
+  --color-danger: #e2736e;
+  --color-info: #7aa2d6;
+  --color-visited: #e2736e;
+  --color-divider: var(--color-border-subtle);
+
+  /* Link families (UX-6) — prototype --link-* (nudged for contrast gate) */
+  --vinculo-afinidade: #6fbfa1;
+  --vinculo-laco: #da91b2;
+  --vinculo-hostil: #e2736e;
+  --vinculo-neutro: #b2ada5;
+  --vinculo-aliado: var(--vinculo-afinidade);
+  --vinculo-amizade: var(--vinculo-afinidade);
+  --vinculo-romance: var(--vinculo-laco);
+  --vinculo-familia: var(--vinculo-laco);
+  --vinculo-sangue: var(--vinculo-laco);
+  --vinculo-inimizade: var(--vinculo-hostil);
+  --vinculo-adversario: var(--vinculo-hostil);
+  --vinculo-conhecido: var(--vinculo-neutro);
+
+  --route-fatigue-1: #e2736e;
+  --route-fatigue-2: #e2736e;
+  --route-fatigue-3: #e2736e;
+  --route-group-focus: #7aa2d6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.38), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --elevation-column: var(--shadow-md);
+  --elevation-panel: var(--shadow-lg);
+  --elevation-modal: var(--shadow-lg);
+
+  --genre-swatch-fantasia: #d8aa5a;
+  --genre-swatch-gotico: #de7384;
+  --genre-swatch-scifi: #51c0d6;
+  --genre-swatch-urbano: #73a5de;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f3ecd9;
+  --color-column: #faf5e8;
+  --color-surface: #faf5e8;
+  --color-elevated: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-text: #1d180b;
+  --color-text-secondary: #594f37;
+  --color-text-tertiary: #6c6246;
+  --color-border-subtle: color-mix(in srgb, #1d180b 14%, transparent);
+  --color-border-field: #8a7d5c;
+  /* Fantasia light accent #8a5a12 darkened slightly so ratios ≥ pre-110 baseline */
+  --color-accent: #7c5110;
+  --color-accent-hover: #68440d;
+  --color-accent-fill: #7c5110;
+  --color-on-accent: #fff8ec;
+  --color-accent-label-bg: color-mix(in srgb, #7c5110 12%, transparent);
+  --color-success: #2d784c;
+  --color-warning: #825500;
+  --color-danger: #ab3832;
+  --color-info: #2c5995;
+  --color-visited: #ab3832;
+  --color-divider: var(--color-border-subtle);
+
+  --vinculo-afinidade: #2d784c;
+  --vinculo-laco: #a94775;
+  --vinculo-hostil: #ab3832;
+  --vinculo-neutro: #6e6447;
+  --vinculo-aliado: var(--vinculo-afinidade);
+  --vinculo-amizade: var(--vinculo-afinidade);
+  --vinculo-romance: var(--vinculo-laco);
+  --vinculo-familia: var(--vinculo-laco);
+  --vinculo-sangue: var(--vinculo-laco);
+  --vinculo-inimizade: var(--vinculo-hostil);
+  --vinculo-adversario: var(--vinculo-hostil);
+  --vinculo-conhecido: var(--vinculo-neutro);
+
+  --route-fatigue-1: #ab3832;
+  --route-fatigue-2: #ab3832;
+  --route-fatigue-3: #ab3832;
+  --route-group-focus: #2c5995;
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #1d180b 10%, transparent);
+  --shadow-md: 0 8px 24px color-mix(in srgb, #1d180b 12%, transparent);
+  --shadow-lg: 0 24px 64px color-mix(in srgb, #1d180b 16%, transparent);
+  --shadow-float: 0 4px 16px color-mix(in srgb, #1d180b 12%, transparent);
+  --elevation-column: var(--shadow-md);
+  --elevation-panel: var(--shadow-lg);
+  --elevation-modal: var(--shadow-lg);
+
+  --genre-swatch-fantasia: #7c5110;
+  --genre-swatch-gotico: #de7384;
+  --genre-swatch-scifi: #51c0d6;
+  --genre-swatch-urbano: #73a5de;
+}
+
+/* Genre overrides (spec 111) — gotico/scifi/urbano always dark palette */
+html[data-genre='gotico'],
+html[data-genre='gotico'][data-theme='light'] {
+  color-scheme: dark;
+  --color-bg: #191011;
+  --color-column: #211719;
+  --color-surface: #211719;
+  --color-elevated: #342528;
+  --color-surface-2: #2c2022;
+  --color-text: #efecec;
+  --color-text-secondary: #b4a7a9;
+  --color-text-tertiary: #958386;
+  --color-border-subtle: color-mix(in srgb, #87646a 55%, transparent);
+  --color-border-field: #8a6a70;
+  --color-accent: #de7384;
+  --color-accent-hover: #e694a1;
+  --color-accent-fill: #de7384;
+  --color-on-accent: #1b0e10;
+  --color-accent-label-bg: color-mix(in srgb, #de7384 14%, transparent);
+}
+
+html[data-genre='scifi'],
+html[data-genre='scifi'][data-theme='light'] {
+  color-scheme: dark;
+  --color-bg: #101719;
+  --color-column: #171f21;
+  --color-surface: #171f21;
+  --color-elevated: #263236;
+  --color-surface-2: #202a2c;
+  --color-text: #eceeef;
+  --color-text-secondary: #a7b2b4;
+  --color-text-tertiary: #839295;
+  --color-border-subtle: color-mix(in srgb, #648187 55%, transparent);
+  --color-border-field: #6a8084;
+  --color-accent: #51c0d6;
+  --color-accent-hover: #73ccde;
+  --color-accent-fill: #51c0d6;
+  --color-on-accent: #0e181b;
+  --color-accent-label-bg: color-mix(in srgb, #51c0d6 14%, transparent);
+}
+
+html[data-genre='urbano'],
+html[data-genre='urbano'][data-theme='light'] {
+  color-scheme: dark;
+  --color-bg: #101419;
+  --color-column: #171c21;
+  --color-surface: #171c21;
+  --color-elevated: #262d34;
+  --color-surface-2: #20262c;
+  --color-text: #ecedef;
+  --color-text-secondary: #a7adb4;
+  --color-text-tertiary: #838c95;
+  --color-border-subtle: color-mix(in srgb, #647487 55%, transparent);
+  --color-border-field: #6a7684;
+  --color-accent: #73a5de;
+  --color-accent-hover: #94bae6;
+  --color-accent-fill: #73a5de;
+  --color-on-accent: #0e141b;
+  --color-accent-label-bg: color-mix(in srgb, #73a5de 14%, transparent);
+}
+
+/* Shared (theme-independent) */
+:root {
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-heading-weight: 500;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  --motion-fast: 120ms;
+  --motion-normal: 200ms;
+  --motion-slow: 320ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Compatibility aliases used by existing components */
+  --color-accent-100: var(--color-accent-label-bg);
+  --color-accent-300: var(--color-accent);
+  --color-accent-800: var(--color-accent-label-bg);
+  --color-accent-2: var(--color-accent-hover);
+  --color-accent-2-100: var(--color-accent-label-bg);
+  --color-accent-2-800: var(--color-elevated);
+  --color-neutral-100: var(--color-text);
+  --color-neutral-800: var(--color-elevated);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+    --motion-normal: 0.01ms;
+    --motion-slow: 0.01ms;
+  }
+}
+
+/* Styleguide scoped preview (does not touch html[data-theme]) */
+.styleguide-preview[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #191610;
+  --color-column: #211d17;
+  --color-surface: #211d17;
+  --color-elevated: #302b22;
+  --color-text: #efeeec;
+  --color-text-secondary: #b4afa7;
+  --color-text-tertiary: #958f83;
+  --color-accent: #d8aa5a;
+  --color-accent-fill: #d8aa5a;
+  --color-accent-hover: #e0bb7b;
+  --color-on-accent: #1b160e;
+  --color-success: #7bc48f;
+  --color-warning: #e3b04b;
+  --color-danger: #e2736e;
+  --color-info: #7aa2d6;
+  --color-border-field: #7a7261;
+  --color-divider: color-mix(in srgb, #877a64 55%, transparent);
+}
+
+.styleguide-preview[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f3ecd9;
+  --color-column: #faf5e8;
+  --color-surface: #faf5e8;
+  --color-elevated: #ffffff;
+  --color-text: #1d180b;
+  --color-text-secondary: #594f37;
+  --color-text-tertiary: #6c6246;
+  --color-accent: #7c5110;
+  --color-accent-fill: #7c5110;
+  --color-accent-hover: #68440d;
+  --color-on-accent: #fff8ec;
+  --color-success: #2d784c;
+  --color-warning: #825500;
+  --color-danger: #ab3832;
+  --color-info: #2c5995;
+  --color-border-field: #8a7d5c;
+  --color-divider: color-mix(in srgb, #1d180b 14%, transparent);
+}

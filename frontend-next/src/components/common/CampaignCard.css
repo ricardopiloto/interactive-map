@@ -1,0 +1,6 @@
+.campaign-card { text-decoration: none; color: inherit; display: block; }
+a.campaign-card:hover { border-color: var(--color-accent); text-decoration: none; }
+.campaign-card__cover { height: 88px; display: flex; align-items: flex-start; justify-content: flex-end; padding: 8px; }
+.campaign-card__body { padding: 14px; }
+.campaign-card__title { margin: 8px 0 2px; }
+.campaign-card__summary { margin: 0; font-size: 13px; }

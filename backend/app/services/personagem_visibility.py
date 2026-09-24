@@ -1,12 +1,11 @@
-"""Player-facing visibility helpers for personagens / NPCs."""
+"""Player-facing visibility helpers for personagens / NPCs.
+
+Re-exports the shared helper so existing imports keep working.
+Prefer `app.services.visibility` for new call sites.
+"""
 
 from __future__ import annotations
 
-from app.models.npc import NPC
+from app.services.visibility import is_visivel_para_jogador
 
-
-def is_visivel_para_jogador(npc: NPC | None) -> bool:
-    """True when the character may appear in public (player) payloads."""
-    if npc is None:
-        return False
-    return bool(getattr(npc, "visivel_para_todos", True))
+__all__ = ["is_visivel_para_jogador"]

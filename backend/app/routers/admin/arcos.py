@@ -11,6 +11,11 @@ from app.services.rate_limit import limiter
 router = APIRouter()
 
 
+@router.get("/arcos", response_model=list[ArcoRead])
+def list_arcos_admin(session: Session = Depends(get_session)) -> list[Arco]:
+    return list(session.exec(select(Arco).order_by(Arco.ordem, Arco.id)).all())
+
+
 @router.post("/arcos", response_model=ArcoRead, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
 def create_arco(

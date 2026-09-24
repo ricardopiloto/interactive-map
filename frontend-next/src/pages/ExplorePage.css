@@ -1,0 +1,6 @@
+.explore-page { min-height: 100dvh; padding: var(--space-6) 0 var(--space-7); background: var(--color-bg); }
+.explore-page__toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: var(--space-4) 0 var(--space-5); }
+.explore-page__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
+.explore-page__card { text-decoration: none; color: inherit; display: block; }
+.explore-page__card:hover { border-color: var(--color-accent); text-decoration: none; }
+.explore-page__cover { height: 88px; display: flex; align-items: flex-start; justify-content: flex-end; padding: 8px; }

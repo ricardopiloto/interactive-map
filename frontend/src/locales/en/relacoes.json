@@ -31,6 +31,12 @@
     "isolate": "Isolate selection",
     "legend": "Legend"
   },
+  "panel": {
+    "backToList": "Back to list",
+    "fabAdd": "Add",
+    "fabMenuAria": "Relationships add menu",
+    "sectionPersonagens": "Characters · {{count}}"
+  },
   "vinculoTipo": {
     "aliado": "Ally",
     "vinculo_sangue": "Blood Bond",

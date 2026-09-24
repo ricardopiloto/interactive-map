@@ -1,0 +1,31 @@
+.proto-nav {
+  position: fixed; left: 16px; bottom: 16px; z-index: 999;
+  display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 10px;
+  font-family: var(--font-sans);
+}
+
+.proto-nav__fab {
+  width: 44px; height: 44px; border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  background: #17161c; color: #efeeec; border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); cursor: pointer;
+}
+.proto-nav__fab:hover { background: #201f28; }
+
+.proto-nav__panel {
+  width: 260px; max-height: min(70vh, 520px); overflow: auto;
+  background: #17161c; color: #efeeec; border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  padding: 6px;
+}
+.proto-nav__title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: #a19fae; padding: 10px 10px 6px;
+}
+.proto-nav__list { display: flex; flex-direction: column; }
+.proto-nav__link {
+  padding: 9px 10px; border-radius: 8px; font-size: 13.5px; color: #efeeec; text-decoration: none;
+}
+.proto-nav__link:hover { background: rgba(255, 255, 255, 0.08); text-decoration: none; }
+.proto-nav__link.is-active { color: #d8aa5a; background: rgba(216, 170, 90, 0.12); }

@@ -1,10 +1,11 @@
-import { useRef, type CSSProperties, type DragEvent } from 'react'
+import { useRef, useState, type CSSProperties, type DragEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../api/admin'
 import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
+import { toast } from '../ui'
 import './ImageSlot.css'
 
-type UploadCategory = 'map' | 'portraits' | 'locals'
+type UploadCategory = 'map' | 'portraits' | 'locals' | 'covers'
 
 interface ImageSlotProps {
   src?: string | null
@@ -32,15 +33,20 @@ export function ImageSlot({
   const { t } = useTranslation('comum')
   const apiErrorMessage = useApiErrorMessage()
   const inputRef = useRef<HTMLInputElement>(null)
+  const [quotaHint, setQuotaHint] = useState<string | null>(null)
   const displayPlaceholder = placeholder ?? t('image.dragHere')
 
   async function handleFile(file: File | undefined) {
     if (!file || !editable || !onUploaded) return
+    setQuotaHint(null)
     try {
-      const { url } = await adminApi.upload(category, file)
-      onUploaded(url)
+      const result = await adminApi.upload(category, file)
+      onUploaded(result.url)
+      if (result.aviso_cota) {
+        setQuotaHint(t('quota.warningNearFull'))
+      }
     } catch (e) {
-      window.alert(apiErrorMessage(e))
+      toast.error(apiErrorMessage(e))
     }
   }
 
@@ -78,6 +84,7 @@ export function ImageSlot({
       ) : (
         <span className="image-slot__ph">{displayPlaceholder}</span>
       )}
+      {quotaHint && <span className="image-slot__quota">{quotaHint}</span>}
       {editable && (
         <input
           ref={inputRef}

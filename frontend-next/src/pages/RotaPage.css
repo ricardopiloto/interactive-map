@@ -1,0 +1,15 @@
+.rota-page__inputs { display: flex; align-items: center; gap: 8px; }
+
+.rota-page__card {
+  display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: var(--radius-md);
+  background: var(--color-surface-2); border: 1px solid var(--color-border); cursor: pointer; font: inherit;
+  color: var(--color-text-1);
+}
+.rota-page__card:hover { background: var(--color-elevated); }
+.rota-page__card.is-selected { border-color: var(--color-accent); background: var(--color-accent-wash); }
+
+.rota-page__digitizer-btn {
+  position: absolute; top: var(--space-3); right: var(--space-3); z-index: 20;
+  background: var(--color-elevated); box-shadow: var(--shadow-md);
+}
+

@@ -1,5 +1,5 @@
 import type { Vinculo, VinculoTipo } from '../../types'
-import { vinculoStyle } from './vinculoStyles'
+import { vinculoStyle, type VinculoPattern } from './vinculoStyles'
 
 /** Reciprocal-like when not both tips present and distinct. */
 export function isDuasVias(v: Pick<Vinculo, 'tipo_ab' | 'tipo_ba'>): boolean {
@@ -65,9 +65,22 @@ export function tipColors(v: Vinculo): { colorA: string; colorB: string } {
   return { colorA: c, colorB: c }
 }
 
-export function edgeIsDashed(v: Vinculo): boolean {
+function preferPattern(a: VinculoPattern, b: VinculoPattern): VinculoPattern {
+  if (a === b) return a
+  const rank: VinculoPattern[] = ['double', 'dotted', 'dashed', 'dashShort', 'solid']
+  return rank.find((p) => p === a || p === b) ?? 'solid'
+}
+
+export function edgePattern(v: Vinculo): VinculoPattern {
   if (isDuasVias(v)) {
-    return vinculoStyle(v.tipo_ab!).dashed || vinculoStyle(v.tipo_ba!).dashed
+    return preferPattern(vinculoStyle(v.tipo_ab!).pattern, vinculoStyle(v.tipo_ba!).pattern)
   }
-  return vinculoStyle(edgeDisplayTipo(v)).dashed
+  return vinculoStyle(edgeDisplayTipo(v)).pattern
+}
+
+export function edgeWidth(v: Vinculo): number {
+  if (isDuasVias(v)) {
+    return Math.max(vinculoStyle(v.tipo_ab!).width, vinculoStyle(v.tipo_ba!).width)
+  }
+  return vinculoStyle(edgeDisplayTipo(v)).width
 }

@@ -1,6 +1,8 @@
 # Manuais de uso — Codex da Campanha
 
-Guias para jogadores e mestres. Não cobrem instalação nem deploy (isso está no [README](../README.md) e nos runbooks).
+Guias para jogadores e mestres. Não cobrem instalação nem deploy (isso está no [README](../README.md) e no [runbook de corte](./runbook-corte-campaign-codex.md)).
+
+**URLs de produção:** `https://campaign-codex.1nodado.com.br/c/wfrp` e `https://campaign-codex.1nodado.com.br/c/wod`. A home `/` lista as mesas `listada`; o mapa de cada mesa é `/c/<slug>` (não o `/` da instância antiga).
 
 | Manual | Conteúdo |
 |--------|----------|

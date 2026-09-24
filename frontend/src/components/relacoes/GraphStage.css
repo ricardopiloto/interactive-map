@@ -80,6 +80,16 @@
   cursor: pointer;
 }
 
+.graph-node:focus {
+  outline: none;
+}
+
+.graph-node:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-md);
+}
+
 .graph-node__oculto {
   position: absolute;
   top: 0;
@@ -158,7 +168,8 @@
 }
 
 .graph-node__name {
-  font-size: 13px;
+  font-size: 13px; /* ≥12px UX-6 */
+  min-height: 1.1em;
   font-weight: 500;
   text-align: center;
   max-width: 100%;
@@ -227,17 +238,6 @@
 .graph-stage__legend-disc--npc {
   background: var(--color-bg);
   border: 1.5px solid var(--color-divider);
-}
-
-.graph-stage__legend-line {
-  width: 14px;
-  height: 0;
-  border-top: 2px solid var(--chip-color);
-  flex-shrink: 0;
-}
-
-.graph-stage__legend-line--dashed {
-  border-top-style: dashed;
 }
 
 .graph-stage__zoom {

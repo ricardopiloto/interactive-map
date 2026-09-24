@@ -31,6 +31,12 @@
     "isolate": "Isolar seleção",
     "legend": "Legenda"
   },
+  "panel": {
+    "backToList": "Voltar à lista",
+    "fabAdd": "Adicionar",
+    "fabMenuAria": "Menu de adição em relações",
+    "sectionPersonagens": "Personagens · {{count}}"
+  },
   "vinculoTipo": {
     "aliado": "Aliado",
     "vinculo_sangue": "Vínculo de Sangue",

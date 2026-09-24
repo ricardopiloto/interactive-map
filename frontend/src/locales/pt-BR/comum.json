@@ -1,9 +1,108 @@
 {
-  "brand": "Codex da Campanha",
+  "brand": "Campaign Codex",
   "nav": {
     "mainAria": "Navegação principal",
     "mapa": "Mapa",
-    "relacoes": "Relações"
+    "relacoes": "Relações",
+    "rota": "Rota",
+    "sessoes": "Sessões",
+    "bottomAria": "Secções da campanha"
+  },
+  "campaignSwitcher": {
+    "aria": "Mudar de campanha",
+    "myCampaigns": "Minhas campanhas",
+    "discover": "Descobrir outras"
+  },
+  "editMode": {
+    "on": "Modo edição",
+    "off": "Modo edição",
+    "onTitle": "Modo edição ligado — clicar para ver como jogador",
+    "offTitle": "Modo edição desligado — clicar para editar"
+  },
+  "theme": {
+    "auto": "Auto",
+    "light": "Claro",
+    "dark": "Escuro",
+    "aria": "Tema da interface",
+    "menuAria": "Escolher tema"
+  },
+  "userMenu": {
+    "aria": "Menu do utilizador"
+  },
+  "home": {
+    "nav": "Início",
+    "title": "Campanhas",
+    "lead": "Escolha uma mesa listada para abrir o mapa.",
+    "empty": "Ainda não há campanhas públicas. Peça o link ao mestre ou entre na sua conta.",
+    "loadError": "Não foi possível carregar o catálogo."
+  },
+  "painel": {
+    "nav": "Painel",
+    "title": "Minhas campanhas",
+    "lead": "Só você vê e edita o que está aqui.",
+    "empty": "Ainda não tem campanhas. Crie uma abaixo ou importe um pacote.",
+    "createTitle": "Criar campanha",
+    "createSubmit": "Criar",
+    "slug": "Slug (URL)",
+    "sistema": "Sistema",
+    "visibilidade": "Visibilidade",
+    "visListada": "Listada",
+    "visSoLink": "Só por link",
+    "open": "Abrir mesa",
+    "export": "Exportar",
+    "importTitle": "Importar pacote",
+    "importSlugOptional": "Slug novo (opcional)",
+    "importFile": "Ficheiro ZIP",
+    "makeSoLink": "Tornar só por link",
+    "makeListada": "Tornar listada",
+    "quota": "Cota: {{used}} / {{cap}}",
+    "distanceUnit": "Unidade de distância",
+    "unitMi": "Milhas (mi)",
+    "unitKm": "Quilómetros (km)",
+    "toggleUnit": "Alternar mi/km",
+    "genre": "Género",
+    "genrePick": "Escolha o género da mesa",
+    "genre_fantasia": "Fantasia medieval",
+    "genre_gotico": "Gótico contemporâneo",
+    "genre_scifi": "Ficção científica",
+    "genre_urbano": "Urbano contemporâneo",
+    "genreTag_fantasia": "Reinos, tavernas e velhos impérios — âmbar sobre carvão quente.",
+    "genreTag_gotico": "Cidades noturnas e pactos de sangue — carmesim sobre breu.",
+    "genreTag_scifi": "Estações orbitais e fronteiras distantes — ciano sobre grafite.",
+    "genreTag_urbano": "O mundo real com um segredo por baixo — azul sobre ardósia.",
+    "suggestedSystems": "Sistemas sugeridos (opcional)",
+    "cover": "Capa",
+    "clearCover": "Remover capa",
+    "createCta": "Criar novo codex",
+    "newCard": "Criar novo codex",
+    "wizard": {
+      "progress": "Progresso da criação",
+      "steps": { "identity": "Identidade", "system": "Sistema e gênero", "visibility": "Visibilidade", "review": "Revisão" },
+      "identityTitle": "Como sua campanha se chama?",
+      "identityLead": "Defina o nome do codex e o endereço que você compartilhará com o grupo.",
+      "name": "Nome da campanha",
+      "namePlaceholder": "Ex.: As Crônicas de Aldenor",
+      "slugLabel": "Endereço da campanha",
+      "slugImmutable": "Esse endereço não poderá ser alterado depois da criação.",
+      "systemTitle": "Sistema e gênero",
+      "systemLead": "Escolha o sistema de RPG e veja o tema da campanha mudar em tempo real.",
+      "systemPlaceholder": "Ex.: WFRP 4e, D&D 5e, Vampiro…",
+      "genrePreview": "A tela inteira já está usando o tema escolhido.",
+      "visibilityTitle": "Quem pode ver esta campanha?",
+      "visibilityLead": "Você pode mudar essa escolha depois.",
+      "listedHelp": "Aparecerá em Explorar para qualquer pessoa encontrar.",
+      "linkOnlyHelp": "Só quem receber o link direto poderá encontrar a campanha.",
+      "reviewTitle": "Revise antes de criar",
+      "cancel": "Cancelar",
+      "back": "Voltar",
+      "continue": "Continuar",
+      "create": "Criar campanha",
+      "creating": "Criando…",
+      "successTitle": "{{nome}} está no ar",
+      "successBody": "Compartilhe /c/{{slug}} com seus jogadores para abrir a campanha.",
+      "openCampaign": "Abrir campanha",
+      "goToPanel": "Ir para o painel"
+    }
   },
   "gm": {
     "modeTag": "Modo GM",
@@ -49,7 +148,15 @@
     "senha": "Senha",
     "titulo": "Título",
     "resumo": "Resumo",
-    "ordem": "Ordem"
+    "ordem": "Ordem",
+    "required": "Preencha este campo.",
+    "invalidColor": "Cor inválida.",
+    "unsavedTitle": "Alterações não guardadas",
+    "unsavedBody": "Tem alterações que ainda não foram guardadas. Descartar?",
+    "unsavedDiscard": "Descartar",
+    "mdWrite": "Escrever",
+    "mdPreview": "Pré-visualizar",
+    "mdEmpty": "Nada para pré-visualizar."
   },
   "image": {
     "dragHere": "Arraste a imagem aqui",
@@ -57,10 +164,31 @@
     "portrait": "Retrato",
     "noPortrait": "Sem retrato"
   },
+  "quota": {
+    "warningNearFull": "Armazenamento quase cheio (≥ 90%). Libere espaço ou evite ficheiros grandes.",
+    "exceeded": "Cota de armazenamento da campanha excedida."
+  },
   "gate": {
     "title": "Acesso do Mestre",
     "body": "Área restrita de edição da campanha.",
     "wrongPassword": "Senha incorreta."
+  },
+  "auth": {
+    "loginTitle": "Entrar",
+    "loginHint": "Use o e-mail da conta de mestre.",
+    "loginError": "Não foi possível entrar. Verifique e-mail e senha.",
+    "email": "E-mail",
+    "inviteTitle": "Activar conta",
+    "inviteHint": "Defina uma senha para activar o convite.",
+    "inviteError": "Convite inválido, expirado ou já utilizado.",
+    "activate": "Activar",
+    "resetTitle": "Nova senha",
+    "resetHint": "Defina a nova senha da conta.",
+    "resetError": "Link de reset inválido ou expirado.",
+    "resetSubmit": "Guardar senha",
+    "accountTitle": "Conta",
+    "accountHint": "Sessão activa. Abra uma campanha com /c/slug para editar.",
+    "logout": "Terminar sessão"
   },
   "loading": {
     "campaign": "Carregando campanha…",
@@ -73,6 +201,7 @@
     "ADMIN_NAO_CONFIGURADO": "Admin não configurado (ADMIN_USER / ADMIN_PASSWORD)",
     "AUTENTICACAO_NECESSARIA": "Autenticação necessária",
     "CREDENCIAIS_INVALIDAS": "Credenciais inválidas",
+    "COTA_EXCEDIDA": "Cota de armazenamento excedida ({{bytes_usados}} / {{cota_bytes}} bytes)",
     "CATEGORIA_UPLOAD_INVALIDA": "Categoria inválida. Use: {{categorias}}",
     "TIPO_ARQUIVO_NAO_PERMITIDO": "Tipo de arquivo não permitido: {{content_type}}",
     "ARQUIVO_EXCEDE_TAMANHO_MAXIMO": "Arquivo excede o limite de {{limite_bytes}} bytes",
@@ -100,6 +229,57 @@
     "ROTA_ORIGEM_DESTINO_IGUAIS": "Origem e destino devem ser diferentes",
     "ROTA_ORIGEM_INVALIDA": "Origem inválida (nó não encontrado)",
     "ROTA_DESTINO_INVALIDO": "Destino inválido (nó não encontrado)",
-    "ROTA_CALCULO_FALHOU": "Falha ao calcular rota"
+    "ROTA_CALCULO_FALHOU": "Falha ao calcular rota",
+    "CAMPANHA_NAO_ENCONTRADA": "Campanha não encontrada",
+    "SLUG_INVALIDO": "Slug inválido",
+    "SLUG_RESERVADO": "Slug reservado",
+    "SLUG_DUPLICADO": "Slug já em uso",
+    "SLUG_OCUPADO": "Slug já em uso",
+    "SISTEMA_INVALIDO": "Sistema desconhecido",
+    "VISIBILIDADE_INVALIDA": "Visibilidade inválida",
+    "NAO_DONO": "Apenas o dono pode fazer esta acção",
+    "NAO_MEMBRO": "Sem acesso a esta campanha",
+    "PACOTE_INVALIDO": "Pacote inválido",
+    "ENTRADA_PROIBIDA": "Pacote contém entradas não permitidas",
+    "CONTEUDO_INVALIDO": "Conteúdo do pacote inválido",
+    "SCHEMA_FUTURO": "Versão de schema do pacote não suportada",
+    "MANIFESTO_INVALIDO": "Manifesto do pacote inválido",
+    "NUMERO_DUPLICADO": "Já existe uma sessão com este número",
+    "SESSAO_NAO_ENCONTRADA": "Sessão não encontrada"
+  },
+  "campaignMissing": {
+    "title": "Campanha não encontrada",
+    "body": "Abra um link com o identificador da campanha (por exemplo /c/nome-da-mesa)."
+  },
+  "landing": {
+    "badge": "Campaign Codex",
+    "title": "O mapa, o elenco e as rotas da sua mesa, num só lugar.",
+    "lede": "Campaign Codex é o codex vivo de campanhas de RPG de mesa — um mapa que os jogadores exploram de verdade, uma rede de relações, e um mestre que edita tudo na mesma tela.",
+    "ctaMaster": "Entrar como mestre",
+    "ctaExplore": "Ver campanhas abertas",
+    "checkNoAccount": "Sem conta para jogadores — é só abrir o link",
+    "checkAnySystem": "Qualquer sistema de RPG, qualquer género",
+    "checkSelfHosted": "Self-hosted — os dados da mesa ficam com o mestre",
+    "stepMapTitle": "Mapa vivo",
+    "stepMapBody": "Zoom e pan como num mapa de verdade. Pinos revelam o que o grupo já descobriu — e só isso.",
+    "stepRelTitle": "Rede de relações",
+    "stepRelBody": "Quem é aliado, quem é inimigo, quem esconde o quê — num grafo que os jogadores exploram sozinhos.",
+    "stepRouteTitle": "Rotas e distâncias",
+    "stepRouteBody": "Calcule viagens pela rede de estradas, rios e trilhas que o mestre desenhou no próprio mapa.",
+    "genresTitle": "Um tema para cada mundo",
+    "genresLead": "Cada campanha escolhe um género na criação, e a interface adapta-se. Experimente:",
+    "featuredTitle": "Campanhas em jogo agora",
+    "ctaFinalTitle": "Pronto para organizar a sua mesa?",
+    "ctaFinal": "Criar meu primeiro codex"
+  },
+  "explorar": {
+    "title": "Descubra uma campanha",
+    "lead": "Sem conta, sem senha — escolha uma mesa e entre directo no mapa.",
+    "searchPlaceholder": "Buscar por nome ou sistema…",
+    "searchAria": "Buscar campanhas",
+    "allGenres": "Todos os géneros",
+    "empty": "Nenhuma campanha encontrada.",
+    "loadError": "Não foi possível carregar o catálogo.",
+    "nav": "Explorar"
   }
 }

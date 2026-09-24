@@ -1,0 +1,126 @@
+.sessoes-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.sessoes-page__main {
+  flex: 1;
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-6);
+}
+
+.sessoes-page__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  margin: 0 0 var(--space-5);
+}
+
+.sessoes-page__error {
+  color: var(--color-danger, #b33);
+  margin: 0 0 var(--space-4);
+}
+
+.sessoes-page__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.sessoes-page__item {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-5);
+}
+
+.sessoes-page__item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.sessoes-page__kicker {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  letter-spacing: 0.02em;
+}
+
+.sessoes-page__hidden {
+  color: var(--color-warning, #a67c00);
+}
+
+.sessoes-page__item-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: var(--space-1) 0;
+  font-weight: 600;
+}
+
+.sessoes-page__date {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.sessoes-page__actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.sessoes-page__resumo {
+  margin-top: var(--space-3);
+  line-height: 1.55;
+}
+
+.sessoes-page__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.sessoes-page__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  text-decoration: none;
+  font-size: var(--text-sm);
+}
+
+.sessoes-page__chip:hover {
+  border-color: var(--color-accent, var(--color-fg));
+}
+
+.sessoes-page__checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 12rem;
+  overflow: auto;
+  margin-top: var(--space-2);
+}
+
+.sessoes-page__check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 860px) {
+  .sessoes-page {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+}

@@ -1,0 +1,95 @@
+from __future__ import annotations
+
+from datetime import datetime
+
+from fastapi.testclient import TestClient
+from sqlmodel import Session
+
+from app.campaign_db import get_control_engine
+from app.cli import _create_campanha
+from app.main import app
+from app.models.usuario import Usuario
+from app.services.auth_admin import assign_owner
+from app.services.auth_password import hash_password
+from tests.conftest import (
+    TEST_CAMPAIGN_SLUG,
+    TEST_GM_EMAIL,
+    TEST_GM_PASSWORD,
+    TEST_ORIGIN,
+    login_as,
+)
+
+
+def _admin_openapi_routes() -> list[tuple[str, set[str]]]:
+    paths = app.openapi()["paths"]
+    out: list[tuple[str, set[str]]] = []
+    for path, methods in paths.items():
+        if "/admin" not in path:
+            continue
+        verbs = {m.upper() for m in methods if m.upper() in {"GET", "POST", "PUT", "PATCH", "DELETE"}}
+        if verbs:
+            out.append((path, verbs))
+    return out
+
+
+def _sample_path(path: str, slug: str) -> str:
+    sample = path.replace("{slug}", slug)
+    # Path params → dummy ids (auth runs before body/validation)
+    for name in (
+        "arco_id",
+        "local_id",
+        "npc_id",
+        "personagem_id",
+        "segment_id",
+        "vinculo_id",
+        "waypoint_id",
+    ):
+        sample = sample.replace("{" + name + "}", "1")
+    return sample
+
+
+def test_admin_auth_matrix(client_anon, data_root) -> None:
+    _create_campanha(slug="camp-b", nome="B", sistema="wfrp4e")
+    with Session(get_control_engine()) as session:
+        session.add(
+            Usuario(
+                email="ub@teste.local",
+                senha_hash=hash_password("password-ub"),
+                activo=True,
+                criado_em=datetime.utcnow(),
+                actualizado_em=datetime.utcnow(),
+            )
+        )
+        session.commit()
+        assign_owner(session, "camp-b", "ub@teste.local")
+
+    admin_paths = _admin_openapi_routes()
+    assert admin_paths, "expected admin routes"
+
+    login_as(client_anon, email=TEST_GM_EMAIL, password=TEST_GM_PASSWORD)
+
+    for path, methods in admin_paths:
+        sample = _sample_path(path, TEST_CAMPAIGN_SLUG)
+        method = "GET" if "GET" in methods else sorted(methods)[0]
+
+        with TestClient(app, headers={"Origin": TEST_ORIGIN}) as anon:
+            r = anon.request(method, sample)
+            assert r.status_code == 401, f"{method} {sample} anon={r.status_code} {r.text}"
+
+        with TestClient(app, headers={"Origin": TEST_ORIGIN}) as other:
+            login_as(other, email="ub@teste.local", password="password-ub")
+            r = other.request(method, sample)
+            assert r.status_code == 403, f"{method} {sample} other={r.status_code} {r.text}"
+            assert r.json()["detail"]["erro"] == "NAO_MEMBRO"
+
+        r = client_anon.request(method, sample)
+        assert r.status_code != 401, f"{method} {sample} member={r.status_code}"
+
+
+def test_upload_auth_gate(client, client_anon, data_root) -> None:
+    denied = client_anon.post(
+        f"/api/c/{TEST_CAMPAIGN_SLUG}/admin/uploads",
+        data={"category": "map"},
+        files={"file": ("x.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+    )
+    assert denied.status_code == 401

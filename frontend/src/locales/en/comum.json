@@ -3,7 +3,106 @@
   "nav": {
     "mainAria": "Main navigation",
     "mapa": "Map",
-    "relacoes": "Relations"
+    "relacoes": "Relations",
+    "rota": "Route",
+    "sessoes": "Sessions",
+    "bottomAria": "Campaign sections"
+  },
+  "campaignSwitcher": {
+    "aria": "Switch campaign",
+    "myCampaigns": "My campaigns",
+    "discover": "Discover others"
+  },
+  "editMode": {
+    "on": "Edit mode",
+    "off": "Edit mode",
+    "onTitle": "Edit mode on — click to view as a player",
+    "offTitle": "Edit mode off — click to edit"
+  },
+  "theme": {
+    "auto": "Auto",
+    "light": "Light",
+    "dark": "Dark",
+    "aria": "Interface theme",
+    "menuAria": "Choose theme"
+  },
+  "userMenu": {
+    "aria": "User menu"
+  },
+  "home": {
+    "nav": "Home",
+    "title": "Campaigns",
+    "lead": "Pick a listed table to open the map.",
+    "empty": "No public campaigns yet. Ask your GM for a link or sign in.",
+    "loadError": "Could not load the catalogue."
+  },
+  "painel": {
+    "nav": "Dashboard",
+    "title": "My campaigns",
+    "lead": "Only you can see and edit what is here.",
+    "empty": "You have no campaigns yet. Create one below or import a package.",
+    "createTitle": "Create campaign",
+    "createSubmit": "Create",
+    "slug": "Slug (URL)",
+    "sistema": "System",
+    "visibilidade": "Visibility",
+    "visListada": "Listed",
+    "visSoLink": "Link only",
+    "open": "Open table",
+    "export": "Export",
+    "importTitle": "Import package",
+    "importSlugOptional": "New slug (optional)",
+    "importFile": "ZIP file",
+    "makeSoLink": "Make link-only",
+    "makeListada": "Make listed",
+    "quota": "Quota: {{used}} / {{cap}}",
+    "distanceUnit": "Distance unit",
+    "unitMi": "Miles (mi)",
+    "unitKm": "Kilometres (km)",
+    "toggleUnit": "Toggle mi/km",
+    "genre": "Genre",
+    "genrePick": "Choose the table genre",
+    "genre_fantasia": "Medieval fantasy",
+    "genre_gotico": "Contemporary gothic",
+    "genre_scifi": "Science fiction",
+    "genre_urbano": "Contemporary urban",
+    "genreTag_fantasia": "Realms, taverns and old empires — amber on warm charcoal.",
+    "genreTag_gotico": "Night cities and blood pacts — crimson on pitch.",
+    "genreTag_scifi": "Orbital stations and distant frontiers — cyan on graphite.",
+    "genreTag_urbano": "The real world with a secret underneath — blue on slate.",
+    "suggestedSystems": "Suggested systems (optional)",
+    "cover": "Cover",
+    "clearCover": "Remove cover",
+    "createCta": "Create new codex",
+    "newCard": "Create new codex",
+    "wizard": {
+      "progress": "Creation progress",
+      "steps": { "identity": "Identity", "system": "System and genre", "visibility": "Visibility", "review": "Review" },
+      "identityTitle": "What is your campaign called?",
+      "identityLead": "Set the codex name and the address you will share with your group.",
+      "name": "Campaign name",
+      "namePlaceholder": "e.g. The Chronicles of Aldenor",
+      "slugLabel": "Campaign address",
+      "slugImmutable": "This address cannot be changed after creation.",
+      "systemTitle": "System and genre",
+      "systemLead": "Choose the RPG system and preview the campaign theme as you go.",
+      "systemPlaceholder": "e.g. WFRP 4e, D&D 5e, Vampire…",
+      "genrePreview": "The whole screen is using the selected theme.",
+      "visibilityTitle": "Who can see this campaign?",
+      "visibilityLead": "You can change this choice later.",
+      "listedHelp": "It will appear in Explore for anyone to find.",
+      "linkOnlyHelp": "Only people with the direct link can find the campaign.",
+      "reviewTitle": "Review before creating",
+      "cancel": "Cancel",
+      "back": "Back",
+      "continue": "Continue",
+      "create": "Create campaign",
+      "creating": "Creating…",
+      "successTitle": "{{nome}} is live",
+      "successBody": "Share /c/{{slug}} with your players to open the campaign.",
+      "openCampaign": "Open campaign",
+      "goToPanel": "Go to dashboard"
+    }
   },
   "gm": {
     "modeTag": "GM Mode",
@@ -49,7 +148,15 @@
     "senha": "Password",
     "titulo": "Title",
     "resumo": "Summary",
-    "ordem": "Order"
+    "ordem": "Order",
+    "required": "Fill in this field.",
+    "invalidColor": "Invalid color.",
+    "unsavedTitle": "Unsaved changes",
+    "unsavedBody": "You have changes that have not been saved. Discard them?",
+    "unsavedDiscard": "Discard",
+    "mdWrite": "Write",
+    "mdPreview": "Preview",
+    "mdEmpty": "Nothing to preview."
   },
   "image": {
     "dragHere": "Drag image here",
@@ -57,10 +164,31 @@
     "portrait": "Portrait",
     "noPortrait": "No portrait"
   },
+  "quota": {
+    "warningNearFull": "Storage almost full (≥ 90%). Free space or avoid large files.",
+    "exceeded": "Campaign storage quota exceeded."
+  },
   "gate": {
     "title": "GM Access",
     "body": "Restricted campaign editing area.",
     "wrongPassword": "Incorrect password."
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginHint": "Use your GM account email.",
+    "loginError": "Could not sign in. Check email and password.",
+    "email": "Email",
+    "inviteTitle": "Activate account",
+    "inviteHint": "Set a password to activate your invite.",
+    "inviteError": "Invite invalid, expired, or already used.",
+    "activate": "Activate",
+    "resetTitle": "New password",
+    "resetHint": "Choose a new password for your account.",
+    "resetError": "Reset link invalid or expired.",
+    "resetSubmit": "Save password",
+    "accountTitle": "Account",
+    "accountHint": "Session active. Open a campaign at /c/slug to edit.",
+    "logout": "Sign out"
   },
   "loading": {
     "campaign": "Loading campaign…",
@@ -73,6 +201,7 @@
     "ADMIN_NAO_CONFIGURADO": "Admin not configured (ADMIN_USER / ADMIN_PASSWORD)",
     "AUTENTICACAO_NECESSARIA": "Authentication required",
     "CREDENCIAIS_INVALIDAS": "Invalid credentials",
+    "COTA_EXCEDIDA": "Storage quota exceeded ({{bytes_usados}} / {{cota_bytes}} bytes)",
     "CATEGORIA_UPLOAD_INVALIDA": "Invalid category. Use: {{categorias}}",
     "TIPO_ARQUIVO_NAO_PERMITIDO": "File type not allowed: {{content_type}}",
     "ARQUIVO_EXCEDE_TAMANHO_MAXIMO": "File exceeds the {{limite_bytes}} byte limit",
@@ -100,6 +229,57 @@
     "ROTA_ORIGEM_DESTINO_IGUAIS": "Origin and destination must differ",
     "ROTA_ORIGEM_INVALIDA": "Invalid origin (node not found)",
     "ROTA_DESTINO_INVALIDO": "Invalid destination (node not found)",
-    "ROTA_CALCULO_FALHOU": "Failed to calculate route"
+    "ROTA_CALCULO_FALHOU": "Failed to calculate route",
+    "CAMPANHA_NAO_ENCONTRADA": "Campaign not found",
+    "SLUG_INVALIDO": "Invalid slug",
+    "SLUG_RESERVADO": "Reserved slug",
+    "SLUG_DUPLICADO": "Slug already in use",
+    "SLUG_OCUPADO": "Slug already in use",
+    "SISTEMA_INVALIDO": "Unknown system",
+    "VISIBILIDADE_INVALIDA": "Invalid visibility",
+    "NAO_DONO": "Only the owner can perform this action",
+    "NAO_MEMBRO": "No access to this campaign",
+    "PACOTE_INVALIDO": "Invalid package",
+    "ENTRADA_PROIBIDA": "Package contains forbidden entries",
+    "CONTEUDO_INVALIDO": "Invalid package contents",
+    "SCHEMA_FUTURO": "Unsupported package schema version",
+    "MANIFESTO_INVALIDO": "Invalid package manifest",
+    "NUMERO_DUPLICADO": "A session with this number already exists",
+    "SESSAO_NAO_ENCONTRADA": "Session not found"
+  },
+  "campaignMissing": {
+    "title": "Campaign not found",
+    "body": "Open a link with the campaign identifier (for example /c/campaign-slug)."
+  },
+  "landing": {
+    "badge": "Campaign Codex",
+    "title": "The map, the cast, and the routes of your table — in one place.",
+    "lede": "Campaign Codex is the living codex for tabletop RPG campaigns — a real map players explore, a relationship network, and a GM who edits it all on the same screen.",
+    "ctaMaster": "Sign in as GM",
+    "ctaExplore": "Browse open campaigns",
+    "checkNoAccount": "No account for players — just open the link",
+    "checkAnySystem": "Any RPG system, any genre",
+    "checkSelfHosted": "Self-hosted — table data stays with the GM",
+    "stepMapTitle": "Living map",
+    "stepMapBody": "Zoom and pan like a real map. Pins reveal only what the party has discovered.",
+    "stepRelTitle": "Relationship network",
+    "stepRelBody": "Who is ally, who is foe, who hides what — a graph players explore on their own.",
+    "stepRouteTitle": "Routes and distances",
+    "stepRouteBody": "Plan travel along roads, rivers, and trails the GM drew on the map.",
+    "genresTitle": "A theme for every world",
+    "genresLead": "Each campaign picks a genre at creation, and the UI adapts. Try it:",
+    "featuredTitle": "Campaigns in play now",
+    "ctaFinalTitle": "Ready to organise your table?",
+    "ctaFinal": "Create my first codex"
+  },
+  "explorar": {
+    "title": "Discover a campaign",
+    "lead": "No account, no password — pick a table and jump straight into the map.",
+    "searchPlaceholder": "Search by name or system…",
+    "searchAria": "Search campaigns",
+    "allGenres": "All genres",
+    "empty": "No campaigns found.",
+    "loadError": "Could not load the catalogue.",
+    "nav": "Explore"
   }
 }

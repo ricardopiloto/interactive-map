@@ -1,0 +1,6 @@
+.admin-page { min-height: 100dvh; padding: var(--space-6) 0 var(--space-7); background: var(--color-bg); }
+.admin-page__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-3); margin-top: var(--space-4); }
+.admin-page__stat { padding: 14px; }
+.admin-page__stat strong { display: block; font-size: 22px; margin-top: 4px; }
+.admin-page__table-wrap { padding: 6px; margin-top: 12px; overflow-x: auto; }
+.admin-page__infra { display: flex; gap: 12px; align-items: flex-start; padding: 14px; margin-top: 24px; color: var(--color-text-2); }

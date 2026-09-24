@@ -1,0 +1,22 @@
+{
+  "title": "Chronicle",
+  "empty": "No visible sessions in this campaign yet.",
+  "emptyGm": "No sessions yet. Create the first one in Edit mode.",
+  "loadError": "Could not load sessions.",
+  "new": "New session",
+  "edit": "Edit session",
+  "delete": "Delete session",
+  "deleteConfirmTitle": "Delete this session?",
+  "deleteConfirmBody": "The session and its links to locations and characters will be removed. This cannot be undone.",
+  "fieldNumero": "Number",
+  "fieldTitulo": "Title",
+  "fieldData": "Date label",
+  "fieldResumo": "Summary",
+  "fieldLocais": "Locations",
+  "fieldPersonagens": "Characters",
+  "fieldVisivel": "Visible to everyone",
+  "chipLocal": "Location",
+  "chipPersonagem": "Character",
+  "hiddenBadge": "Hidden",
+  "sessionLabel": "Session {{numero}}"
+}

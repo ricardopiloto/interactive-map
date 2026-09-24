@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from 'react'
 import { useTranslation } from 'react-i18next'
+import { IconArrowLeft, IconPlus, IconSearch } from '@tabler/icons-react'
 import { adminApi } from '../api/admin'
 import { campaignApi } from '../api/campaign'
-import {
-  clearAdminCredentials,
-  hasAdminCredentials,
-  setAdminCredentials,
-} from '../api/client'
 import { CodexHeader } from '../components/layout/CodexHeader'
-import { AdminGateDialog } from '../components/gm/AdminGateDialog'
+import { MapSidePanel } from '../components/map/MapSidePanel'
 import { GraphStage } from '../components/relacoes/GraphStage'
-import { RelacoesSideColumn } from '../components/relacoes/RelacoesSideColumn'
-import { RelacoesDetailPanel } from '../components/relacoes/RelacoesDetailPanel'
 import {
   PersonagemFormDialog,
   type PersonagemDraft,
@@ -19,23 +21,64 @@ import {
 import { VinculoFormDialog, type VinculoDraft } from '../components/relacoes/VinculoFormDialog'
 import {
   matchesStatusFilter,
+  STATUS_FILTER_OPTIONS,
+  isRelacoesStatusFilter,
   type RelacoesStatusFilter,
 } from '../components/relacoes/statusFilter'
-import { isDuasVias } from '../components/relacoes/vinculoDirection'
-import { VINCULO_TIPOS } from '../components/relacoes/vinculoStyles'
+import {
+  isDuasVias,
+  notaFromPerspective,
+  qualFromPerspective,
+  tipoFromPerspective,
+} from '../components/relacoes/vinculoDirection'
+import { formatVinculoTipoLabel } from '../components/relacoes/vinculoLabel'
+import {
+  getVinculoTipoLabel,
+  VINCULO_STYLES,
+  VINCULO_TIPOS,
+  vinculoStyle,
+} from '../components/relacoes/vinculoStyles'
+import { ImageSlot } from '../components/media/ImageSlot'
+import { ConfirmDialog, Button, Chip, Select} from '../components/ui'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
+import { useEditMode } from '../context/EditModeContext'
 import { useInstanceConfig, getCachedInstanceConfig } from '../hooks/useInstanceConfig'
+import { labelMatchesQuery } from '../utils/textMatch'
 import type { Personagem, Vinculo, VinculoTipo } from '../types'
 import './RelacoesPage.css'
 
-const ADMIN_USER = import.meta.env.VITE_ADMIN_USER ?? 'gm'
 const SELECTION_ANIMATION_MS = 600
+const CHIP_CLICK_DELAY_MS = 280
+const MOBILE_BP = 860
+
+function neighbourId(v: Vinculo, selfId: number): number {
+  return v.personagem_a_id === selfId ? v.personagem_b_id : v.personagem_a_id
+}
+
+function sortVinculosByNeighbourName(
+  vinculos: Vinculo[],
+  selfId: number,
+  personagemById: Map<number, Personagem>,
+): Vinculo[] {
+  return [...vinculos].sort((a, b) => {
+    const nomeA = personagemById.get(neighbourId(a, selfId))?.nome
+    const nomeB = personagemById.get(neighbourId(b, selfId))?.nome
+    if (nomeA == null && nomeB == null) return a.id - b.id
+    if (nomeA == null) return 1
+    if (nomeB == null) return -1
+    const cmp = nomeA.localeCompare(nomeB, 'pt', { sensitivity: 'base' })
+    if (cmp !== 0) return cmp
+    return a.id - b.id
+  })
+}
 
 export function RelacoesPage() {
+  const { slug = '' } = useParams<{ slug: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation('relacoes')
   const { t: tc } = useTranslation('comum')
   const apiErrorMessage = useApiErrorMessage()
-  const { config: instanceConfig } = useInstanceConfig()
+  const { config: instanceConfig } = useInstanceConfig(slug)
   const [personagens, setPersonagens] = useState<Personagem[]>([])
   const [vinculos, setVinculos] = useState<Vinculo[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,31 +88,57 @@ export function RelacoesPage() {
   const [activeTipos, setActiveTipos] = useState<Set<VinculoTipo>>(new Set(VINCULO_TIPOS))
   const [isolate, setIsolate] = useState(false)
   const [statusFilter, setStatusFilter] = useState<RelacoesStatusFilter>('todos')
+  const [expanded, setExpanded] = useState(false)
+  const [fabOpen, setFabOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < MOBILE_BP : false,
+  )
 
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
-  /** After layout animation: focus edges may highlight (GraphStage). Idle/mid-move stay dim. */
   const [showEdges, setShowEdges] = useState(false)
   const selectionTimer = useRef<number | undefined>(undefined)
+  const pendingChipClick = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [isGm, setIsGm] = useState(false)
-  const [showGate, setShowGate] = useState(false)
-  const [gateError, setGateError] = useState(false)
+  const { enabled: isGm, canEdit } = useEditMode()
   const [busyError, setBusyError] = useState<string | null>(null)
 
   const [personagemDraft, setPersonagemDraft] = useState<PersonagemDraft | null>(null)
   const [vinculoDraft, setVinculoDraft] = useState<VinculoDraft | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<
+    null | { kind: 'personagem' | 'vinculo'; id: number }
+  >(null)
 
   useEffect(() => {
-    if (!hasAdminCredentials()) return
-    void adminApi
-      .session()
-      .then(() => setIsGm(true))
-      .catch(() => {
-        clearAdminCredentials()
-        setIsGm(false)
-      })
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BP)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  useEffect(() => {
+    if (searchParams.get('gm') === '1' || searchParams.get('admin') === '1') {
+      const next = new URLSearchParams(searchParams)
+      next.delete('gm')
+      next.delete('admin')
+      setSearchParams(next, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
+    const raw = searchParams.get('personagem')
+    if (!raw || loading) return
+    const id = Number(raw)
+    if (!Number.isFinite(id)) return
+    if (!personagens.some((p) => p.id === id)) return
+    setSelectedId(id)
+    setExpanded(true)
+    setShowEdges(false)
+    if (selectionTimer.current) window.clearTimeout(selectionTimer.current)
+    selectionTimer.current = window.setTimeout(() => setShowEdges(true), SELECTION_ANIMATION_MS)
+    const next = new URLSearchParams(searchParams)
+    next.delete('personagem')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, setSearchParams, personagens, loading])
 
   async function refresh() {
     setLoading(true)
@@ -91,6 +160,14 @@ export function RelacoesPage() {
   useEffect(() => {
     void refresh()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGm])
+
+  useEffect(() => {
+    if (isGm) return
+    setPersonagemDraft(null)
+    setVinculoDraft(null)
+    setFabOpen(false)
+    setPendingDelete(null)
   }, [isGm])
 
   const personagemById = useMemo(() => new Map(personagens.map((p) => [p.id, p])), [personagens])
@@ -118,6 +195,13 @@ export function RelacoesPage() {
     [vinculos, visibleIds],
   )
 
+  const listItems = useMemo(() => {
+    return visiblePersonagens
+      .filter((p) => labelMatchesQuery(p.nome, query))
+      .slice()
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }))
+  }, [visiblePersonagens, query])
+
   function clearSelectionTimer() {
     if (selectionTimer.current != null) {
       window.clearTimeout(selectionTimer.current)
@@ -133,6 +217,7 @@ export function RelacoesPage() {
     clearSelectionTimer()
     setShowEdges(false)
     setSelectedId(id)
+    setExpanded(true)
     selectionTimer.current = window.setTimeout(() => setShowEdges(true), SELECTION_ANIMATION_MS)
   }
 
@@ -168,27 +253,29 @@ export function RelacoesPage() {
     })
   }
 
-  async function submitGate(password: string) {
-    setGateError(false)
-    setAdminCredentials(ADMIN_USER, password)
-    try {
-      await adminApi.session()
-      setIsGm(true)
-      setShowGate(false)
-    } catch {
-      clearAdminCredentials()
-      setGateError(true)
+  function clearPendingChipClick() {
+    if (pendingChipClick.current != null) {
+      clearTimeout(pendingChipClick.current)
+      pendingChipClick.current = null
     }
   }
 
-  function logoutGm() {
-    clearAdminCredentials()
-    setIsGm(false)
-    setPersonagemDraft(null)
-    setVinculoDraft(null)
+  function handleChipClick(tipo: VinculoTipo) {
+    clearPendingChipClick()
+    pendingChipClick.current = setTimeout(() => {
+      pendingChipClick.current = null
+      toggleTipo(tipo)
+    }, CHIP_CLICK_DELAY_MS)
+  }
+
+  function handleChipDoubleClick(e: MouseEvent<HTMLButtonElement>, tipo: VinculoTipo) {
+    e.preventDefault()
+    clearPendingChipClick()
+    soloOrRestoreTipo(tipo)
   }
 
   function startCreatePersonagem() {
+    setFabOpen(false)
     setPersonagemDraft({
       nome: '',
       tipo: 'npc',
@@ -243,8 +330,11 @@ export function RelacoesPage() {
     }
   }
 
+  function requestDeletePersonagem(id: number) {
+    setPendingDelete({ kind: 'personagem', id })
+  }
+
   async function deletePersonagem(id: number) {
-    if (!window.confirm(t('page.confirmRemovePersonagem'))) return
     setBusyError(null)
     try {
       await adminApi.deletePersonagem(id)
@@ -256,6 +346,7 @@ export function RelacoesPage() {
   }
 
   function startCreateVinculo(prefillA?: number) {
+    setFabOpen(false)
     setVinculoDraft({
       personagem_a_id: prefillA ?? selectedId ?? null,
       personagem_b_id: null,
@@ -329,8 +420,11 @@ export function RelacoesPage() {
     }
   }
 
+  function requestDeleteVinculo(id: number) {
+    setPendingDelete({ kind: 'vinculo', id })
+  }
+
   async function deleteVinculo(id: number) {
-    if (!window.confirm(t('page.confirmRemoveVinculo'))) return
     setBusyError(null)
     try {
       await adminApi.deleteVinculo(id)
@@ -340,108 +434,208 @@ export function RelacoesPage() {
     }
   }
 
-  const sideColumn = (
-    <RelacoesSideColumn
-      query={query}
-      onQueryChange={setQuery}
-      activeTipos={activeTipos}
-      onToggleTipo={toggleTipo}
-      onDoubleClickTipo={soloOrRestoreTipo}
-      isolate={isolate}
-      onToggleIsolate={setIsolate}
-      isolateDisabled={selectedId == null}
-      statusFilter={statusFilter}
-      onStatusFilterChange={setStatusFilter}
-      personagens={visiblePersonagens}
-      selectedId={selectedId}
-      onSelectPersonagem={selectPersonagem}
-      onPersonagemHover={setHoveredId}
-    />
+  const hasQuery = query.trim().length > 0
+
+  const panelHead = selectedPersonagem == null ? (
+    <>
+      <div className="relacoes-page__search">
+        <IconSearch size={17} aria-hidden />
+        <input
+          className="relacoes-page__search-input"
+          type="search"
+          placeholder={t('column.search')}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setExpanded(true)
+          }}
+          onFocus={() => setExpanded(true)}
+        />
+      </div>
+      <div className="relacoes-page__chips" role="group" aria-label={t('column.tiposVinculo')}>
+        {VINCULO_TIPOS.map((tipo) => {
+          const style = VINCULO_STYLES[tipo]
+          const active = activeTipos.has(tipo)
+          return (
+            <button
+              key={tipo}
+              type="button"
+              className={`relacoes-page__chip${active ? ' is-active' : ''}`}
+              style={{ '--chip-color': style.color } as CSSProperties}
+              onClick={() => handleChipClick(tipo)}
+              onDoubleClick={(e) => handleChipDoubleClick(e, tipo)}
+              aria-pressed={active}
+            >
+              <span className="relacoes-page__chip-swatch" style={{ background: style.color }} />
+              {getVinculoTipoLabel(t, tipo)}
+            </button>
+          )
+        })}
+      </div>
+      <div className="relacoes-page__filters">
+        <label className="relacoes-page__status-filter">
+          {t('column.statusFilter')}
+          <Select
+            value={statusFilter}
+            onChange={(e) => {
+              const value = e.target.value
+              if (isRelacoesStatusFilter(value)) setStatusFilter(value)
+            }}
+          >
+            {STATUS_FILTER_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt === 'todos' ? t('column.statusFilterTodos') : tc(`status.${opt}`)}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <label className="relacoes-page__isolate">
+          <input
+            type="checkbox"
+            checked={isolate}
+            disabled={selectedId == null}
+            onChange={(e) => setIsolate(e.target.checked)}
+          />
+          {t('column.isolate')}
+        </label>
+      </div>
+    </>
+  ) : (
+    <Button variant="ghost" size="sm" className="relacoes-page__back" type="button" onClick={deselectPersonagem}>
+      <IconArrowLeft size={15} aria-hidden /> {t('panel.backToList')}
+    </Button>
   )
 
-  return (
-    <div className="relacoes-page">
-      <CodexHeader
+  const panelBody =
+    selectedPersonagem == null ? (
+      <div className="relacoes-page__list">
+        <h3 className="relacoes-page__section-title">
+          {t('panel.sectionPersonagens', { count: listItems.length })}
+        </h3>
+        {listItems.length === 0 ? (
+          <p className="relacoes-page__empty">
+            {hasQuery
+              ? t('column.listEmptySearch')
+              : statusFilter === 'todos'
+                ? t('column.listEmpty')
+                : t('column.listEmptyStatus')}
+          </p>
+        ) : (
+          <div className="relacoes-page__rows">
+            {listItems.map((p) => {
+              const selected = p.id === selectedId
+              const oculto = p.visivel_para_todos === false
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`relacoes-page__row${selected ? ' is-selected' : ''}`}
+                  aria-current={selected ? 'true' : undefined}
+                  onClick={() => selectPersonagem(p.id)}
+                  onPointerEnter={() => setHoveredId(p.id)}
+                  onPointerLeave={() => setHoveredId(null)}
+                >
+                  <span className="relacoes-page__avatar" aria-hidden>
+                    {p.nome.trim().charAt(0).toUpperCase() || '?'}
+                  </span>
+                  <span className="relacoes-page__row-text">
+                    <span className="relacoes-page__row-title">{p.nome}</span>
+                    <span className="relacoes-page__row-meta">
+                      {p.papel ?? (p.tipo === 'pj' ? 'PJ' : 'NPC')}
+                      {p.status ? ` · ${tc(`status.${p.status}`)}` : ''}
+                    </span>
+                  </span>
+                  {oculto && isGm ? (
+                    <span
+                      className="relacoes-page__oculto"
+                      title={t('graph.ocultoAria')}
+                      aria-label={t('graph.ocultoAria')}
+                    />
+                  ) : null}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    ) : (
+      <PersonagemDetailBody
+        personagem={selectedPersonagem}
+        vinculos={selectedVinculos}
+        personagemById={personagemById}
         isGm={isGm}
+        onFocusPersonagem={selectPersonagem}
+        onEdit={() => startEditPersonagem(selectedPersonagem)}
+        onDelete={() => requestDeletePersonagem(selectedPersonagem.id)}
+        onEditVinculo={startEditVinculo}
+        onDeleteVinculo={requestDeleteVinculo}
+      />
+    )
+
+  return (
+    <div className={`relacoes-page${isMobile ? ' relacoes-page--mobile' : ''}`}>
+      <CodexHeader
+        campaignName={instanceConfig?.nome}
         showMapNav={
-          Boolean(getCachedInstanceConfig()?.has_map_image ?? instanceConfig?.has_map_image) || isGm
+          Boolean(getCachedInstanceConfig(slug)?.has_map_image ?? instanceConfig?.has_map_image) ||
+          canEdit
         }
-        onToggleGm={() => {
-          if (isGm) logoutGm()
-          else {
-            setGateError(false)
-            setShowGate(true)
-          }
-        }}
-      >
+      />
+
+      {busyError && <p className="relacoes-page__inline-error">{busyError}</p>}
+
+      <main className="relacoes-page__stage">
+        {loading && <p className="relacoes-page__status">{tc('loading.network')}</p>}
+        {error && <p className="relacoes-page__status relacoes-page__status--error">{error}</p>}
+
+        {!loading && !error && (
+          <GraphStage
+            personagens={visiblePersonagens}
+            vinculos={visibleVinculos}
+            selectedId={selectedId}
+            onSelect={selectPersonagem}
+            onDeselect={deselectPersonagem}
+            showEdges={showEdges}
+            isolate={isolate}
+            activeTipos={activeTipos}
+            onEdgeClick={isGm ? startEditVinculo : undefined}
+            searchQuery={query}
+            hoveredId={hoveredId}
+          />
+        )}
+
+        <MapSidePanel
+          expanded={expanded}
+          onToggleExpand={() => setExpanded((v) => !v)}
+          head={panelHead}
+        >
+          {panelBody}
+        </MapSidePanel>
+
         {isGm && (
-          <>
-            <button type="button" className="btn btn-secondary" onClick={startCreatePersonagem}>
-              {t('page.addPersonagem')}
-            </button>
+          <div className="relacoes-page__fab-wrap">
             <button
               type="button"
-              className="btn btn-secondary"
-              onClick={() => startCreateVinculo()}
+              className={`relacoes-page__fab${fabOpen ? ' is-open' : ''}`}
+              aria-label={t('panel.fabMenuAria')}
+              aria-expanded={fabOpen}
+              onClick={() => setFabOpen((v) => !v)}
             >
-              {t('page.addConexao')}
+              <IconPlus size={22} aria-hidden />
             </button>
-          </>
+            {fabOpen && (
+              <div className="relacoes-page__fab-menu" role="menu">
+                <button type="button" role="menuitem" onClick={startCreatePersonagem}>
+                  {t('page.addPersonagem')}
+                </button>
+                <button type="button" role="menuitem" onClick={() => startCreateVinculo()}>
+                  {t('page.addConexao')}
+                </button>
+              </div>
+            )}
+          </div>
         )}
-      </CodexHeader>
-
-      {busyError && <p className="map-page__inline-error relacoes-page__inline-error">{busyError}</p>}
-
-      <div className="relacoes-page__body">
-        {sideColumn}
-
-        <div className="relacoes-page__stage-wrap">
-          {loading && <p className="map-page__status">{tc('loading.network')}</p>}
-          {error && <p className="map-page__status map-page__status--error">{error}</p>}
-
-          {!loading && !error && (
-            <GraphStage
-              personagens={visiblePersonagens}
-              vinculos={visibleVinculos}
-              selectedId={selectedId}
-              onSelect={selectPersonagem}
-              onDeselect={deselectPersonagem}
-              showEdges={showEdges}
-              isolate={isolate}
-              activeTipos={activeTipos}
-              onEdgeClick={isGm ? startEditVinculo : undefined}
-              searchQuery={query}
-              hoveredId={hoveredId}
-            />
-          )}
-
-          {selectedPersonagem && (
-            <RelacoesDetailPanel
-              personagem={selectedPersonagem}
-              vinculos={selectedVinculos}
-              personagemById={personagemById}
-              isGm={isGm}
-              onClose={deselectPersonagem}
-              onFocusPersonagem={selectPersonagem}
-              onEdit={() => startEditPersonagem(selectedPersonagem)}
-              onDelete={() => void deletePersonagem(selectedPersonagem.id)}
-              onEditVinculo={startEditVinculo}
-              onDeleteVinculo={(id) => void deleteVinculo(id)}
-            />
-          )}
-        </div>
-      </div>
-
-      {showGate && (
-        <AdminGateDialog
-          error={gateError}
-          onSubmit={(pw) => void submitGate(pw)}
-          onCancel={() => {
-            setShowGate(false)
-            setGateError(false)
-          }}
-        />
-      )}
+      </main>
 
       {personagemDraft && (
         <PersonagemFormDialog
@@ -465,6 +659,172 @@ export function RelacoesPage() {
           onCancel={() => setVinculoDraft(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={pendingDelete != null}
+        title={
+          pendingDelete?.kind === 'vinculo'
+            ? t('page.confirmRemoveVinculo')
+            : t('page.confirmRemovePersonagem')
+        }
+        danger
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          const pending = pendingDelete
+          setPendingDelete(null)
+          if (!pending) return
+          if (pending.kind === 'personagem') void deletePersonagem(pending.id)
+          else void deleteVinculo(pending.id)
+        }}
+      />
+    </div>
+  )
+}
+
+function PersonagemDetailBody({
+  personagem,
+  vinculos,
+  personagemById,
+  isGm,
+  onFocusPersonagem,
+  onEdit,
+  onDelete,
+  onEditVinculo,
+  onDeleteVinculo,
+}: {
+  personagem: Personagem
+  vinculos: Vinculo[]
+  personagemById: Map<number, Personagem>
+  isGm: boolean
+  onFocusPersonagem: (id: number) => void
+  onEdit?: () => void
+  onDelete?: () => void
+  onEditVinculo?: (vinculoId: number) => void
+  onDeleteVinculo?: (vinculoId: number) => void
+}) {
+  const { t } = useTranslation('relacoes')
+  const { t: tc } = useTranslation('comum')
+  const sortedVinculos = sortVinculosByNeighbourName(vinculos, personagem.id, personagemById)
+
+  return (
+    <div className="relacoes-page__detail">
+      <div className="relacoes-page__detail-kicker">
+        {personagem.tipo === 'pj' ? tc('tipo.pj') : tc('tipo.npc')}
+        {personagem.papel ? ` · ${personagem.papel}` : ''}
+      </div>
+      <h2
+        className={`relacoes-page__detail-title${personagem.status === 'morto' ? ' is-morto' : ''}`}
+      >
+        {personagem.nome}
+      </h2>
+
+      {personagem.retrato_url ? (
+        <ImageSlot
+          src={personagem.retrato_url}
+          shape="rounded"
+          fit="contain"
+          className="relacoes-page__detail-portrait"
+        />
+      ) : null}
+
+      <div className="relacoes-page__detail-tags">
+        <Chip variant="outline">
+          {tc(`status.${personagem.status ?? 'desconhecido'}`)}
+        </Chip>
+        {personagem.faccao && <Chip variant="neutral">{personagem.faccao}</Chip>}
+        {isGm && personagem.visivel_para_todos === false && (
+          <Chip variant="accent">{t('personagemForm.ocultoAosJogadores')}</Chip>
+        )}
+      </div>
+
+      {personagem.descricao.trim() ? (
+        <p className="relacoes-page__detail-desc">{personagem.descricao}</p>
+      ) : null}
+
+      {isGm && (
+        <div className="relacoes-page__detail-actions">
+          <Button size="sm" type="button" onClick={onEdit}>
+            {tc('buttons.edit')}
+          </Button>
+          <Button variant="ghost" size="sm" type="button" onClick={onDelete}>
+            {tc('buttons.remove')}
+          </Button>
+        </div>
+      )}
+
+      <h3 className="relacoes-page__section-title">
+        {t('detail.vinculosCount', { count: sortedVinculos.length })}
+      </h3>
+      <div className="relacoes-page__vinculos">
+        {sortedVinculos.length === 0 && <p className="text-muted">{t('detail.noVinculos')}</p>}
+        {sortedVinculos.map((v) => {
+          const otherId = neighbourId(v, personagem.id)
+          const other = personagemById.get(otherId)
+          const myTipo = tipoFromPerspective(v, personagem.id)
+          const theirTipo = tipoFromPerspective(v, otherId)
+          const myNota = notaFromPerspective(v, personagem.id)
+          const theirNota = notaFromPerspective(v, otherId)
+          const myQual = qualFromPerspective(v, personagem.id)
+          const theirQual = qualFromPerspective(v, otherId)
+          const showPrimary = myTipo != null
+          const showReturn = theirTipo != null && (isDuasVias(v) || myTipo == null)
+          const resolvedTipo = myTipo ?? theirTipo ?? 'conhecido'
+          const style = vinculoStyle(resolvedTipo)
+          return (
+            <div key={v.id} className="relacoes-page__vinculo">
+              <div className="relacoes-page__vinculo-row">
+                <span
+                  className="relacoes-page__vinculo-dot"
+                  style={{ background: showPrimary ? style.color : vinculoStyle(theirTipo!).color }}
+                />
+                <button
+                  type="button"
+                  className="relacoes-page__vinculo-name"
+                  onClick={() => onFocusPersonagem(otherId)}
+                  disabled={!other}
+                >
+                  {other?.nome ?? t('detail.removed')}
+                </button>
+                {showPrimary && myTipo != null && (
+                  <span className="relacoes-page__vinculo-tipo" style={{ color: style.color }}>
+                    {formatVinculoTipoLabel(
+                      getVinculoTipoLabel(t, myTipo),
+                      myQual,
+                      isDuasVias(v) ? null : v.direcao,
+                    )}
+                  </span>
+                )}
+              </div>
+              {showPrimary && myNota && <p className="relacoes-page__vinculo-nota">{myNota}</p>}
+              {showReturn && theirTipo != null && (
+                <p className="relacoes-page__vinculo-return">
+                  {t('detail.veTeComo')}{' '}
+                  <span style={{ color: vinculoStyle(theirTipo).color }}>
+                    {formatVinculoTipoLabel(getVinculoTipoLabel(t, theirTipo), theirQual)}
+                  </span>
+                  {theirNota ? ` — ${theirNota}` : ''}
+                </p>
+              )}
+              {isGm && (
+                <div className="relacoes-page__detail-actions">
+                  <Button size="sm"
+                    type="button"
+                    onClick={() => onEditVinculo?.(v.id)}
+                  >
+                    {tc('buttons.edit')}
+                  </Button>
+                  <Button variant="ghost" size="sm"
+                    type="button"
+                    onClick={() => onDeleteVinculo?.(v.id)}
+                  >
+                    {tc('buttons.remove')}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

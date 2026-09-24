@@ -1,0 +1,55 @@
+.form-drawer__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: var(--space-4);
+}
+
+.form-drawer__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface);
+}
+
+.form-drawer__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.form-drawer__section-title {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.field-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+.markdown-field__preview {
+  min-height: 6rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-elevated);
+  font-size: 0.9rem;
+}
+
+.markdown-field__preview-empty {
+  color: var(--color-text-tertiary);
+  margin: 0;
+}

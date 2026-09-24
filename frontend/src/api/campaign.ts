@@ -1,4 +1,5 @@
 import { api } from './client'
+import { campaignApiPrefix } from './campaignSlug'
 import type {
   Arco,
   GrupoPosicao,
@@ -12,26 +13,33 @@ import type {
   RoutePlanResponse,
   Vinculo,
   Waypoint,
+  Sessao,
 } from '../types'
+
+function p(path: string): string {
+  return `${campaignApiPrefix()}${path}`
+}
 
 export const campaignApi = {
   listLocais: (q?: string) =>
-    api.get<Local[]>(`/api/locais${q ? `?q=${encodeURIComponent(q)}` : ''}`),
-  getLocal: (id: number) => api.get<Local>(`/api/locais/${id}`),
+    api.get<Local[]>(`${p('/locais')}${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+  getLocal: (id: number) => api.get<Local>(p(`/locais/${id}`)),
   listNpcs: (q?: string) =>
-    api.get<NPC[]>(`/api/npcs${q ? `?q=${encodeURIComponent(q)}` : ''}`),
-  getNpc: (id: number) => api.get<NPC>(`/api/npcs/${id}`),
+    api.get<NPC[]>(`${p('/npcs')}${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+  getNpc: (id: number) => api.get<NPC>(p(`/npcs/${id}`)),
   listPersonagens: (q?: string) =>
     api.get<Personagem[]>(
-      `/api/personagens${q ? `?q=${encodeURIComponent(q)}` : ''}`,
+      `${p('/personagens')}${q ? `?q=${encodeURIComponent(q)}` : ''}`,
     ),
-  getPersonagem: (id: number) => api.get<Personagem>(`/api/personagens/${id}`),
-  listVinculos: () => api.get<Vinculo[]>('/api/vinculos'),
-  listArcos: () => api.get<Arco[]>('/api/arcos'),
-  getArco: (id: number) => api.get<Arco>(`/api/arcos/${id}`),
-  getGrupo: () => api.get<GrupoPosicao>('/api/grupo'),
+  getPersonagem: (id: number) => api.get<Personagem>(p(`/personagens/${id}`)),
+  listVinculos: () => api.get<Vinculo[]>(p('/vinculos')),
+  listArcos: () => api.get<Arco[]>(p('/arcos')),
+  getArco: (id: number) => api.get<Arco>(p(`/arcos/${id}`)),
+  getGrupo: () => api.get<GrupoPosicao>(p('/grupo')),
   listWaypoints: (linkedOnly = false) =>
-    api.get<Waypoint[]>(`/api/waypoints${linkedOnly ? '?linked_only=true' : ''}`),
+    api.get<Waypoint[]>(`${p('/waypoints')}${linkedOnly ? '?linked_only=true' : ''}`),
+  listSessoes: () => api.get<{ sessoes: Sessao[] }>(p('/sessoes')),
+  getSessao: (id: number) => api.get<Sessao>(p(`/sessoes/${id}`)),
   planRoute: (
     origemWaypointId: number,
     destinoWaypointId: number,
@@ -52,6 +60,6 @@ export const campaignApi = {
     if (modoTransporte === 'proprio' && velocidadeMediaMph != null) {
       params.set('velocidade_media_mph', String(velocidadeMediaMph))
     }
-    return api.get<RoutePlanResponse>(`/api/routes/plan?${params}`)
+    return api.get<RoutePlanResponse>(`${p('/routes/plan')}?${params}`)
   },
 }

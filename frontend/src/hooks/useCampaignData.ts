@@ -35,7 +35,7 @@ export function useCampaignData(asGm = false): CampaignData {
         const [locaisData, npcsData, arcosData, grupoData] = await Promise.all([
           asGm ? adminApi.listLocaisAdmin() : campaignApi.listLocais(),
           asGm ? adminApi.listNpcsAdmin() : campaignApi.listNpcs(),
-          campaignApi.listArcos(),
+          asGm ? adminApi.listArcosAdmin() : campaignApi.listArcos(),
           campaignApi.getGrupo(),
         ])
         if (cancelled) return

@@ -1,0 +1,53 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> mapa-campanha-web@0.19.1 test:contrast
+> node scripts/check-contrast.mjs
+
+OK dark text/card: 13.40:1
+OK dark textSecondary/card: 6.90:1
+OK dark textTertiary/card: 4.65:1
+OK dark text/bg: 15.55:1
+OK dark accent/card: 6.99:1
+OK dark onAccent/accentFill: 8.11:1
+OK dark borderField/card: 3.47:1
+OK dark accentHover/card: 8.35:1
+OK dark elevated text check: 12.07:1
+OK dark vinculoAfinidade/bg: 7.58:1
+OK dark vinculoLaco/bg: 7.45:1
+OK dark vinculoHostil/bg: 5.87:1
+OK dark vinculoNeutro/bg: 8.01:1
+OK dark accent_latao/card: 6.99:1
+OK dark onAccent_latao: 8.11:1
+OK dark accent_verde/card: 6.53:1
+OK dark onAccent_verde: 7.37:1
+OK dark accent_azul/card: 6.01:1
+OK dark onAccent_azul: 6.97:1
+OK dark accent_vinho/card: 6.42:1
+OK dark onAccent_vinho: 7.58:1
+OK dark accent_cobre/card: 7.98:1
+OK dark onAccent_cobre: 9.22:1
+OK light text/card: 16.24:1
+OK light textSecondary/card: 7.27:1
+OK light textTertiary/card: 5.51:1
+OK light text/bg: 14.27:1
+OK light accent/card: 6.27:1
+OK light onAccent/accentFill: 6.27:1
+OK light borderField/card: 3.48:1
+OK light accentHover/card: 7.87:1
+OK light elevated text check: 13.03:1
+OK light vinculoAfinidade/bg: 4.43:1
+OK light vinculoLaco/bg: 4.49:1
+OK light vinculoHostil/bg: 5.20:1
+OK light vinculoNeutro/bg: 4.84:1
+OK light accent_latao/card: 6.27:1
+OK light onAccent_latao: 6.27:1
+OK light accent_verde/card: 5.04:1
+OK light onAccent_verde: 5.04:1
+OK light accent_azul/card: 6.46:1
+OK light onAccent_azul: 6.46:1
+OK light accent_vinho/card: 6.49:1
+OK light onAccent_vinho: 6.49:1
+OK light accent_cobre/card: 5.93:1
+OK light onAccent_cobre: 5.93:1
+
+test:contrast OK — both themes

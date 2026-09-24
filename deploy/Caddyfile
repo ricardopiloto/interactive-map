@@ -2,34 +2,11 @@
 # Ajuste o upstream conforme a rede Docker / reverse proxy já existente.
 #
 # Domínio sugerido: mapa.1nodado.com.br
-# Auth: Basic Auth só em /admin e métodos de escrita da API.
+# Auth: cookie de sessão na API (spec 095) — sem basicauth no proxy.
 
 mapa.1nodado.com.br {
 	encode gzip
 
-	# Painel GM — Basic Auth (camada de rede)
-	handle /admin* {
-		basicauth {
-			# Gere com: caddy hash-password
-			# gm JDJhJDE0J...hash...
-			{$ADMIN_USER} {$ADMIN_PASSWORD_HASH}
-		}
-		reverse_proxy web:80
-	}
-
-	# Escrita da API — Basic Auth
-	@admin_write {
-		path /api/admin*
-		method POST PUT PATCH DELETE
-	}
-	handle @admin_write {
-		basicauth {
-			{$ADMIN_USER} {$ADMIN_PASSWORD_HASH}
-		}
-		reverse_proxy api:8000
-	}
-
-	# Uploads e leitura da API — públicos
 	handle /api/* {
 		reverse_proxy api:8000
 	}
@@ -38,7 +15,7 @@ mapa.1nodado.com.br {
 		reverse_proxy api:8000
 	}
 
-	# SPA
+	# SPA (incl. /login, /convite/*, /c/*)
 	handle {
 		reverse_proxy web:80
 	}

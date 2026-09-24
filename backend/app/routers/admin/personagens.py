@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/personagens", response_model=list[PersonagemRead])
 def list_personagens_admin(session: Session = Depends(get_session)) -> list[PersonagemRead]:
     rows = list(session.exec(select(NPC).order_by(NPC.nome)).all())
-    return [personagem_to_read(n) for n in rows]
+    return [personagem_to_read(n, for_player=False) for n in rows]
 
 
 def _apply_personagem_payload(row: NPC, payload: PersonagemCreate | PersonagemUpdate, *, is_create: bool) -> None:
@@ -53,7 +53,7 @@ def create_personagem(
     session.add(row)
     session.commit()
     session.refresh(row)
-    return personagem_to_read(row)
+    return personagem_to_read(row, for_player=False)
 
 
 @router.put("/personagens/{personagem_id}", response_model=PersonagemRead)
@@ -73,7 +73,7 @@ def update_personagem(
     session.add(row)
     session.commit()
     session.refresh(row)
-    return personagem_to_read(row)
+    return personagem_to_read(row, for_player=False)
 
 
 @router.delete("/personagens/{personagem_id}", status_code=status.HTTP_204_NO_CONTENT)

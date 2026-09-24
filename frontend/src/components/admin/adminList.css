@@ -1,0 +1,162 @@
+/* Shared compact list rows for map column (UX-5) */
+
+.list-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.list-section__add {
+  flex-shrink: 0;
+}
+
+.list-section__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 0;
+}
+
+.list-arco {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.list-arco__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: color-mix(in srgb, var(--color-elevated) 70%, transparent);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.list-arco__head:hover {
+  color: var(--color-accent);
+}
+
+.list-arco__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+button.list-row {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+}
+
+.list-row:hover,
+.list-row--hoverable:hover {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.list-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-row__title {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.list-row__oculto {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-bg);
+}
+
+.list-row__meta {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-row__actions {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .list-row:hover .list-row__actions--hover {
+    display: inline-flex;
+  }
+}
+
+.list-row__menu {
+  flex-shrink: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-text-tertiary);
+}
+
+.status-dot--vivo {
+  background: var(--color-success);
+}
+.status-dot--morto {
+  background: var(--color-danger);
+}
+.status-dot--desaparecido {
+  background: var(--color-warning);
+}
+.status-dot--desconhecido {
+  background: var(--color-info);
+}

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
+import { IconZoomIn, IconZoomOut, IconZoomReset } from '@tabler/icons-react'
 import { adminApi } from '../../api/admin'
+import { ConfirmDialog, Button, Chip, IconButton, Input, Select } from '../ui'
 import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
 import type { Local, MapPoint, RouteSegment, RouteTipo, Waypoint } from '../../types'
 import { labelMatchesQuery } from '../../utils/textMatch'
@@ -28,18 +30,19 @@ type FocusRequest =
   | { kind: 'segment'; id: number; x: number; y: number; nonce: number }
 
 function DigControls() {
+  const { t } = useTranslation('mapa')
   const { zoomIn, zoomOut, resetTransform } = useControls()
   return (
-    <div className="route-digitizer__controls">
-      <button type="button" className="btn btn-secondary btn-icon" onClick={() => zoomIn()}>
-        +
-      </button>
-      <button type="button" className="btn btn-secondary btn-icon" onClick={() => zoomOut()}>
-        −
-      </button>
-      <button type="button" className="btn btn-secondary btn-icon" onClick={() => resetTransform()}>
-        ↺
-      </button>
+    <div className="route-digitizer__controls" role="toolbar" aria-label={t('controls.aria')}>
+      <IconButton label={t('controls.zoomIn')} onClick={() => zoomIn()}>
+        <IconZoomIn size={20} aria-hidden />
+      </IconButton>
+      <IconButton label={t('controls.zoomOut')} onClick={() => zoomOut()}>
+        <IconZoomOut size={20} aria-hidden />
+      </IconButton>
+      <IconButton label={t('controls.reset')} onClick={() => resetTransform()}>
+        <IconZoomReset size={20} aria-hidden />
+      </IconButton>
     </div>
   )
 }
@@ -120,6 +123,9 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
   const [scaleMiles, setScaleMiles] = useState('80')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<
+    null | { kind: 'waypoint' | 'segment'; id: number }
+  >(null)
 
   const segmentHoverEnabled = mode === 'idle'
 
@@ -343,15 +349,21 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
     }
   }
 
+  function requestRemoveWaypoint(id: number) {
+    setPendingDelete({ kind: 'waypoint', id })
+  }
+
   async function removeWaypoint(id: number) {
-    if (!window.confirm(t('digitizer.confirmRemoverNo'))) return
     await adminApi.deleteWaypoint(id)
     if (focusedWaypointId === id) setFocusedWaypointId(null)
     await reload()
   }
 
+  function requestRemoveSegment(id: number) {
+    setPendingDelete({ kind: 'segment', id })
+  }
+
   async function removeSegment(id: number) {
-    if (!window.confirm(t('digitizer.confirmRemoverSegmento'))) return
     await adminApi.deleteRouteSegment(id)
     if (hoveredSegmentId === id) {
       setHoveredSegmentId(null)
@@ -432,8 +444,8 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
       onWaypointClick={focusWaypoint}
       onSegmentClick={focusSegment}
       onWaypointLocalChange={(wpId, localId) => void setWaypointLocal(wpId, localId)}
-      onRemoveWaypoint={(id) => void removeWaypoint(id)}
-      onRemoveSegment={(id) => void removeSegment(id)}
+      onRemoveWaypoint={(id) => requestRemoveWaypoint(id)}
+      onRemoveSegment={(id) => requestRemoveSegment(id)}
       segRowRefs={segRowRefs}
       className={
         isNarrow
@@ -450,17 +462,17 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
         <span className="text-muted">{t('digitizer.subtitle')}</span>
         <div className="route-digitizer__actions">
           {isNarrow && (
-            <button
+            <Button
               type="button"
-              className={`btn btn-secondary${listSheetOpen ? ' is-active' : ''}`}
+              className={`${listSheetOpen ? ' is-active' : ''}`}
               onClick={() => setListSheetOpen((o) => !o)}
             >
               {t('digitizer.lista')}
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
-            className={`btn btn-secondary${mode === 'place-wp' ? ' is-active' : ''}`}
+          <Chip
+            variant={mode === 'place-wp' ? 'accent' : 'outline'}
+            aria-pressed={mode === 'place-wp'}
             disabled={busy}
             onClick={() => {
               setMode(mode === 'place-wp' ? 'idle' : 'place-wp')
@@ -469,10 +481,10 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
             }}
           >
             {t('digitizer.novoNo')}
-          </button>
-          <button
-            type="button"
-            className={`btn btn-secondary${mode === 'draw-seg' ? ' is-active' : ''}`}
+          </Chip>
+          <Chip
+            variant={mode === 'draw-seg' ? 'accent' : 'outline'}
+            aria-pressed={mode === 'draw-seg'}
             disabled={busy}
             onClick={() => {
               setMode(mode === 'draw-seg' ? 'idle' : 'draw-seg')
@@ -481,24 +493,22 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
             }}
           >
             {t('digitizer.tracarSegmento')}
-          </button>
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
+          </Chip>
+          <Button variant="ghost" type="button" onClick={onClose}>
             {t('digitizer.sair')}
-          </button>
+          </Button>
         </div>
       </header>
 
       <div className="route-digitizer__tools">
         {mode === 'place-wp' && (
           <>
-            <input
-              className="input"
+            <Input
               placeholder={t('digitizer.nomeOpcional')}
               value={wpName}
               onChange={(e) => setWpName(e.target.value)}
             />
-            <select
-              className="input"
+            <Select
               value={linkLocalId === '' ? '' : String(linkLocalId)}
               onChange={(e) => setLinkLocalId(e.target.value ? Number(e.target.value) : '')}
             >
@@ -508,22 +518,22 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
                   {l.nome}
                 </option>
               ))}
-            </select>
+            </Select>
           </>
         )}
         {mode === 'draw-seg' && (
-          <select className="input" value={segTipo} onChange={(e) => setSegTipo(e.target.value as RouteTipo)}>
+          <Select value={segTipo} onChange={(e) => setSegTipo(e.target.value as RouteTipo)}>
             <option value="estrada">{tm('routeEnums.tipoVia.estrada')}</option>
             <option value="rio">{tm('routeEnums.tipoVia.rio')}</option>
             <option value="trilha">{tm('routeEnums.tipoVia.trilha')}</option>
-          </select>
+          </Select>
         )}
         <label className="route-digitizer__scale">
           {t('digitizer.escala')}
-          <input className="input" value={scaleMiles} onChange={(e) => setScaleMiles(e.target.value)} />
-          <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => void saveScale()}>
+          <Input value={scaleMiles} onChange={(e) => setScaleMiles(e.target.value)} />
+          <Button type="button" disabled={busy} onClick={() => void saveScale()}>
             {tc('buttons.save')}
-          </button>
+          </Button>
         </label>
       </div>
       {error && (
@@ -696,6 +706,23 @@ export function RouteDigitizerView({ mapUrl, locais, onClose, onCampaignChanged 
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={pendingDelete != null}
+        title={
+          pendingDelete?.kind === 'segment'
+            ? t('digitizer.confirmRemoverSegmento')
+            : t('digitizer.confirmRemoverNo')
+        }
+        danger
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          const pending = pendingDelete
+          setPendingDelete(null)
+          if (!pending) return
+          if (pending.kind === 'waypoint') void removeWaypoint(pending.id)
+          else void removeSegment(pending.id)
+        }}
+      />
     </div>
   )
 }

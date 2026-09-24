@@ -1,6 +1,7 @@
 import type { MutableRefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Local, RouteSegment, Waypoint } from '../../types'
+import { Button, Input, Select } from '../ui'
 
 interface DigitizerListPanelProps {
   query: string
@@ -57,8 +58,7 @@ export function DigitizerListPanel({
 
   return (
     <aside className={className ?? 'digitizer-list'}>
-      <input
-        className="input digitizer-list__search"
+      <Input className="digitizer-list__search"
         type="search"
         placeholder={t('digitizer.searchPlaceholder')}
         value={query}
@@ -95,8 +95,7 @@ export function DigitizerListPanel({
                     {w.nome || `#${w.id}`}
                     {linked ? ` → ${linked.nome}` : ''}
                   </button>
-                  <select
-                    className="input"
+                  <Select
                     aria-label={t('digitizer.localDoNo', { nome: w.nome || w.id })}
                     disabled={busy}
                     value={w.local_id ?? ''}
@@ -111,14 +110,13 @@ export function DigitizerListPanel({
                         {l.nome}
                       </option>
                     ))}
-                  </select>
-                  <button
+                  </Select>
+                  <Button variant="ghost"
                     type="button"
-                    className="btn btn-ghost"
                     onClick={() => onRemoveWaypoint(w.id)}
                   >
                     {t('digitizer.apagar')}
-                  </button>
+                  </Button>
                 </li>
               )
             })}
@@ -157,9 +155,9 @@ export function DigitizerListPanel({
                   >
                     {segmentIdentity(s)}
                   </button>
-                  <button type="button" className="btn btn-ghost" onClick={() => onRemoveSegment(s.id)}>
+                  <Button variant="ghost" type="button" onClick={() => onRemoveSegment(s.id)}>
                     {t('digitizer.apagar')}
-                  </button>
+                  </Button>
                 </li>
               )
             })}

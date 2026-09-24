@@ -25,6 +25,7 @@ class Local(SQLModel, table=True):
         max_length=7,
         description="Cor do pin no mapa (#RRGGBB)",
     )
+    visivel_para_todos: bool = Field(default=True)
 
     arco: Optional["Arco"] = Relationship(back_populates="locais")
     npcs: list["NPC"] = Relationship(back_populates="locais", link_model=LocalNPCLink)

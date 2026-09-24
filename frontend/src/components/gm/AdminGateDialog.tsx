@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button, Dialog, Input } from '../ui'
 
 interface AdminGateDialogProps {
   error: boolean
@@ -17,39 +18,33 @@ export function AdminGateDialog({ error, onSubmit, onCancel }: AdminGateDialogPr
   }
 
   return (
-    <div className="dialog-backdrop" style={{ zIndex: 100 }}>
-      <form className="dialog" onSubmit={handleSubmit} role="dialog" aria-labelledby="gm-gate-title">
-        <div className="dialog-title" id="gm-gate-title">
-          {t('gate.title')}
+    <Dialog open onClose={onCancel} title={t('gate.title')}>
+      <form onSubmit={handleSubmit}>
+        <div className="ui-dialog__body">{t('gate.body')}</div>
+        <div className="field">
+          <label htmlFor="gm-password">{t('form.senha')}</label>
+          <Input
+            id="gm-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t('form.senha')}
+            autoFocus
+            autoComplete="current-password"
+          />
         </div>
-        <div className="dialog__body">
-          <div className="dialog-body">{t('gate.body')}</div>
-          <div className="field">
-            <label htmlFor="gm-password">{t('form.senha')}</label>
-            <input
-              id="gm-password"
-              className="input"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t('form.senha')}
-              autoFocus
-              autoComplete="current-password"
-            />
-          </div>
-          {error && (
-            <div style={{ fontSize: 12, color: 'var(--color-accent-300)' }}>{t('gate.wrongPassword')}</div>
-          )}
-        </div>
-        <div className="dialog-actions">
-          <button type="button" className="btn btn-secondary" onClick={onCancel}>
+        {error && (
+          <div style={{ fontSize: 12, color: 'var(--color-accent-300)' }}>{t('gate.wrongPassword')}</div>
+        )}
+        <div className="ui-dialog__actions">
+          <Button type="button" onClick={onCancel}>
             {t('buttons.cancel')}
-          </button>
-          <button type="submit" className="btn btn-primary">
+          </Button>
+          <Button variant="primary" type="submit">
             {t('buttons.enter')}
-          </button>
+          </Button>
         </div>
       </form>
-    </div>
+    </Dialog>
   )
 }

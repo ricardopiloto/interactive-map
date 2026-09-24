@@ -26,7 +26,9 @@
     "saidas": "Saídas (para onde o grupo foi)",
     "cadastreLocais": "Cadastre outros locais para definir saídas.",
     "posicao": "Posição",
-    "reposicionar": "Reposicionar no mapa"
+    "reposicionar": "Reposicionar no mapa",
+    "visivelParaTodos": "Visível para todos",
+    "ocultoAosJogadores": "Oculto aos jogadores"
   },
   "npc": {
     "newBtn": "+ Novo NPC",
@@ -36,12 +38,22 @@
     "detalhes": "Detalhes",
     "confirmDelete": "Excluir este NPC?"
   },
+  "local": {
+    "newBtn": "+ Novo local",
+    "confirmDelete": "Excluir este local?",
+    "ocultoAria": "Local oculto aos jogadores"
+  },
   "arco": {
+    "manage": "Gerenciar arcos",
     "newBtn": "+ Novo arco",
     "new": "Novo arco",
     "edit": "Editar arco",
     "arcoGroup": "Arco",
-    "confirmDelete": "Excluir este arco?"
+    "confirmDelete": "Excluir este arco?",
+    "deleteKeepsLocals": "Os locais serão mantidos no mapa, mas ficarão sem arco.",
+    "visivelParaTodos": "Visível para todos",
+    "ocultoAosJogadores": "Oculto aos jogadores",
+    "ocultoAria": "Arco oculto aos jogadores"
   },
   "digitizer": {
     "title": "Rede de rotas",

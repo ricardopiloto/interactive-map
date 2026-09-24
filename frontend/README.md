@@ -1,6 +1,6 @@
 # Codex — Frontend
 
-React + Vite + TypeScript + design system Nocturne + i18n (`react-i18next`).  
+React + Vite + TypeScript + tokens RFC (UX-1) + i18n (`react-i18next`).  
 Versão do pacote: ver `package.json` (alinhada ao [CHANGELOG](../CHANGELOG.md)).
 
 ## Desenvolvimento
@@ -10,7 +10,8 @@ npm install
 npm run dev
 ```
 
-http://localhost:5173 — proxy `/api` e `/uploads` → backend `:8000`.
+http://localhost:5173 — proxy `/api` e `/uploads` → backend `:8000`.  
+Tema: `data-theme` dark/light segue `prefers-color-scheme` (live). Em dev: `/__styleguide` (preview scoped).
 
 ## Scripts
 
@@ -20,6 +21,8 @@ http://localhost:5173 — proxy `/api` e `/uploads` → backend `:8000`.
 | `npm run build` | Build de produção |
 | `npm run preview` | Preview do build |
 | `npm run lint` | Oxlint |
+| `npm run lint:tokens` | Gate: sem `#hex` de UI fora de `tokens.css` (excepto cor de pino) |
+| `npm run test:contrast` | Gate: contraste AA/3:1 nos dois temas |
 
 ## Rotas
 

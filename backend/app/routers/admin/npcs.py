@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/npcs", response_model=list[NPCRead])
 def list_npcs_admin(session: Session = Depends(get_session)) -> list[NPCRead]:
     npcs = list(session.exec(select(NPC).order_by(NPC.nome)).all())
-    return [_to_read(n) for n in npcs]
+    return [_to_read(n, for_player=False) for n in npcs]
 
 
 @router.post("/npcs", response_model=NPCRead, status_code=status.HTTP_201_CREATED)
@@ -29,7 +29,7 @@ def create_npc(
     session.add(npc)
     session.commit()
     session.refresh(npc)
-    return _to_read(npc)
+    return _to_read(npc, for_player=False)
 
 
 @router.put("/npcs/{npc_id}", response_model=NPCRead)
@@ -50,7 +50,7 @@ def update_npc(
     session.add(npc)
     session.commit()
     session.refresh(npc)
-    return _to_read(npc)
+    return _to_read(npc, for_player=False)
 
 
 @router.delete("/npcs/{npc_id}", status_code=status.HTTP_204_NO_CONTENT)

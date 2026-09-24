@@ -1,4 +1,5 @@
 import type { ModuleWidgetProps } from '../registry'
+import { Input } from '../../components/ui'
 
 export function FadigaWidget({ value, onChange }: ModuleWidgetProps) {
   const raw = value.fadiga
@@ -7,9 +8,8 @@ export function FadigaWidget({ value, onChange }: ModuleWidgetProps) {
   return (
     <div className="field">
       <label htmlFor="personagem-fadiga">Fadiga</label>
-      <input
+      <Input
         id="personagem-fadiga"
-        className="input"
         type="number"
         min={0}
         max={6}

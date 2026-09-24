@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import './LanguageSelector.css'
+import { Button } from '../ui'
 
 const LOCALES = [
   { code: 'pt-BR' as const, sigla: 'PT', nameKey: 'language.pt' as const },
@@ -101,10 +102,9 @@ export function LanguageSelector() {
 
   return (
     <div className="language-selector" ref={rootRef}>
-      <button
+      <Button variant="ghost" className="language-selector__trigger"
         ref={triggerRef}
         type="button"
-        className="btn btn-ghost language-selector__trigger"
         aria-label={t('language.aria')}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -116,7 +116,7 @@ export function LanguageSelector() {
         <span className="language-selector__chevron" aria-hidden="true">
           ▾
         </span>
-      </button>
+      </Button>
       {open && (
         <ul
           id={listId}

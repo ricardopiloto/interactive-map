@@ -1,4 +1,5 @@
 import { api } from './client'
+import { campaignAdminPrefix } from './campaignSlug'
 import type {
   Arco,
   GrupoFormato,
@@ -13,6 +14,8 @@ import type {
   Vinculo,
   VinculoTipo,
   Waypoint,
+  Sessao,
+  SessaoPayload,
 } from '../types'
 
 export interface LocalPayload {
@@ -27,6 +30,7 @@ export interface LocalPayload {
   saida_ids?: number[]
   cor_pin: string
   waypoint_id?: number | null
+  visivel_para_todos?: boolean
 }
 
 export interface NPCPayload {
@@ -71,6 +75,7 @@ export interface ArcoPayload {
   titulo: string
   resumo?: string
   ordem?: number
+  visivel_para_todos?: boolean
 }
 
 export interface WaypointPayload {
@@ -89,60 +94,71 @@ export interface RouteSegmentPayload {
 }
 
 export const adminApi = {
-  session: () => api.adminGet<{ user: string }>('/api/admin/session'),
+  session: () => api.adminGet<{ user: string }>(campaignAdminPrefix() + '/session'),
 
-  createLocal: (body: LocalPayload) => api.adminPost<Local>('/api/admin/locais', body),
+  createLocal: (body: LocalPayload) => api.adminPost<Local>(campaignAdminPrefix() + '/locais', body),
   updateLocal: (id: number, body: Partial<LocalPayload>) =>
-    api.adminPut<Local>(`/api/admin/locais/${id}`, body),
-  deleteLocal: (id: number) => api.adminDelete(`/api/admin/locais/${id}`),
+    api.adminPut<Local>(`${campaignAdminPrefix()}/locais/${id}`, body),
+  deleteLocal: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/locais/${id}`),
 
-  createNpc: (body: NPCPayload) => api.adminPost<NPC>('/api/admin/npcs', body),
+  createNpc: (body: NPCPayload) => api.adminPost<NPC>(campaignAdminPrefix() + '/npcs', body),
   updateNpc: (id: number, body: Partial<NPCPayload>) =>
-    api.adminPut<NPC>(`/api/admin/npcs/${id}`, body),
-  deleteNpc: (id: number) => api.adminDelete(`/api/admin/npcs/${id}`),
+    api.adminPut<NPC>(`${campaignAdminPrefix()}/npcs/${id}`, body),
+  deleteNpc: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/npcs/${id}`),
 
   createPersonagem: (body: PersonagemPayload) =>
-    api.adminPost<Personagem>('/api/admin/personagens', body),
+    api.adminPost<Personagem>(campaignAdminPrefix() + '/personagens', body),
   updatePersonagem: (id: number, body: Partial<PersonagemPayload>) =>
-    api.adminPut<Personagem>(`/api/admin/personagens/${id}`, body),
-  deletePersonagem: (id: number) => api.adminDelete(`/api/admin/personagens/${id}`),
-  listPersonagensAdmin: () => api.adminGet<Personagem[]>('/api/admin/personagens'),
-  listNpcsAdmin: () => api.adminGet<NPC[]>('/api/admin/npcs'),
-  listLocaisAdmin: () => api.adminGet<Local[]>('/api/admin/locais'),
+    api.adminPut<Personagem>(`${campaignAdminPrefix()}/personagens/${id}`, body),
+  deletePersonagem: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/personagens/${id}`),
+  listPersonagensAdmin: () => api.adminGet<Personagem[]>(campaignAdminPrefix() + '/personagens'),
+  listNpcsAdmin: () => api.adminGet<NPC[]>(campaignAdminPrefix() + '/npcs'),
+  listLocaisAdmin: () => api.adminGet<Local[]>(campaignAdminPrefix() + '/locais'),
 
-  listVinculosAdmin: () => api.adminGet<Vinculo[]>('/api/admin/vinculos'),
+  listVinculosAdmin: () => api.adminGet<Vinculo[]>(campaignAdminPrefix() + '/vinculos'),
   createVinculo: (body: VinculoPayload) =>
-    api.adminPost<Vinculo>('/api/admin/vinculos', body),
+    api.adminPost<Vinculo>(campaignAdminPrefix() + '/vinculos', body),
   updateVinculo: (id: number, body: Partial<VinculoPayload>) =>
-    api.adminPut<Vinculo>(`/api/admin/vinculos/${id}`, body),
-  deleteVinculo: (id: number) => api.adminDelete(`/api/admin/vinculos/${id}`),
+    api.adminPut<Vinculo>(`${campaignAdminPrefix()}/vinculos/${id}`, body),
+  deleteVinculo: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/vinculos/${id}`),
 
-  createArco: (body: ArcoPayload) => api.adminPost<Arco>('/api/admin/arcos', body),
+  createArco: (body: ArcoPayload) => api.adminPost<Arco>(campaignAdminPrefix() + '/arcos', body),
   updateArco: (id: number, body: Partial<ArcoPayload>) =>
-    api.adminPut<Arco>(`/api/admin/arcos/${id}`, body),
-  deleteArco: (id: number) => api.adminDelete(`/api/admin/arcos/${id}`),
+    api.adminPut<Arco>(`${campaignAdminPrefix()}/arcos/${id}`, body),
+  deleteArco: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/arcos/${id}`),
+  listArcosAdmin: () => api.adminGet<Arco[]>(campaignAdminPrefix() + '/arcos'),
 
   updateGrupo: (body: { x: number; y: number; formato?: GrupoFormato }) =>
-    api.adminPut<GrupoPosicao>('/api/admin/grupo', body),
+    api.adminPut<GrupoPosicao>(campaignAdminPrefix() + '/grupo', body),
 
-  upload: (category: 'map' | 'portraits' | 'locals', file: File) =>
+  upload: (category: 'map' | 'portraits' | 'locals' | 'covers', file: File) =>
     api.adminUpload(category, file),
 
-  listWaypoints: () => api.adminGet<Waypoint[]>('/api/admin/waypoints'),
+  listWaypoints: () => api.adminGet<Waypoint[]>(campaignAdminPrefix() + '/waypoints'),
   createWaypoint: (body: WaypointPayload) =>
-    api.adminPost<Waypoint>('/api/admin/waypoints', body),
+    api.adminPost<Waypoint>(campaignAdminPrefix() + '/waypoints', body),
   updateWaypoint: (id: number, body: Partial<WaypointPayload>) =>
-    api.adminPut<Waypoint>(`/api/admin/waypoints/${id}`, body),
-  deleteWaypoint: (id: number) => api.adminDelete(`/api/admin/waypoints/${id}`),
+    api.adminPut<Waypoint>(`${campaignAdminPrefix()}/waypoints/${id}`, body),
+  deleteWaypoint: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/waypoints/${id}`),
 
-  listRouteSegments: () => api.adminGet<RouteSegment[]>('/api/admin/route-segments'),
+  listRouteSegments: () => api.adminGet<RouteSegment[]>(campaignAdminPrefix() + '/route-segments'),
   createRouteSegment: (body: RouteSegmentPayload) =>
-    api.adminPost<RouteSegment>('/api/admin/route-segments', body),
+    api.adminPost<RouteSegment>(campaignAdminPrefix() + '/route-segments', body),
   updateRouteSegment: (id: number, body: Partial<RouteSegmentPayload>) =>
-    api.adminPut<RouteSegment>(`/api/admin/route-segments/${id}`, body),
-  deleteRouteSegment: (id: number) => api.adminDelete(`/api/admin/route-segments/${id}`),
+    api.adminPut<RouteSegment>(`${campaignAdminPrefix()}/route-segments/${id}`, body),
+  deleteRouteSegment: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/route-segments/${id}`),
 
-  getMapScale: () => api.adminGet<MapScale>('/api/admin/map-scale'),
+  getMapScale: () => api.adminGet<MapScale>(campaignAdminPrefix() + '/map-scale'),
   updateMapScale: (body: { miles_per_map_unit: number; notas?: string | null }) =>
-    api.adminPut<MapScale>('/api/admin/map-scale', body),
+    api.adminPut<MapScale>(campaignAdminPrefix() + '/map-scale', body),
+
+  listSessoesAdmin: () =>
+    api.adminGet<{ sessoes: Sessao[] }>(campaignAdminPrefix() + '/sessoes'),
+  proximoNumeroSessao: () =>
+    api.adminGet<{ numero: number }>(campaignAdminPrefix() + '/sessoes/proximo-numero'),
+  createSessao: (body: SessaoPayload) =>
+    api.adminPost<Sessao>(campaignAdminPrefix() + '/sessoes', body),
+  updateSessao: (id: number, body: Partial<SessaoPayload>) =>
+    api.adminPatch<Sessao>(`${campaignAdminPrefix()}/sessoes/${id}`, body),
+  deleteSessao: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/sessoes/${id}`),
 }

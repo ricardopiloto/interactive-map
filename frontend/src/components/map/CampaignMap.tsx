@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch'
+import { useTranslation } from 'react-i18next'
+import {
+  IconFocus2,
+  IconZoomIn,
+  IconZoomOut,
+  IconZoomReset,
+  IconChevronUp,
+  IconChevronDown,
+} from '@tabler/icons-react'
+import { toast, IconButton, Button} from '../ui'
 import { adminApi } from '../../api/admin'
 import type { GrupoPosicao, Local, RoutePlanItem } from '../../types'
 import { ImageSlot } from '../media/ImageSlot'
@@ -9,6 +19,8 @@ import './CampaignMap.css'
 /** Fixed moderate zoom when focusing a pin from the side menu. */
 export const FOCUS_SCALE = 2
 export const FOCUS_ANIM_MS = 400
+/** Labels visible in mass at/above this transform scale (UX-4). */
+export const NAME_ZOOM_THRESHOLD = 1.35
 
 export type PinFocusRequest =
   | { target: 'local'; localId: number; nonce: number }
@@ -27,6 +39,8 @@ interface CampaignMapProps {
   onClearSelection?: () => void
   /** Banner Cancel during reposition — exit placement without changing draft coords. */
   onCancelPlacement?: () => void
+  placementSaving?: boolean
+  onRetryPlacement?: () => void
   /** Menu-driven focus: animate pan+zoom to pin (nonce re-triggers same id). */
   focusRequest?: PinFocusRequest | null
   /** Clear focusRequest after zoom so hover re-renders cannot re-fire (016). */
@@ -42,6 +56,10 @@ interface CampaignMapProps {
   hideLorePins?: boolean
 }
 
+function isVisited(local: Local): boolean {
+  return Boolean(local.data_sessao?.trim())
+}
+
 function MapControls({
   onReplaceMap,
   showFocusGroup,
@@ -51,48 +69,42 @@ function MapControls({
   showFocusGroup?: boolean
   onFocusGroup?: () => void
 }) {
+  const { t } = useTranslation('mapa')
   const { zoomIn, zoomOut, resetTransform } = useControls()
   return (
-    <div className="campaign-map__controls">
-      <button type="button" className="btn btn-secondary btn-icon" onClick={() => zoomIn()} aria-label="Aproximar">
-        +
-      </button>
-      <button type="button" className="btn btn-secondary btn-icon" onClick={() => zoomOut()} aria-label="Afastar">
-        −
-      </button>
-      <button
-        type="button"
-        className="btn btn-secondary btn-icon"
-        onClick={() => resetTransform()}
-        aria-label="Resetar zoom"
-      >
-        1:1
-      </button>
-      {showFocusGroup && onFocusGroup && (
-        <button
-          type="button"
-          className="btn btn-secondary btn-icon campaign-map__focus-group"
+    <div className="campaign-map__controls" role="toolbar" aria-label={t('controls.aria')}>
+      <IconButton label={t('controls.zoomIn')} onClick={() => zoomIn()}>
+        <IconZoomIn size={20} aria-hidden />
+      </IconButton>
+      <IconButton label={t('controls.zoomOut')} onClick={() => zoomOut()}>
+        <IconZoomOut size={20} aria-hidden />
+      </IconButton>
+      <IconButton label={t('controls.reset')} onClick={() => resetTransform()}>
+        <IconZoomReset size={20} aria-hidden />
+      </IconButton>
+      {showFocusGroup ? (
+        <IconButton
+          label={t('controls.focusGroup')}
           onClick={onFocusGroup}
-          aria-label="Ir ao grupo"
-          title="Ir ao grupo"
+          disabled={!onFocusGroup}
         >
-          ⚑
-        </button>
-      )}
-      {onReplaceMap && (
-        <button
+          <IconFocus2 size={20} aria-hidden />
+        </IconButton>
+      ) : null}
+      {onReplaceMap ? (
+        <Button className="campaign-map__replace"
           type="button"
-          className="btn btn-secondary campaign-map__replace"
           onClick={onReplaceMap}
-          aria-label="Substituir mapa"
-          title="Substituir mapa"
+          aria-label={t('controls.replaceMap')}
+          title={t('controls.replaceMap')}
         >
-          Mapa
-        </button>
-      )}
+          {t('controls.replaceMapShort')}
+        </Button>
+      ) : null}
     </div>
   )
 }
+
 
 function PinFocusController({
   focusRequest,
@@ -140,6 +152,8 @@ export function CampaignMap({
   onMapClickRelative,
   onClearSelection,
   onCancelPlacement,
+  placementSaving = false,
+  onRetryPlacement,
   focusRequest = null,
   onFocusApplied,
   interactivePins = true,
@@ -151,12 +165,16 @@ export function CampaignMap({
   hideLorePins = false,
 }: CampaignMapProps) {
   const placing = placementMode !== 'none'
+  const { t } = useTranslation('mapa')
   const [mapFailed, setMapFailed] = useState(false)
   const [internalFocus, setInternalFocus] = useState<PinFocusRequest | null>(null)
+  const [mapScale, setMapScale] = useState(1)
+  const [legendOpen, setLegendOpen] = useState(false)
   const replaceInputRef = useRef<HTMLInputElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const formato = grupo?.formato === 'brasao' ? 'brasao' : 'bandeira'
   const partyVisible = Boolean(grupo) && !hideLorePins
+  const labelsAtZoom = mapScale >= NAME_ZOOM_THRESHOLD
   const selectedPernoites = travelPlan[travelSelectedIndex]?.pernoites ?? []
   const overnightLocalIds = new Set(
     selectedPernoites
@@ -167,6 +185,7 @@ export function CampaignMap({
   const effectiveFocus = focusRequest ?? internalFocus
 
   const setMapZoomCss = useCallback((scale: number) => {
+    setMapScale(scale)
     stageRef.current?.style.setProperty('--map-zoom', String(scale))
   }, [])
 
@@ -206,7 +225,7 @@ export function CampaignMap({
       setMapFailed(false)
       onMapUploaded(url)
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : 'Falha no upload')
+      toast.error(e instanceof Error ? e.message : 'Falha no upload')
     }
   }
 
@@ -215,26 +234,39 @@ export function CampaignMap({
   return (
     <div className={`campaign-map${placing ? ' campaign-map--placing' : ''}`}>
       {placing && (
-        <div className="tag tag-accent campaign-map__banner" role="status">
-          {placementMode === 'add-pin' && 'Clique no mapa para posicionar o novo local'}
+        <div className="ui-chip ui-chip--accent campaign-map__banner" role="status">
+          {placementMode === 'add-pin' && t('list.placeOnMap')}
           {placementMode === 'reposition' && (
             <>
-              <span>Clique no mapa para reposicionar o local</span>
+              <span>{t('mapPage.repositionLocalHint')}</span>
               {onCancelPlacement && (
-                <button
+                <Button variant="ghost" className="campaign-map__banner-cancel"
                   type="button"
-                  className="btn btn-ghost campaign-map__banner-cancel"
                   onClick={(e) => {
                     e.stopPropagation()
                     onCancelPlacement()
                   }}
                 >
-                  Cancelar
-                </button>
+                  {t('mapPage.cancelPlacement')}
+                </Button>
               )}
             </>
           )}
-          {placementMode === 'move-group' && 'Clique no mapa para reposicionar o grupo'}
+          {placementMode === 'move-group' && (
+            <>
+              <span>{placementSaving ? t('mapPage.savingGroup') : t('mapPage.moveGroupHint')}</span>
+              {onRetryPlacement && !placementSaving ? (
+                <Button variant="ghost" className="campaign-map__banner-cancel" type="button" onClick={onRetryPlacement}>
+                  {t('mapPage.retryGroupSave')}
+                </Button>
+              ) : null}
+              {onCancelPlacement && !placementSaving ? (
+                <Button variant="ghost" className="campaign-map__banner-cancel" type="button" onClick={onCancelPlacement}>
+                  {t('mapPage.cancelPlacement')}
+                </Button>
+              ) : null}
+            </>
+          )}
         </div>
       )}
       <TransformWrapper
@@ -341,9 +373,12 @@ export function CampaignMap({
               const selected = selectedLocalId === local.id
               const hovered = hoveredLocalId === local.id
               const overnight = overnightLocalIds.has(local.id)
-              const pinColor = local.cor_pin || '#c4b5fd'
+              const visited = isVisited(local)
+              const pinColor = local.cor_pin || 'var(--color-accent)'
+              const showLabel = labelsAtZoom || hovered || selected
               const pinClass = [
                 'campaign-map__pin',
+                visited ? 'campaign-map__pin--visited' : 'campaign-map__pin--known',
                 selected ? 'campaign-map__pin--selected' : '',
                 hovered ? 'campaign-map__pin--hovered' : '',
                 overnight ? 'campaign-map__pin--pernoite' : '',
@@ -356,11 +391,11 @@ export function CampaignMap({
                   key={local.id}
                   id={`map-pin-${local.id}`}
                   type="button"
+                  tabIndex={-1}
                   className={pinClass}
                   style={{
                     left: `${local.x * 100}%`,
                     top: `${local.y * 100}%`,
-                    background: pinColor,
                     ['--pin-color' as string]: pinColor,
                   }}
                   title={pinTitle}
@@ -371,6 +406,11 @@ export function CampaignMap({
                   }}
                 >
                   <span className="visually-hidden">{pinTitle}</span>
+                  {showLabel ? (
+                    <span className="campaign-map__pin-label" aria-hidden>
+                      {local.nome}
+                    </span>
+                  ) : null}
                 </button>
               )
             })}
@@ -409,17 +449,37 @@ export function CampaignMap({
         />
       )}
       {!hideLorePins && (
-        <div className="campaign-map__legend">
-          <span>
-            <i className="campaign-map__legend-pin campaign-map__legend-pin--visited" /> Visitado
-          </span>
-          <span>
-            <i className="campaign-map__legend-pin campaign-map__legend-pin--known" /> Conhecido
-          </span>
-          <span>
-            <i className={`campaign-map__legend-party campaign-map__legend-party--${formato}`} /> Grupo
-          </span>
-          <span className="campaign-map__legend-note text-muted">GM pode usar outras cores</span>
+        <div className={`campaign-map__legend${legendOpen ? ' campaign-map__legend--open' : ''}`}>
+          <button
+            type="button"
+            className="campaign-map__legend-toggle"
+            aria-expanded={legendOpen}
+            onClick={() => setLegendOpen((v) => !v)}
+          >
+            <span>{t('legend.title')}</span>
+            {legendOpen ? (
+              <IconChevronDown size={16} aria-hidden />
+            ) : (
+              <IconChevronUp size={16} aria-hidden />
+            )}
+          </button>
+          {legendOpen ? (
+            <div className="campaign-map__legend-body">
+              <span>
+                <i className="campaign-map__legend-pin campaign-map__legend-pin--visited" />{' '}
+                {t('legend.visited')}
+              </span>
+              <span>
+                <i className="campaign-map__legend-pin campaign-map__legend-pin--known" />{' '}
+                {t('legend.known')}
+              </span>
+              <span>
+                <i className={`campaign-map__legend-party campaign-map__legend-party--${formato}`} />{' '}
+                {t('legend.group')}
+              </span>
+              <span className="campaign-map__legend-note text-muted">{t('legend.note')}</span>
+            </div>
+          ) : null}
         </div>
       )}
       {overlay}

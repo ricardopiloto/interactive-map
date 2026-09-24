@@ -5,6 +5,7 @@ from app.database import get_session
 from app.errors import raise_api_error
 from app.models.links import LocalConexaoLink
 from app.models.local import Local
+from app.models.arco import Arco
 from app.models.npc import NPC
 from app.routers.public.locais import _to_read
 from app.schemas.local import LocalCreate, LocalRead, LocalUpdate
@@ -12,6 +13,11 @@ from app.services.rate_limit import limiter
 from app.services.waypoint_local_link import set_local_waypoint_id
 
 router = APIRouter()
+
+
+def _validate_arco_id(session: Session, arco_id: int | None) -> None:
+    if arco_id is not None and session.get(Arco, arco_id) is None:
+        raise_api_error("ARCO_NAO_ENCONTRADO", status_code=status.HTTP_400_BAD_REQUEST)
 
 
 def _admin_to_read(session: Session, local: Local) -> LocalRead:
@@ -102,6 +108,7 @@ def create_local(
     payload: LocalCreate,
     session: Session = Depends(get_session),
 ) -> LocalRead:
+    _validate_arco_id(session, payload.arco_id)
     local = Local(
         nome=payload.nome,
         descricao=payload.descricao,
@@ -111,6 +118,7 @@ def create_local(
         data_sessao=payload.data_sessao,
         arco_id=payload.arco_id,
         cor_pin=payload.cor_pin,
+        visivel_para_todos=payload.visivel_para_todos,
     )
     session.add(local)
     session.flush()
@@ -142,6 +150,8 @@ def update_local(
     saida_ids = data.pop("saida_ids", None)
     waypoint_id_provided = "waypoint_id" in data
     waypoint_id_val = data.pop("waypoint_id", None) if waypoint_id_provided else None
+    if "arco_id" in data:
+        _validate_arco_id(session, data["arco_id"])
     for key, value in data.items():
         setattr(local, key, value)
     if npc_ids is not None:

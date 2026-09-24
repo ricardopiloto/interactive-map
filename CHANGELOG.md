@@ -5,6 +5,62 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Unreleased]
+
+## [0.20.0] — 2026-09-23
+
+### Added
+
+- Home marketing em `/`, catálogo público em `/explorar`, e `CampaignCard` partilhado no Painel (`/painel`) — mesmos cartões em Landing featured, Explorar e gestão GM; criar/importar preservados via `#criar` (spec 119)
+
+### Changed
+
+- Rede de rotas: entrada GM na página Rota (botão topo); removida do menu de ferramentas do Mapa; casca do digitalizador alinhada aos tokens pós-115 (zoom pílula/círculo, chips de modo, lista/escala) — comportamento de digitalização inalterado (spec 118)
+
+### Removed
+
+- `frontend/src/styles/nocturne.css` — controlos migrados para o kit `components/ui` (Button/Chip/SegmentedControl/Dialog/Field); tipografia/foco/`text-muted` e chrome de formulário absorvidos em `global.css` / `ImageSlot.css` (spec 117)
+
+### Added
+
+- Relações e Rota no painel flutuante partilhado (MapSidePanel 115): lista↔detalhe e planejador com cartões; destaque da rota com acento da campanha; FAB de edição em Relações; `/rota` canónico (spec 116)
+- Mapa reconstruído: painel flutuante (busca pílula + chips Tudo/Locais/Personagens + lista ↔ detalhe), sem coluna SideMenu nem PinModal; zoom em botões circulares; FAB + em Modo edição; ferramentas GM (rede de rotas, NPC/arco, mover grupo) em menu compacto (spec 115)
+- Cabeçalho da mesa reconstruído (paridade com protótipo): marca + seletor de campanha à esquerda, abas Mapa/Relações/Rota/Sessões centradas, Modo edição em pílula, tema Auto/Claro/Escuro, barra inferior com 4 abas; contentor mínimo `/c/:slug/rota` (spec 114)
+- Revelação progressiva de Local e Arco: `visivel_para_todos` (default true); filtros públicos (mapa/lista/saídas/`arco_id`/`local_ids`/chips de sessão/media `locals/`/waypoints); Modo edição com toggle e badge oculto; sem ACL por jogador nem cascade ao ocultar arco (spec 113)
+- Crônica de sessões: entidade `Sessao` em `campanha.db` (número único, título, rótulo de data, resumo Markdown, N:N locais/personagens, `visivel_para_todos`); API pública/admin; página `/c/:slug/sessoes` com chips deep-link; nav Sessões no chrome; export/import (spec 112)
+
+### Changed
+
+- Identidade da campanha: **género** (`fantasia|gotico|scifi|urbano`) obrigatório e imutável na criação substitui o acento solto (108); migração com backfill WFRP→fantasia / WoD→gótico; mesa via `data-genre`; Painel com 4 cards + pré-visualização ao vivo; capa via `PATCH …/capa`; export/import preserva `genero` (pacotes antigos com `acento_id` mapeados) (spec 111)
+- Paridade visual com protótipo fantasia (`frontend-next`): paleta base claro/escuro, `--radius-full` + pílula em botões/chips/tags/busca, sombras suaves, `--space-7` 48px, Cormorant Garamond local em títulos display; contraste sem regressão vs baseline pré-110; baselines Playwright reaprovadas (spec 110)
+
+### Added
+
+- Qualidade UX-10: teclado mapa/grafo via lista+controlos, Tab-trap no Drawer, aria-live no planejador, alvos ≥44px em móvel, reduced-motion; Playwright + axe (só `critical` falha) + capturas (desktop claro/escuro + mobile claro, pt-BR+en); CI `frontend-quality.yml` (spec 109)
+- Identidade UX-9: paleta de 5 acentos AA, capa (`covers`), configuração no painel, token na mesa, cartões na home; export/import (spec 108)
+- Formulários UX-8: Drawer (direita / bottom mobile) para local, NPC, arco, personagem e vínculo; validação inline; ConfirmDialog se sujo; Markdown com separadores Escrever/Pré-visualizar (spec 107)
+- Planejador UX-7: chips de opções (todos os grupos), tempo dias+h, distância mi/km por campanha, meta Via/Fora da via + bp, timeline de pernoites na rota seleccionada; digitalizador com tokens (spec 106)
+- Rede de Relações UX-6: 4 famílias de cor + estilos de linha, chips com amostra na coluna, arestas curvas, rótulos só hover/selecção, nós Tab/Enter, detalhe sem placeholder/«Sem descrição.» (spec 105)
+- Listas UX-5: locais por arco (recolhíveis), linhas compactas, NPCs com avatar + status ponto/texto, EmptyState; listas admin Locais/NPCs/Arcos com hover+⋮ e ConfirmDialog (spec 104)
+- Mapa UX-4: controlos translúcidos (canto inferior direito), pinos por forma (visitado/conhecido via `data_sessao` + cor do mestre), nomes no limiar/hover, popover sem dimming nem «Sem descrição.», legenda recolhível (spec 103)
+- Chrome UX-3: barra de topo partilhada (marca «Campaign Codex» → `/`, tabs Mapa/Relações, nome da campanha, menu com tema Auto/Claro/Escuro em `localStorage`, «Modo edição» único), barra inferior móvel só Mapa/Relações; config pública inclui `slug`/`nome` (spec 102)
+- Componentes base UX-2: kit `frontend/src/components/ui` (Button, Dialog, Drawer, ConfirmDialog, Toast imperativo, etc.), `@tabler/icons-react` (~+4 kB gzip no bundle JS vs UX-1), substituição dos 10 `window.confirm`/`alert` (spec 101)
+- Fundações do sistema visual (UX-1): tokens RFC com `data-theme` dark/light (sync com `prefers-color-scheme`), Inter local, `/__styleguide` só em dev, gates `npm run lint:tokens` e `npm run test:contrast` (spec 100)
+- Import legado de instância (`mapa.db` + `uploads/`): CLI `campanha importar-legado`, relatório de verificação, snippets `scripts/imprimir-snippets-codex.sh`; `nova-campanha.sh` / `migrar-wfrp.sh` aposentados (spec 099)
+- Página inicial `/` (catálogo público `listada`) e painel `/painel` (minhas campanhas = dono): criar, visibilidade, cota, export/import UI; APIs `GET /api/campanhas/catalogo|minhas`, `POST /api/campanhas`, `PATCH …/visibilidade`; pós-login → `/painel` (spec 098)
+- Exportar/importar campanha: zip (`manifest.json` + `content.json` + imagens), `GET …/admin/export` (só dono), `POST /api/campanhas/import`, CLI `campanha exportar|importar`, `require_dono` (spec 097)
+- Mídia com ACL e cota: `GET /api/c/{slug}/media/…`, mapa versionado (`mapa_arquivo`), cota 10 GiB + `COTA_EXCEDIDA` / aviso 90%, CLI `campanha reconciliar-cota` (spec 096)
+- Contas de mestre: CLI `usuario criar|reset|desactivar`, `campanha atribuir-dono`, sessão cookie `codex_session`, `/api/auth/*`, lockout 5/15 min, FE `/login` `/convite/:token` `/reset/:token` (spec 095)
+- Roteamento por campanha: API `/api/c/{slug}/…`, frontend `/c/:slug` e `/c/:slug/relacoes`, config/cache por slug (spec 094)
+- Multi-campanha por ficheiro: `control.db` + `data/campanhas/<uuid>/{campanha.db,uploads/}`, Alembic dual, CLI `campanha criar|listar` (spec 093)
+- Suíte pytest do backend: caracterização 092 adaptada ao prefixo; isolamento HTTP A/B (spec 092–094)
+
+### Changed
+
+- Admin API: `require_membro` (cookie + membership) substitui HTTP Basic Auth; Caddy do repo sem `basicauth` GM (spec 095)
+- Leitura de imagens: `/uploads/c/…` → **404**; cliente e API usam `/api/c/…/media/…` (spec 096)
+- Deploy: uma instância Campaign Codex substitui `nova-campanha.sh` + hub 078 como procedimento corrente (spec 099)
+
 ## [0.19.1] — 2026-08-14
 
 ### Changed

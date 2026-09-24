@@ -26,7 +26,9 @@
     "saidas": "Exits (where the party went)",
     "cadastreLocais": "Add other locations to define exits.",
     "posicao": "Position",
-    "reposicionar": "Reposition on map"
+    "reposicionar": "Reposition on map",
+    "visivelParaTodos": "Visible to everyone",
+    "ocultoAosJogadores": "Hidden from players"
   },
   "npc": {
     "newBtn": "+ New NPC",
@@ -36,12 +38,22 @@
     "detalhes": "Details",
     "confirmDelete": "Delete this NPC?"
   },
+  "local": {
+    "newBtn": "+ New location",
+    "confirmDelete": "Delete this location?",
+    "ocultoAria": "Location hidden from players"
+  },
   "arco": {
+    "manage": "Manage arcs",
     "newBtn": "+ New arc",
     "new": "New arc",
     "edit": "Edit arc",
     "arcoGroup": "Arc",
-    "confirmDelete": "Delete this arc?"
+    "confirmDelete": "Delete this arc?",
+    "deleteKeepsLocals": "Locations will remain on the map, but will no longer belong to an arc.",
+    "visivelParaTodos": "Visible to everyone",
+    "ocultoAosJogadores": "Hidden from players",
+    "ocultoAria": "Arc hidden from players"
   },
   "digitizer": {
     "title": "Route network",

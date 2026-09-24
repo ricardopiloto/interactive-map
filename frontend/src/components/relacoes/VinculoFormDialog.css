@@ -11,3 +11,15 @@
   flex-wrap: wrap;
   gap: var(--space-4);
 }
+
+.vinculo-form__group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .vinculo-form__group-row {
+    grid-template-columns: 1fr;
+  }
+}

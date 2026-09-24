@@ -18,9 +18,16 @@ export type ModoTransporte = 'pago' | 'proprio'
 export type PreferenciaVia = 'nenhuma' | 'rio' | 'estrada'
 
 export interface InstanceConfig {
+  slug: string
+  nome: string
   sistema: string
   modulos_ativos: string[]
   has_map_image: boolean
+  mapa_arquivo?: string | null
+  map_url?: string | null
+  unidade_distancia?: 'mi' | 'km'
+  genero?: string
+  capa_url?: string | null
 }
 
 export type ExtensoesMecanica = Record<string, number | string | boolean>
@@ -38,6 +45,7 @@ export interface Local {
   saida_ids: number[]
   cor_pin: string
   waypoint_id?: number | null
+  visivel_para_todos?: boolean
 }
 
 export interface NPC {
@@ -78,6 +86,7 @@ export interface Arco {
   titulo: string
   resumo: string
   ordem: number
+  visivel_para_todos?: boolean
 }
 
 export interface GrupoPosicao {
@@ -155,4 +164,36 @@ export interface MapScale {
   id: number
   miles_per_map_unit: number
   notas: string | null
+}
+
+export interface SessaoRefLocal {
+  id: number
+  nome: string
+}
+
+export interface SessaoRefPersonagem {
+  id: number
+  nome: string
+  tipo: string
+}
+
+export interface Sessao {
+  id: number
+  numero: number
+  titulo: string
+  data_rotulo?: string | null
+  resumo: string
+  locais: SessaoRefLocal[]
+  personagens: SessaoRefPersonagem[]
+  visivel_para_todos?: boolean
+}
+
+export interface SessaoPayload {
+  numero: number
+  titulo: string
+  data_rotulo?: string | null
+  resumo?: string
+  visivel_para_todos?: boolean
+  local_ids?: number[]
+  personagem_ids?: number[]
 }

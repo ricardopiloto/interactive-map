@@ -1,22 +1,26 @@
 import type { TFunction } from 'i18next'
 import type { VinculoTipo } from '../../types'
 
+export type VinculoFamily = 'afinidade' | 'laco' | 'hostil' | 'neutro'
+export type VinculoPattern = 'solid' | 'dotted' | 'dashed' | 'double' | 'dashShort'
+
 export interface VinculoStyleDef {
+  family: VinculoFamily
   color: string
-  dashed: boolean
+  width: number
+  pattern: VinculoPattern
 }
 
-/** Visual language for each vínculo tipo — feeds the graph lines, filter
- *  chips, legend, and the dot next to each vínculo in the detail panel. */
+/** Visual language — 4 families + stroke styles (RFC UX-6 / spec 105). */
 export const VINCULO_STYLES: Record<VinculoTipo, VinculoStyleDef> = {
-  aliado: { color: 'var(--color-accent)', dashed: false },
-  vinculo_sangue: { color: '#791E2C', dashed: false },
-  amizade: { color: '#79c48f', dashed: false },
-  inimizade: { color: '#C73E3E', dashed: false },
-  adversario: { color: '#c86b3c', dashed: false },
-  romance: { color: '#e08fc0', dashed: false },
-  familia: { color: '#d9a35b', dashed: false },
-  conhecido: { color: '#9397ab', dashed: true },
+  aliado: { family: 'afinidade', color: 'var(--vinculo-afinidade)', width: 3, pattern: 'solid' },
+  amizade: { family: 'afinidade', color: 'var(--vinculo-afinidade)', width: 1.25, pattern: 'solid' },
+  romance: { family: 'laco', color: 'var(--vinculo-laco)', width: 2, pattern: 'solid' },
+  familia: { family: 'laco', color: 'var(--vinculo-laco)', width: 2, pattern: 'dotted' },
+  vinculo_sangue: { family: 'laco', color: 'var(--vinculo-laco)', width: 1.5, pattern: 'double' },
+  inimizade: { family: 'hostil', color: 'var(--vinculo-hostil)', width: 2, pattern: 'solid' },
+  adversario: { family: 'hostil', color: 'var(--vinculo-hostil)', width: 2, pattern: 'dashed' },
+  conhecido: { family: 'neutro', color: 'var(--vinculo-neutro)', width: 1.5, pattern: 'dashShort' },
 }
 
 export const VINCULO_TIPOS: VinculoTipo[] = [
@@ -36,4 +40,17 @@ export function getVinculoTipoLabel(t: TFunction, tipo: VinculoTipo): string {
 
 export function vinculoStyle(tipo: VinculoTipo): VinculoStyleDef {
   return VINCULO_STYLES[tipo]
+}
+
+export function strokeDasharray(pattern: VinculoPattern): string | undefined {
+  switch (pattern) {
+    case 'dotted':
+      return '1.5 3.5'
+    case 'dashed':
+      return '7 5'
+    case 'dashShort':
+      return '3 2.5'
+    default:
+      return undefined
+  }
 }

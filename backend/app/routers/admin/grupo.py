@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlmodel import Session
 
 from app.database import get_session
+from app.deps.auth import MembroContext, require_dono
 from app.models.grupo import GrupoPosicao
 from app.routers.public.grupo import _get_or_create
 from app.schemas.grupo import GrupoPosicaoRead, GrupoPosicaoUpdate
@@ -17,6 +18,7 @@ router = APIRouter()
 def update_grupo(
     request: Request,
     payload: GrupoPosicaoUpdate,
+    _dono: MembroContext = Depends(require_dono),
     session: Session = Depends(get_session),
 ) -> GrupoPosicao:
     grupo = _get_or_create(session)

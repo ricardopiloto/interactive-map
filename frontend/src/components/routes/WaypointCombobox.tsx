@@ -1,5 +1,6 @@
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { labelMatchesQuery } from '../../utils/textMatch'
+import { Input } from '../ui'
 
 export interface WaypointComboboxOption {
   id: number
@@ -79,9 +80,8 @@ export function WaypointCombobox({
     <div className="route-planner__field waypoint-combobox">
       <span id={`${listId}-label`}>{label}</span>
       <div className="waypoint-combobox__wrap">
-        <input
+        <Input
           ref={inputRef}
-          className="input"
           type="text"
           role="combobox"
           aria-labelledby={`${listId}-label`}

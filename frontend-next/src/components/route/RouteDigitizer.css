@@ -1,0 +1,26 @@
+.route-digitizer { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--color-bg); z-index: 30; }
+
+.route-digitizer__bar {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4); background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+}
+.route-digitizer__tools {
+  flex-shrink: 0; display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+  padding: var(--space-2) var(--space-4); background: var(--color-surface-2); border-bottom: 1px solid var(--color-border);
+}
+.route-digitizer__tools .input, .route-digitizer__tools .select { max-width: 240px; }
+
+.route-digitizer__body { position: relative; flex: 1; min-height: 0; }
+
+.route-digitizer__wp {
+  position: absolute; width: 14px; height: 14px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: var(--color-accent); border: 2px solid color-mix(in srgb, var(--color-bg) 70%, transparent);
+  cursor: pointer; padding: 0;
+}
+.route-digitizer__wp.is-active { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 40%, transparent); }
+
+.route-digitizer__seg { stroke-width: 3; fill: none; stroke-linecap: round; }
+.route-digitizer__seg--estrada { stroke: var(--color-accent); }
+.route-digitizer__seg--rio { stroke: var(--color-info); stroke-dasharray: none; }
+.route-digitizer__seg--trilha { stroke: var(--color-text-3); stroke-dasharray: 2 6; }
+.route-digitizer__draft-ring { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-dasharray: 3 3; }

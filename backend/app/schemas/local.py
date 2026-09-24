@@ -21,6 +21,7 @@ class LocalCreate(BaseModel):
     saida_ids: list[int] = Field(default_factory=list)
     cor_pin: str = Field(min_length=7, max_length=7, pattern=_HEX_PIN)
     waypoint_id: Optional[int] = None
+    visivel_para_todos: bool = True
 
     @field_validator("cor_pin")
     @classmethod
@@ -40,6 +41,7 @@ class LocalUpdate(BaseModel):
     saida_ids: Optional[list[int]] = None
     cor_pin: Optional[str] = Field(default=None, min_length=7, max_length=7, pattern=_HEX_PIN)
     waypoint_id: Optional[int] = None
+    visivel_para_todos: Optional[bool] = None
 
     @field_validator("cor_pin")
     @classmethod
@@ -62,3 +64,4 @@ class LocalRead(BaseModel):
     saida_ids: list[int] = Field(default_factory=list)
     cor_pin: str
     waypoint_id: Optional[int] = None
+    visivel_para_todos: bool = True

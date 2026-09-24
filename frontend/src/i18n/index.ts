@@ -7,11 +7,13 @@ import ptComum from '../locales/pt-BR/comum.json'
 import ptMapa from '../locales/pt-BR/mapa.json'
 import ptRelacoes from '../locales/pt-BR/relacoes.json'
 import ptAdmin from '../locales/pt-BR/admin.json'
+import ptSessoes from '../locales/pt-BR/sessoes.json'
 
 import enComum from '../locales/en/comum.json'
 import enMapa from '../locales/en/mapa.json'
 import enRelacoes from '../locales/en/relacoes.json'
 import enAdmin from '../locales/en/admin.json'
+import enSessoes from '../locales/en/sessoes.json'
 
 const detector = new LanguageDetector()
 detector.addDetector({
@@ -32,15 +34,17 @@ void i18n
         mapa: ptMapa,
         relacoes: ptRelacoes,
         admin: ptAdmin,
+        sessoes: ptSessoes,
       },
       en: {
         comum: enComum,
         mapa: enMapa,
         relacoes: enRelacoes,
         admin: enAdmin,
+        sessoes: enSessoes,
       },
     },
-    ns: ['comum', 'mapa', 'relacoes', 'admin'],
+    ns: ['comum', 'mapa', 'relacoes', 'admin', 'sessoes'],
     defaultNS: 'comum',
     supportedLngs: ['pt-BR', 'en'],
     fallbackLng: { en: ['pt-BR'], default: ['pt-BR'] },

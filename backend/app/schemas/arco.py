@@ -7,12 +7,14 @@ class ArcoCreate(BaseModel):
     titulo: str = Field(min_length=1, max_length=200)
     resumo: str = Field(default="", max_length=5000)
     ordem: int = Field(default=0, ge=0)
+    visivel_para_todos: bool = True
 
 
 class ArcoUpdate(BaseModel):
     titulo: Optional[str] = Field(default=None, min_length=1, max_length=200)
     resumo: Optional[str] = Field(default=None, max_length=5000)
     ordem: Optional[int] = Field(default=None, ge=0)
+    visivel_para_todos: Optional[bool] = None
 
 
 class ArcoRead(BaseModel):
@@ -22,3 +24,4 @@ class ArcoRead(BaseModel):
     titulo: str
     resumo: str
     ordem: int
+    visivel_para_todos: bool = True

@@ -2,7 +2,7 @@
 
 Como usar o mapa: pins, menu lateral, ficha de local, grupo e cálculo de rotas.
 
-A barra superior tem **Mapa** e **Relações**. Este manual cobre só o **Mapa** (`/`).
+A barra superior tem **Mapa** e **Relações**. Este manual cobre só o **Mapa** (`/c/<slug>` em produção: `/c/wfrp` ou `/c/wod`). A página inicial `/` é o catálogo de mesas.
 
 Para desenhar a rede de vias (nós e segmentos), ver [manual-rede-rotas.md](./manual-rede-rotas.md).  
 Para o grafo de personagens, ver [manual-relacoes.md](./manual-relacoes.md).

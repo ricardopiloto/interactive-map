@@ -2,6 +2,7 @@ import type { ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseApiError } from '../../api/parseApiError'
 import { useApiErrorMessage } from '../../hooks/useApiErrorMessage'
+import { toast } from '../ui'
 
 interface ImageUploadFieldProps {
   category: 'map' | 'portraits' | 'locals'
@@ -23,7 +24,7 @@ export function ImageUploadField({ category, label, value, onUploaded }: ImageUp
     const res = await fetch('/api/admin/uploads', { method: 'POST', body })
     if (!res.ok) {
       const detail = await res.text()
-      window.alert(apiErrorMessage(parseApiError(detail, res.status)))
+      toast.error(apiErrorMessage(parseApiError(detail, res.status)))
       return
     }
     const data = (await res.json()) as { url: string }

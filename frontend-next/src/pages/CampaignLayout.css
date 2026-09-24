@@ -1,0 +1,76 @@
+.campaign-shell {
+  height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--color-bg); color: var(--color-text-1);
+}
+
+.campaign-bar {
+  flex-shrink: 0; height: 56px; display: flex; align-items: center; gap: var(--space-4);
+  padding: 0 var(--space-4); background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  z-index: 40;
+}
+.campaign-bar__left { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.campaign-bar__brand { font-weight: 700; font-size: 14px; color: var(--color-text-2); flex-shrink: 0; }
+.campaign-bar__brand:hover { color: var(--color-text-1); text-decoration: none; }
+.campaign-bar__sep { color: var(--color-text-3); flex-shrink: 0; }
+.campaign-bar__switcher { position: relative; min-width: 0; overflow: hidden; }
+.campaign-bar__campaign {
+  display: flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer;
+  font-size: 15px; font-weight: 600; color: var(--color-text-1); padding: 6px 8px; border-radius: var(--radius-sm);
+  max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.campaign-bar__campaign:hover { background: color-mix(in srgb, var(--color-text-1) 6%, transparent); }
+.campaign-bar__menu {
+  position: absolute; top: calc(100% + 6px); left: 0; width: 220px; z-index: 50;
+  background: var(--color-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md); padding: 6px;
+}
+.campaign-bar__menu-item {
+  display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+  font: inherit; font-size: 13.5px; color: var(--color-text-1); padding: 8px 10px; border-radius: var(--radius-sm);
+}
+.campaign-bar__menu-item:hover { background: color-mix(in srgb, var(--color-text-1) 8%, transparent); }
+
+.campaign-bar__tabs { display: flex; align-items: center; gap: 2px; margin: 0 auto; }
+.campaign-bar__tab {
+  display: flex; align-items: center; gap: 6px; height: 56px; padding: 0 14px;
+  font-size: 13.5px; font-weight: 600; color: var(--color-text-2);
+  border-bottom: 2px solid transparent;
+}
+.campaign-bar__tab:hover { color: var(--color-text-1); text-decoration: none; }
+.campaign-bar__tab.is-active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+
+.campaign-bar__right { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+.campaign-tools { position: relative; }
+.campaign-tools__menu { left: auto; right: 0; }
+.campaign-bar__mode-toggle.is-active { background: var(--color-accent-wash); color: var(--color-accent); border-color: color-mix(in srgb, var(--color-accent) 55%, transparent); }
+
+.campaign-main { flex: 1; min-height: 0; position: relative; }
+
+.campaign-tabbar { display: none; }
+
+@media (max-width: 860px) {
+  .campaign-bar__tabs { display: none; }
+  /* Sem espaço para "Campaign Codex ›" + nome da campanha lado a lado —
+     no celular o nome da campanha já é o único contexto que importa;
+     "Campaign Codex" e as outras campanhas ficam a um toque, no menu. */
+  .campaign-bar__brand, .campaign-bar__sep { display: none; }
+  .campaign-bar__campaign { max-width: 58vw; }
+  .campaign-bar__right .campaign-bar__mode-toggle span { display: none; }
+  .campaign-main { padding-bottom: 60px; }
+  .campaign-tabbar {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; height: 60px; z-index: 40;
+    background: var(--color-surface); border-top: 1px solid var(--color-border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .campaign-tabbar__item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    font-size: 10.5px; font-weight: 600; color: var(--color-text-3);
+  }
+  .campaign-tabbar__item:hover { text-decoration: none; }
+  .campaign-tabbar__item.is-active { color: var(--color-accent); }
+}
+
+.campaign-missing {
+  height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3);
+  text-align: center; padding: var(--space-4);
+}

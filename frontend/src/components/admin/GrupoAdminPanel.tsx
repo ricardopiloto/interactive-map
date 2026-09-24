@@ -1,4 +1,5 @@
 import type { GrupoFormato } from '../../types'
+import { Button, Card, CardMeta, SegmentedControl } from '../ui'
 
 interface GrupoAdminPanelProps {
   x: number
@@ -21,46 +22,37 @@ export function GrupoAdminPanel({
 }: GrupoAdminPanelProps) {
   return (
     <div className="gm-section">
-      <div className="card elev-sm">
-        <div className="card-meta">
+      <Card>
+        <CardMeta>
           Posição atual: x {x.toFixed(2)} · y {y.toFixed(2)}
-        </div>
+        </CardMeta>
         <div className="field" style={{ marginTop: 8 }}>
           <label>Formato do ícone</label>
-          <div className="seg" style={{ width: '100%' }}>
-            <label className="seg-opt" style={{ flex: 1, justifyContent: 'center' }}>
-              <input
-                type="radio"
-                name="grupo-formato"
-                checked={formato === 'bandeira'}
-                onChange={() => onFormatoChange('bandeira')}
-              />
-              Bandeira
-            </label>
-            <label className="seg-opt" style={{ flex: 1, justifyContent: 'center' }}>
-              <input
-                type="radio"
-                name="grupo-formato"
-                checked={formato === 'brasao'}
-                onChange={() => onFormatoChange('brasao')}
-              />
-              Brasão
-            </label>
-          </div>
+          <SegmentedControl
+            name="grupo-formato"
+            aria-label="Formato do ícone"
+            className="ui-seg--full"
+            value={formato}
+            onChange={(v) => onFormatoChange(v as GrupoFormato)}
+            options={[
+              { value: 'bandeira', label: 'Bandeira' },
+              { value: 'brasao', label: 'Brasão' },
+            ]}
+          />
         </div>
         {!moving ? (
-          <button type="button" className="btn btn-primary btn-block" onClick={onStartMove}>
+          <Button variant="primary" block type="button" onClick={onStartMove}>
             Mover ícone no mapa
-          </button>
+          </Button>
         ) : (
           <div style={{ fontSize: 13, color: 'var(--color-accent-300)' }}>
             Clique no mapa para reposicionar.{' '}
-            <button type="button" className="btn btn-ghost" onClick={onCancelMove}>
+            <Button variant="ghost" type="button" onClick={onCancelMove}>
               Cancelar
-            </button>
+            </Button>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }
