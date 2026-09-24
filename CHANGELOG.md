@@ -7,6 +7,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.21.1] — 2026-09-24
+
+### Changed
+
+- Listas de personagens no Mapa e em Relações passam a mostrar o retrato cadastrado no avatar (fallback para iniciais se não houver imagem ou se o carregamento falhar), no mesmo padrão circular dos tokens do grafo.
+
 ## [0.21.0] — 2026-09-24
 
 ### Added

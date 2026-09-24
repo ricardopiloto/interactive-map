@@ -170,6 +170,8 @@
 }
 
 .relacoes-page__avatar {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -181,6 +183,16 @@
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 700;
+}
+
+.relacoes-page__avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .relacoes-page__row-text {
@@ -374,4 +386,3 @@
     bottom: calc(132px + var(--space-3));
   }
 }
-

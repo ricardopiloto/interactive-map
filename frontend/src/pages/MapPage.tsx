@@ -40,6 +40,27 @@ function isVisited(local: Local): boolean {
   return Boolean(local.data_sessao?.trim())
 }
 
+function MapCharacterAvatar({ character }: { character: NPC }) {
+  const [portraitFailed, setPortraitFailed] = useState(false)
+
+  useEffect(() => {
+    setPortraitFailed(false)
+  }, [character.retrato_url])
+
+  return (
+    <span className="map-page__avatar" aria-hidden>
+      {character.nome.trim().charAt(0).toUpperCase() || '?'}
+      {character.retrato_url && !portraitFailed ? (
+        <img
+          src={character.retrato_url}
+          alt=""
+          onError={() => setPortraitFailed(true)}
+        />
+      ) : null}
+    </span>
+  )
+}
+
 export function MapPage() {
   const { t } = useTranslation('mapa')
   const { t: tc } = useTranslation('comum')
@@ -505,9 +526,7 @@ export function MapPage() {
                 className="map-page__row"
                 onClick={() => selectNpc(n.id)}
               >
-                <span className="map-page__avatar" aria-hidden>
-                  {n.nome.trim().charAt(0).toUpperCase() || '?'}
-                </span>
+                <MapCharacterAvatar character={n} />
                 <span className="map-page__row-text">
                   <span className="map-page__row-title">{n.nome}</span>
                   <span className="map-page__row-meta">
