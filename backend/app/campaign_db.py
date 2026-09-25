@@ -3,12 +3,13 @@ from __future__ import annotations
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator, Iterator
+from datetime import datetime
 
 from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text, update
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, select
 
@@ -21,6 +22,32 @@ _BACKEND_ROOT = Path(__file__).resolve().parent.parent
 _control_engine: Engine | None = None
 _campaign_engines: dict[str, Engine] = {}
 _last_campanha: Campanha | None = None
+
+
+def _track_campaign_writes(session: Session, _flush_context: object, _instances: object) -> None:
+    """Update the operational singleton in the same transaction as content writes."""
+    bind = session.get_bind()
+    database = bind.url.database
+    if not database:
+        return
+    path = Path(database).resolve()
+    campaign_root = (data_dir() / "campanhas").resolve()
+    if path.parent.parent != campaign_root or path.name != "campanha.db":
+        return
+    changed = [*session.new, *session.dirty, *session.deleted]
+    if not any(getattr(obj, "__tablename__", None) != "campaign_state" for obj in changed):
+        return
+    try:
+        session.connection().execute(
+            text("UPDATE campaign_state SET modificado_em = :modified WHERE id = 1"),
+            {"modified": datetime.utcnow()},
+        )
+    except Exception:
+        # Older databases are migrated to head before a campaign Session is yielded.
+        raise
+
+
+event.listen(Session, "before_flush", _track_campaign_writes)
 
 
 def data_dir() -> Path:

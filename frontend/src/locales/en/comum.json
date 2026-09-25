@@ -30,6 +30,28 @@
   "userMenu": {
     "aria": "User menu"
   },
+  "admin": {
+    "navLabel": "Administration",
+    "title": "Application administration",
+    "tabs": "Administration sections",
+    "loading": "Loading…",
+    "empty": "No results found.",
+    "actions": "Actions",
+    "filters": { "all": "All" },
+    "users": {
+      "title": "Users", "search": "Search by email", "state": "Status", "active": "Active", "pending": "Pending", "inactive": "Inactive",
+      "ativa": "Active", "pendente": "Pending", "inativa": "Inactive", "email": "Email", "admin": "Administrator", "created": "Created",
+      "inviteEmail": "Invite by email", "invite": "Create invite", "generatedLink": "Generated link", "copy": "Copy link", "reset": "Reset password",
+      "deactivate": "Deactivate", "reactivate": "Reactivate", "deleteTitle": "Delete user?", "deleteConfirm": "Confirm deletion of {{email}}? This action cannot be undone.", "yes": "Yes", "no": "No"
+    },
+    "campaigns": {
+      "title": "Tables", "search": "Search by name, slug, or owner", "state": "Operational status", "active": "Active", "inactive": "Inactive",
+      "name": "Table", "owner": "Owner", "visibility": "Visibility", "modified": "Last change", "dateUnknown": "Date unavailable",
+      "newOwner": "New owner's email", "transferEmail": "New owner for {{name}}", "transfer": "Transfer", "deactivate": "Deactivate", "reactivate": "Reactivate",
+      "deleteTitle": "Permanently delete table?", "deleteConfirm": "Table {{name}} ({{slug}}) and its data will be permanently removed.", "deletePermanent": "Delete permanently",
+      "visibilityValues": { "listada": "Listed", "so_link": "Link only" }
+    }
+  },
   "home": {
     "nav": "Home",
     "title": "Campaigns",
@@ -217,6 +239,19 @@
     "GENERICO": "Something went wrong. Please try again.",
     "ADMIN_NAO_CONFIGURADO": "Admin not configured (ADMIN_USER / ADMIN_PASSWORD)",
     "AUTENTICACAO_NECESSARIA": "Authentication required",
+    "NAO_ADMINISTRADOR": "Only application administrators can access this area.",
+    "EMAIL_DUPLICADO": "An account already exists for this email.",
+    "EMAIL_INVALIDO": "Enter a valid email address.",
+    "USUARIO_NAO_ENCONTRADO": "User not found.",
+    "USUARIO_PENDENTE": "This account is waiting for activation.",
+    "USUARIO_INACTIVO": "This account is inactive.",
+    "ULTIMO_ADMINISTRADOR": "This operation would leave the application without an active administrator.",
+    "PROPRIETARIO_COM_MESAS": "Transfer or delete this account's tables first: {{campanhas}}.",
+    "CAMPANHA_NAO_ENCONTRADA": "Table not found.",
+    "CAMINHO_CAMPANHA_INVALIDO": "This table's storage path failed security validation.",
+    "EXCLUSAO_EM_RECUPERACAO": "This table deletion must be recovered before retrying.",
+    "FALHA_EXCLUSAO_CAMPANHA": "The table could not be fully deleted. It was retained for safe recovery.",
+    "FILTRO_ESTADO_INVALIDO": "The selected status filter is invalid.",
     "CREDENCIAIS_INVALIDAS": "Invalid credentials",
     "COTA_EXCEDIDA": "Storage quota exceeded ({{bytes_usados}} / {{cota_bytes}} bytes)",
     "CATEGORIA_UPLOAD_INVALIDA": "Invalid category. Use: {{categorias}}",

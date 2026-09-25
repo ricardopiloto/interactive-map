@@ -403,6 +403,22 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ---
 
+## [BKLG-037] Produto — Associar qualquer personagem a um local
+
+**Registrado em:** 2026-09-24.
+
+**Pedido:** permitir que o usuário associe qualquer tipo de personagem — PJ ou NPC — a um Local.
+
+**Contexto:** a associação atual de personagens a Locais não contempla todos os tipos de personagem. Este pedido também esclarece a dúvida registrada em [BKLG-017](../bugs/bugs.md): PJs devem poder participar dos vínculos entre personagens e Locais, assim como NPCs.
+
+**Ideia:** ampliar a associação entre Local e personagem para aceitar PJs e NPCs, preservando a identificação do tipo de personagem nas interfaces que exibem essas associações.
+
+**Escopo:** permitir criar e manter a associação de qualquer personagem da campanha a um ou mais Locais. O comportamento visual e as operações disponíveis para jogadores e mestres serão definidos na SPEC.
+
+**Próximo passo:** `/speckit-specify` — definir os fluxos de associação e remoção, permissões e como os personagens associados aparecem no Mapa e nos detalhes do Local.
+
+---
+
 ## Roadmap de mercado — "Próximo" (precisa de TR antes do `/speckit-specify`)
 
 - **[BKLG-010] Sincronização ao vivo.** Hoje o jogador só vê mudanças ao recarregar. SSE (mais simples de operar atrás do Caddy atual) ou polling curto — decidir custo de servidor por campanha simultânea antes de comprometer a spec.

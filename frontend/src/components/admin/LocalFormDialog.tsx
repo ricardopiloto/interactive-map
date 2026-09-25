@@ -1,13 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Arco, Local, NPC, Waypoint } from '../../types'
+import type { Arco, EstadoExploracao, Local, NPC, Waypoint } from '../../types'
 import { formSnapshot, isFormDirty } from '../forms/dirty'
 import { FormDrawer } from '../forms/FormDrawer'
 import { MarkdownField } from '../forms/MarkdownField'
 import { ImageSlot } from '../media/ImageSlot'
 import { Button, Chip, Input, Select } from '../ui'
 
-export const PIN_COLOR_VISITED = '#e5484d'
 export const PIN_COLOR_KNOWN = '#c4b5fd'
 
 const HEX_PIN = /^#[0-9a-fA-F]{6}$/
@@ -17,6 +16,7 @@ export interface LocalFormDraft {
   nome: string
   descricao: string
   data_sessao: string
+  estado_exploracao: EstadoExploracao
   arco_id: number | null
   npc_ids: number[]
   saida_ids: number[]
@@ -157,6 +157,27 @@ export function LocalFormDialog({
           </Select>
         </div>
         <div className="field">
+          <label>{t('localForm.estadoExploracao')}</label>
+          <div className="gm-row" style={{ alignItems: 'center', marginTop: 0 }}>
+            <Button
+              type="button"
+              variant={draft.estado_exploracao === 'visitado' ? 'primary' : 'secondary'}
+              aria-pressed={draft.estado_exploracao === 'visitado'}
+              onClick={() => patch({ estado_exploracao: 'visitado' })}
+            >
+              {t('localForm.visitado')}
+            </Button>
+            <Button
+              type="button"
+              variant={draft.estado_exploracao === 'conhecido' ? 'primary' : 'secondary'}
+              aria-pressed={draft.estado_exploracao === 'conhecido'}
+              onClick={() => patch({ estado_exploracao: 'conhecido' })}
+            >
+              {t('localForm.conhecido')}
+            </Button>
+          </div>
+        </div>
+        <div className="field">
           <label htmlFor="local-cor-pin">{t('localForm.corPin')}</label>
           <div className="gm-row" style={{ alignItems: 'center', marginTop: 0 }}>
             <input
@@ -166,20 +187,6 @@ export function LocalFormDialog({
               onChange={(e) => patch({ cor_pin: e.target.value.toLowerCase() })}
               aria-label={t('localForm.corPinAria')}
             />
-            <Button
-              type="button"
-              title={t('localForm.visitadoTitle')}
-              onClick={() => patch({ cor_pin: PIN_COLOR_VISITED })}
-            >
-              {t('localForm.visitado')}
-            </Button>
-            <Button
-              type="button"
-              title={t('localForm.conhecidoTitle')}
-              onClick={() => patch({ cor_pin: PIN_COLOR_KNOWN })}
-            >
-              {t('localForm.conhecido')}
-            </Button>
           </div>
           {errors.cor_pin ? <p className="field-error">{errors.cor_pin}</p> : null}
         </div>
@@ -297,6 +304,7 @@ export function localToDraft(local: Local): LocalFormDraft {
     nome: local.nome,
     descricao: local.descricao,
     data_sessao: local.data_sessao ?? '',
+    estado_exploracao: local.estado_exploracao ?? 'conhecido',
     arco_id: local.arco_id,
     npc_ids: [...local.npc_ids],
     saida_ids: [...(local.saida_ids ?? [])],

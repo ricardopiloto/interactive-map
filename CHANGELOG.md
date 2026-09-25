@@ -7,6 +7,17 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.22.2] — 2026-09-24
+
+### Added
+
+- Estado de exploração persistente para locais (`Conhecido`/`Visitado`), com migração dos registros existentes baseada em `data_sessao`.
+
+### Fixed
+
+- Alternância entre Conhecido e Visitado sem alterar a cor do pin ou o rótulo da sessão (BUG-002).
+- Rolagem da lista completa de sessões em desktop e mobile (BUG-003).
+
 ## [0.22.1] — 2026-09-24
 
 ### Fixed

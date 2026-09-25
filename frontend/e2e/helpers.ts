@@ -11,6 +11,11 @@ export type E2ESession = {
   password: string
   cookieName: string
   cookieValue: string
+  adminEmail?: string
+  adminPassword?: string
+  adminCookieValue?: string
+  deleteCampaignSlug?: string
+  deleteCampaignSlugs?: { desktop: string; mobile: string }
   origin: string
 }
 
@@ -37,6 +42,18 @@ export async function applyAuth(context: BrowserContext, session = loadSession()
   // page.goto() (e.g. seedCharacterPortraits, seedRelations, seedTimeline) hit the backend's
   // CsrfOriginMiddleware (app/middleware/csrf.py) and get 403 CSRF_ORIGIN_INVALIDA. Setting it
   // here once covers every fixture/spec that calls applyAuth first.
+  await context.setExtraHTTPHeaders({ origin: session.origin })
+}
+
+export async function applyAdminAuth(context: BrowserContext, session = loadSession()) {
+  if (!session.adminCookieValue) throw new Error('Missing admin E2E session — rerun seed_e2e.py')
+  await context.addCookies([{
+    name: session.cookieName,
+    value: session.adminCookieValue,
+    url: session.origin,
+    httpOnly: true,
+    sameSite: 'Lax',
+  }])
   await context.setExtraHTTPHeaders({ origin: session.origin })
 }
 

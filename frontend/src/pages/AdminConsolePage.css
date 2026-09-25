@@ -1,0 +1,14 @@
+.admin-console { width: min(1200px, calc(100% - 2rem)); margin: 2rem auto 4rem; }
+.admin-console__tabs { display: flex; gap: .5rem; border-bottom: 1px solid var(--border, #d5d8dd); margin: 1rem 0 1.5rem; }
+.admin-console__tabs button { border: 0; background: transparent; color: inherit; padding: .75rem 1rem; cursor: pointer; }
+.admin-console__tabs button[aria-selected="true"] { border-bottom: 2px solid var(--accent, #6750a4); font-weight: 700; }
+.admin-console__filters, .admin-console__invite, .admin-console__link { display: flex; align-items: end; gap: .75rem; flex-wrap: wrap; margin: 1rem 0; }
+.admin-console__filters label, .admin-console__invite label { display: grid; gap: .35rem; min-width: min(18rem, 100%); }
+.admin-console__table-wrap { width: 100%; overflow-x: auto; }
+.admin-console__table { width: 100%; border-collapse: collapse; text-align: left; }
+.admin-console__table th, .admin-console__table td { padding: .65rem; border-bottom: 1px solid var(--border, #d5d8dd); vertical-align: top; }
+.admin-console__table td small { display: block; opacity: .75; margin-top: .25rem; }
+.admin-console__actions { min-width: 15rem; display: flex; flex-direction: column; align-items: stretch; gap: .4rem; }
+.admin-console__transfer { display: flex; gap: .35rem; }
+.admin-console__transfer .ui-input { min-width: 8rem; }
+@media (max-width: 700px) { .admin-console { width: calc(100% - 1rem); margin-top: 1rem; } .admin-console__table { min-width: 850px; } }

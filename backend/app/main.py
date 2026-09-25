@@ -17,6 +17,9 @@ from app.services.rate_limit import limiter
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_control()
+    from app.services.admin_console import reconcile_campaign_deletions
+
+    reconcile_campaign_deletions()
     yield
 
 

@@ -168,7 +168,7 @@ export function SessoesPage() {
         ) : null}
       </CodexHeader>
 
-      <main className="sessoes-page__main">
+      <main className="sessoes-page__main" tabIndex={0} role="region" aria-label={t('title')}>
         <h1 className="sessoes-page__title">{t('title')}</h1>
         {error ? <p className="sessoes-page__error">{error}</p> : null}
         {busyError ? <p className="sessoes-page__error">{busyError}</p> : null}

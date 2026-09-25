@@ -4,6 +4,7 @@ import re
 import shutil
 import uuid
 from pathlib import Path
+from datetime import datetime
 from typing import Any
 
 from sqlmodel import Session, select
@@ -121,6 +122,7 @@ def create_campanha(
             cota_bytes=DEFAULT_COTA_BYTES,
             bytes_usados=0,
             activa=True,
+            criado_em=datetime.utcnow(),
         )
         with Session(engine) as session:
             session.add(row)
@@ -199,6 +201,7 @@ def set_visibilidade(slug: str, visibilidade: str) -> Campanha:
         if row is None or not row.activa:
             raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
         row.visibilidade = visibilidade
+        row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()
         session.refresh(row)
@@ -215,6 +218,7 @@ def set_unidade_distancia(slug: str, unidade_distancia: str) -> Campanha:
         if row is None or not row.activa:
             raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
         row.unidade_distancia = unidade_distancia
+        row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()
         session.refresh(row)
@@ -235,11 +239,13 @@ def set_capa(
             raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
         if limpar_capa:
             row.capa_arquivo = ""
+            row.modificado_em = datetime.utcnow()
         elif capa_arquivo is not None:
             name = capa_arquivo.strip()
             if not name or "/" in name or ".." in name:
                 raise CampanhaAdminError("CAPA_INVALIDA")
             row.capa_arquivo = name
+            row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()
         session.refresh(row)
@@ -259,6 +265,7 @@ def set_genero(slug: str, genero: str) -> Campanha:
         if row is None or not row.activa:
             raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
         row.genero = genero_n
+        row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()
         session.refresh(row)

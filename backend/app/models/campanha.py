@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Optional
 
 from sqlalchemy import Column, MetaData
@@ -35,3 +36,5 @@ class Campanha(ControlSQLModel, table=True):
     cota_bytes: int = Field(default=10 * 1024**3)
     bytes_usados: int = Field(default=0)
     activa: bool = Field(default=True)
+    criado_em: Optional[datetime] = Field(default=None)
+    modificado_em: Optional[datetime] = Field(default=None)

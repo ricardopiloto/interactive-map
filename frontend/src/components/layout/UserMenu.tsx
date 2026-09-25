@@ -60,6 +60,11 @@ export function UserMenu({ includeTheme = true }: { includeTheme?: boolean }) {
   if (email) {
     if (isAdmin) {
       items.push({
+        id: 'admin-console',
+        label: t('admin.navLabel'),
+        onSelect: () => navigate('/admin'),
+      })
+      items.push({
         id: 'admin-convites',
         label: t('adminConvites.navLabel'),
         onSelect: () => navigate('/admin/convites'),

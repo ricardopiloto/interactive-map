@@ -18,7 +18,7 @@ from app.campaign_db import (
 from app.cli import _create_campanha
 from app.config import settings
 from app.models.usuario import Usuario
-from app.services.auth_admin import assign_owner, create_usuario_with_invite
+from app.services.auth_admin import assign_owner, create_usuario_with_invite, promote_admin
 from app.services.auth_invite import accept_activate_invite
 from app.services.auth_password import hash_password
 
@@ -132,3 +132,23 @@ def db_session(data_root: Path) -> Generator[Session, None, None]:
 def control_session(data_root: Path) -> Generator[Session, None, None]:
     with Session(get_control_engine()) as session:
         yield session
+
+
+@pytest.fixture
+def admin_user(data_root: Path) -> Usuario:
+    """Promote the disposable campaign owner for application-admin tests."""
+    with Session(get_control_engine()) as session:
+        return promote_admin(session, TEST_GM_EMAIL)
+
+
+@pytest.fixture
+def admin_client(client_anon: TestClient, admin_user: Usuario) -> TestClient:
+    """Authenticated global administrator; all backing data lives under tmp_path."""
+    login_as(client_anon, email=TEST_GM_EMAIL, password=TEST_GM_PASSWORD)
+    return client_anon
+
+
+@pytest.fixture
+def regular_client(client: TestClient) -> TestClient:
+    """Authenticated non-admin campaign user for authorization matrix tests."""
+    return client

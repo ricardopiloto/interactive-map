@@ -13,6 +13,7 @@ import { setCampaignSlug } from './api/campaignSlug'
 import { EditModeProvider } from './context/EditModeContext'
 import { getCachedInstanceConfig, useInstanceConfig } from './hooks/useInstanceConfig'
 import { AdminConvitesPage } from './pages/AdminConvitesPage'
+import { AdminConsolePage } from './pages/AdminConsolePage'
 import { ContaPage, ConvitePage, LoginPage, ResetPage } from './pages/AuthPages'
 import { CampaignMissingPage } from './pages/CampaignMissingPage'
 import { HomePage } from './pages/HomePage'
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="/painel" element={<PainelPage />} />
         <Route path="/painel/novo" element={<NovoCodexPage />} />
         <Route path="/admin/convites" element={<AdminConvitesPage />} />
+        <Route path="/admin" element={<AdminConsolePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/convite/:token" element={<ConvitePage />} />
         <Route path="/reset/:token" element={<ResetPage />} />
@@ -144,7 +146,6 @@ function AppRoutes() {
             </CampaignShell>
           }
         />
-        <Route path="/admin" element={<CampaignMissingPage />} />
         {import.meta.env.DEV ? (
           <Route path="/__styleguide" element={<StyleGuidePage />} />
         ) : null}

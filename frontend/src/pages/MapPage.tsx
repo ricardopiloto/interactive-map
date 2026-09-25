@@ -37,7 +37,7 @@ type PanelFilter = 'todos' | 'locais' | 'npcs'
 type PanelSelection = { kind: 'local' | 'npc'; id: number } | null
 
 function isVisited(local: Local): boolean {
-  return Boolean(local.data_sessao?.trim())
+  return local.estado_exploracao === 'visitado'
 }
 
 function MapCharacterAvatar({ character }: { character: NPC }) {
@@ -286,6 +286,7 @@ export function MapPage() {
         x: localDraft.x,
         y: localDraft.y,
         data_sessao: localDraft.data_sessao.trim() || null,
+        estado_exploracao: localDraft.estado_exploracao,
         arco_id: localDraft.arco_id,
         npc_ids: localDraft.npc_ids,
         saida_ids: localDraft.saida_ids,
@@ -693,6 +694,7 @@ export function MapPage() {
                   nome: '',
                   descricao: '',
                   data_sessao: '',
+                  estado_exploracao: 'conhecido',
                   arco_id: arcos[0]?.id ?? null,
                   npc_ids: [],
                   saida_ids: [],

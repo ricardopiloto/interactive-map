@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 _HEX_PIN = r"^#[0-9A-Fa-f]{6}$"
+EstadoExploracao = Literal["conhecido", "visitado"]
 
 
 def _normalize_hex(value: str) -> str:
@@ -16,6 +17,7 @@ class LocalCreate(BaseModel):
     y: float = Field(ge=0.0, le=1.0)
     imagem_url: Optional[str] = Field(default=None, max_length=500)
     data_sessao: Optional[str] = Field(default=None, max_length=100)
+    estado_exploracao: EstadoExploracao = "conhecido"
     arco_id: Optional[int] = None
     npc_ids: list[int] = Field(default_factory=list)
     saida_ids: list[int] = Field(default_factory=list)
@@ -36,6 +38,7 @@ class LocalUpdate(BaseModel):
     y: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     imagem_url: Optional[str] = Field(default=None, max_length=500)
     data_sessao: Optional[str] = Field(default=None, max_length=100)
+    estado_exploracao: EstadoExploracao = "conhecido"
     arco_id: Optional[int] = None
     npc_ids: Optional[list[int]] = None
     saida_ids: Optional[list[int]] = None
@@ -59,6 +62,7 @@ class LocalRead(BaseModel):
     y: float
     imagem_url: Optional[str]
     data_sessao: Optional[str]
+    estado_exploracao: EstadoExploracao = "conhecido"
     arco_id: Optional[int]
     npc_ids: list[int] = Field(default_factory=list)
     saida_ids: list[int] = Field(default_factory=list)

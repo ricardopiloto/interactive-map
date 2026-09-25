@@ -116,6 +116,7 @@ def create_local(
         y=payload.y,
         imagem_url=payload.imagem_url,
         data_sessao=payload.data_sessao,
+        estado_exploracao=payload.estado_exploracao,
         arco_id=payload.arco_id,
         cor_pin=payload.cor_pin,
         visivel_para_todos=payload.visivel_para_todos,

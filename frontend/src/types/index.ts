@@ -1,4 +1,5 @@
 export type NPCStatus = 'vivo' | 'morto' | 'desaparecido' | 'desconhecido'
+export type EstadoExploracao = 'conhecido' | 'visitado'
 export type PersonagemTipo = 'pj' | 'npc'
 export type VinculoTipo =
   | 'aliado'
@@ -40,6 +41,7 @@ export interface Local {
   y: number
   imagem_url: string | null
   data_sessao: string | null
+  estado_exploracao: EstadoExploracao
   arco_id: number | null
   npc_ids: number[]
   saida_ids: number[]

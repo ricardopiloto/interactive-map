@@ -371,6 +371,7 @@ def import_campaign_from_zip(
             cota_bytes=DEFAULT_COTA_BYTES,
             bytes_usados=0,
             activa=True,
+            criado_em=datetime.utcnow(),
         )
         with Session(control) as session:
             session.add(row)

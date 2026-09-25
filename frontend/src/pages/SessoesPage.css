@@ -1,16 +1,22 @@
 .sessoes-page {
   display: flex;
   flex-direction: column;
+  height: 100dvh;
   min-height: 100dvh;
+  overflow: hidden;
   background: var(--color-bg);
   color: var(--color-fg);
 }
 
 .sessoes-page__main {
   flex: 1;
+  min-height: 0;
   width: min(720px, 100%);
   margin: 0 auto;
   padding: var(--space-6) var(--space-4) var(--space-6);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sessoes-page__title {

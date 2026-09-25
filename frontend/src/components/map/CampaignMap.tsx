@@ -57,7 +57,7 @@ interface CampaignMapProps {
 }
 
 function isVisited(local: Local): boolean {
-  return Boolean(local.data_sessao?.trim())
+  return local.estado_exploracao === 'visitado'
 }
 
 function MapControls({

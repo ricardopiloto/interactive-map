@@ -166,3 +166,27 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 **Validação da correção:** `npm run build` passou. `relacoes-retratos.spec.ts` passou em desktop com asserções de nó selecionado e título dos detalhes. `relacoes-flows.spec.ts` continua falhando antes das asserções de seleção por uma expectativa independente de visibilidade de vínculo. A execução de `mapa-retratos.spec.ts` alcançou as asserções de ficha, mas expirou durante a limpeza dos dados. A confirmação nos ambientes de desenvolvimento e produção e a validação mobile permanecem pendentes; T006 continua aberto em `tasks.md`.
 
 ---
+
+## [BUG-002] Não é possível alternar estado de localidade entre Conhecido e Visitado
+
+**Status:** Corrigido na implementação da [spec 149](../../specs/149-estado-local-scroll-sessoes/spec.md). Migração, isolamento e E2E desktop aprovados; validar novamente após deploy.
+
+**Registrado em:** 2026-09-24.
+
+**Problema observado:** não é possível alterar uma localidade de **Conhecido** para **Visitado**, nem de **Visitado** para **Conhecido**.
+
+**Comportamento esperado:** deve ser possível alternar o estado da localidade entre **Conhecido** e **Visitado**, e a alteração deve ser salva e refletida na interface.
+
+---
+
+## [BUG-003] Lista de sessões sem rolagem no desktop
+
+**Status:** Corrigido na implementação da [spec 149](../../specs/149-estado-local-scroll-sessoes/spec.md). E2E desktop aprovado; validar gesto touch em dispositivo mobile após deploy.
+
+**Registrado em:** 2026-09-24.
+
+**Problema observado:** no desktop, a lista de sessões não apresenta rolagem, impedindo visualizar todas as sessões. No mobile, a rolagem está disponível.
+
+**Comportamento esperado:** a lista deve permitir rolagem também no desktop para que o usuário consiga acessar todas as sessões.
+
+---

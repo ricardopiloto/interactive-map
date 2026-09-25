@@ -30,6 +30,28 @@
   "userMenu": {
     "aria": "Menu do utilizador"
   },
+  "admin": {
+    "navLabel": "Administração",
+    "title": "Administração da aplicação",
+    "tabs": "Secções administrativas",
+    "loading": "Carregando…",
+    "empty": "Nenhum resultado encontrado.",
+    "actions": "Ações",
+    "filters": { "all": "Todos" },
+    "users": {
+      "title": "Usuários", "search": "Pesquisar por e-mail", "state": "Estado", "active": "Ativa", "pending": "Pendente", "inactive": "Inativa",
+      "ativa": "Ativa", "pendente": "Pendente", "inativa": "Inativa", "email": "E-mail", "admin": "Administrador", "created": "Criada em",
+      "inviteEmail": "Convidar por e-mail", "invite": "Criar convite", "generatedLink": "Link gerado", "copy": "Copiar link", "reset": "Redefinir senha",
+      "deactivate": "Desativar", "reactivate": "Reativar", "deleteTitle": "Excluir usuário?", "deleteConfirm": "Confirma a exclusão de {{email}}? Esta ação não pode ser desfeita.", "yes": "Sim", "no": "Não"
+    },
+    "campaigns": {
+      "title": "Mesas", "search": "Pesquisar por nome, slug ou proprietário", "state": "Estado operacional", "active": "Ativa", "inactive": "Inativa",
+      "name": "Mesa", "owner": "Proprietário", "visibility": "Visibilidade", "modified": "Última alteração", "dateUnknown": "Data indisponível",
+      "newOwner": "E-mail do novo proprietário", "transferEmail": "Novo proprietário de {{name}}", "transfer": "Transferir", "deactivate": "Desativar", "reactivate": "Reativar",
+      "deleteTitle": "Excluir mesa permanentemente?", "deleteConfirm": "A mesa {{name}} ({{slug}}) e seus dados serão removidos permanentemente.", "deletePermanent": "Excluir permanentemente",
+      "visibilityValues": { "listada": "Listada", "so_link": "Somente por link" }
+    }
+  },
   "home": {
     "nav": "Início",
     "title": "Campanhas",
@@ -217,6 +239,19 @@
     "GENERICO": "Ocorreu um erro. Tente novamente.",
     "ADMIN_NAO_CONFIGURADO": "Admin não configurado (ADMIN_USER / ADMIN_PASSWORD)",
     "AUTENTICACAO_NECESSARIA": "Autenticação necessária",
+    "NAO_ADMINISTRADOR": "Apenas administradores podem acessar esta área.",
+    "EMAIL_DUPLICADO": "Já existe uma conta para este e-mail.",
+    "EMAIL_INVALIDO": "Informe um e-mail válido.",
+    "USUARIO_NAO_ENCONTRADO": "Usuário não encontrado.",
+    "USUARIO_PENDENTE": "A conta ainda aguarda ativação.",
+    "USUARIO_INACTIVO": "A conta está inativa.",
+    "ULTIMO_ADMINISTRADOR": "A operação manteria a aplicação sem administrador ativo.",
+    "PROPRIETARIO_COM_MESAS": "Transfira ou exclua primeiro as mesas desta conta: {{campanhas}}.",
+    "CAMPANHA_NAO_ENCONTRADA": "Mesa não encontrada.",
+    "CAMINHO_CAMPANHA_INVALIDO": "O armazenamento desta mesa não passou pela validação de segurança.",
+    "EXCLUSAO_EM_RECUPERACAO": "A exclusão desta mesa precisa ser recuperada antes de uma nova tentativa.",
+    "FALHA_EXCLUSAO_CAMPANHA": "Não foi possível concluir a exclusão da mesa. Ela foi mantida para recuperação segura.",
+    "FILTRO_ESTADO_INVALIDO": "O filtro de estado informado é inválido.",
     "CREDENCIAIS_INVALIDAS": "Credenciais inválidas",
     "COTA_EXCEDIDA": "Cota de armazenamento excedida ({{bytes_usados}} / {{cota_bytes}} bytes)",
     "CATEGORIA_UPLOAD_INVALIDA": "Categoria inválida. Use: {{categorias}}",

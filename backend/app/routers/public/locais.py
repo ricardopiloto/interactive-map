@@ -58,6 +58,7 @@ def _to_read(session: Session, local: Local, *, for_player: bool = True) -> Loca
         y=local.y,
         imagem_url=rewrite_media_url(local.imagem_url),
         data_sessao=local.data_sessao,
+        estado_exploracao=getattr(local, "estado_exploracao", "conhecido"),
         arco_id=_public_arco_id(session, local, for_player=for_player),
         npc_ids=npc_ids,
         saida_ids=_saida_ids_for(session, lid, for_player=for_player) if lid is not None else [],

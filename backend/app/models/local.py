@@ -19,6 +19,11 @@ class Local(SQLModel, table=True):
     y: float = Field(ge=0.0, le=1.0, description="Coordenada relativa Y (0–1)")
     imagem_url: Optional[str] = Field(default=None, max_length=500)
     data_sessao: Optional[str] = Field(default=None, max_length=100, description="Rótulo livre, ex.: Sessão 3")
+    estado_exploracao: str = Field(
+        default="conhecido",
+        max_length=10,
+        description="Estado de exploração do local: conhecido ou visitado",
+    )
     arco_id: Optional[int] = Field(default=None, foreign_key="arco.id", index=True)
     cor_pin: str = Field(
         default="#c4b5fd",

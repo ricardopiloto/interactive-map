@@ -5,6 +5,7 @@ import type {
   GrupoFormato,
   GrupoPosicao,
   Local,
+  EstadoExploracao,
   MapPoint,
   MapScale,
   NPC,
@@ -27,6 +28,7 @@ export interface LocalPayload {
   y: number
   imagem_url?: string | null
   data_sessao?: string | null
+  estado_exploracao?: EstadoExploracao
   arco_id?: number | null
   npc_ids?: number[]
   saida_ids?: number[]
