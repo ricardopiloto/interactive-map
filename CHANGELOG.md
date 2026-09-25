@@ -7,6 +7,17 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.23.0] — 2026-09-25
+
+### Added
+
+- Tema claro e escuro disponível em todos os gêneros de campanha; o modo Automático acompanha a preferência do dispositivo (spec 150).
+- Associação de PJs e NPCs a Locais, com identificação do tipo e respeito às permissões e regras de visibilidade existentes (spec 151).
+
+### In Progress
+
+- Iniciada a spec 152 para otimizar a execução dos testes, com perfil rápido e análise dos gargalos; trabalho ainda não concluído.
+
 ## [0.22.2] — 2026-09-24
 
 ### Added

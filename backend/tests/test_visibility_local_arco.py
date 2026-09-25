@@ -8,6 +8,7 @@ from app.campaign_db import campaign_uploads_path, get_control_engine
 from app.models.campanha import Campanha
 from app.models.links import LocalConexaoLink, LocalNPCLink
 from app.models.local import Local
+from app.models.npc import PersonagemTipo
 from app.models.waypoint import Waypoint
 from app.services.media_paths import media_url
 from tests.conftest import TEST_CAMPAIGN_SLUG, api
@@ -85,6 +86,45 @@ def test_npc_public_local_ids_omit_hidden_local(client, db_session) -> None:
     admin_npc = next(row for row in client.get(api("/api/admin/npcs")).json() if row["id"] == npc.id)
     assert oculto.id in admin_npc["local_ids"]
     assert oculto.id not in {row["id"] for row in client.get(api("/api/locais")).json()}
+
+
+def test_local_character_links_filter_hidden_pj_and_npc_for_public_reads(client, db_session) -> None:
+    local = seed_local(db_session, nome="Local com personagens", visivel=True)
+    pj_visivel = seed_personagem(
+        db_session, nome="PJ visível no Local", visivel=True, tipo=PersonagemTipo.pj
+    )
+    npc_visivel = seed_personagem(
+        db_session, nome="NPC visível no Local", visivel=True, tipo=PersonagemTipo.npc
+    )
+    pj_oculto = seed_personagem(
+        db_session, nome="PJ oculto no Local", visivel=False, tipo=PersonagemTipo.pj
+    )
+    npc_oculto = seed_personagem(
+        db_session, nome="NPC oculto no Local", visivel=False, tipo=PersonagemTipo.npc
+    )
+    db_session.add_all(
+        [
+            LocalNPCLink(local_id=local.id, npc_id=row.id)
+            for row in (pj_visivel, npc_visivel, pj_oculto, npc_oculto)
+        ]
+    )
+    db_session.commit()
+
+    public_local = client.get(api(f"/api/locais/{local.id}")).json()
+    assert set(public_local["npc_ids"]) == {pj_visivel.id, npc_visivel.id}
+    admin_local = next(
+        row for row in client.get(api("/api/admin/locais")).json() if row["id"] == local.id
+    )
+    assert set(admin_local["npc_ids"]) == {
+        pj_visivel.id,
+        npc_visivel.id,
+        pj_oculto.id,
+        npc_oculto.id,
+    }
+
+    public_ids = {row["id"] for row in client.get(api("/api/npcs")).json()}
+    assert {pj_visivel.id, npc_visivel.id} <= public_ids
+    assert pj_oculto.id not in public_ids and npc_oculto.id not in public_ids
 
 
 def test_admin_patch_persists_visivel_flag(client, db_session) -> None:

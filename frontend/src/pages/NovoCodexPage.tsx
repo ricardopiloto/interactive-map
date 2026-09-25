@@ -49,15 +49,12 @@ export function NovoCodexPage() {
     const root = document.documentElement
     const previousGenre = root.dataset.genre
     const previousTheme = root.dataset.theme
-    const previousForcedDark = root.getAttribute('data-genre-forced-dark')
     applyCampaignGenre(genero)
     return () => {
       if (previousGenre) root.dataset.genre = previousGenre
       else delete root.dataset.genre
       if (previousTheme) root.dataset.theme = previousTheme
       else delete root.dataset.theme
-      if (previousForcedDark === null) root.removeAttribute('data-genre-forced-dark')
-      else root.setAttribute('data-genre-forced-dark', previousForcedDark)
     }
   }, [genero])
 

@@ -829,6 +829,7 @@ function LocalDetail({
   onDelete: () => void
 }) {
   const { t } = useTranslation('mapa')
+  const { t: tc } = useTranslation('comum')
   const linkedNpcs = npcs.filter((n) => local.npc_ids.includes(n.id))
   const descricao = local.descricao.trim()
   const visited = isVisited(local)
@@ -877,7 +878,7 @@ function LocalDetail({
           <div className="map-page__chip-row">
             {linkedNpcs.map((n) => (
               <Chip variant="outline" key={n.id} type="button" onClick={() => onSelectNpc(n.id)}>
-                {n.nome}
+                {tc(n.tipo === 'pj' ? 'tipo.pj' : 'tipo.npc')} · {n.nome}
               </Chip>
             ))}
           </div>

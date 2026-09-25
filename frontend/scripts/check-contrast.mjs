@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Contrast gate for genre palettes (spec 111) + fantasia light.
+ * Contrast gate for each genre palette in light and dark modes.
  * Keep in sync with frontend/src/styles/tokens.css
  */
 function hexToRgb(hex) {
@@ -64,6 +64,23 @@ const themes = {
     vinculoHostil: '#ab3832',
     vinculoNeutro: '#6e6447',
   },
+  'gotico-light': {
+    bg: '#f4e9eb',
+    card: '#fcf5f6',
+    elevated: '#ffffff',
+    text: '#28191c',
+    textSecondary: '#594449',
+    textTertiary: '#69545a',
+    borderField: '#866b72',
+    accent: '#873f52',
+    accentHover: '#713344',
+    onAccent: '#fff8f9',
+    accentFill: '#873f52',
+    vinculoAfinidade: '#2d784c',
+    vinculoLaco: '#a94775',
+    vinculoHostil: '#ab3832',
+    vinculoNeutro: '#6e6447',
+  },
   'gotico-dark': {
     bg: '#191011',
     card: '#211719',
@@ -81,6 +98,23 @@ const themes = {
     vinculoHostil: '#e2736e',
     vinculoNeutro: '#b2ada5',
   },
+  'scifi-light': {
+    bg: '#e8f2f4',
+    card: '#f4fafb',
+    elevated: '#ffffff',
+    text: '#14262a',
+    textSecondary: '#405b61',
+    textTertiary: '#526a70',
+    borderField: '#58777d',
+    accent: '#176579',
+    accentHover: '#105365',
+    onAccent: '#f6fcfd',
+    accentFill: '#176579',
+    vinculoAfinidade: '#2d784c',
+    vinculoLaco: '#a94775',
+    vinculoHostil: '#ab3832',
+    vinculoNeutro: '#6e6447',
+  },
   'scifi-dark': {
     bg: '#101719',
     card: '#171f21',
@@ -97,6 +131,23 @@ const themes = {
     vinculoLaco: '#da91b2',
     vinculoHostil: '#e2736e',
     vinculoNeutro: '#b2ada5',
+  },
+  'urbano-light': {
+    bg: '#eaf0f7',
+    card: '#f5f8fc',
+    elevated: '#ffffff',
+    text: '#172334',
+    textSecondary: '#43556b',
+    textTertiary: '#526277',
+    borderField: '#647c97',
+    accent: '#315d8e',
+    accentHover: '#274d77',
+    onAccent: '#f7faff',
+    accentFill: '#315d8e',
+    vinculoAfinidade: '#2d784c',
+    vinculoLaco: '#a94775',
+    vinculoHostil: '#ab3832',
+    vinculoNeutro: '#6e6447',
   },
   'urbano-dark': {
     bg: '#101419',

@@ -2,29 +2,24 @@ export type GenreId = 'fantasia' | 'gotico' | 'scifi' | 'urbano'
 
 export interface GenreDef {
   id: GenreId
-  supportsLight: boolean
   suggestedSystems: string[]
 }
 
 export const GENRES: GenreDef[] = [
   {
     id: 'fantasia',
-    supportsLight: true,
     suggestedSystems: ['wfrp4e', 'D&D 5e', 'Old Dragon', 'Pathfinder'],
   },
   {
     id: 'gotico',
-    supportsLight: false,
     suggestedSystems: ['wod', 'Vampiro: A Máscara', 'Chronicles of Darkness'],
   },
   {
     id: 'scifi',
-    supportsLight: false,
     suggestedSystems: ['Starfinder', 'Traveller', 'Stars Without Number', 'Alien RPG'],
   },
   {
     id: 'urbano',
-    supportsLight: false,
     suggestedSystems: ['Call of Cthulhu', 'Blades in the Dark', 'Urban Shadows'],
   },
 ]

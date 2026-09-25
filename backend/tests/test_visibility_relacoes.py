@@ -60,7 +60,8 @@ def test_public_relations_redact_unknown_direction_content(client_anon, db_sessi
 
     assert response.status_code == 200
     row = next(item for item in response.json() if item["id"] == bond.id)
-    assert row["tipo_ab"] is None
+    # The response model excludes None fields; the private direction must not be serialized.
+    assert "tipo_ab" not in row
     assert row["nota_ab"] == ""
     assert row["qualificador_ab"] == ""
     assert row["tipo_ba"] == VinculoTipo.amizade.value
@@ -68,4 +69,3 @@ def test_public_relations_redact_unknown_direction_content(client_anon, db_sessi
     assert row["qualificador_ba"] == "Companheiro conhecido"
     assert "conhecido_ab" not in row
     assert "conhecido_ba" not in row
-

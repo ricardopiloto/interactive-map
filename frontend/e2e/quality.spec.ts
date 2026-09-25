@@ -95,7 +95,5 @@ async function runScreen(
   const critical = criticalViolations(axe)
   expect(critical, JSON.stringify(critical, null, 2)).toEqual([])
 
-  await expect(page).toHaveScreenshot(`${opts.shot}.png`, {
-    fullPage: true,
-  })
+  await expect(page).toHaveScreenshot(`${opts.shot}.png`)
 }

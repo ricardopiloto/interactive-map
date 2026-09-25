@@ -39,6 +39,15 @@ def test_every_admin_endpoint_rejects_anonymous_and_non_admin_without_mutation(c
         body = rest[0] if rest else None
         assert _call(client_anon, method, path, body).status_code == 401
     login_as(client_anon, email=TEST_GM_EMAIL, password=TEST_GM_PASSWORD)
+    # Login intentionally creates a session; compare the rejection matrix against that state.
+    with Session(get_control_engine()) as session:
+        after_login = {
+            "users": session.exec(select(Usuario.id)).all(),
+            "campaigns": session.exec(select(Campanha.id)).all(),
+            "invites": session.exec(select(Convite.id)).all(),
+            "sessions": session.exec(select(Sessao.id)).all(),
+            "members": session.exec(select(Membro.id)).all(),
+        }
     for method, path, *rest in ADMIN_CALLS:
         body = rest[0] if rest else None
         assert _call(client_anon, method, path, body).status_code == 403
@@ -50,7 +59,10 @@ def test_every_admin_endpoint_rejects_anonymous_and_non_admin_without_mutation(c
             "sessions": session.exec(select(Sessao.id)).all(),
             "members": session.exec(select(Membro.id)).all(),
         }
-    assert after == before
+    assert before["users"] == after["users"]
+    assert before["campaigns"] == after["campaigns"]
+    assert before["invites"] == after["invites"]
+    assert after == after_login
 
 
 def test_admin_can_access_both_allowlisted_lists(admin_client):

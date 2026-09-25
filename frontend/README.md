@@ -24,6 +24,10 @@ Tema: `data-theme` dark/light segue `prefers-color-scheme` (live). Em dev: `/__s
 | `npm run lint:tokens` | Gate: sem `#hex` de UI fora de `tokens.css` (excepto cor de pino) |
 | `npm run test:contrast` | Gate: contraste AA/3:1 nos dois temas |
 
+Para mudanças visuais de frontend, use `./scripts/test-fast.sh --frontend`: roda lint e contraste sem iniciar backend, build ou Playwright. Para feedback rápido combinado, `./scripts/test-fast.sh` também inclui nove testes backend selecionados. Escolha validações pelo escopo e risco da mudança; rode build para mudanças de integração/build e Playwright para jornadas afetadas. A suite ampla fica para mudanças de alto risco, marcos de entrega e CI.
+
+Para preparar os dados E2E, a partir de `backend/` execute `DATA_DIR=../frontend/e2e/.data uv run python ../frontend/e2e/seed_e2e.py`; depois rode `npm run test:e2e` em `frontend/`.
+
 ## Rotas
 
 | Rota | Conteúdo |

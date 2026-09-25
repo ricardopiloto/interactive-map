@@ -181,6 +181,64 @@ html[data-genre='urbano'][data-theme='light'] {
   --color-accent-label-bg: color-mix(in srgb, #73a5de 14%, transparent);
 }
 
+/* Light genre variants keep each campaign identity without overriding its mode. */
+html[data-genre='gotico'][data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f4e9eb;
+  --color-column: #fcf5f6;
+  --color-surface: #fcf5f6;
+  --color-elevated: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-text: #28191c;
+  --color-text-secondary: #594449;
+  --color-text-tertiary: #69545a;
+  --color-border-subtle: color-mix(in srgb, #28191c 14%, transparent);
+  --color-border-field: #866b72;
+  --color-accent: #873f52;
+  --color-accent-hover: #713344;
+  --color-accent-fill: #873f52;
+  --color-on-accent: #fff8f9;
+  --color-accent-label-bg: color-mix(in srgb, #873f52 12%, transparent);
+}
+
+html[data-genre='scifi'][data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #e8f2f4;
+  --color-column: #f4fafb;
+  --color-surface: #f4fafb;
+  --color-elevated: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-text: #14262a;
+  --color-text-secondary: #405b61;
+  --color-text-tertiary: #526a70;
+  --color-border-subtle: color-mix(in srgb, #14262a 14%, transparent);
+  --color-border-field: #58777d;
+  --color-accent: #176579;
+  --color-accent-hover: #105365;
+  --color-accent-fill: #176579;
+  --color-on-accent: #f6fcfd;
+  --color-accent-label-bg: color-mix(in srgb, #176579 12%, transparent);
+}
+
+html[data-genre='urbano'][data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #eaf0f7;
+  --color-column: #f5f8fc;
+  --color-surface: #f5f8fc;
+  --color-elevated: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-text: #172334;
+  --color-text-secondary: #43556b;
+  --color-text-tertiary: #526277;
+  --color-border-subtle: color-mix(in srgb, #172334 14%, transparent);
+  --color-border-field: #647c97;
+  --color-accent: #315d8e;
+  --color-accent-hover: #274d77;
+  --color-accent-fill: #315d8e;
+  --color-on-accent: #f7faff;
+  --color-accent-label-bg: color-mix(in srgb, #315d8e 12%, transparent);
+}
+
 /* Shared (theme-independent) */
 :root {
   --font-heading: 'Inter', system-ui, sans-serif;

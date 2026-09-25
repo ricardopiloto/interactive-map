@@ -106,6 +106,12 @@ Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** i
 
 ## Desenvolvimento
 
+### Testes
+
+Na raiz do repositório, `./scripts/test-fast.sh --frontend` executa lint e contraste do frontend, adequado para mudanças visuais simples. `./scripts/test-fast.sh --backend` executa nove testes selecionados; sem opção, roda ambos. Requer as dependências locais correspondentes já instaladas e não executa build, seed ou serviços E2E.
+
+Selecione validações conforme o escopo: por exemplo, CSS usa o perfil `--frontend`; mudanças de lógica executam testes focados; alterações de integração usam build e jornadas Playwright afetadas. Reserve as suites completas para mudanças de alto risco, marcos de entrega e CI. O Playwright requer dados preparados pelo seed documentado em `frontend/README.md`.
+
 ### Backend
 
 ```bash

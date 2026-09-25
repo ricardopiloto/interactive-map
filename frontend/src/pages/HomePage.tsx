@@ -148,7 +148,7 @@ export function HomePage() {
           <div className="landing__genres-inner">
             <h2>{t('landing.genresTitle')}</h2>
             <p className="landing__genres-lead">{t('landing.genresLead')}</p>
-            <div className="landing__genre-grid" role="list">
+            <div className="landing__genre-grid">
               {GENRES.map((g) => (
                 <button
                   key={g.id}

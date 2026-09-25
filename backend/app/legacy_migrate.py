@@ -50,6 +50,20 @@ def migrate_sqlite_legacy(engine: Engine) -> None:
                     "NOT NULL DEFAULT 1"
                 )
             )
+        if local_cols and "estado_exploracao" not in local_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE local ADD COLUMN estado_exploracao VARCHAR(10) "
+                    "NOT NULL DEFAULT 'conhecido'"
+                )
+            )
+            conn.execute(
+                text(
+                    "UPDATE local SET estado_exploracao = "
+                    "CASE WHEN data_sessao IS NOT NULL AND trim(data_sessao) <> '' "
+                    "THEN 'visitado' ELSE 'conhecido' END"
+                )
+            )
 
         arco_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(arco)")).fetchall()}
         if arco_cols and "visivel_para_todos" not in arco_cols:

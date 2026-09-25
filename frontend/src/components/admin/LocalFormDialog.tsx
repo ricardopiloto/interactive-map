@@ -231,7 +231,7 @@ export function LocalFormDialog({
           </Select>
         </div>
         <div className="field">
-          <label>{t('localForm.npcsPresentes')}</label>
+          <label>{t('localForm.personagensPresentes')}</label>
           <div className="gm-chips">
             {npcs.map((n) => {
               const on = draft.npc_ids.includes(n.id)
@@ -248,7 +248,7 @@ export function LocalFormDialog({
                     })
                   }
                 >
-                  {n.nome}
+                  {tc(n.tipo === 'pj' ? 'tipo.pj' : 'tipo.npc')} · {n.nome}
                 </Chip>
               )
             })}

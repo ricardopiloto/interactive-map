@@ -9,6 +9,7 @@ from app.campaign_db import get_control_engine
 from app.cli import _create_campanha
 from app.main import app
 from app.models.usuario import Usuario
+from app.models.local import Local
 from app.services.auth_admin import assign_owner
 from app.services.auth_password import hash_password
 from tests.conftest import (
@@ -100,3 +101,42 @@ def test_upload_auth_gate(client, client_anon, data_root) -> None:
         files={"file": ("x.png", b"\x89PNG\r\n\x1a\n", "image/png")},
     )
     assert denied.status_code == 401
+
+
+def test_local_update_requires_campaign_membership(client_anon, data_root) -> None:
+    from tests.conftest import api
+    from tests.helpers import seed_local, seed_personagem
+
+    from app.campaign_db import resolve_campaign_session
+
+    with resolve_campaign_session(TEST_CAMPAIGN_SLUG) as session:
+        personagem = seed_personagem(session, nome="Vínculo protegido")
+        local = seed_local(session, nome="Local protegido")
+        personagem_id = personagem.id
+        local_id = local.id
+
+    path = api(f"/api/admin/locais/{local_id}")
+    anonymous = client_anon.put(path, json={"npc_ids": [personagem_id]})
+    assert anonymous.status_code == 401
+
+    _create_campanha(slug="camp-sem-acesso", nome="Sem acesso", sistema="wfrp4e")
+    with Session(get_control_engine()) as session:
+        session.add(
+            Usuario(
+                email="sem-acesso@teste.local",
+                senha_hash=hash_password("password-sem-acesso"),
+                activo=True,
+                criado_em=datetime.utcnow(),
+                actualizado_em=datetime.utcnow(),
+            )
+        )
+        session.commit()
+        assign_owner(session, "camp-sem-acesso", "sem-acesso@teste.local")
+
+    login_as(client_anon, email="sem-acesso@teste.local", password="password-sem-acesso")
+    forbidden = client_anon.put(path, json={"npc_ids": [personagem_id]})
+    assert forbidden.status_code == 403
+    assert forbidden.json()["detail"]["erro"] == "NAO_MEMBRO"
+
+    with resolve_campaign_session(TEST_CAMPAIGN_SLUG) as session:
+        assert session.get(Local, local_id).npcs == []

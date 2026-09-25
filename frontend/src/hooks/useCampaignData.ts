@@ -40,7 +40,9 @@ export function useCampaignData(asGm = false): CampaignData {
         ])
         if (cancelled) return
         setLocais(locaisData)
-        setNpcs(npcsData.filter((n) => (n.tipo ?? 'npc') === 'npc'))
+        // A relação Local.npc_ids contém IDs da entidade unificada (PJ e NPC).
+        // APIs públicas já filtram personagens ocultos; o mestre recebe a lista completa.
+        setNpcs(npcsData)
         setArcos(arcosData)
         setGrupo(grupoData)
       } catch {

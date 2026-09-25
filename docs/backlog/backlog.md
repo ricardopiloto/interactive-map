@@ -389,6 +389,8 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-036] Produto — Alternância entre tema claro e escuro em todos os temas de campanha
 
+**Status:** Spec criada — [150-tema-claro-escuro-universal](../../specs/150-tema-claro-escuro-universal/spec.md) (`Draft`; pronta para `speckit-plan`).
+
 **Registrado em:** 2026-09-24.
 
 **Pedido:** permitir alternar entre tema claro e escuro quando a campanha usa qualquer gênero visual, não apenas Fantasia medieval.
@@ -399,11 +401,13 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 **Escopo:** revisar a regra que força modo escuro para gêneros diferentes de Fantasia e fazer o seletor respeitar a preferência individual em todos os temas existentes. Não inclui criar gêneros ou paletas novas, nem alterar a identidade cromática de cada gênero.
 
-**Próximo passo:** `/speckit-specify` — definir como o modo Automático interage com gêneros cuja implementação hoje força o modo escuro e como migrar preferências previamente salvas.
+**Decisões registradas na SPEC:** Automático acompanha a preferência de aparência do dispositivo; preferências individuais existentes permanecem válidas; cada gênero mantém sua identidade nos modos claro e escuro.
 
 ---
 
 ## [BKLG-037] Produto — Associar qualquer personagem a um local
+
+**Status:** Spec e plano criados — [151-associacao-personagem-local](../../specs/151-associacao-personagem-local/spec.md) ([plan.md](../../specs/151-associacao-personagem-local/plan.md); pronta para `speckit-tasks`).
 
 **Registrado em:** 2026-09-24.
 
@@ -415,7 +419,27 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 **Escopo:** permitir criar e manter a associação de qualquer personagem da campanha a um ou mais Locais. O comportamento visual e as operações disponíveis para jogadores e mestres serão definidos na SPEC.
 
-**Próximo passo:** `/speckit-specify` — definir os fluxos de associação e remoção, permissões e como os personagens associados aparecem no Mapa e nos detalhes do Local.
+**Decisões registradas na SPEC:** mestres com permissão de edição administram associações; jogadores consultam conforme as regras de visibilidade; as interfaces identificam PJ e NPC.
+
+---
+
+## [BKLG-038] Débito técnico — Otimizar o tempo de execução dos scripts de teste
+
+**Status:** Spec, plano e tarefas criados — [152-perfil-rapido-testes](../../specs/152-perfil-rapido-testes/spec.md) ([plan.md](../../specs/152-perfil-rapido-testes/plan.md), [tasks.md](../../specs/152-perfil-rapido-testes/tasks.md)); pronta para implementação.
+
+**Registrado em:** 2026-09-24.
+
+**Pedido:** rever os scripts de teste porque a execução está lenta e o tempo de espera dificulta o ciclo de desenvolvimento.
+
+**Contexto observado:** execuções focadas dos E2Es iniciam backend e preview e refazem o build; alguns testes também aguardam até o timeout quando a configuração do cliente ou uma interação não progride. É necessário medir separadamente cada suíte e identificar onde o tempo é gasto antes de escolher as otimizações.
+
+**Achado adicional (2026-09-25):** no E2E da spec 151, pins de Local sobrepostos causaram interceptação de clique; depois de salvar, a leitura administrativa confirmou os IDs, mas a reabertura não confirmou os chips selecionados. Causa não determinada; investigar sincronização/seletores e qualidade do diagnóstico como parte desta spec, sem reabrir o escopo funcional da spec 151. Detalhes em [test-performance.md](../test-performance.md).
+
+**Ideia:** criar um perfil rápido para feedback local e reduzir trabalho repetido entre testes, mantendo cobertura e isolamento. Avaliar tempo de inicialização dos serviços, build, fixtures/autenticação, timeouts, limpeza de dados e paralelização segura; registrar tempos de referência e critérios de melhoria.
+
+**Escopo:** ferramentas e configuração de execução dos testes de backend e frontend/E2E. Não reduzir a cobertura ou remover verificações apenas para diminuir a duração.
+
+**Metas registradas na SPEC:** perfil rápido em até 2 minutos e redução mediana de pelo menos 25% nas suítes recorrentes, sem perda de cobertura ou isolamento; a medição deve registrar ambiente e linha de base.
 
 ---
 

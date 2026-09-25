@@ -6,6 +6,7 @@ test('mestre move/cancela grupo, alterna formato e mantém posição após falha
   await applyAuth(context, session)
   await preparePage(page, { locale: 'pt-BR', theme: 'light' })
   await page.goto(`/c/${session.slug}`)
+  await page.getByTitle('Modo edição desligado — clicar para editar').click()
   const group = page.locator('#map-party')
   const before = await group.getAttribute('style')
   const initialResponse = await page.request.get(`/api/c/${session.slug}/grupo`)

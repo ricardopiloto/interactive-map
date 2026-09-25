@@ -69,6 +69,19 @@ export async function setTheme(page: Page, theme: 'light' | 'dark') {
   }, theme)
 }
 
+/** Override only the campaign genre returned to this page, without mutating seed data. */
+export async function overrideCampaignGenre(page: Page, slug: string, genero: string) {
+  await page.route(`**/api/c/${encodeURIComponent(slug)}/config`, async (route) => {
+    const response = await route.fetch()
+    if (!response.ok()) {
+      await route.fulfill({ response })
+      return
+    }
+    const config = (await response.json()) as Record<string, unknown>
+    await route.fulfill({ response, json: { ...config, genero } })
+  })
+}
+
 export async function preparePage(
   page: Page,
   opts: { locale: 'pt-BR' | 'en'; theme: 'light' | 'dark' },

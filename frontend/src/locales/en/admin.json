@@ -23,7 +23,7 @@
     "noRede": "Network node",
     "semNo": "No node",
     "noFallback": "Node {{id}}",
-    "npcsPresentes": "Present NPCs",
+    "personagensPresentes": "Characters present",
     "saidas": "Exits (where the party went)",
     "cadastreLocais": "Add other locations to define exits.",
     "posicao": "Position",

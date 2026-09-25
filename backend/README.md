@@ -75,6 +75,8 @@ uv sync --group dev
 uv run pytest
 ```
 
+Para feedback rápido a partir da raiz do repositório, execute `./scripts/test-fast.sh --backend`; ele roda nove testes selecionados. Escolha testes focados pelo escopo; mantenha a suíte completa para mudanças de alto risco, marcos de entrega e CI.
+
 - Health: http://localhost:8000/api/health
 - Docs OpenAPI (só com `DEBUG=true`): http://localhost:8000/api/docs
 - Frontend: http://localhost:5173/ (catálogo); painel em `/painel`; mesa em `/c/&lt;slug&gt;`; login em `/login`
