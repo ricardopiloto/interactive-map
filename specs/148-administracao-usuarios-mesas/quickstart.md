@@ -50,3 +50,8 @@ Validated using isolated `tmp_path` data: deleting one campaign removes only its
 - `npm run build` — passed.
 - The three Playwright suites listed above — 10 passed across desktop and mobile. The E2E seed uses a disposable campaign per browser project so destructive cases remain isolated.
 - `tests/test_admin_console_auth.py`, `tests/test_admin_console_users.py`, and `tests/test_admin_console_campaigns.py` were attempted with a 60-second limit but did not complete because the local `TestClient` request hangs in this environment. Their authenticated/unauthenticated HTTP flows are covered by the passing E2Es; T031 remains open until these backend route tests run successfully.
+
+## Validation update (2026-10-02)
+
+- `DEBUG=false .venv/bin/pytest -q tests/test_campanha_genero_http.py tests/test_isolation_http.py tests/test_genero_identidade.py tests/test_visibilidade_patch.py tests/test_admin_console_auth.py tests/test_admin_console_users.py tests/test_admin_console_campaigns.py tests/test_admin_console_migration.py tests/test_campaign_modified_at.py` — **53 passed**. The test process needed local socket access outside the isolated sandbox; all databases remained temporary test fixtures. T031 is complete.
+- `npm run build`, `npm run lint`, and `npm run test:contrast` — passed. Lint reported existing warnings.

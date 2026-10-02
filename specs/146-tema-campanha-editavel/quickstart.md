@@ -43,7 +43,7 @@ Confirme que a criação, a leitura de configuração, as paletas e as mutaçõe
 
 1. Abrir a mesma campanha em outra sessão/conta participante e recarregar; confirmar que usa o gênero compartilhado salvo.
 2. Navegar para outra campanha com gênero distinto; confirmar que cada uma mantém sua própria identidade.
-3. Repetir com preferência pessoal `light`, `dark` e `auto`: Fantasia respeita a preferência existente; Gótico, Sci-Fi e Urbano forçam modo escuro enquanto ativos; ao sair para contexto sem campanha, a preferência pessoal continua vigente.
+3. Repetir com preferência pessoal `light`, `dark` e `auto`: todos os gêneros respeitam a preferência individual (spec 150); `auto` acompanha o sistema. Ao sair para contexto sem campanha, a preferência pessoal continua vigente.
 
 ## 5. Idiomas e build
 

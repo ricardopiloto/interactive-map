@@ -110,7 +110,7 @@
 **Purpose**: Validar os fluxos completos, traduções, regressões e segurança antes do handoff.
 
 - [X] T030 [P] Revisar todas as chaves e estados de erro de administração em `frontend/src/locales/pt-BR/comum.json` e `frontend/src/locales/en/comum.json`, incluindo duplicidade, usuário inexistente, conta pendente/inativa, último admin, proprietário bloqueado e data indisponível.
-- [ ] T031 Executar testes de backend e migrações descritos em `specs/148-administracao-usuarios-mesas/quickstart.md` e corrigir falhas nos arquivos de teste/implementação correspondentes.
+- [X] T031 Executar testes de backend e migrações descritos em `specs/148-administracao-usuarios-mesas/quickstart.md` e corrigir falhas nos arquivos de teste/implementação correspondentes.
 - [X] T032 Executar `npm run build` e os E2E `admin-console-users.spec.ts`, `admin-console-campaigns.spec.ts` e `admin-console-auth.spec.ts` descritos em `specs/148-administracao-usuarios-mesas/quickstart.md`; corrigir regressões nos caminhos indicados.
 - [X] T033 Fazer revisão manual de exclusão usando `DATA_DIR` descartável e registrar o resultado em `specs/148-administracao-usuarios-mesas/quickstart.md`, confirmando árvore UUID correta, recuperação de falha e preservação de mesa irmã e dados de membros.
 
