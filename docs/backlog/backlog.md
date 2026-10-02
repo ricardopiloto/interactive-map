@@ -443,6 +443,57 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ---
 
+## [BKLG-039] Produto — Linha do Tempo por arcos e por descoberta
+
+**Status:** TR feito + protótipo navegável em 2 direções visuais. Pronta pra virar spec, depois de fechar as duas decisões de produto abaixo.
+
+**Registrado em:** 2026-09-28.
+
+**Origem:** PRD do próprio usuário — [`docs/backlog/graph-timeline.md`](./graph-timeline.md) (Sep 27, 2026). Define dois modos novos de visualização da Linha do Tempo (complementando o modo cronológico já existente, BKLG-030): **por arcos** (cada arco narrativo numa raia própria, mesmo com sessões espalhadas no tempo) e **por descoberta** (quando cada personagem/local/facção/item apareceu pela primeira vez, e quando reaparece após ausência longa).
+
+**TR feito:** [`docs/v2/tr-timeline-arcos-descoberta.md`](../v2/tr-timeline-arcos-descoberta.md). Achados principais:
+- **Modo por arcos** — médio custo: `Arco` hoje só vincula `Local` ([`backend/app/models/arco.py`](../../backend/app/models/arco.py)) — falta migração de `cor` e vínculo com `Sessao`, além de estender a UI de admin do Arco.
+- **Modo por descoberta — personagens/locais/facções** — baixo custo: os dados de primeira aparição já existem hoje via `SessaoNpcLink`/`SessaoLocalLink`/`EventoNpcLink`/`EventoLocalLink` ([`backend/app/models/links.py`](../../backend/app/models/links.py)) — é agregação nova, sem schema.
+- **Modo por descoberta — itens** — **alto custo**: não existe nenhuma entidade "Item" no sistema hoje, em lugar nenhum. Precisaria ser desenhada do zero (model, schema, CRUD, vínculos) — tamanho comparável à spec 141 (`Evento`) inteira.
+- **Gancho de criação de arco por IA vs. manual** — baixo custo: `Campanha.modulos_ativos` (JSON, já existe e já é usado pro módulo "fadiga") cobre o flag "IA habilitada pra campanha" sem schema novo. O motor de IA em si fica explicitamente fora de escopo (PRD já pede um TR separado pra ele).
+- Estimativa: **~5-6 dias sem Itens, ~8-10 dias com Itens**.
+
+**Protótipo navegável:** [Linha do Tempo — Arcos e Descoberta](https://claude.ai/artifact/CjAFTtHxy5NGfHRGaQ6bXd) (canvas com 2 artboards interativos, dentro da identidade visual atual — tema escuro, dourado de destaque, Cormorant Garamond/Inter):
+- **`Main.dc.html`** — primeira direção: raias horizontais por arco (estilo Gantt), com seletor pros 3 modos (cronológica/por arcos/por descoberta), chips de filtro por arco/tipo, conectores tracejados + rótulo de tempo decorrido nos saltos grandes, e o modal de "Novo Arco" com o toggle Manual/IA (já mostrando o estado "IA não habilitada").
+- **`Vertical.dc.html`** — segunda direção, sugerida pelo usuário ao revisar a primeira: raias **verticais**, estilo grafo do git (mais recente no topo, mais antigo embaixo), com revelação animada ao rolar a tela (`IntersectionObserver` de verdade, não só CSS estático) e locais/personagens conhecidos exibidos nas margens laterais de cada sessão. Mantém a posição ancorada em tempo real (não é espaçamento uniforme tipo `git log` puro) pra não perder o requisito do PRD de "posição pela data real".
+
+**Escopo:** as duas visualizações novas da Linha do Tempo (por arcos, por descoberta) e o gancho de criação manual/IA de arco. O motor de IA de detecção de arcos em si fica fora — é um TR/spec separado, como o próprio PRD já define.
+
+**Não decidido ainda — perguntas em aberto, do próprio PRD e do TR:**
+1. Direção visual: raias horizontais (Gantt) ou verticais (estilo git)? O protótipo tem as duas prontas pra comparação.
+2. Itens entram nesta fase (quase dobra a estimativa) ou ficam pra depois — é o único tipo de "descoberta" que exige entidade nova?
+3. Uma sessão pode pertencer a mais de um arco simultâneo, ou é 1:1 (mais simples, mesmo padrão já usado em `Local.arco_id`)?
+4. Limite de arcos simultâneos exibidos sem filtro (pergunta do próprio PRD, calibra quantas raias cabem na tela).
+
+**Próximo passo:** fechar essas 4 decisões (a 1ª pode ser resolvida só olhando o protótipo) e então virar 2 specs independentes — "por arcos" e "por descoberta" não dependem uma da outra, só do modo cronológico que já existe.
+
+---
+
+## [BKLG-040] Produto — IA resume transcrição de sessão e sugere NPCs/Locais vinculados
+
+**Status:** Ideia registrada — precisa de uma análise melhor (provavelmente BP/DR via `po-virtual`) antes de qualquer TR. Não é pra virar `/speckit-specify` direto.
+
+**Registrado em:** 2026-09-28.
+
+**Pedido:** pensando em mais usos de IA na aplicação além da detecção de arcos (BKLG-039) — o usuário cola a transcrição bruta de uma sessão, e a IA propõe um resumo pra revisão do mestre, em vez dele escrever do zero.
+
+**Ideia (discutida em chat, ainda não aprofundada):** `Sessao.resumo` ([`backend/app/models/sessao.py`](../../backend/app/models/sessao.py)) já é um campo Markdown preenchido manualmente hoje — a IA entraria como uma sugestão editável desse mesmo campo, nunca gravando direto sem revisão do mestre. Levantado em conversa: a mesma passada pela transcrição também poderia sugerir quais `NPC`/`Local` marcar na sessão (hoje checkboxes manuais via `SessaoNpcLink`/`SessaoLocalLink`) — o que alimentaria de graça tanto o modo "por descoberta" da Linha do Tempo (BKLG-039) quanto a própria detecção de arcos, já que os três recursos partem do mesmo texto bruto de sessão.
+
+**Por que precisa de mais análise antes de virar TR:** processar transcrição livre (potencialmente longa, non-estruturada) é uma superfície de IA bem maior que só analisar sessões já estruturadas pra sugerir arcos — envolve as mesmas perguntas de custo/privacidade do BKLG-015 (que já está em aberto), mais perguntas próprias: tamanho/formato aceito de transcrição, onde ela é processada, o que fazer quando a IA sugere um NPC/Local que ainda não existe na campanha (criar automaticamente? só sugerir o nome pro mestre cadastrar?), e como isso se encaixa no gancho de "IA habilitada por campanha" (`Campanha.modulos_ativos`) já desenhado no TR do BKLG-039.
+
+**Escopo:** ainda não definido — esta entrada é a ideia, não um compromisso de escopo.
+
+**Depende de:** BKLG-015 (decisão de custo/privacidade de IA na aplicação, ainda em aberto) e do gancho de IA já desenhado no TR do BKLG-039.
+
+**Próximo passo:** discovery (BP/DR) antes de qualquer TR — fechar formato de entrada, onde processar, e o que fazer com entidades sugeridas que ainda não existem na campanha.
+
+---
+
 ## Roadmap de mercado — "Próximo" (precisa de TR antes do `/speckit-specify`)
 
 - **[BKLG-010] Sincronização ao vivo.** Hoje o jogador só vê mudanças ao recarregar. SSE (mais simples de operar atrás do Caddy atual) ou polling curto — decidir custo de servidor por campanha simultânea antes de comprometer a spec.
