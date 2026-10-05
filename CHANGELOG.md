@@ -7,6 +7,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.24.4] — 2026-10-05
+
+### Added
+
+- No formulário de sessão, com o módulo de IA da campanha ligado, o mestre pode pedir uma sugestão de locais e personagens a partir do resumo. As opções correspondentes ficam marcadas para revisão; a sessão só é gravada ao salvar. Um resumo em branco não dispara a sugestão. Referências inexistentes ou ocultas são descartadas, e uma falha da IA mantém a seleção que o mestre já tinha feito. A copy está em pt-BR e en.
+
 ## [0.24.3] — 2026-10-05
 
 ### Changed

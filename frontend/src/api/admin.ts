@@ -182,6 +182,13 @@ export const adminApi = {
     api.adminGet<{ sessoes: Sessao[] }>(campaignAdminPrefix() + '/sessoes'),
   proximoNumeroSessao: () =>
     api.adminGet<{ numero: number }>(campaignAdminPrefix() + '/sessoes/proximo-numero'),
+  sugerirAssociacoesSessao: (resumo: string) =>
+    api.adminPost<{
+      estado: 'sugestoes' | 'vazio' | 'falha'
+      mensagem: string
+      local_ids: number[]
+      personagem_ids: number[]
+    }>(campaignAdminPrefix() + '/sessoes/sugerir-associacoes', { resumo }),
   createSessao: (body: SessaoPayload) =>
     api.adminPost<Sessao>(campaignAdminPrefix() + '/sessoes', body),
   updateSessao: (id: number, body: Partial<SessaoPayload>) =>

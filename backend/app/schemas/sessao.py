@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.descoberta import AlertaInconsistencia
 
@@ -69,3 +69,22 @@ class SessaoListPublic(BaseModel):
 
 class SessaoListAdmin(BaseModel):
     sessoes: list[SessaoAdmin]
+
+
+class SugestaoAssociacoesRequest(BaseModel):
+    resumo: str = Field(max_length=50000)
+
+    @field_validator("resumo")
+    @classmethod
+    def resumo_util(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("resumo vazio")
+        return stripped
+
+
+class SugestaoAssociacoesResponse(BaseModel):
+    estado: Literal["sugestoes", "vazio", "falha"]
+    mensagem: str = ""
+    local_ids: list[int] = Field(default_factory=list)
+    personagem_ids: list[int] = Field(default_factory=list)

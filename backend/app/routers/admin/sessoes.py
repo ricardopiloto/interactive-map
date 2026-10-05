@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session
 
 from app.database import get_session
-from app.deps.auth import MembroContext, require_membro
+from app.deps.auth import MembroContext, require_dono, require_membro
 from app.schemas.descoberta import AlertaInconsistencia
 from app.schemas.sessao import (
     ProximoNumeroResponse,
@@ -10,8 +10,11 @@ from app.schemas.sessao import (
     SessaoCreate,
     SessaoListAdmin,
     SessaoUpdate,
+    SugestaoAssociacoesRequest,
+    SugestaoAssociacoesResponse,
 )
 from app.services import descoberta_service, sessao_service
+from app.services.motor_ia_sessao_associacoes import sugerir_associacoes
 from app.services.rate_limit import limiter
 
 router = APIRouter()
@@ -38,6 +41,17 @@ def list_sessoes_admin(
 @router.get("/sessoes/proximo-numero", response_model=ProximoNumeroResponse)
 def get_proximo_numero(session: Session = Depends(get_session)) -> ProximoNumeroResponse:
     return ProximoNumeroResponse(numero=sessao_service.proximo_numero(session))
+
+
+@router.post("/sessoes/sugerir-associacoes", response_model=SugestaoAssociacoesResponse)
+@limiter.limit("10/minute")
+def sugerir_associacoes_admin(
+    request: Request,
+    payload: SugestaoAssociacoesRequest,
+    ctx: MembroContext = Depends(require_dono),
+    session: Session = Depends(get_session),
+) -> SugestaoAssociacoesResponse:
+    return sugerir_associacoes(session, ctx, payload.resumo)
 
 
 @router.get("/sessoes/{sessao_id}", response_model=SessaoAdmin)

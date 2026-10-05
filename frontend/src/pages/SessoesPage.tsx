@@ -45,6 +45,9 @@ export function SessoesPage() {
   const [draft, setDraft] = useState<SessaoDraft | null>(null)
   const [draftBaseline, setDraftBaseline] = useState<string>('')
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
+  const [sugerindo, setSugerindo] = useState(false)
+  const [sugestaoMsg, setSugestaoMsg] = useState<string | null>(null)
+  const iaAtiva = Boolean(cfg?.modulos_ativos.includes('ia_arcos'))
 
   async function refresh() {
     setLoading(true)
@@ -98,6 +101,7 @@ export function SessoesPage() {
       }
       setDraft(next)
       setDraftBaseline(JSON.stringify(next))
+      setSugestaoMsg(null)
     } catch (err) {
       setBusyError(apiErrorMessage(err))
     }
@@ -118,6 +122,34 @@ export function SessoesPage() {
     setDraft(next)
     setDraftBaseline(JSON.stringify(next))
     setBusyError(null)
+    setSugestaoMsg(null)
+  }
+
+  async function sugerirAssociacoes() {
+    if (!draft || !draft.resumo.trim() || sugerindo) return
+    const resumo = draft.resumo
+    setSugerindo(true)
+    setSugestaoMsg(null)
+    try {
+      const resposta = await adminApi.sugerirAssociacoesSessao(resumo)
+      if (resposta.estado === 'sugestoes') {
+        setDraft((atual) =>
+          atual
+            ? {
+                ...atual,
+                local_ids: mergeIds(atual.local_ids, resposta.local_ids),
+                personagem_ids: mergeIds(atual.personagem_ids, resposta.personagem_ids),
+              }
+            : atual,
+        )
+        return
+      }
+      setSugestaoMsg(resposta.estado === 'vazio' ? t('suggestEmpty') : t('suggestFail'))
+    } catch (err) {
+      setSugestaoMsg(apiErrorMessage(err) || t('suggestFail'))
+    } finally {
+      setSugerindo(false)
+    }
   }
 
   async function saveDraft() {
@@ -156,6 +188,10 @@ export function SessoesPage() {
 
   function toggleId(list: number[], id: number): number[] {
     return list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
+  }
+
+  function mergeIds(atuais: number[], sugeridos: number[]): number[] {
+    return [...new Set([...atuais, ...sugeridos])]
   }
 
   return (
@@ -298,6 +334,23 @@ export function SessoesPage() {
             onChange={(resumo) => setDraft({ ...draft, resumo })}
             controlClassName="ui-input--new-codex"
           />
+          {iaAtiva ? (
+            <div className="sessoes-page__suggest">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={!draft.resumo.trim() || sugerindo}
+                aria-describedby="sessao-suggest-hint"
+                onClick={() => void sugerirAssociacoes()}
+              >
+                {sugerindo ? t('suggestLoading') : t('suggestButton')}
+              </Button>
+              <p id="sessao-suggest-hint" className="sessoes-page__suggest-hint">
+                {!draft.resumo.trim() ? t('suggestNeedsResumo') : sugestaoMsg}
+              </p>
+            </div>
+          ) : null}
           <fieldset className="field">
             <legend>{t('fieldLocais')}</legend>
             <div className="sessoes-page__checks">
