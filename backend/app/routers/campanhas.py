@@ -14,6 +14,8 @@ from app.schemas.campanhas import (
     GeneroRequest,
     GeneroResponse,
     MinhasResponse,
+    ModuloToggleRequest,
+    ModuloToggleResponse,
     UnidadeDistanciaRequest,
     UnidadeDistanciaResponse,
     VisibilidadeRequest,
@@ -27,6 +29,7 @@ from app.services.campanha_admin import (
     list_minhas_campanhas,
     set_capa,
     set_genero,
+    set_modulo_ativo,
     set_unidade_distancia,
     set_visibilidade,
 )
@@ -110,6 +113,19 @@ def patch_unidade_distancia(
     except CampanhaAdminError as exc:
         raise_api_error(exc.codigo, status_code=_admin_error_status(exc.codigo))
     return UnidadeDistanciaResponse(slug=camp.slug, unidade_distancia=camp.unidade_distancia)
+
+
+@router.patch("/{slug}/modulos", response_model=ModuloToggleResponse)
+def patch_modulo(
+    slug: str,
+    body: ModuloToggleRequest,
+    _ctx: MembroContext = Depends(require_dono),
+) -> ModuloToggleResponse:
+    try:
+        camp = set_modulo_ativo(slug, body.modulo, body.ativo)
+    except CampanhaAdminError as exc:
+        raise_api_error(exc.codigo, status_code=_admin_error_status(exc.codigo))
+    return ModuloToggleResponse(slug=camp.slug, modulos_ativos=list(camp.modulos_ativos or []))
 
 
 @router.patch("/{slug}/capa", response_model=CapaResponse)

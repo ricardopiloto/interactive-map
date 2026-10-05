@@ -35,6 +35,14 @@
   max-width: 40rem;
 }
 
+.linha-tempo-page .linha-tempo-page__mode-seg.ui-seg {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  margin-top: var(--space-3);
+  overflow: visible;
+}
+
 .linha-tempo-page__error {
   color: var(--color-danger, #b33);
   margin: 0 0 var(--space-4);
@@ -250,6 +258,50 @@
   font-style: italic;
   line-height: 1.45;
   max-width: 40rem;
+}
+
+.linha-tempo-page__itens {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.linha-tempo-page__itens-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.linha-tempo-page__itens-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+}
+
+.linha-tempo-page__itens-empty {
+  margin: var(--space-2) 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.linha-tempo-page__itens-list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.linha-tempo-page__itens-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .linha-tempo-page__checks {

@@ -26,8 +26,9 @@ def seed_arco(
     titulo: str = "Arco teste",
     ordem: int = 1,
     visivel: bool = True,
+    cor: str | None = None,
 ) -> Arco:
-    row = Arco(titulo=titulo, resumo="Resumo", ordem=ordem, visivel_para_todos=visivel)
+    row = Arco(titulo=titulo, resumo="Resumo", ordem=ordem, visivel_para_todos=visivel, cor=cor)
     session.add(row)
     session.commit()
     session.refresh(row)
@@ -63,12 +64,14 @@ def seed_personagem(
     nome: str,
     visivel: bool = True,
     tipo: PersonagemTipo = PersonagemTipo.pj,
+    faccao: str | None = None,
 ) -> NPC:
     row = NPC(
         nome=nome,
         tipo=tipo,
         visivel_para_todos=visivel,
         descricao="",
+        faccao=faccao,
     )
     session.add(row)
     session.commit()
@@ -87,6 +90,8 @@ def seed_sessao(
     resumo: str = "",
     local_ids: list[int] | None = None,
     personagem_ids: list[int] | None = None,
+    arco_id: int | None = None,
+    arco_transicao_id: int | None = None,
 ) -> Sessao:
     row = Sessao(
         numero=numero,
@@ -94,6 +99,8 @@ def seed_sessao(
         data_rotulo=data_rotulo,
         resumo=resumo,
         visivel_para_todos=visivel,
+        arco_id=arco_id,
+        arco_transicao_id=arco_transicao_id,
     )
     session.add(row)
     session.commit()

@@ -45,6 +45,24 @@ class Settings(BaseSettings):
         validation_alias="MIGRATE_DROP_LEGACY_FADIGA",
     )
     tolerancia_pernoite_pct: float = 0.20
+    deepseek_api_key: str | None = Field(default=None, validation_alias="DEEPSEEK_API_KEY")
+    deepseek_base_url: str = Field(
+        default="https://api.deepseek.com",
+        validation_alias="DEEPSEEK_BASE_URL",
+    )
+    deepseek_model: str = Field(default="deepseek-chat", validation_alias="DEEPSEEK_MODEL")
+    deepseek_timeout_seconds: float = Field(
+        default=30.0,
+        validation_alias="DEEPSEEK_TIMEOUT_SECONDS",
+    )
+
+    @field_validator("deepseek_api_key", mode="before")
+    @classmethod
+    def _blank_deepseek_key(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
 
     @field_validator("modulos_ativos_env", mode="before")
     @classmethod

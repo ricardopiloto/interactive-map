@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session
 
 from app.database import get_session
+from app.deps.auth import MembroContext, require_membro
+from app.schemas.descoberta import AlertaInconsistencia
 from app.schemas.sessao import (
     ProximoNumeroResponse,
     SessaoAdmin,
@@ -9,15 +11,28 @@ from app.schemas.sessao import (
     SessaoListAdmin,
     SessaoUpdate,
 )
-from app.services import sessao_service
+from app.services import descoberta_service, sessao_service
 from app.services.rate_limit import limiter
 
 router = APIRouter()
 
 
+def _alertas_do_mestre(
+    ctx: MembroContext, session: Session
+) -> dict[int, list[AlertaInconsistencia]]:
+    if ctx.membro.papel != "dono":
+        return {}
+    return descoberta_service.alertas_por_sessao(session)
+
+
 @router.get("/sessoes", response_model=SessaoListAdmin)
-def list_sessoes_admin(session: Session = Depends(get_session)) -> SessaoListAdmin:
-    return SessaoListAdmin(sessoes=sessao_service.list_admin(session))
+def list_sessoes_admin(
+    ctx: MembroContext = Depends(require_membro),
+    session: Session = Depends(get_session),
+) -> SessaoListAdmin:
+    return SessaoListAdmin(
+        sessoes=sessao_service.list_admin(session, alertas_por_id=_alertas_do_mestre(ctx, session))
+    )
 
 
 @router.get("/sessoes/proximo-numero", response_model=ProximoNumeroResponse)
@@ -26,8 +41,16 @@ def get_proximo_numero(session: Session = Depends(get_session)) -> ProximoNumero
 
 
 @router.get("/sessoes/{sessao_id}", response_model=SessaoAdmin)
-def get_sessao_admin(sessao_id: int, session: Session = Depends(get_session)) -> SessaoAdmin:
-    return sessao_service.get_admin(session, sessao_id)
+def get_sessao_admin(
+    sessao_id: int,
+    ctx: MembroContext = Depends(require_membro),
+    session: Session = Depends(get_session),
+) -> SessaoAdmin:
+    return sessao_service.get_admin(
+        session,
+        sessao_id,
+        alertas=_alertas_do_mestre(ctx, session).get(sessao_id, []),
+    )
 
 
 @router.post("/sessoes", response_model=SessaoAdmin, status_code=status.HTTP_201_CREATED)
@@ -35,9 +58,15 @@ def get_sessao_admin(sessao_id: int, session: Session = Depends(get_session)) ->
 def create_sessao(
     request: Request,
     payload: SessaoCreate,
+    ctx: MembroContext = Depends(require_membro),
     session: Session = Depends(get_session),
 ) -> SessaoAdmin:
-    return sessao_service.create_sessao(session, payload)
+    created = sessao_service.create_sessao(session, payload)
+    return sessao_service.get_admin(
+        session,
+        created.id,
+        alertas=_alertas_do_mestre(ctx, session).get(created.id, []),
+    )
 
 
 @router.patch("/sessoes/{sessao_id}", response_model=SessaoAdmin)
@@ -46,9 +75,15 @@ def update_sessao(
     request: Request,
     sessao_id: int,
     payload: SessaoUpdate,
+    ctx: MembroContext = Depends(require_membro),
     session: Session = Depends(get_session),
 ) -> SessaoAdmin:
-    return sessao_service.update_sessao(session, sessao_id, payload)
+    sessao_service.update_sessao(session, sessao_id, payload)
+    return sessao_service.get_admin(
+        session,
+        sessao_id,
+        alertas=_alertas_do_mestre(ctx, session).get(sessao_id, []),
+    )
 
 
 @router.delete("/sessoes/{sessao_id}", status_code=status.HTTP_204_NO_CONTENT)

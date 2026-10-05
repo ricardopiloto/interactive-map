@@ -18,5 +18,6 @@
   "chipLocal": "Local",
   "chipPersonagem": "Personagem",
   "hiddenBadge": "Oculta",
-  "sessionLabel": "Sessão {{numero}}"
+  "sessionLabel": "Sessão {{numero}}",
+  "alertaInconsistencia": "{{personagem}} também está na sessão oculta {{numero}} ({{titulo}}), anterior a esta. A gravação não alterou a visibilidade."
 }

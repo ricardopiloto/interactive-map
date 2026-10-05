@@ -54,7 +54,15 @@
     "deleteKeepsLocals": "Locations will remain on the map, but will no longer belong to an arc.",
     "visivelParaTodos": "Visible to everyone",
     "ocultoAosJogadores": "Hidden from players",
-    "ocultoAria": "Arc hidden from players"
+    "ocultoAria": "Arc hidden from players",
+    "cor": "Lane color",
+    "corAria": "Arc color picker",
+    "sessoesGroup": "Sessions",
+    "sessoesLegend": "Sessions in this arc",
+    "sessaoTransicao": "Transition session (opens this arc)",
+    "sessaoTransicaoNone": "— none —",
+    "sessaoTransicaoHelp": "The session that closes the previous arc and opens this one. It appears in both lanes without duplicating the session.",
+    "locaisSugeridos": "Suggested locations"
   },
   "digitizer": {
     "title": "Route network",

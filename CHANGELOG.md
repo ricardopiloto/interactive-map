@@ -7,6 +7,22 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.24.0] — 2026-10-04
+
+### Added
+
+- Seletor na Linha do Tempo com três modos: cronológica (padrão ao abrir a tela), Por arcos e Por descoberta. A escolha vale só enquanto a pessoa está na tela — não é configuração da campanha e não volta na visita seguinte. Os dois modos novos ficam disponíveis para mestre e jogador, mesmo vazios.
+- Modo Por arcos: uma raia vertical por arco, sessões mais recentes acima, tempo decorrido entre sessões da mesma raia e intervalo longo em ligação tracejada. Sessão sem arco continua numa raia neutra "Sem arco". Filtro por arco sem teto de seleção. Campanha sem arcos explica o vazio e oferece a volta à cronologia.
+- Arco com cor persistida e vínculo com sessões existentes. Uma sessão pertence a no máximo um arco, exceto a sessão de transição, que encerra um arco e abre o seguinte e aparece nas duas raias sem duplicar o registo.
+- Criação de arco manual ou por IA. A manual continua sempre disponível. Sem o módulo ligado, a escolha por IA explica o estado e aponta a configuração ou o formulário manual.
+- Módulo "IA para sugerir arcos" no Painel (`ia_arcos`), desligado por padrão. Com ele ligado, o mestre recebe uma ou mais propostas (título, resumo, sessões e locais sugeridos) no mesmo formulário da criação manual. Nada é gravado até confirmar; dá para editar qualquer campo ou descartar. Sessões insuficientes e falha do provedor avisam e oferecem a criação manual.
+- Chamadas de IA só para o mestre da campanha, só com dados dessa campanha e nunca com conteúdo oculto. A credencial do provedor fica em `DEEPSEEK_API_KEY` e não entra em resposta, log do cliente nem mensagem de erro. Indisponibilidade, erro ou tempo esgotado devolvem falha explícita sem corromper o que já estava gravado.
+- Modo Por descoberta: personagens, locais, facções e itens agrupados pela primeira aparição, com reaparições e o tempo desde a aparição anterior. Filtro por tipo. Para o jogador, sessão ou evento oculto não conta como aparição. Itens são entidade nova, com cadastro pelo mestre.
+
+### Fixed
+
+- No modo Por arcos, o rótulo da primeira sessão (por exemplo "1. Sessão inicial") ficava cortado acima da área da linha do tempo. O texto passa a alinhar com o ponto da sessão, dentro da área visível.
+
 ## [0.23.0] — 2026-09-25
 
 ### Added

@@ -18,5 +18,6 @@
   "chipLocal": "Location",
   "chipPersonagem": "Character",
   "hiddenBadge": "Hidden",
-  "sessionLabel": "Session {{numero}}"
+  "sessionLabel": "Session {{numero}}",
+  "alertaInconsistencia": "{{personagem}} is also in hidden session {{numero}} ({{titulo}}), which comes before this one. Saving did not change visibility."
 }

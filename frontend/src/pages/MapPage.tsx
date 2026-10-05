@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
@@ -10,7 +10,7 @@ import {
   IconTrash,
   IconUsers,
 } from '@tabler/icons-react'
-import { adminApi } from '../api/admin'
+import { adminApi, type PropostaArco } from '../api/admin'
 import { campaignApi } from '../api/campaign'
 import { CampaignMap, type PinFocusRequest } from '../components/map/CampaignMap'
 import { MapSidePanel } from '../components/map/MapSidePanel'
@@ -20,13 +20,13 @@ import { NpcFormDialog } from '../components/admin/NpcAdminList'
 import { ArcoAdminList, ArcoFormDialog } from '../components/admin/ArcoAdminList'
 import { ImageSlot } from '../components/media/ImageSlot'
 import { MarkdownSafe } from '../components/common/MarkdownSafe'
-import { ConfirmDialog, IconButton, Button, Chip} from '../components/ui'
+import { ConfirmDialog, Dialog, IconButton, Button, Chip} from '../components/ui'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
 import { useCampaignData } from '../hooks/useCampaignData'
 import { useEditMode } from '../context/EditModeContext'
 import { defaultMapUrl } from '../api/campaignSlug'
 import { markHasMapImageInCache, useInstanceConfig } from '../hooks/useInstanceConfig'
-import type { GrupoFormato, Local, NPC, NPCStatus, Waypoint } from '../types'
+import type { GrupoFormato, Local, NPC, NPCStatus, Sessao, Waypoint } from '../types'
 import { labelMatchesQuery } from '../utils/textMatch'
 import './MapPage.css'
 
@@ -118,8 +118,37 @@ export function MapPage() {
     resumo: string
     ordem: number
     visivel_para_todos: boolean
+    cor: string
+    sessaoIds: number[]
+    sessaoTransicaoId: number | null
+    localIds: number[]
+    localOpcoes: { id: number; nome: string }[]
     isNew: boolean
   } | null>(null)
+  const [sessoes, setSessoes] = useState<Sessao[]>([])
+  const [propostasArco, setPropostasArco] = useState<PropostaArco[]>([])
+  const propostaReq = useRef(0)
+  const [arcoCreateChoice, setArcoCreateChoice] = useState<
+    | 'picker'
+    | 'ia-nao-habilitada'
+    | 'ia-gerando'
+    | 'ia-propostas'
+    | 'ia-insuficiente'
+    | 'ia-falha'
+    | null
+  >(null)
+  const iaArcosEnabled = Boolean(instanceConfig?.modulos_ativos.includes('ia_arcos'))
+
+  useEffect(() => {
+    if (!isGm || !arcoManagerOpen) return
+    let cancelled = false
+    void adminApi.listSessoesAdmin().then((res) => {
+      if (!cancelled) setSessoes(res.sessoes)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [isGm, arcoManagerOpen])
 
   useEffect(() => {
     if (grupo) setGroupOverride(null)
@@ -332,6 +361,75 @@ export function MapPage() {
     }
   }
 
+  function startManualArco() {
+    setArcoCreateChoice(null)
+    setArcoDraft({
+      titulo: '',
+      resumo: '',
+      ordem: arcos.length + 1,
+      visivel_para_todos: true,
+      cor: '',
+      sessaoIds: [],
+      sessaoTransicaoId: null,
+      localIds: [],
+      localOpcoes: [],
+      isNew: true,
+    })
+  }
+
+  function aplicarProposta(proposta: PropostaArco) {
+    const opcoes = proposta.local_ids
+      .map((id) => locais.find((local) => local.id === id))
+      .filter((local): local is Local => local != null)
+      .map((local) => ({ id: local.id, nome: local.nome }))
+    setArcoCreateChoice(null)
+    setArcoDraft({
+      titulo: proposta.titulo,
+      resumo: proposta.resumo,
+      ordem: arcos.length + 1,
+      visivel_para_todos: true,
+      cor: '',
+      sessaoIds: proposta.sessao_ids,
+      sessaoTransicaoId: proposta.sessao_transicao_id,
+      localIds: opcoes.map((local) => local.id),
+      localOpcoes: opcoes,
+      isNew: true,
+    })
+  }
+
+  function descartarProposta() {
+    propostaReq.current += 1
+    setPropostasArco([])
+    setArcoCreateChoice(null)
+  }
+
+  async function chooseIaArco() {
+    if (!iaArcosEnabled) {
+      setArcoCreateChoice('ia-nao-habilitada')
+      return
+    }
+    const req = propostaReq.current + 1
+    propostaReq.current = req
+    setArcoCreateChoice('ia-gerando')
+    try {
+      const resposta = await adminApi.proporArcos()
+      if (propostaReq.current !== req) return
+      if (resposta.estado === 'propostas' && resposta.propostas.length > 0) {
+        setPropostasArco(resposta.propostas)
+        setArcoCreateChoice('ia-propostas')
+        return
+      }
+      setPropostasArco([])
+      setArcoCreateChoice(
+        resposta.estado === 'sessoes_insuficientes' ? 'ia-insuficiente' : 'ia-falha',
+      )
+    } catch {
+      if (propostaReq.current !== req) return
+      setPropostasArco([])
+      setArcoCreateChoice('ia-falha')
+    }
+  }
+
   async function saveArco() {
     if (!arcoDraft || !arcoDraft.titulo.trim()) return
     try {
@@ -340,9 +438,16 @@ export function MapPage() {
         resumo: arcoDraft.resumo,
         ordem: arcoDraft.ordem,
         visivel_para_todos: arcoDraft.visivel_para_todos,
+        cor: arcoDraft.cor || null,
+        sessao_ids: arcoDraft.sessaoIds,
+        sessao_transicao_id: arcoDraft.sessaoTransicaoId,
       }
-      if (arcoDraft.isNew) await adminApi.createArco(payload)
-      else if (arcoDraft.id != null) await adminApi.updateArco(arcoDraft.id, payload)
+      if (arcoDraft.isNew) {
+        const criado = await adminApi.createArco(payload)
+        await Promise.all(
+          arcoDraft.localIds.map((id) => adminApi.updateLocal(id, { arco_id: criado.id })),
+        )
+      } else if (arcoDraft.id != null) await adminApi.updateArco(arcoDraft.id, payload)
       setArcoDraft(null)
       refresh()
     } catch (e) {
@@ -470,8 +575,22 @@ export function MapPage() {
   const panelBody = arcoManagerOpen ? (
     <ArcoAdminList
       arcos={arcos}
-      onAdd={() => setArcoDraft({ titulo: '', resumo: '', ordem: arcos.length + 1, visivel_para_todos: true, isNew: true })}
-      onEdit={(arco) => setArcoDraft({ id: arco.id, titulo: arco.titulo, resumo: arco.resumo, ordem: arco.ordem, visivel_para_todos: arco.visivel_para_todos ?? true, isNew: false })}
+      onAdd={() => setArcoCreateChoice('picker')}
+      onEdit={(arco) =>
+        setArcoDraft({
+          id: arco.id,
+          titulo: arco.titulo,
+          resumo: arco.resumo,
+          ordem: arco.ordem,
+          visivel_para_todos: arco.visivel_para_todos ?? true,
+          cor: arco.cor ?? '',
+          sessaoIds: arco.sessao_ids ?? [],
+          sessaoTransicaoId: arco.sessao_transicao_id ?? null,
+          localIds: [],
+          localOpcoes: [],
+          isNew: false,
+        })
+      }
       onDelete={(id) => void deleteArco(id)}
     />
   ) : !selected ? (
@@ -789,11 +908,119 @@ export function MapPage() {
           resumo={arcoDraft.resumo}
           ordem={arcoDraft.ordem}
           visivel_para_todos={arcoDraft.visivel_para_todos}
+          cor={arcoDraft.cor}
+          sessaoIds={arcoDraft.sessaoIds}
+          sessaoTransicaoId={arcoDraft.sessaoTransicaoId}
+          localIds={arcoDraft.localIds}
+          localOpcoes={arcoDraft.localOpcoes}
+          sessoes={sessoes}
           onChange={(patch) => setArcoDraft({ ...arcoDraft, ...patch })}
           onSave={() => void saveArco()}
           onCancel={() => setArcoDraft(null)}
         />
       )}
+
+      <Dialog
+        open={arcoCreateChoice === 'picker'}
+        onClose={() => setArcoCreateChoice(null)}
+        title={t('mapPage.arcoCreateChoiceTitle')}
+      >
+        <p className="map-page__arco-choice-lead">{t('mapPage.arcoCreateChoiceLead')}</p>
+        <div className="map-page__arco-choice-actions">
+          <Button variant="primary" type="button" onClick={startManualArco}>
+            {t('mapPage.arcoCreateManual')}
+          </Button>
+          <Button variant="secondary" type="button" onClick={chooseIaArco}>
+            {t('mapPage.arcoCreateIa')}
+          </Button>
+          <Button variant="ghost" type="button" onClick={() => setArcoCreateChoice(null)}>
+            {t('mapPage.arcoCreateCancelar')}
+          </Button>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={arcoCreateChoice === 'ia-nao-habilitada'}
+        onClose={() => setArcoCreateChoice(null)}
+        title={t('mapPage.arcoIaNaoHabilitadaTitle')}
+      >
+        <p className="map-page__arco-choice-lead">{t('mapPage.arcoIaNaoHabilitadaBody')}</p>
+        <div className="map-page__arco-choice-actions">
+          <Button
+            variant="primary"
+            type="button"
+            onClick={() => {
+              setArcoCreateChoice(null)
+              navigate('/painel')
+            }}
+          >
+            {t('mapPage.arcoIaHabilitarCta')}
+          </Button>
+          <Button variant="secondary" type="button" onClick={startManualArco}>
+            {t('mapPage.arcoCreateManual')}
+          </Button>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={arcoCreateChoice === 'ia-gerando'}
+        onClose={descartarProposta}
+        title={t('mapPage.arcoIaGerandoTitle')}
+      >
+        <p className="map-page__arco-choice-lead">{t('mapPage.arcoIaGerandoBody')}</p>
+      </Dialog>
+
+      <Dialog
+        open={arcoCreateChoice === 'ia-propostas'}
+        onClose={descartarProposta}
+        title={t('mapPage.arcoIaPropostasTitle')}
+      >
+        <p className="map-page__arco-choice-lead">{t('mapPage.arcoIaPropostasLead')}</p>
+        <div className="map-page__arco-choice-actions">
+          {propostasArco.map((proposta, index) => (
+            <Button
+              key={`${proposta.titulo}-${index}`}
+              variant="primary"
+              type="button"
+              onClick={() => aplicarProposta(proposta)}
+            >
+              {t('mapPage.arcoIaUsarProposta')}: {proposta.titulo}
+            </Button>
+          ))}
+          <Button variant="secondary" type="button" onClick={startManualArco}>
+            {t('mapPage.arcoCreateManual')}
+          </Button>
+          <Button variant="ghost" type="button" onClick={descartarProposta}>
+            {t('mapPage.arcoIaDescartar')}
+          </Button>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={arcoCreateChoice === 'ia-insuficiente'}
+        onClose={() => setArcoCreateChoice(null)}
+        title={t('mapPage.arcoIaInsuficienteTitle')}
+      >
+        <p className="map-page__arco-choice-lead">{t('mapPage.arcoIaInsuficienteBody')}</p>
+        <div className="map-page__arco-choice-actions">
+          <Button variant="primary" type="button" onClick={startManualArco}>
+            {t('mapPage.arcoCreateManual')}
+          </Button>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={arcoCreateChoice === 'ia-falha'}
+        onClose={() => setArcoCreateChoice(null)}
+        title={t('mapPage.arcoIaFalhaTitle')}
+      >
+        <p className="map-page__arco-choice-lead">{t('mapPage.arcoIaFalhaBody')}</p>
+        <div className="map-page__arco-choice-actions">
+          <Button variant="primary" type="button" onClick={startManualArco}>
+            {t('mapPage.arcoCreateManual')}
+          </Button>
+        </div>
+      </Dialog>
 
       <ConfirmDialog
         open={confirmDeleteLocalId !== null}

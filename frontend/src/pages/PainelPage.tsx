@@ -82,6 +82,21 @@ export function PainelPage() {
     }
   }
 
+  async function toggleModulo(
+    item: PainelItem,
+    modulo: 'ia_arcos',
+  ) {
+    const ativo = !item.modulos_ativos.includes(modulo)
+    setError(null)
+    try {
+      await campanhasApi.patchModulo(item.slug, modulo, ativo)
+      clearInstanceConfigCache(item.slug)
+      await refresh()
+    } catch (err) {
+      setError(errMsg(err))
+    }
+  }
+
   function cancelGenreChange(slug: string) {
     setGenreDrafts((current) => {
       const next = { ...current }
@@ -234,6 +249,16 @@ export function PainelPage() {
                       <Button size="sm" variant="ghost" type="button" onClick={() => void toggleUnidade(c)}>
                         {t('painel.toggleUnit')} ({c.unidade_distancia === 'km' ? 'km' : 'mi'})
                       </Button>
+                    </div>
+                    <div className="painel-page__modulos">
+                      <label className="painel-page__modulo-toggle">
+                        <input
+                          type="checkbox"
+                          checked={c.modulos_ativos.includes('ia_arcos')}
+                          onChange={() => void toggleModulo(c, 'ia_arcos')}
+                        />
+                        {t('painel.moduloIaArcos')}
+                      </label>
                     </div>
                     <div className="painel-page__identidade">
                       <label className="painel-page__genre">

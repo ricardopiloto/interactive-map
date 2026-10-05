@@ -15,6 +15,7 @@ import type {
   Waypoint,
   Sessao,
   Evento,
+  Descoberta,
 } from '../types'
 
 function p(path: string, slug?: string): string {
@@ -43,6 +44,7 @@ export const campaignApi = {
   getSessao: (id: number) => api.get<Sessao>(p(`/sessoes/${id}`)),
   listEventos: () => api.get<{ eventos: Evento[] }>(p('/eventos')),
   getEvento: (id: number) => api.get<Evento>(p(`/eventos/${id}`)),
+  listDescoberta: () => api.get<Descoberta>(p('/descoberta')),
   planRoute: (
     origemWaypointId: number,
     destinoWaypointId: number,

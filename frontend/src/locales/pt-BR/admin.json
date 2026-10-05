@@ -54,7 +54,15 @@
     "deleteKeepsLocals": "Os locais serão mantidos no mapa, mas ficarão sem arco.",
     "visivelParaTodos": "Visível para todos",
     "ocultoAosJogadores": "Oculto aos jogadores",
-    "ocultoAria": "Arco oculto aos jogadores"
+    "ocultoAria": "Arco oculto aos jogadores",
+    "cor": "Cor da raia",
+    "corAria": "Seletor de cor do arco",
+    "sessoesGroup": "Sessões",
+    "sessoesLegend": "Sessões deste arco",
+    "sessaoTransicao": "Sessão de transição (abre este arco)",
+    "sessaoTransicaoNone": "— nenhuma —",
+    "sessaoTransicaoHelp": "A sessão que encerra o arco anterior e abre este. Aparece nas duas raias sem duplicar a sessão.",
+    "locaisSugeridos": "Locais sugeridos"
   },
   "digitizer": {
     "title": "Rede de rotas",

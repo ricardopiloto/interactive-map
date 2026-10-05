@@ -14,6 +14,7 @@ type EditModeContextValue = {
   enabled: boolean
   canEdit: boolean
   canEditReady: boolean
+  isDono: boolean
   setEnabled: (next: boolean) => void
   toggle: () => void
 }
@@ -43,12 +44,14 @@ function writeStored(slug: string, enabled: boolean) {
   }
 }
 
-async function probeCanEdit(slug: string): Promise<boolean> {
+async function probeMembership(slug: string): Promise<{ canEdit: boolean; papel: string | null }> {
   try {
-    await api.adminGet<{ email: string }>(`${campaignAdminPrefix(slug)}/session`)
-    return true
+    const body = await api.adminGet<{ email: string; papel?: string }>(
+      `${campaignAdminPrefix(slug)}/session`,
+    )
+    return { canEdit: true, papel: body.papel ?? null }
   } catch {
-    return false
+    return { canEdit: false, papel: null }
   }
 }
 
@@ -61,17 +64,20 @@ export function EditModeProvider({
 }) {
   const [canEdit, setCanEdit] = useState(false)
   const [canEditReady, setCanEditReady] = useState(false)
+  const [isDono, setIsDono] = useState(false)
   const [enabled, setEnabledState] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setCanEditReady(false)
     setCanEdit(false)
+    setIsDono(false)
     setEnabledState(false)
 
-    void probeCanEdit(slug).then((ok) => {
+    void probeMembership(slug).then(({ canEdit: ok, papel }) => {
       if (cancelled) return
       setCanEdit(ok)
+      setIsDono(papel === 'dono')
       setCanEditReady(true)
       if (ok) {
         const stored = readStored(slug)
@@ -104,10 +110,11 @@ export function EditModeProvider({
       enabled: canEdit ? enabled : false,
       canEdit,
       canEditReady,
+      isDono,
       setEnabled,
       toggle,
     }),
-    [canEdit, canEditReady, enabled, setEnabled, toggle],
+    [canEdit, canEditReady, isDono, enabled, setEnabled, toggle],
   )
 
   return <EditModeContext.Provider value={value}>{children}</EditModeContext.Provider>
@@ -120,6 +127,7 @@ export function useEditMode(): EditModeContextValue {
       enabled: false,
       canEdit: false,
       canEditReady: true,
+      isDono: false,
       setEnabled: () => {},
       toggle: () => {},
     }

@@ -89,6 +89,9 @@ export interface Arco {
   resumo: string
   ordem: number
   visivel_para_todos?: boolean
+  cor?: string | null
+  sessao_ids?: number[]
+  sessao_transicao_id?: number | null
 }
 
 export interface GrupoPosicao {
@@ -179,6 +182,16 @@ export interface SessaoRefPersonagem {
   tipo: string
 }
 
+export interface AlertaInconsistencia {
+  personagem_id: number
+  personagem_nome: string
+  sessao_visivel_id: number
+  sessao_visivel_numero: number
+  sessao_oculta_id: number
+  sessao_oculta_numero: number
+  sessao_oculta_titulo: string
+}
+
 export interface Sessao {
   id: number
   numero: number
@@ -188,6 +201,9 @@ export interface Sessao {
   locais: SessaoRefLocal[]
   personagens: SessaoRefPersonagem[]
   visivel_para_todos?: boolean
+  arco_id?: number | null
+  arco_transicao_id?: number | null
+  alertas_inconsistencia?: AlertaInconsistencia[]
 }
 
 export interface SessaoPayload {
@@ -198,6 +214,8 @@ export interface SessaoPayload {
   visivel_para_todos?: boolean
   local_ids?: number[]
   personagem_ids?: number[]
+  arco_id?: number | null
+  arco_transicao_id?: number | null
 }
 
 export interface EventoRefLocal {
@@ -235,4 +253,65 @@ export interface EventoPayload {
   sessao_id?: number | null
   local_ids?: number[]
   personagem_ids?: number[]
+}
+
+export interface ItemRefSessao {
+  id: number
+  numero: number
+  titulo: string
+}
+
+export interface ItemRefEvento {
+  id: number
+  titulo: string
+  ano: number
+  mes?: number | null
+}
+
+export interface Item {
+  id: number
+  nome: string
+  descricao: string
+  visivel_para_todos?: boolean
+  sessoes: ItemRefSessao[]
+  eventos: ItemRefEvento[]
+}
+
+export interface ItemPayload {
+  nome: string
+  descricao?: string
+  visivel_para_todos?: boolean
+  sessao_ids?: number[]
+  evento_ids?: number[]
+}
+
+export interface IntervaloAparicao {
+  anos: number
+  meses: number
+  sessoes?: number | null
+}
+
+export interface AparicaoDescoberta {
+  origem: 'sessao' | 'evento'
+  id: number
+  titulo: string
+  numero?: number | null
+  ano?: number | null
+  mes?: number | null
+  visivel_para_todos?: boolean
+  reaparicao: boolean
+  intervalo?: IntervaloAparicao | null
+}
+
+export interface EntidadeDescoberta {
+  tipo: 'personagem' | 'local' | 'faccao' | 'item'
+  id?: number | null
+  nome: string
+  descricao?: string | null
+  aparicoes: AparicaoDescoberta[]
+}
+
+export interface Descoberta {
+  entidades: EntidadeDescoberta[]
+  alertas?: AlertaInconsistencia[]
 }

@@ -7,7 +7,7 @@ from sqlmodel import Session, col, select
 
 from app.errors import raise_api_error
 from app.models.evento import Evento
-from app.models.links import EventoLocalLink, EventoNpcLink
+from app.models.links import EventoLocalLink, EventoNpcLink, ItemEventoLink
 from app.models.local import Local
 from app.models.npc import NPC
 from app.models.sessao import Sessao
@@ -233,6 +233,10 @@ def delete_evento(session: Session, evento_id: int) -> None:
         session.delete(link)
     for link in session.exec(
         select(EventoNpcLink).where(EventoNpcLink.evento_id == evento_id)
+    ).all():
+        session.delete(link)
+    for link in session.exec(
+        select(ItemEventoLink).where(ItemEventoLink.evento_id == evento_id)
     ).all():
         session.delete(link)
     session.delete(row)

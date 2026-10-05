@@ -2,9 +2,12 @@ from app.models.arco import Arco
 from app.models.campaign_state import CampaignState
 from app.models.evento import Evento
 from app.models.grupo import GrupoPosicao
+from app.models.item import Item
 from app.models.links import (
     EventoLocalLink,
     EventoNpcLink,
+    ItemEventoLink,
+    ItemSessaoLink,
     LocalConexaoLink,
     LocalNPCLink,
     SessaoLocalLink,
@@ -23,6 +26,9 @@ __all__ = [
     "EventoLocalLink",
     "EventoNpcLink",
     "GrupoPosicao",
+    "Item",
+    "ItemEventoLink",
+    "ItemSessaoLink",
     "Local",
     "LocalConexaoLink",
     "LocalNPCLink",

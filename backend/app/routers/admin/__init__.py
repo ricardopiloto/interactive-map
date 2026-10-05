@@ -3,9 +3,11 @@ from fastapi import APIRouter, Depends
 from app.deps.auth import MembroContext, require_membro
 from app.routers.admin import (
     arcos,
+    descoberta,
     eventos,
     export,
     grupo,
+    itens,
     locais,
     map_scale,
     npcs,
@@ -31,8 +33,10 @@ router.include_router(map_scale.router, tags=["admin-map-scale"])
 router.include_router(export.router, tags=["admin-export"])
 router.include_router(sessoes.router, tags=["admin-sessoes"])
 router.include_router(eventos.router, tags=["admin-eventos"])
+router.include_router(itens.router, tags=["admin-itens"])
+router.include_router(descoberta.router, tags=["admin-descoberta"])
 
 
 @router.get("/session")
 def admin_session(ctx: MembroContext = Depends(require_membro)) -> dict[str, str]:
-    return {"email": ctx.usuario.email}
+    return {"email": ctx.usuario.email, "papel": ctx.membro.papel}

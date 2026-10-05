@@ -13,7 +13,7 @@ test('mestre alterna visibilidade e associação nula em Local', async ({ page, 
   const hiddenTitle = await arc.locator('.list-row__title').innerText()
   await arc.getByRole('button', { name: 'Acções da linha' }).click()
   await page.getByRole('menuitem', { name: 'Editar' }).click()
-  await page.locator('.ui-drawer input[type="checkbox"]').uncheck()
+  await page.getByLabel('Visível para todos').uncheck()
   await page.getByRole('button', { name: 'Salvar' }).click()
   await expect(page.getByLabel('Arco oculto aos jogadores')).toBeVisible()
   const publicArcos = await page.request.get(`/api/c/${session.slug}/arcos`)

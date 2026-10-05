@@ -10,6 +10,7 @@ test('mestre cria, edita e confirma exclusão de arco pelo mapa', async ({ page,
   await page.getByRole('button', { name: 'Menu de ferramentas do mapa' }).click()
   await page.getByRole('menuitem', { name: 'Gerenciar arcos' }).click()
   await page.getByRole('button', { name: '+ Novo arco' }).click()
+  await page.getByRole('button', { name: 'Criar manualmente' }).click()
   await page.locator('.ui-drawer input').nth(0).fill('Arco E2E criado')
   const createResponse = page.waitForResponse((response) =>
     response.request().method() === 'POST' && response.url().endsWith(`/api/c/${session.slug}/admin/arcos`),

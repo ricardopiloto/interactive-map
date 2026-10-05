@@ -21,6 +21,7 @@ export type PainelItem = {
   bytes_usados: number
   cota_bytes: number
   aviso_cota: boolean
+  modulos_ativos: string[]
 }
 
 async function req<T>(path: string, init?: RequestInit, credentials = false): Promise<T> {
@@ -72,6 +73,16 @@ export const campanhasApi = {
     req<{ slug: string; unidade_distancia: string }>(
       `/api/campanhas/${encodeURIComponent(slug)}/unidade-distancia`,
       { method: 'PATCH', body: JSON.stringify({ unidade_distancia }) },
+      true,
+    ),
+  patchModulo: (
+    slug: string,
+    modulo: 'ia_arcos',
+    ativo: boolean,
+  ) =>
+    req<{ slug: string; modulos_ativos: string[] }>(
+      `/api/campanhas/${encodeURIComponent(slug)}/modulos`,
+      { method: 'PATCH', body: JSON.stringify({ modulo, ativo }) },
       true,
     ),
   patchGenero: (slug: string, genero: GenreId) =>

@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.descoberta import AlertaInconsistencia
+
 
 class SessaoRefLocal(BaseModel):
     id: int
@@ -24,10 +26,13 @@ class SessaoPublic(BaseModel):
     resumo: str = ""
     locais: list[SessaoRefLocal] = Field(default_factory=list)
     personagens: list[SessaoRefPersonagem] = Field(default_factory=list)
+    arco_id: Optional[int] = None
+    arco_transicao_id: Optional[int] = None
 
 
 class SessaoAdmin(SessaoPublic):
     visivel_para_todos: bool = True
+    alertas_inconsistencia: list[AlertaInconsistencia] = Field(default_factory=list)
 
 
 class SessaoCreate(BaseModel):
@@ -38,6 +43,8 @@ class SessaoCreate(BaseModel):
     visivel_para_todos: bool = True
     local_ids: list[int] = Field(default_factory=list)
     personagem_ids: list[int] = Field(default_factory=list)
+    arco_id: Optional[int] = None
+    arco_transicao_id: Optional[int] = None
 
 
 class SessaoUpdate(BaseModel):
@@ -48,6 +55,8 @@ class SessaoUpdate(BaseModel):
     visivel_para_todos: Optional[bool] = None
     local_ids: Optional[list[int]] = None
     personagem_ids: Optional[list[int]] = None
+    arco_id: Optional[int] = None
+    arco_transicao_id: Optional[int] = None
 
 
 class ProximoNumeroResponse(BaseModel):

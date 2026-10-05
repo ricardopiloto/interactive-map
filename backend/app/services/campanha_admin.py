@@ -187,6 +187,7 @@ def list_minhas_campanhas(usuario_id: int) -> list[dict[str, Any]]:
                     "bytes_usados": r.bytes_usados,
                     "cota_bytes": r.cota_bytes,
                     "aviso_cota": aviso,
+                    "modulos_ativos": [m for m in (r.modulos_ativos or []) if isinstance(m, str)],
                 }
             )
         return out
@@ -218,6 +219,28 @@ def set_unidade_distancia(slug: str, unidade_distancia: str) -> Campanha:
         if row is None or not row.activa:
             raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
         row.unidade_distancia = unidade_distancia
+        row.modificado_em = datetime.utcnow()
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        session.expunge(row)
+        return row
+
+
+def set_modulo_ativo(slug: str, modulo: str, ativo: bool) -> Campanha:
+    """Toggle a single opt-in module (e.g. "ia_arcos") without touching the rest
+    of Campanha.modulos_ativos — each module is an independent decision of the mestre."""
+    init_control()
+    with Session(get_control_engine()) as session:
+        row = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
+        if row is None or not row.activa:
+            raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
+        atuais = [m for m in (row.modulos_ativos or []) if isinstance(m, str)]
+        if ativo and modulo not in atuais:
+            atuais = [*atuais, modulo]
+        elif not ativo and modulo in atuais:
+            atuais = [m for m in atuais if m != modulo]
+        row.modulos_ativos = atuais
         row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()

@@ -28,6 +28,7 @@ class PainelItem(BaseModel):
     bytes_usados: int
     cota_bytes: int
     aviso_cota: bool
+    modulos_ativos: list[str] = Field(default_factory=list)
 
 
 class MinhasResponse(BaseModel):
@@ -67,6 +68,21 @@ class UnidadeDistanciaRequest(BaseModel):
 class UnidadeDistanciaResponse(BaseModel):
     slug: str
     unidade_distancia: str
+
+
+# Módulos opcionais que o mestre pode ligar/desligar após a criação da campanha.
+# Os modos da Linha do Tempo são escolha de tela, não configuração. Só o gancho de IA.
+MODULOS_TOGGLE_PERMITIDOS = ("ia_arcos",)
+
+
+class ModuloToggleRequest(BaseModel):
+    modulo: Literal["ia_arcos"]
+    ativo: bool
+
+
+class ModuloToggleResponse(BaseModel):
+    slug: str
+    modulos_ativos: list[str]
 
 
 class CapaRequest(BaseModel):

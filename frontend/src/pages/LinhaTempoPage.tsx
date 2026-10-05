@@ -8,11 +8,14 @@ import { MarkdownSafe } from '../components/common/MarkdownSafe'
 import { FormDrawer } from '../components/forms/FormDrawer'
 import { MarkdownField } from '../components/forms/MarkdownField'
 import { CodexHeader } from '../components/layout/CodexHeader'
-import { ConfirmDialog, EmptyState, IconButton, Button, Input } from '../components/ui'
+import { ConfirmDialog, EmptyState, IconButton, Button, Input, SegmentedControl } from '../components/ui'
+import { ArcosTimelineView } from '../components/linhaTempo/ArcosTimelineView'
+import { DescobertaTimelineView } from '../components/linhaTempo/DescobertaTimelineView'
+import { ItemManager } from '../components/linhaTempo/ItemManager'
 import { useEditMode } from '../context/EditModeContext'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
 import { getCachedInstanceConfig, useInstanceConfig } from '../hooks/useInstanceConfig'
-import type { Evento, Local, Personagem, Sessao } from '../types'
+import type { Arco, Descoberta, Evento, Local, Personagem, Sessao } from '../types'
 import './LinhaTempoPage.css'
 
 interface EventoDraft {
@@ -86,12 +89,14 @@ export function LinhaTempoPage() {
   const apiErrorMessage = useApiErrorMessage()
   const { config: instanceConfig } = useInstanceConfig(slug)
   const cfg = getCachedInstanceConfig(slug) ?? instanceConfig
-  const { enabled: isGm } = useEditMode()
+  const { enabled: isGm, isDono } = useEditMode()
+  const podeGerirItens = isGm && isDono
 
   const [eventos, setEventos] = useState<Evento[]>([])
   const [locais, setLocais] = useState<Local[]>([])
   const [personagens, setPersonagens] = useState<Personagem[]>([])
   const [sessoes, setSessoes] = useState<Sessao[]>([])
+  const [arcos, setArcos] = useState<Arco[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busyError, setBusyError] = useState<string | null>(null)
@@ -99,6 +104,8 @@ export function LinhaTempoPage() {
   const [draftBaseline, setDraftBaseline] = useState<string>('')
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set())
+  const [descoberta, setDescoberta] = useState<Descoberta>({ entidades: [] })
+  const [mode, setMode] = useState<'cronologico' | 'arcos' | 'descoberta'>('cronologico')
 
   const sessaoById = useMemo(() => new Map(sessoes.map((s) => [s.id, s])), [sessoes])
 
@@ -107,26 +114,35 @@ export function LinhaTempoPage() {
     setError(null)
     try {
       if (isGm) {
-        const [ev, locs, ps, ss] = await Promise.all([
+        const [ev, locs, ps, ss, as] = await Promise.all([
           adminApi.listEventosAdmin(),
           adminApi.listLocaisAdmin(),
           adminApi.listPersonagensAdmin(),
           adminApi.listSessoesAdmin(),
+          adminApi.listArcosAdmin(),
         ])
         setEventos(ev.eventos)
         setLocais(locs)
         setPersonagens(ps)
         setSessoes(ss.sessoes)
+        setArcos(as)
       } else {
-        const [ev, ss] = await Promise.all([
+        const [ev, ss, as] = await Promise.all([
           campaignApi.listEventos(),
           campaignApi.listSessoes(),
+          campaignApi.listArcos(),
         ])
         setEventos(ev.eventos)
         setLocais([])
         setPersonagens([])
         setSessoes(ss.sessoes)
+        setArcos(as)
       }
+      setDescoberta(
+        podeGerirItens
+          ? await adminApi.listDescobertaAdmin()
+          : await campaignApi.listDescoberta(),
+      )
     } catch (err) {
       setError(apiErrorMessage(err) || t('loadError'))
     } finally {
@@ -138,7 +154,7 @@ export function LinhaTempoPage() {
     setExpandedIds(new Set())
     void refresh()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh on edit-mode flip
-  }, [isGm, slug])
+  }, [isGm, isDono, podeGerirItens, slug])
 
   const dirty = useMemo(() => {
     if (!draft) return false
@@ -255,11 +271,39 @@ export function LinhaTempoPage() {
           <p className="linha-tempo-page__subtitle">
             {isGm ? t('subtitleGm') : t('subtitlePlayer')}
           </p>
+          <SegmentedControl
+            className="linha-tempo-page__mode-seg"
+            aria-label={t('modeSelectorAria')}
+            value={mode}
+            onChange={(v) => setMode(v as 'cronologico' | 'arcos' | 'descoberta')}
+            options={[
+              { value: 'cronologico', label: t('modeCronologico') },
+              { value: 'arcos', label: t('modeArcos') },
+              { value: 'descoberta', label: t('modeDescoberta') },
+            ]}
+          />
         </header>
         {error ? <p className="linha-tempo-page__error">{error}</p> : null}
         {busyError ? <p className="linha-tempo-page__error">{busyError}</p> : null}
 
-        {loading ? null : eventos.length === 0 ? (
+        {podeGerirItens ? (
+          <ItemManager sessoes={sessoes} eventos={eventos} onChanged={() => void refresh()} />
+        ) : null}
+
+        {mode === 'arcos' ? (
+          <ArcosTimelineView
+            arcos={arcos}
+            sessoes={sessoes}
+            onBackToCronologico={() => setMode('cronologico')}
+          />
+        ) : mode === 'descoberta' ? (
+          <DescobertaTimelineView
+            entidades={descoberta.entidades}
+            alertas={descoberta.alertas ?? []}
+            mostrarAlertas={podeGerirItens}
+            onBackToCronologico={() => setMode('cronologico')}
+          />
+        ) : loading ? null : eventos.length === 0 ? (
           <EmptyState title={isGm ? t('emptyGm') : t('empty')} />
         ) : (
           <>

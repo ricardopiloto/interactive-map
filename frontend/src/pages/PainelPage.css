@@ -199,6 +199,20 @@
   padding: 0.25rem 0.65rem;
 }
 
+.painel-page__modulos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.painel-page__modulo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
 @media (max-width: 800px) {
   .painel-page__actions {
     flex-direction: column;

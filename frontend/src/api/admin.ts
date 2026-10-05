@@ -19,6 +19,9 @@ import type {
   SessaoPayload,
   Evento,
   EventoPayload,
+  Item,
+  ItemPayload,
+  Descoberta,
 } from '../types'
 
 export interface LocalPayload {
@@ -75,11 +78,28 @@ export interface VinculoPayload {
   direcao?: 'a_para_b' | 'b_para_a' | null
 }
 
+export interface PropostaArco {
+  titulo: string
+  resumo: string
+  sessao_ids: number[]
+  sessao_transicao_id: number | null
+  local_ids: number[]
+}
+
+export interface ProporArcosResponse {
+  estado: 'propostas' | 'sessoes_insuficientes' | 'falha'
+  mensagem: string
+  propostas: PropostaArco[]
+}
+
 export interface ArcoPayload {
   titulo: string
   resumo?: string
   ordem?: number
   visivel_para_todos?: boolean
+  cor?: string | null
+  sessao_ids?: number[]
+  sessao_transicao_id?: number | null
 }
 
 export interface WaypointPayload {
@@ -126,6 +146,8 @@ export const adminApi = {
     api.adminPut<Vinculo>(`${campaignAdminPrefix()}/vinculos/${id}`, body),
   deleteVinculo: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/vinculos/${id}`),
 
+  proporArcos: () =>
+    api.adminPost<ProporArcosResponse>(campaignAdminPrefix() + '/arcos/propor', {}),
   createArco: (body: ArcoPayload) => api.adminPost<Arco>(campaignAdminPrefix() + '/arcos', body),
   updateArco: (id: number, body: Partial<ArcoPayload>) =>
     api.adminPut<Arco>(`${campaignAdminPrefix()}/arcos/${id}`, body),
@@ -173,4 +195,11 @@ export const adminApi = {
   updateEvento: (id: number, body: Partial<EventoPayload>) =>
     api.adminPatch<Evento>(`${campaignAdminPrefix()}/eventos/${id}`, body),
   deleteEvento: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/eventos/${id}`),
+
+  listItensAdmin: () => api.adminGet<{ itens: Item[] }>(campaignAdminPrefix() + '/itens'),
+  createItem: (body: ItemPayload) => api.adminPost<Item>(campaignAdminPrefix() + '/itens', body),
+  updateItem: (id: number, body: Partial<ItemPayload>) =>
+    api.adminPatch<Item>(`${campaignAdminPrefix()}/itens/${id}`, body),
+  deleteItem: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/itens/${id}`),
+  listDescobertaAdmin: () => api.adminGet<Descoberta>(campaignAdminPrefix() + '/descoberta'),
 }

@@ -34,7 +34,7 @@ export function SessoesPage() {
   const apiErrorMessage = useApiErrorMessage()
   const { config: instanceConfig } = useInstanceConfig(slug)
   const cfg = getCachedInstanceConfig(slug) ?? instanceConfig
-  const { enabled: isGm } = useEditMode()
+  const { enabled: isGm, isDono } = useEditMode()
 
   const [sessoes, setSessoes] = useState<Sessao[]>([])
   const [locais, setLocais] = useState<Local[]>([])
@@ -185,6 +185,17 @@ export function SessoesPage() {
                       {t('sessionLabel', { numero: s.numero })}
                       {isGm && s.visivel_para_todos === false ? (
                         <span className="sessoes-page__hidden"> · {t('hiddenBadge')}</span>
+                      ) : null}
+                      {isGm && isDono && (s.alertas_inconsistencia?.length ?? 0) > 0 ? (
+                        <span className="sessoes-page__alerta">
+                          {s.alertas_inconsistencia!.map((alerta) =>
+                            t('alertaInconsistencia', {
+                              personagem: alerta.personagem_nome,
+                              numero: alerta.sessao_oculta_numero,
+                              titulo: alerta.sessao_oculta_titulo,
+                            }),
+                          ).join(' ')}
+                        </span>
                       ) : null}
                     </p>
                     <h2 className="sessoes-page__item-title">{s.titulo}</h2>

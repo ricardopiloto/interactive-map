@@ -445,7 +445,13 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-039] Produto — Linha do Tempo por arcos e por descoberta
 
-**Status:** TR feito + protótipo navegável em 2 direções visuais. Pronta pra virar spec, depois de fechar as duas decisões de produto abaixo.
+**Status:** Specs criadas, validadas e convertidas para changes OpenSpec, prontas pra `apply`. Decisões de produto fechadas (ver abaixo) — direção vertical escolhida, Itens incluídos nesta fase, 1 arco por sessão (com excessão de transição), sem teto de arcos no filtro.
+- Speckit: [`specs/153-linha-tempo-por-arcos`](../../specs/153-linha-tempo-por-arcos/spec.md) e [`specs/154-linha-tempo-por-descoberta`](../../specs/154-linha-tempo-por-descoberta/spec.md) — validadas em 2026-09-28 (3 achados resolvidos com o usuário: dado de "evento multi-sessão" ainda é FK única hoje — ver nota em Achados; alerta de mestre pra sessão oculta anterior adicionado como FR-014/SC-007 na 154).
+- OpenSpec: [`openspec/changes/linha-tempo-por-arcos`](../../openspec/changes/linha-tempo-por-arcos/proposal.md) e [`openspec/changes/linha-tempo-por-descoberta`](../../openspec/changes/linha-tempo-por-descoberta/proposal.md) — conversão 1:1 do conteúdo das specs pro modelo OpenSpec deste repositório (proposal/specs delta/design/tasks), ambas validadas com `openspec validate --strict`. `design.md` de cada change inclui a análise técnica completa (decisões de schema, riscos, plano de migração) com base no TR.
+- O motor de IA de detecção de arcos, antes fora de escopo, agora tem duas changes OpenSpec próprias: [`openspec/changes/backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md) (infraestrutura genérica de chamada a provedor de IA, DeepSeek, reutilizável por qualquer feature de IA do produto) e [`openspec/changes/motor-ia-arcos`](../../openspec/changes/motor-ia-arcos/proposal.md) (lógica de negócio que lê sessões e propõe arcos, preenchendo a lacuna que `linha-tempo-por-arcos` deixou aberta de propósito, agora incluindo um prompt padrão fixo e versionado — ver `motor-ia-arcos/design.md` e o Requirement "Prompt padrão de contexto para o provedor de IA"). `motor-ia-arcos` não precisou de delta nas outras duas changes (`Modified Capabilities: nenhuma`) — só as consome.
+- **Confirmação do usuário antes do `apply` (2026-10-04):** os dois modos novos ("Por arcos", "Por descoberta") são **opt-in por campanha** — cada um só aparece no seletor da Linha do Tempo depois que o mestre o habilitar numa tela de configuração da campanha (reaproveita o padrão de toggle já usado em `PainelPage.tsx` pra `visibilidade`/`unidade_distancia`). Adicionado como Requirement próprio em cada spec delta (`linha-tempo-por-arcos`/`linha-tempo-por-descoberta`), com um valor independente em `Campanha.modulos_ativos` por modo (`"linha_tempo_arcos"`, `"linha_tempo_descoberta"`), separado do flag de IA (`"ia_arcos"`) — são três decisões independentes do mestre.
+- **Revisão (2026-10-04, depois da implementação):** o opt-in dos dois modos de visualização deixa de valer. A escolha fica na própria Linha do Tempo, com o cronológico como padrão ao abrir a tela. `ia_arcos` continua configuração do mestre. Change [`seletor-modos-linha-tempo`](../../openspec/changes/archive/2026-10-04-seletor-modos-linha-tempo/proposal.md). TR: [`docs/v2/tr-seletor-modos-linha-tempo.md`](../v2/tr-seletor-modos-linha-tempo.md).
+- **Infraestrutura de IA:** o motor de geração de arcos (`motor-ia-arcos`) deve consumir `app/services/ia_provider.py` ([`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md)). Não chama o provedor direto. O valor em `Campanha.modulos_ativos` é `ia_arcos`.
 
 **Registrado em:** 2026-09-28.
 
@@ -464,13 +470,15 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 **Escopo:** as duas visualizações novas da Linha do Tempo (por arcos, por descoberta) e o gancho de criação manual/IA de arco. O motor de IA de detecção de arcos em si fica fora — é um TR/spec separado, como o próprio PRD já define.
 
-**Não decidido ainda — perguntas em aberto, do próprio PRD e do TR:**
-1. Direção visual: raias horizontais (Gantt) ou verticais (estilo git)? O protótipo tem as duas prontas pra comparação.
-2. Itens entram nesta fase (quase dobra a estimativa) ou ficam pra depois — é o único tipo de "descoberta" que exige entidade nova?
-3. Uma sessão pode pertencer a mais de um arco simultâneo, ou é 1:1 (mais simples, mesmo padrão já usado em `Local.arco_id`)?
-4. Limite de arcos simultâneos exibidos sem filtro (pergunta do próprio PRD, calibra quantas raias cabem na tela).
+**Decisões fechadas** (eram perguntas em aberto do PRD/TR, resolvidas ao criar as specs 153/154):
+1. Direção visual: **vertical**, estilo grafo do git (mais recente no topo) — `Vertical.dc.html` do protótipo.
+2. Itens: **entram nesta fase** (spec 154, ~8-10 dias no total segundo o TR).
+3. Sessão por arco: **no máximo um arco por sessão**, com a excessão explícita de uma sessão de transição que fecha um arco e abre o seguinte (spec 153, FR-004).
+4. Limite de arcos simultâneos: **sem teto artificial** — filtro por chips resolve campanhas com muitos arcos (spec 153, FR-007).
 
-**Próximo passo:** fechar essas 4 decisões (a 1ª pode ser resolvida só olhando o protótipo) e então virar 2 specs independentes — "por arcos" e "por descoberta" não dependem uma da outra, só do modo cronológico que já existe.
+**Achado residual (não bloqueia, registrado pra consciência futura):** a descrição de `Evento` como "pode ter ocorrido dentro de uma sessão ou múltiplas sessões" (esclarecimento do usuário na validação das specs) não bate com o schema atual — `Evento.sessao_id` é uma FK única opcional, não N:N. Nenhuma das specs 153/154 depende dessa relação ser N:N, então não é um gap de spec; só fica anotado aqui caso vire relevante numa fase futura.
+
+**Próximo passo:** `apply` das changes OpenSpec (`openspec/changes/linha-tempo-por-arcos` e `openspec/changes/linha-tempo-por-descoberta`) quando a implementação for priorizada.
 
 ---
 
@@ -488,7 +496,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 **Escopo:** ainda não definido — esta entrada é a ideia, não um compromisso de escopo.
 
-**Depende de:** BKLG-015 (decisão de custo/privacidade de IA na aplicação, ainda em aberto) e do gancho de IA já desenhado no TR do BKLG-039.
+**Depende de:** BKLG-015 (decisão de custo/privacidade de IA na aplicação, ainda em aberto), do gancho de IA já desenhado no TR do BKLG-039, e da infraestrutura [`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md) (`app/services/ia_provider.py`). Esta feature deve consumir essa infraestrutura em vez de chamar o provedor diretamente.
 
 **Próximo passo:** discovery (BP/DR) antes de qualquer TR — fechar formato de entrada, onde processar, e o que fazer com entidades sugeridas que ainda não existem na campanha.
 
@@ -504,7 +512,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 - **[BKLG-013] Módulos por sistema além da fadiga** (ex.: dívidas de sangue em WoD como qualificador de vínculo, ou política de facção). O motor (spec 077) já suporta; falta um mestre pedindo de verdade.
 - **[BKLG-014] PWA / offline no celular** — só se a experiência em mesa presencial sem sinal virar reclamação recorrente.
-- **[BKLG-015] IA/MCP somente leitura sobre a campanha** — decisão de custo/privacidade antes de qualquer código; ver a skill `eber-saltbock` como precedente de caso de uso real.
+- **[BKLG-015] IA/MCP somente leitura sobre a campanha** — decisão de custo/privacidade antes de qualquer código; ver a skill `eber-saltbock` como precedente de caso de uso real. Quando houver código, a chamada ao provedor passa por `app/services/ia_provider.py` ([`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md)), não por um cliente próprio.
 
 ## Como seguir
 

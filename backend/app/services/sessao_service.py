@@ -6,7 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 from app.errors import raise_api_error
-from app.models.links import SessaoLocalLink, SessaoNpcLink
+from app.models.arco import Arco
+from app.models.links import ItemSessaoLink, SessaoLocalLink, SessaoNpcLink
+from app.schemas.descoberta import AlertaInconsistencia
 from app.models.local import Local
 from app.models.npc import NPC
 from app.models.sessao import Sessao
@@ -79,14 +81,22 @@ def to_public(session: Session, sessao: Sessao, *, filter_hidden_npcs: bool) -> 
             and (not filter_hidden_npcs or is_visivel_para_jogador(loc))
         ],
         personagens=personagens,
+        arco_id=sessao.arco_id,
+        arco_transicao_id=sessao.arco_transicao_id,
     )
 
 
-def to_admin(session: Session, sessao: Sessao) -> SessaoAdmin:
+def to_admin(
+    session: Session,
+    sessao: Sessao,
+    *,
+    alertas: list[AlertaInconsistencia] | None = None,
+) -> SessaoAdmin:
     base = to_public(session, sessao, filter_hidden_npcs=False)
     return SessaoAdmin(
         **base.model_dump(),
         visivel_para_todos=bool(sessao.visivel_para_todos),
+        alertas_inconsistencia=list(alertas or []),
     )
 
 
@@ -101,13 +111,18 @@ def list_public(session: Session) -> list[SessaoPublic]:
     return [to_public(session, s, filter_hidden_npcs=True) for s in rows]
 
 
-def list_admin(session: Session) -> list[SessaoAdmin]:
+def list_admin(
+    session: Session,
+    *,
+    alertas_por_id: dict[int, list[AlertaInconsistencia]] | None = None,
+) -> list[SessaoAdmin]:
     rows = list(
         session.exec(
             select(Sessao).order_by(col(Sessao.numero).desc(), col(Sessao.id).desc())
         ).all()
     )
-    return [to_admin(session, s) for s in rows]
+    mapa = alertas_por_id or {}
+    return [to_admin(session, s, alertas=mapa.get(s.id or 0, [])) for s in rows]
 
 
 def get_public(session: Session, sessao_id: int) -> SessaoPublic:
@@ -117,11 +132,16 @@ def get_public(session: Session, sessao_id: int) -> SessaoPublic:
     return to_public(session, sessao, filter_hidden_npcs=True)
 
 
-def get_admin(session: Session, sessao_id: int) -> SessaoAdmin:
+def get_admin(
+    session: Session,
+    sessao_id: int,
+    *,
+    alertas: list[AlertaInconsistencia] | None = None,
+) -> SessaoAdmin:
     sessao = session.get(Sessao, sessao_id)
     if not sessao:
         raise_api_error("SESSAO_NAO_ENCONTRADA", status_code=404)
-    return to_admin(session, sessao)
+    return to_admin(session, sessao, alertas=alertas)
 
 
 def _replace_links(
@@ -161,13 +181,31 @@ def _replace_links(
             )
 
 
+def _validate_arco_vinculo(
+    session: Session, arco_id: int | None, arco_transicao_id: int | None
+) -> None:
+    """Enforce: at most one arc per session, except the transition exception (FR-004)."""
+    if arco_id is not None and session.get(Arco, arco_id) is None:
+        raise_api_error("ARCO_NAO_ENCONTRADO", status_code=400)
+    if arco_transicao_id is not None:
+        if session.get(Arco, arco_transicao_id) is None:
+            raise_api_error("ARCO_NAO_ENCONTRADO", status_code=400)
+        if arco_id is None:
+            raise_api_error("SESSAO_TRANSICAO_SEM_ARCO", status_code=400)
+        if arco_transicao_id == arco_id:
+            raise_api_error("SESSAO_TRANSICAO_ARCO_IGUAL", status_code=400)
+
+
 def create_sessao(session: Session, payload: SessaoCreate) -> SessaoAdmin:
+    _validate_arco_vinculo(session, payload.arco_id, payload.arco_transicao_id)
     row = Sessao(
         numero=payload.numero,
         titulo=payload.titulo.strip(),
         data_rotulo=(payload.data_rotulo.strip() if payload.data_rotulo else None) or None,
         resumo=payload.resumo or "",
         visivel_para_todos=payload.visivel_para_todos,
+        arco_id=payload.arco_id,
+        arco_transicao_id=payload.arco_transicao_id,
     )
     session.add(row)
     try:
@@ -203,6 +241,10 @@ def update_sessao(session: Session, sessao_id: int, payload: SessaoUpdate) -> Se
     if "data_rotulo" in data:
         raw = data["data_rotulo"]
         data["data_rotulo"] = (raw.strip() if isinstance(raw, str) and raw else None) or None
+    if "arco_id" in data or "arco_transicao_id" in data:
+        effective_arco_id = data.get("arco_id", row.arco_id)
+        effective_arco_transicao_id = data.get("arco_transicao_id", row.arco_transicao_id)
+        _validate_arco_vinculo(session, effective_arco_id, effective_arco_transicao_id)
     for key, value in data.items():
         setattr(row, key, value)
     session.add(row)
@@ -236,6 +278,10 @@ def delete_sessao(session: Session, sessao_id: int) -> None:
         session.delete(link)
     for link in session.exec(
         select(SessaoNpcLink).where(SessaoNpcLink.sessao_id == sessao_id)
+    ).all():
+        session.delete(link)
+    for link in session.exec(
+        select(ItemSessaoLink).where(ItemSessaoLink.sessao_id == sessao_id)
     ).all():
         session.delete(link)
     session.delete(row)
