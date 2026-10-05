@@ -124,21 +124,20 @@ function temporalLaneKey(sessao: Sessao, visibleLaneKeys: ReadonlySet<string> | 
   return primary
 }
 
+/** Newest arc and adventure at the top: `ordem` descending, then `numero` descending.
+ *  Sem arco stays last. A later in-world date does not pull a session out of its arc. */
 function compareSessions(
   a: Sessao,
   b: Sessao,
-  dateOf: (sessao: Sessao) => EventDate | null,
+  arcKeyOf: (sessao: Sessao) => readonly [number, number],
 ): number {
-  const da = dateOf(a)
-  const db = dateOf(b)
-  if (da && db) {
-    const byDate = monthIndex(db) - monthIndex(da)
-    if (byDate !== 0) return byDate
-  } else if (da) {
-    return -1
-  } else if (db) {
-    return 1
-  }
+  const [ordemA, idA] = arcKeyOf(a)
+  const [ordemB, idB] = arcKeyOf(b)
+  const semA = !Number.isFinite(ordemA)
+  const semB = !Number.isFinite(ordemB)
+  if (semA !== semB) return semA ? 1 : -1
+  if (ordemA !== ordemB) return ordemB - ordemA
+  if (idA !== idB) return idB - idA
   return b.numero - a.numero
 }
 
@@ -162,6 +161,10 @@ function elapsedBetween(newer: EventDate | null, older: EventDate | null): {
     years: Math.floor(elapsed / 12),
     months: elapsed % 12,
   }
+}
+
+function hasTimeInterval(elapsed: { years: number | null; months: number | null }): boolean {
+  return elapsed.years != null && elapsed.months != null && (elapsed.years > 0 || elapsed.months > 0)
 }
 
 /** Endpoints sit on the column axis and stop at the dot edge. */
@@ -285,8 +288,13 @@ export function computeArcosLayout(
 ): ArcosLayout {
   const arcosSorted = [...arcos].sort((a, b) => a.ordem - b.ordem || a.id - b.id)
   const dateOf = (sessao: Sessao) => eventDateForSessao(sessao.id, eventos)
+  const ordemById = new Map(arcos.map((arco) => [arco.id, arco.ordem]))
+  const arcKeyOf = (sessao: Sessao): readonly [number, number] =>
+    sessao.arco_id == null
+      ? [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY]
+      : [ordemById.get(sessao.arco_id) ?? Number.POSITIVE_INFINITY, sessao.arco_id]
   const visibleSessions = sessoes.filter((sessao) => sessionVisible(sessao, visibleLaneKeys))
-  const rowsSorted = [...visibleSessions].sort((a, b) => compareSessions(a, b, dateOf))
+  const rowsSorted = [...visibleSessions].sort((a, b) => compareSessions(a, b, arcKeyOf))
   const rows: Row[] = rowsSorted.map((sessao, i) => ({ sessao, y: i * ROW_HEIGHT }))
   const rowByNumero = new Map(rows.map((row) => [row.sessao.numero, row]))
   const placed = assignColumns(rows, dateOf, visibleLaneKeys)
@@ -336,13 +344,31 @@ export function computeArcosLayout(
       const newer = list[i]
       const older = list[i + 1]
       const ends = endpoints(newer, older)
+      const elapsed = elapsedBetween(newer.date, older.date)
+      const betweenArcs = newer.arcKey !== older.arcKey && hasTimeInterval(elapsed)
       connectors.push({
         orientation: 'vertical',
         colorKey: newer.arcKey,
         ...ends,
-        ...elapsedBetween(newer.date, older.date),
+        ...elapsed,
+        dashed: elapsed.dashed || betweenArcs,
       })
     }
+  }
+
+  for (let i = 0; i < placed.length - 1; i += 1) {
+    const upper = placed[i]
+    const lower = placed[i + 1]
+    if (upper.arcKey === lower.arcKey || upper.column === lower.column) continue
+    const elapsed = elapsedBetween(upper.date, lower.date)
+    if (!hasTimeInterval(elapsed)) continue
+    connectors.push({
+      orientation: 'curve',
+      colorKey: upper.arcKey,
+      ...endpoints(upper, lower),
+      ...elapsed,
+      dashed: true,
+    })
   }
 
   const spans = spansOf(placed)

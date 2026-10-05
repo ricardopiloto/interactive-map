@@ -5,7 +5,6 @@ import {
   computeArcosLayout,
   DOT_RADIUS,
   LANES_LEFT,
-  LANE_WIDTH,
   ROW_HEIGHT,
 } from './arcosLayout.ts'
 
@@ -47,7 +46,7 @@ function center(y: number): number {
   return y + ROW_HEIGHT / 2
 }
 
-test('ordena pela data do evento, mais recente no topo', () => {
+test('ordena do arco mais novo para o mais antigo e, dentro dele, pelo número decrescente', () => {
   const sessoes = [
     sessao({ id: 1, numero: 1, arco_id: 1 }),
     sessao({ id: 2, numero: 10, arco_id: 1 }),
@@ -66,7 +65,35 @@ test('ordena pela data do evento, mais recente no topo', () => {
   const layout = computeArcosLayout([arco(1)], sessoes, eventos)
   assert.deepEqual(
     layout.rows.map((row) => row.sessao.id),
-    [2, 6, 5, 1, 4, 3],
+    [2, 4, 6, 3, 5, 1],
+  )
+})
+
+test('uma data mais recente não tira a aventura da ordem do arco', () => {
+  const sessoes = [
+    sessao({ id: 9, numero: 9, arco_id: 1 }),
+    sessao({ id: 3, numero: 3, arco_id: 2 }),
+    sessao({ id: 2, numero: 2, arco_id: 1 }),
+    sessao({ id: 1, numero: 1, arco_id: 1 }),
+    sessao({ id: 12, numero: 12, arco_id: 3 }),
+    sessao({ id: 8, numero: 8, arco_id: 2 }),
+  ]
+  const eventos = [
+    evento(1, 9, 2520, 6),
+    evento(2, 3, 2520, 4),
+    evento(3, 2, 2520, 3),
+    evento(4, 1, 2520, 1),
+    evento(5, 12, 2519, 6),
+    evento(6, 8, 2519, 1),
+  ]
+  const layout = computeArcosLayout([arco(1, 1), arco(2, 2), arco(3, 3)], sessoes, eventos)
+  assert.deepEqual(
+    layout.rows.map((row) => row.sessao.numero),
+    [12, 8, 3, 9, 2, 1],
+  )
+  assert.deepEqual(
+    layout.rows.map((row) => row.sessao.arco_id),
+    [3, 2, 2, 1, 1, 1],
   )
 })
 
@@ -84,7 +111,7 @@ test('história linear de arcos diferentes fica numa coluna, sem curva', () => {
   assert.ok(layout.connectors.every((c) => c.orientation === 'vertical' && c.x1 === LANES_LEFT && c.x2 === LANES_LEFT))
 })
 
-test('bifurcação intercalada mantém a vertical do arco e curva até ao encontro', () => {
+test('data intercalada não parte as aventuras do mesmo arco', () => {
   const sessoes = [
     sessao({ id: 1, numero: 3, arco_id: 1 }),
     sessao({ id: 2, numero: 2, arco_id: 2 }),
@@ -92,28 +119,15 @@ test('bifurcação intercalada mantém a vertical do arco e curva até ao encont
   ]
   const eventos = [evento(1, 1, 2522, 6), evento(2, 2, 2521, 6), evento(3, 3, 2520, 6)]
   const layout = computeArcosLayout([arco(1, 1), arco(2, 2)], sessoes, eventos)
-  const main = LANES_LEFT
-  const side = LANES_LEFT + LANE_WIDTH
-  const topY = center(0)
-  const midY = center(ROW_HEIGHT)
-  const botY = center(2 * ROW_HEIGHT)
-
-  assert.equal(layout.columns.length, 2)
-  assert.equal(layout.dotsByLane.get('2')?.[0].x, side)
-
-  const vertical = layout.connectors.filter((c) => c.orientation === 'vertical')
-  assert.equal(vertical.length, 1)
-  assert.equal(vertical[0].colorKey, '1')
-  assert.equal(vertical[0].x1, main)
-  assert.equal(vertical[0].y1, topY + DOT_RADIUS)
-  assert.equal(vertical[0].y2, botY - DOT_RADIUS)
-
-  const curves = layout.connectors.filter((c) => c.orientation === 'curve')
-  assert.equal(curves.length, 2)
-  assert.ok(curves.every((c) => c.colorKey === '2'))
-  assert.ok(curves.some((c) => c.y1 === topY + DOT_RADIUS && c.y2 === midY - DOT_RADIUS))
-  assert.ok(curves.some((c) => c.y1 === midY + DOT_RADIUS && c.y2 === botY - DOT_RADIUS))
-  assert.equal(layout.connectors.some((c) => c.orientation !== 'vertical' && c.orientation !== 'curve'), false)
+  assert.deepEqual(
+    layout.rows.map((row) => row.sessao.id),
+    [2, 1, 3],
+  )
+  assert.equal(layout.columns.length, 1)
+  const vertical = layout.connectors.filter((c) => c.orientation === 'vertical' && c.x1 === LANES_LEFT)
+  assert.equal(vertical.length, 2)
+  assert.equal(vertical[0].y1, center(0) + DOT_RADIUS)
+  assert.equal(vertical[0].y2, center(ROW_HEIGHT) - DOT_RADIUS)
 })
 
 test('a mesma data em arcos diferentes ocupa colunas diferentes', () => {
@@ -164,15 +178,16 @@ test('transição em colunas diferentes encontra-se na linha da sessão', () => 
     evento(4, 4, 2520, 6),
   ]
   const layout = computeArcosLayout([arco(1, 1), arco(2, 2)], sessoes, eventos)
+  assert.deepEqual(
+    layout.rows.map((row) => row.sessao.id),
+    [3, 1, 2, 4],
+  )
   assert.equal(layout.rows.length, 4)
-  const joinY = center(ROW_HEIGHT)
-  const join = layout.connectors.find((c) => c.orientation === 'curve' && c.y1 === joinY && c.y2 === joinY)
-  assert.ok(join)
-  assert.equal(join.x1, LANES_LEFT + DOT_RADIUS)
-  assert.equal(join.x2, LANES_LEFT + LANE_WIDTH - DOT_RADIUS)
-  assert.equal(join.dashed, false)
-  assert.equal(join.years, null)
-  assert.equal(layout.dotsByLane.get('2')?.some((dot) => dot.sessaoId === 2), true)
+  assert.equal(layout.columns.length, 1)
+  assert.equal(
+    layout.connectors.some((c) => c.y1 === c.y2),
+    false,
+  )
 })
 
 test('filtro fecha a coluna extra e não desenha o arco oculto', () => {
@@ -193,6 +208,57 @@ test('filtro fecha a coluna extra e não desenha o arco oculto', () => {
   assert.equal(filtered.connectors[0].orientation, 'vertical')
   assert.equal(filtered.connectors[0].x1, LANES_LEFT)
   assert.equal(filtered.connectors.some((c) => c.colorKey === '2'), false)
+})
+
+test('intervalo entre arcos fica tracejado com o tempo decorrido', () => {
+  const sessoes = [
+    sessao({ id: 1, numero: 2, arco_id: 1 }),
+    sessao({ id: 2, numero: 1, arco_id: 1 }),
+    sessao({ id: 3, numero: 1, arco_id: 2 }),
+  ]
+  const eventos = [
+    evento(1, 1, 2520, 6),
+    evento(2, 2, 2520, 4),
+    evento(3, 3, 2520, 1),
+  ]
+  const layout = computeArcosLayout([arco(1, 1), arco(2, 2)], sessoes, eventos)
+  assert.deepEqual(
+    layout.rows.map((row) => row.sessao.id),
+    [3, 1, 2],
+  )
+  const between = layout.connectors[0]
+  assert.equal(between.orientation, 'vertical')
+  assert.equal(between.dashed, true)
+  assert.equal(between.years, 0)
+  assert.equal(between.months, 5)
+  const inside = layout.connectors[1]
+  assert.equal(inside.dashed, false)
+  assert.equal(inside.months, 2)
+})
+
+test('intervalo entre arcos em colunas diferentes também fica tracejado', () => {
+  const sessoes = [
+    sessao({ id: 1, numero: 3, arco_id: 2 }),
+    sessao({ id: 2, numero: 2, arco_id: 2 }),
+    sessao({ id: 3, numero: 1, arco_id: 2 }),
+    sessao({ id: 4, numero: 1, arco_id: 1 }),
+  ]
+  const eventos = [
+    evento(1, 1, 2520, 8),
+    evento(2, 2, 2520, 1),
+    evento(3, 3, 2520, 6),
+    evento(4, 4, 2520, 1),
+  ]
+  const layout = computeArcosLayout([arco(1, 1), arco(2, 2)], sessoes, eventos)
+  assert.deepEqual(
+    layout.rows.map((row) => row.sessao.id),
+    [1, 2, 3, 4],
+  )
+  const bridge = layout.connectors.find((c) => c.orientation === 'curve' && c.dashed)
+  assert.ok(bridge)
+  assert.equal(bridge.years, 0)
+  assert.equal(bridge.months, 5)
+  assert.notEqual(bridge.x1, bridge.x2)
 })
 
 test('intervalo de mais de 12 meses fica tracejado e expõe anos e meses', () => {

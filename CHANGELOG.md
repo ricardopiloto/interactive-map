@@ -7,6 +7,16 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.24.3] — 2026-10-05
+
+### Changed
+
+- A passagem entre dois arcos vizinhos, quando as datas dos eventos não coincidem, fica tracejada e mostra o tempo entre eles. Dentro do mesmo arco a ligação continua contínua; o tracejado de mais de 12 meses nessa ligação mantém-se.
+
+### Fixed
+
+- No modo Por arcos, a lista começa pelo arco mais recente e, dentro dele, pela aventura de número mais alto. Sessões sem arco ficam no fim. A data do evento deixa de tirar uma aventura do seu arco.
+
 ## [0.24.2] — 2026-10-04
 
 ### Added
