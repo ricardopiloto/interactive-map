@@ -7,6 +7,16 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.24.5] — 2026-10-05
+
+### Added
+
+- No formulário de evento da Linha do Tempo, com o módulo de IA da campanha ligado, o mestre pode pedir uma sugestão de locais e personagens a partir da descrição. As opções correspondentes ficam marcadas para revisão e se somam às que já estavam selecionadas; o evento só é gravado ao salvar. Uma descrição em branco não dispara a sugestão. Referências inexistentes ou ocultas são descartadas, e uma falha da IA mantém a seleção que o mestre já tinha feito. A copy está em pt-BR e en.
+
+### Changed
+
+- A proposta de arco por IA passa a ler e resumir apenas sessões que ainda não pertencem a um arco. Sessões já associadas, e os locais e personagens ligados só a elas, deixam de entrar no texto enviado ao provedor. Se restarem menos de duas sessões livres, o motor avisa e não chama a IA. Uma sessão ocupada continua podendo ser indicada só como transição.
+
 ## [0.24.4] — 2026-10-05
 
 ### Added

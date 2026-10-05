@@ -2,8 +2,17 @@ from fastapi import APIRouter, Depends, Request, status
 from sqlmodel import Session
 
 from app.database import get_session
-from app.schemas.evento import EventoAdmin, EventoCreate, EventoListAdmin, EventoUpdate
+from app.deps.auth import MembroContext, require_dono
+from app.schemas.evento import (
+    EventoAdmin,
+    EventoCreate,
+    EventoListAdmin,
+    EventoUpdate,
+    SugestaoAssociacoesEventoRequest,
+    SugestaoAssociacoesEventoResponse,
+)
 from app.services import evento_service
+from app.services.motor_ia_evento_associacoes import sugerir_associacoes
 from app.services.rate_limit import limiter
 
 router = APIRouter()
@@ -12,6 +21,17 @@ router = APIRouter()
 @router.get("/eventos", response_model=EventoListAdmin)
 def list_eventos_admin(session: Session = Depends(get_session)) -> EventoListAdmin:
     return EventoListAdmin(eventos=evento_service.list_admin(session))
+
+
+@router.post("/eventos/sugerir-associacoes", response_model=SugestaoAssociacoesEventoResponse)
+@limiter.limit("10/minute")
+def sugerir_associacoes_admin(
+    request: Request,
+    payload: SugestaoAssociacoesEventoRequest,
+    ctx: MembroContext = Depends(require_dono),
+    session: Session = Depends(get_session),
+) -> SugestaoAssociacoesEventoResponse:
+    return sugerir_associacoes(session, ctx, payload.descricao)
 
 
 @router.get("/eventos/{evento_id}", response_model=EventoAdmin)

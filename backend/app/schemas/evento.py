@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -81,3 +81,22 @@ class EventoListPublic(BaseModel):
 
 class EventoListAdmin(BaseModel):
     eventos: list[EventoAdmin]
+
+
+class SugestaoAssociacoesEventoRequest(BaseModel):
+    descricao: str = Field(max_length=50000)
+
+    @field_validator("descricao")
+    @classmethod
+    def descricao_util(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("descricao vazia")
+        return stripped
+
+
+class SugestaoAssociacoesEventoResponse(BaseModel):
+    estado: Literal["sugestoes", "vazio", "falha"]
+    mensagem: str = ""
+    local_ids: list[int] = Field(default_factory=list)
+    personagem_ids: list[int] = Field(default_factory=list)

@@ -26,9 +26,10 @@ MSG_INSUFICIENTE = "Não há sessões suficientes para propor um arco. Use a cri
 PROMPT_PADRAO = """Você é um assistente que ajuda mestres de RPG de mesa a identificar arcos
 narrativos dentro de uma campanha.
 
-Sua tarefa: ler os resumos de sessão fornecidos a seguir (com os locais e
-personagens associados a cada uma) e propor um ou mais arcos narrativos
-candidatos — agrupamentos de sessões que formam um fio de história coerente.
+Sua tarefa: ler os resumos das sessões que ainda não pertencem a um arco,
+fornecidos a seguir (com os locais e personagens associados a cada uma), e
+propor um ou mais arcos narrativos candidatos — agrupamentos de sessões que
+formam um fio de história coerente.
 
 Regras obrigatórias:
 1. Use apenas as sessões, locais e personagens fornecidos nos dados abaixo.
@@ -49,7 +50,7 @@ Formato de saída, JSON sem markdown:
 {"propostas":[{"titulo":"string","resumo":"string","sessoes":[1],"sessao_transicao":null,"locais":["Nome do local"]}]}
 sessoes e sessao_transicao usam o número da sessão. locais usa o nome exato. sessao_transicao é null quando não há transição.
 
-Os dados da campanha (sessões, resumos e associações) seguem abaixo."""
+Os dados abaixo trazem apenas sessões sem arco, com os seus resumos e associações."""
 
 _REGRAS_OBRIGATORIAS = (
     "Nunca invente ou presuma uma sessão",
@@ -78,7 +79,7 @@ def coletar_registros(session: Session, campanha_id: int) -> list[ItemContextoIa
 
     registros: list[ItemContextoIa] = []
     for sessao in sessoes:
-        if sessao.id is None:
+        if sessao.id is None or sessao.arco_id is not None:
             continue
         registros.append(
             ItemContextoIa(

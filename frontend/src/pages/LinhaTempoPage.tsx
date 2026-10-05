@@ -105,6 +105,9 @@ export function LinhaTempoPage() {
   const [draft, setDraft] = useState<EventoDraft | null>(null)
   const [draftBaseline, setDraftBaseline] = useState<string>('')
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
+  const [sugerindo, setSugerindo] = useState(false)
+  const [sugestaoMsg, setSugestaoMsg] = useState<string | null>(null)
+  const iaAtiva = Boolean(cfg?.modulos_ativos.includes('ia_arcos'))
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set())
   const [descoberta, setDescoberta] = useState<Descoberta>({ entidades: [] })
   const [mode, setMode] = useState<'cronologico' | 'arcos' | 'descoberta'>('cronologico')
@@ -196,6 +199,7 @@ export function LinhaTempoPage() {
     setDraft(next)
     setDraftBaseline(JSON.stringify(next))
     setBusyError(null)
+    setSugestaoMsg(null)
   }
 
   function startEdit(e: Evento) {
@@ -215,6 +219,38 @@ export function LinhaTempoPage() {
     setDraft(next)
     setDraftBaseline(JSON.stringify(next))
     setBusyError(null)
+    setSugestaoMsg(null)
+  }
+
+  function mergeIds(atuais: number[], sugeridos: number[]): number[] {
+    return [...new Set([...atuais, ...sugeridos])]
+  }
+
+  async function sugerirAssociacoes() {
+    if (!draft || !draft.descricao.trim() || sugerindo) return
+    const descricao = draft.descricao
+    setSugerindo(true)
+    setSugestaoMsg(null)
+    try {
+      const resposta = await adminApi.sugerirAssociacoesEvento(descricao)
+      if (resposta.estado === 'sugestoes') {
+        setDraft((atual) =>
+          atual
+            ? {
+                ...atual,
+                local_ids: mergeIds(atual.local_ids, resposta.local_ids),
+                personagem_ids: mergeIds(atual.personagem_ids, resposta.personagem_ids),
+              }
+            : atual,
+        )
+        return
+      }
+      setSugestaoMsg(resposta.estado === 'vazio' ? t('suggestEmpty') : t('suggestFail'))
+    } catch (err) {
+      setSugestaoMsg(apiErrorMessage(err) || t('suggestFail'))
+    } finally {
+      setSugerindo(false)
+    }
   }
 
   async function saveDraft() {
@@ -492,6 +528,23 @@ export function LinhaTempoPage() {
             onChange={(descricao) => setDraft({ ...draft, descricao })}
             controlClassName="ui-input--new-codex"
           />
+          {iaAtiva ? (
+            <div className="linha-tempo-page__suggest">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={!draft.descricao.trim() || sugerindo}
+                aria-describedby="evento-suggest-hint"
+                onClick={() => void sugerirAssociacoes()}
+              >
+                {sugerindo ? t('suggestLoading') : t('suggestButton')}
+              </Button>
+              <p id="evento-suggest-hint" className="linha-tempo-page__suggest-hint">
+                {!draft.descricao.trim() ? t('suggestNeedsDescricao') : sugestaoMsg}
+              </p>
+            </div>
+          ) : null}
           <label className="field">
             <span>{t('fieldSessao')}</span>
             <select

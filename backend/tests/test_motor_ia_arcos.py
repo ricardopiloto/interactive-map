@@ -63,6 +63,8 @@ def test_prompt_padrao_contem_as_cinco_regras() -> None:
     assert "retorne: título curto" in PROMPT_PADRAO
     assert "formato estruturado solicitado" in PROMPT_PADRAO
     assert '"propostas"' in PROMPT_PADRAO
+    assert "sessões que ainda não pertencem a um arco" in PROMPT_PADRAO
+    assert "apenas sessões sem arco" in PROMPT_PADRAO
 
 
 def test_contexto_reflete_sessoes_e_omite_oculta(db_session) -> None:
@@ -92,6 +94,38 @@ def test_contexto_reflete_sessoes_e_omite_oculta(db_session) -> None:
     assert "Greta" in textos
     assert "SEGREDO-OCULTO" not in textos
     assert all(item["campanha_id"] == campanha.id for item in contexto)
+
+
+def test_contexto_omite_sessao_que_ja_tem_arco(db_session) -> None:
+    arco = seed_arco(db_session, titulo="Já existe")
+    local_livre = seed_local(db_session, nome="Taverna livre")
+    local_ocupado = seed_local(db_session, nome="PORAO-OCUPADO")
+    pessoa_ocupada = seed_personagem(db_session, nome="NPC-OCUPADO")
+    seed_sessao(
+        db_session,
+        numero=1,
+        titulo="Livre",
+        resumo="Resumo da sessão livre",
+        local_ids=[local_livre.id],
+    )
+    seed_sessao(
+        db_session,
+        numero=2,
+        titulo="Ocupada",
+        resumo="Resumo da sessão ocupada",
+        arco_id=arco.id,
+        local_ids=[local_ocupado.id],
+        personagem_ids=[pessoa_ocupada.id],
+    )
+    campanha = lookup_campanha(TEST_CAMPAIGN_SLUG)
+    contexto = contexto_para_motor(db_session, campanha.id or 0)
+    textos = "\n".join(item["texto"] for item in contexto)
+    assert "Resumo da sessão livre" in textos
+    assert "Taverna livre" in textos
+    assert "Ocupada" not in textos
+    assert "Resumo da sessão ocupada" not in textos
+    assert "PORAO-OCUPADO" not in textos
+    assert "NPC-OCUPADO" not in textos
 
 
 def test_chamada_envia_prompt_antes_dos_dados(db_session, monkeypatch) -> None:
@@ -164,6 +198,25 @@ def test_sessao_de_outro_arco_so_entra_como_transicao(db_session, monkeypatch) -
     transicao = resultado.propostas[1]
     assert transicao.sessao_transicao_id == ocupada.id
     assert ocupada.id not in transicao.sessao_ids
+    pedido = handler.visto["messages"][1]["content"]  # type: ignore[attr-defined]
+    assert "Ocupada" not in pedido
+    assert "Livre" in pedido
+
+
+def test_sessoes_ocupadas_nao_completam_o_minimo(db_session, monkeypatch) -> None:
+    monkeypatch.setattr(settings, "deepseek_api_key", CHAVE)
+    arco = seed_arco(db_session, titulo="Já existe")
+    seed_sessao(db_session, numero=1, titulo="Livre", resumo="Só uma livre")
+    seed_sessao(db_session, numero=2, titulo="Ocupada A", resumo="Já no arco", arco_id=arco.id)
+    seed_sessao(db_session, numero=3, titulo="Ocupada B", resumo="Também no arco", arco_id=arco.id)
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        raise AssertionError("rede não deveria ser chamada")
+
+    resultado = propor_arcos(db_session, _ctx(), client=_client(handler))
+    assert resultado.estado == "sessoes_insuficientes"
+    assert resultado.mensagem == MSG_INSUFICIENTE
+    assert resultado.propostas == []
 
 
 def test_sessoes_insuficientes_nao_chamam_o_provedor(db_session, monkeypatch) -> None:

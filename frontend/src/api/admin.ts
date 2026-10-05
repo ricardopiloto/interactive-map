@@ -197,6 +197,13 @@ export const adminApi = {
 
   listEventosAdmin: () =>
     api.adminGet<{ eventos: Evento[] }>(campaignAdminPrefix() + '/eventos'),
+  sugerirAssociacoesEvento: (descricao: string) =>
+    api.adminPost<{
+      estado: 'sugestoes' | 'vazio' | 'falha'
+      mensagem: string
+      local_ids: number[]
+      personagem_ids: number[]
+    }>(campaignAdminPrefix() + '/eventos/sugerir-associacoes', { descricao }),
   createEvento: (body: EventoPayload) =>
     api.adminPost<Evento>(campaignAdminPrefix() + '/eventos', body),
   updateEvento: (id: number, body: Partial<EventoPayload>) =>
