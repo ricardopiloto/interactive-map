@@ -1,10 +1,6 @@
-# linha-tempo-por-arcos
+# Spec Delta
 
-## Purpose
-
-Permite ao mestre e aos jogadores acompanhar a continuidade de cada arco narrativo da campanha numa visualização dedicada da Linha do Tempo, agrupando as sessões por arco em raias verticais ordenadas pela data real, sem alterar o modo cronológico existente.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Modo "Por arcos" na Linha do Tempo
 A Linha do Tempo SHALL oferecer um modo "Por arcos" além do modo cronológico existente, sem alterar o resultado ou os dados do modo cronológico. O modo "Por arcos" SHALL apresentar uma linha por sessão visível, ordenada pela data do evento associado a essa sessão, com as sessões mais recentes acima das mais antigas. A data do evento SHALL ser o ano e, quando existir, o mês do evento ligado à sessão; se a sessão tiver vários eventos, SHALL ser usada a data mais antiga. Uma sessão sem evento com ano SHALL permanecer visível, abaixo de todas as sessões que têm data, ordenada pelo número da sessão, sem data inventada. Enquanto as datas das sessões visíveis não se intercalarem, o modo SHALL desenhar todas essas sessões numa única coluna vertical, qualquer que seja o arco de cada uma. O modo SHALL abrir uma coluna adicional só quando a data de uma sessão visível fica estritamente entre a data mais antiga e a mais recente de outro arco, ou quando duas sessões visíveis de arcos diferentes têm a mesma data.
@@ -28,25 +24,6 @@ A Linha do Tempo SHALL oferecer um modo "Por arcos" além do modo cronológico e
 #### Scenario: Alternar entre modo cronológico e por arcos
 - **WHEN** o utilizador seleciona "Por arcos" numa campanha com arcos cadastrados
 - **THEN** o sistema mostra o modo por arcos e permite voltar ao modo cronológico existente sem perder dados ou alterar seu resultado
-
-### Requirement: Modo "Por arcos" escolhido na Linha do Tempo
-A Linha do Tempo SHALL oferecer "Por arcos" no seletor de modos para mestre e jogador em qualquer campanha, sem configuração prévia. Ao abrir a Linha do Tempo, o modo selecionado SHALL ser o cronológico, por data do evento. A escolha de outro modo SHALL valer enquanto a pessoa permanece nessa tela e SHALL NOT ser gravada como configuração da campanha nem restaurada numa visita seguinte. A configuração da campanha SHALL NOT oferecer um controle para habilitar ou desabilitar esta visualização.
-
-#### Scenario: Abrir a Linha do Tempo
-- **WHEN** um mestre ou um jogador abre a Linha do Tempo de uma campanha que não teve este modo configurado
-- **THEN** o modo selecionado é o cronológico, por data do evento, e o seletor também oferece "Por arcos"
-
-#### Scenario: Escolher "Por arcos" na tela
-- **WHEN** a pessoa seleciona "Por arcos" no seletor da Linha do Tempo
-- **THEN** a tela mostra o modo por arcos e continua oferecendo a volta ao modo cronológico, sem gravar essa escolha na campanha
-
-#### Scenario: Voltar à tela
-- **WHEN** a pessoa tinha selecionado "Por arcos" e abre a Linha do Tempo de novo
-- **THEN** o modo selecionado volta a ser o cronológico
-
-#### Scenario: Configuração da campanha não controla o modo
-- **WHEN** um mestre abre a configuração da campanha
-- **THEN** não há controle para habilitar ou desabilitar a visualização "Por arcos"
 
 ### Requirement: Tempo decorrido entre sessões da mesma raia
 Cada ligação desenhada entre duas sessões SHALL indicar o tempo decorrido entre as datas dos eventos dessas sessões. Um intervalo longo SHALL ser visualmente distinguível por uma ligação tracejada. A coluna de um arco que continua no tempo SHALL manter a ligação vertical entre as suas sessões mesmo quando a data de uma sessão de outro arco fica entre elas; essa outra sessão SHALL aparecer na coluna da bifurcação, ligada por curva, e SHALL NOT substituir a vertical do arco que continua.
@@ -74,7 +51,7 @@ Sessões sem arco associado SHALL permanecer visíveis no modo "Por arcos", iden
 - **THEN** essas sessões continuam visíveis, identificadas como "Sem arco", na mesma coluna das restantes
 
 ### Requirement: Gestão de arcos pelo mestre
-O sistema SHALL permitir que um mestre autorizado crie e edite arcos com título, cor persistida, resumo opcional e associações com locais e sessões existentes. Ao abrir a criação de um arco, seja manual ou a partir de uma proposta de IA, o sistema SHALL preencher a cor com uma escolha aleatória de uma paleta fixa, excluindo as cores já gravadas noutros arcos da mesma campanha. O mestre SHALL poder alterar essa cor antes de guardar e ao editar. Editar um arco existente SHALL NOT substituir a cor gravada por uma nova escolha aleatória. Se todas as cores da paleta já estiverem em uso, a criação SHALL continuar e a cor sugerida SHALL ser uma cor da paleta, mesmo que já esteja gravada noutro arco. Essa gestão SHALL estar na Linha do Tempo, no cabeçalho da página, visível quando o modo de edição está ligado, em qualquer dos modos da página. O menu de ferramentas do mapa SHALL NOT oferecer esta ação. Apenas o mestre autorizado SHALL poder gerir arcos e associações; jogadores SHALL ter somente leitura, de acordo com as regras de visibilidade já aplicadas à Linha do Tempo e às sessões, e SHALL NOT ver o controlo de gestão.
+O sistema SHALL permitir que um mestre autorizado crie e edite arcos com título, cor persistida, resumo opcional e associações com locais e sessões existentes. Ao abrir a criação de um arco, seja manual ou a partir de uma proposta de IA, o sistema SHALL preencher a cor com uma escolha aleatória de uma paleta fixa, excluindo as cores já gravadas noutros arcos da mesma campanha. O mestre SHALL poder alterar essa cor antes de guardar e ao editar. Editar um arco existente SHALL NOT substituir a cor gravada por uma nova escolha aleatória. Se todas as cores da paleta já estiverem em uso, a criação SHALL continuar e a cor sugerida SHALL ser uma cor da paleta, mesmo que já esteja gravada noutro arco. Apenas o mestre autorizado SHALL poder gerir arcos e associações; jogadores SHALL ter somente leitura, de acordo com as regras de visibilidade já aplicadas à Linha do Tempo e às sessões.
 
 #### Scenario: Mestre cria um arco com cor e associações
 - **WHEN** um mestre autorizado abre a criação de um arco, confirma ou altera a cor sugerida e associa sessões e locais existentes
@@ -88,64 +65,15 @@ O sistema SHALL permitir que um mestre autorizado crie e edite arcos com título
 - **WHEN** o mestre abre a edição de um arco que já tem cor gravada
 - **THEN** o formulário mostra essa cor, sem a substituir por outra escolha aleatória
 
-#### Scenario: Mestre abre a gestão na Linha do Tempo
-- **WHEN** um mestre autorizado está na Linha do Tempo com o modo de edição ligado
-- **THEN** vê o controlo para gerir arcos e, ao abri-lo, pode listar, criar e editar arcos sem ir ao mapa
-
-#### Scenario: Modo de edição desligado
-- **WHEN** um mestre autorizado está na Linha do Tempo com o modo de edição desligado
-- **THEN** o controlo de gestão de arcos não aparece
-
 #### Scenario: Mestre associa uma sessão existente a um arco
 - **WHEN** o mestre associa uma sessão ainda sem arco a um arco existente
 - **THEN** a sessão passa a aparecer associada a esse arco
 
 #### Scenario: Jogador sem ações de escrita
-- **WHEN** um jogador abre a Linha do Tempo ou a administração dos arcos de uma campanha
+- **WHEN** um jogador abre a administração dos arcos de uma campanha
 - **THEN** o sistema não oferece ações de criação ou edição de arcos
 
-#### Scenario: O mapa já não oferece a gestão
-- **WHEN** um mestre autorizado abre o menu de ferramentas do mapa
-- **THEN** esse menu não contém a ação de gerir arcos
-
-### Requirement: Filtro por arco sem teto artificial
-O utilizador SHALL poder filtrar as raias por arco e restaurar a vista de todos os arcos, sem limite fixo de arcos selecionados simultaneamente.
-
-#### Scenario: Filtrar por um ou mais arcos
-- **WHEN** o utilizador filtra o modo "Por arcos" por um ou mais arcos entre vários disponíveis
-- **THEN** apenas as raias selecionadas são enfatizadas ou exibidas, e o utilizador pode voltar a "Todos" sem limite artificial de quantidade selecionada
-
-### Requirement: Estado vazio sem arcos cadastrados
-O modo "Por arcos" SHALL informar de forma compreensível quando a campanha ainda não tem arcos cadastrados e SHALL manter disponível a navegação para a cronologia existente.
-
-#### Scenario: Campanha sem arcos
-- **WHEN** o utilizador consulta o modo "Por arcos" numa campanha sem arcos cadastrados
-- **THEN** o sistema informa que não há arcos, oferece o modo cronológico e não apresenta uma tela quebrada ou vazia sem explicação
-
-### Requirement: Isolamento por campanha
-Dados de arcos, sessões e locais SHALL permanecer isolados por campanha; novas superfícies de dados introduzidas por este modo SHALL integrar a matriz de testes de isolamento existente do produto.
-
-#### Scenario: Acesso entre campanhas bloqueado
-- **WHEN** um utilizador autenticado numa campanha tenta consultar ou alterar arcos de outra campanha
-- **THEN** o sistema nega o acesso e não expõe dados ou identificadores da outra campanha
-
-### Requirement: Internacionalização da nova copy
-Toda copy nova introduzida pelo modo "Por arcos" SHALL estar disponível em pt-BR e en.
-
-#### Scenario: Strings novas traduzidas
-- **WHEN** o utilizador troca o idioma da interface entre pt-BR e en
-- **THEN** toda a copy nova do modo "Por arcos" (rótulos, mensagens de estado vazio, filtros) aparece traduzida no idioma selecionado
-
-### Requirement: Escolha entre criação manual ou por IA de um arco
-O sistema SHALL permitir a escolha explícita entre criar um arco manualmente e solicitar a criação por IA; a criação manual SHALL permanecer disponível independentemente da disponibilidade de IA. Se o mestre escolher IA sem recursos de IA habilitados para a campanha, o produto SHALL explicar o estado e oferecer o caminho de habilitação ou a criação manual. A execução do motor de IA não faz parte deste requisito.
-
-#### Scenario: Mestre escolhe criação manual
-- **WHEN** o mestre inicia a criação de um arco e escolhe o caminho manual
-- **THEN** o sistema apresenta o formulário manual de criação de arco, independentemente do estado do módulo de IA na campanha
-
-#### Scenario: Mestre escolhe IA sem o módulo habilitado
-- **WHEN** o mestre escolhe a criação de arco por IA numa campanha sem o módulo de IA habilitado
-- **THEN** o sistema explica que a IA não está habilitada e oferece o caminho de habilitação ou a criação manual, sem executar nenhum motor de IA
+## ADDED Requirements
 
 ### Requirement: Ligação ao ponto mais próximo no tempo
 No modo "Por arcos", as sessões visíveis da mesma coluna SHALL ligar-se na vertical, da mais recente para a mais antiga nessa coluna. Quando uma coluna existe por bifurcação, a ligação entre essa coluna e a coluna de onde saiu SHALL ser uma curva contínua, sem canto reto, que sai alinhada à coluna de origem e chega alinhada à outra coluna na altura da sessão que delimita o encontro. Uma sessão de transição SHALL fazer as colunas encontrarem-se na sua linha quando os arcos ocupam colunas diferentes, sem duplicar o registo da sessão. Um filtro de arcos SHALL recalcular colunas e ligações só entre as sessões que permanecem visíveis e SHALL NOT desenhar traço de um arco oculto. Duas sessões visíveis de arcos diferentes com a mesma data SHALL ocupar colunas diferentes.

@@ -1,9 +1,31 @@
 /** Active campaign slug for API path composition (set by CampaignShell). */
 
 let activeSlug: string | null = null
+let activeOwner: number | null = null
+let nextOwnerId = 1
 
 export function setCampaignSlug(slug: string | null): void {
   activeSlug = slug
+  if (slug === null) activeOwner = null
+}
+
+/** One id per CampaignShell instance. Repeating a claim keeps this id. */
+export function nextCampaignSlugOwner(): number {
+  return nextOwnerId++
+}
+
+/** Record the route slug and its owner. Same owner + same slug is a no-op. */
+export function claimCampaignSlug(slug: string | null, owner: number): void {
+  if (activeOwner === owner && activeSlug === slug) return
+  activeSlug = slug
+  activeOwner = owner
+}
+
+/** Drop the slug only when this owner still holds it. */
+export function releaseCampaignSlug(owner: number): void {
+  if (activeOwner !== owner) return
+  activeSlug = null
+  activeOwner = null
 }
 
 export function getCampaignSlug(): string | null {

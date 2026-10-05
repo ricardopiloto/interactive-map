@@ -190,3 +190,19 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 **Comportamento esperado:** a lista deve permitir rolagem também no desktop para que o usuário consiga acessar todas as sessões.
 
 ---
+
+## [BUG-004] Abrir mesa a partir do Painel mostra “Falha ao carregar dados”
+
+**Status:** Aberto. Causa confirmada no código — [TR](../v2/tr-bug-004-abrir-mesa.md). Correção especificada em [`corrige-abrir-mesa`](../../openspec/changes/corrige-abrir-mesa/proposal.md).
+
+**Registrado em:** 2026-10-04.
+
+**Problema observado:** no Painel, “Abrir mesa” (`Link` para `/c/{slug}` em `PainelPage.tsx`) abre a tela do mapa com a barra de busca e as abas, mas o mapa não carrega e o rodapé mostra “Falha ao carregar dados” (`errors.loadData`). Um refresh na mesma URL carrega o mapa. Não aparece nada nos logs da API nem do frontend. Reproduzido na campanha WFRP, com o modo de edição visível na barra.
+
+**Comportamento esperado:** “Abrir mesa” deve carregar o mapa e os dados da campanha na primeira navegação, sem precisar de refresh.
+
+**Por que os logs ficam vazios:** `useCampaignData` engole a exceção e só faz `setError(t('errors.loadData'))`, sem `console` nem reporte. As listas (`campaignApi.listLocais` / `adminApi.listLocaisAdmin` e as chamadas irmãs) montam o caminho com `campaignApiPrefix()` / `campaignAdminPrefix()` sem receber o slug da rota. Se `activeSlug` ainda for `null`, `requireCampaignSlug()` lança `CAMPAIGN_SLUG_REQUIRED` antes de qualquer `fetch` — a API nunca vê o pedido.
+
+**Causa:** a mesma corrida de BKLG-019, confirmada no código no TR. Com a configuração da campanha já em cache, o mapa monta no mesmo commit que `CampaignShell` e pede os dados antes de o efeito do shell gravar o slug. O refresh esvazia essa cache e o mapa só monta depois. A spec 131 corrigiu só `listWaypoints`.
+
+---

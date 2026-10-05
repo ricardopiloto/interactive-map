@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   BrowserRouter,
   Navigate,
@@ -9,7 +9,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
-import { setCampaignSlug } from './api/campaignSlug'
+import { claimCampaignSlug, nextCampaignSlugOwner, releaseCampaignSlug } from './api/campaignSlug'
 import { EditModeProvider } from './context/EditModeContext'
 import { getCachedInstanceConfig, useInstanceConfig } from './hooks/useInstanceConfig'
 import { AdminConvitesPage } from './pages/AdminConvitesPage'
@@ -33,10 +33,23 @@ function CampaignShell({ children }: { children: React.ReactNode }) {
   const { slug } = useParams<{ slug: string }>()
   const { config, loading, notFound, error } = useInstanceConfig(slug)
   const cfg = (slug ? getCachedInstanceConfig(slug) : null) ?? config
+  const ownerRef = useRef(0)
+  const releaseGeneration = useRef(0)
+  if (ownerRef.current === 0) ownerRef.current = nextCampaignSlugOwner()
+  claimCampaignSlug(slug ?? null, ownerRef.current)
 
   useEffect(() => {
-    setCampaignSlug(slug ?? null)
-    return () => setCampaignSlug(null)
+    const owner = ownerRef.current
+    claimCampaignSlug(slug ?? null, owner)
+    const generation = ++releaseGeneration.current
+    return () => {
+      // StrictMode replays this effect without rendering again. Releasing
+      // synchronously would clear the slug before the page effect retries.
+      queueMicrotask(() => {
+        if (releaseGeneration.current !== generation) return
+        releaseCampaignSlug(owner)
+      })
+    }
   }, [slug])
 
   useEffect(() => {

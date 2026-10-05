@@ -9,6 +9,7 @@ import { FormDrawer } from '../components/forms/FormDrawer'
 import { MarkdownField } from '../components/forms/MarkdownField'
 import { CodexHeader } from '../components/layout/CodexHeader'
 import { ConfirmDialog, EmptyState, IconButton, Button, Input, SegmentedControl } from '../components/ui'
+import { ArcoManager } from '../components/linhaTempo/ArcoManager'
 import { ArcosTimelineView } from '../components/linhaTempo/ArcosTimelineView'
 import { DescobertaTimelineView } from '../components/linhaTempo/DescobertaTimelineView'
 import { ItemManager } from '../components/linhaTempo/ItemManager'
@@ -86,6 +87,7 @@ export function LinhaTempoPage() {
   const { slug = '' } = useParams<{ slug: string }>()
   const { t } = useTranslation('linhaTempo')
   const { t: tc } = useTranslation('comum')
+  const { t: ta } = useTranslation('admin')
   const apiErrorMessage = useApiErrorMessage()
   const { config: instanceConfig } = useInstanceConfig(slug)
   const cfg = getCachedInstanceConfig(slug) ?? instanceConfig
@@ -106,6 +108,7 @@ export function LinhaTempoPage() {
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set())
   const [descoberta, setDescoberta] = useState<Descoberta>({ entidades: [] })
   const [mode, setMode] = useState<'cronologico' | 'arcos' | 'descoberta'>('cronologico')
+  const [gestaoAberta, setGestaoAberta] = useState(false)
 
   const sessaoById = useMemo(() => new Map(sessoes.map((s) => [s.id, s])), [sessoes])
 
@@ -155,6 +158,10 @@ export function LinhaTempoPage() {
     void refresh()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh on edit-mode flip
   }, [isGm, isDono, podeGerirItens, slug])
+
+  useEffect(() => {
+    if (!isGm) setGestaoAberta(false)
+  }, [isGm])
 
   const dirty = useMemo(() => {
     if (!draft) return false
@@ -259,9 +266,19 @@ export function LinhaTempoPage() {
     <div className="linha-tempo-page">
       <CodexHeader campaignName={cfg?.nome}>
         {isGm ? (
-          <Button variant="primary" type="button" onClick={startCreate}>
-            <IconPlus size={16} aria-hidden /> {t('new')}
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              type="button"
+              aria-pressed={gestaoAberta}
+              onClick={() => setGestaoAberta((open) => !open)}
+            >
+              {ta('arco.manage')}
+            </Button>
+            <Button variant="primary" type="button" onClick={startCreate}>
+              <IconPlus size={16} aria-hidden /> {t('new')}
+            </Button>
+          </>
         ) : null}
       </CodexHeader>
 
@@ -286,6 +303,17 @@ export function LinhaTempoPage() {
         {error ? <p className="linha-tempo-page__error">{error}</p> : null}
         {busyError ? <p className="linha-tempo-page__error">{busyError}</p> : null}
 
+        {isGm && gestaoAberta ? (
+          <ArcoManager
+            arcos={arcos}
+            sessoes={sessoes}
+            locais={locais}
+            iaArcosEnabled={Boolean(cfg?.modulos_ativos.includes('ia_arcos'))}
+            onChanged={() => void refresh()}
+            onClose={() => setGestaoAberta(false)}
+          />
+        ) : (
+          <>
         {podeGerirItens ? (
           <ItemManager sessoes={sessoes} eventos={eventos} onChanged={() => void refresh()} />
         ) : null}
@@ -294,6 +322,7 @@ export function LinhaTempoPage() {
           <ArcosTimelineView
             arcos={arcos}
             sessoes={sessoes}
+            eventos={eventos}
             onBackToCronologico={() => setMode('cronologico')}
           />
         ) : mode === 'descoberta' ? (
@@ -392,6 +421,8 @@ export function LinhaTempoPage() {
             {!isGm ? (
               <p className="linha-tempo-page__unrevealed">{t('unrevealedNote')}</p>
             ) : null}
+          </>
+        )}
           </>
         )}
       </main>

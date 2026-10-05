@@ -1,13 +1,14 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState, Button } from '../ui'
-import type { Arco, Sessao } from '../../types'
+import type { Arco, Evento, Sessao } from '../../types'
 import {
   computeArcosLayout,
   DOT_RADIUS,
   LANE_WIDTH,
   ROW_HEIGHT,
   SEM_ARCO_KEY,
+  type Connector,
 } from './arcosLayout'
 import './ArcosTimelineView.css'
 
@@ -16,14 +17,23 @@ const NEUTRAL_LANE_COLOR = '#958f83'
 interface ArcosTimelineViewProps {
   arcos: Arco[]
   sessoes: Sessao[]
+  eventos: Evento[]
   onBackToCronologico: () => void
 }
 
-export function ArcosTimelineView({ arcos, sessoes, onBackToCronologico }: ArcosTimelineViewProps) {
+export function ArcosTimelineView({
+  arcos,
+  sessoes,
+  eventos,
+  onBackToCronologico,
+}: ArcosTimelineViewProps) {
   const { t } = useTranslation('linhaTempo')
   const [activeKeys, setActiveKeys] = useState<Set<string>>(() => new Set())
 
-  const layout = useMemo(() => computeArcosLayout(arcos, sessoes), [arcos, sessoes])
+  const layout = useMemo(
+    () => computeArcosLayout(arcos, sessoes, eventos, activeKeys.size === 0 ? null : activeKeys),
+    [arcos, sessoes, eventos, activeKeys],
+  )
 
   function toggleLane(key: string) {
     setActiveKeys((prev) => {
@@ -50,13 +60,28 @@ export function ArcosTimelineView({ arcos, sessoes, onBackToCronologico }: Arcos
   }
 
   const laneVisible = (key: string) => activeKeys.size === 0 || activeKeys.has(key)
-  const rowVisible = (s: Sessao) => {
-    const keys = [s.arco_id == null ? SEM_ARCO_KEY : String(s.arco_id)]
-    if (s.arco_transicao_id != null) keys.push(String(s.arco_transicao_id))
-    return keys.some(laneVisible)
+
+  function elapsedLabel(years: number, months: number): string {
+    const yearsText = years > 0 ? t('arcos.elapsedYears', { count: years }) : ''
+    const monthsText = months > 0 ? t('arcos.elapsedMonths', { count: months }) : ''
+    if (yearsText && monthsText) return t('arcos.elapsedBoth', { years: yearsText, months: monthsText })
+    if (yearsText) return yearsText
+    if (monthsText) return monthsText
+    return t('arcos.elapsedSame')
   }
 
   const labelColumnX = layout.width + 20
+
+  function colorForKey(key: string): string {
+    const lane = layout.lanes.find((item) => item.key === key)
+    return lane?.arco?.cor || NEUTRAL_LANE_COLOR
+  }
+
+  function connectorPath(c: Connector): string {
+    if (c.orientation === 'vertical') return `M ${c.x1} ${c.y1} L ${c.x2} ${c.y2}`
+    const dy = (c.y2 - c.y1) / 2
+    return `M ${c.x1} ${c.y1} C ${c.x1} ${c.y1 + dy}, ${c.x2} ${c.y2 - dy}, ${c.x2} ${c.y2}`
+  }
 
   return (
     <div className="arcos-timeline">
@@ -91,47 +116,46 @@ export function ArcosTimelineView({ arcos, sessoes, onBackToCronologico }: Arcos
           className="arcos-timeline__canvas"
           style={{ width: labelColumnX + 320, height: layout.height + ROW_HEIGHT }}
         >
-          {layout.lanes.map((lane) =>
-            laneVisible(lane.key) ? (
-              <div
-                key={`head-${lane.key}`}
-                className="arcos-timeline__lane-head"
-                style={{
-                  left: lane.x - LANE_WIDTH / 2,
-                  width: LANE_WIDTH,
-                  background: lane.arco?.cor || (lane.key === SEM_ARCO_KEY ? NEUTRAL_LANE_COLOR : undefined),
-                }}
-                aria-hidden
+          {layout.columns.map((column) => (
+            <div
+              key={`head-${column.x}`}
+              className="arcos-timeline__lane-head"
+              style={{
+                left: column.x - LANE_WIDTH / 2,
+                width: LANE_WIDTH,
+                background: colorForKey(column.colorKey),
+              }}
+              aria-hidden
+            />
+          ))}
+
+          <svg className="arcos-timeline__links" aria-hidden>
+            {layout.connectors.map((c, i) => (
+              <path
+                key={`conn-${i}`}
+                className={`arcos-timeline__link${c.dashed ? ' is-dashed' : ''}`}
+                d={connectorPath(c)}
+                stroke={colorForKey(c.colorKey)}
               />
+            ))}
+          </svg>
+
+          {layout.connectors.map((c, i) =>
+            c.years != null && c.months != null ? (
+              <span
+                key={`gap-${i}`}
+                className="arcos-timeline__gap-label"
+                style={{
+                  left: (c.orientation === 'vertical' ? c.x1 : (c.x1 + c.x2) / 2) + 10,
+                  top: (c.y1 + c.y2) / 2,
+                }}
+              >
+                {elapsedLabel(c.years, c.months)}
+              </span>
             ) : null,
           )}
 
-          {layout.connectors.map((c, i) => {
-            const lane = layout.lanes.find((l) => l.key === c.laneKey)
-            if (!lane || !laneVisible(lane.key)) return null
-            const color = lane.arco?.cor || NEUTRAL_LANE_COLOR
-            return (
-              <div
-                key={`conn-${i}`}
-                className={`arcos-timeline__connector${c.gap > 0 ? ' is-dashed' : ''}`}
-                style={{
-                  left: lane.x,
-                  top: c.y1 + ROW_HEIGHT / 2 + DOT_RADIUS,
-                  height: c.y2 - c.y1 - 2 * DOT_RADIUS,
-                  borderColor: color,
-                }}
-              >
-                {c.gap > 0 ? (
-                  <span className="arcos-timeline__gap-label">
-                    {t('arcos.gapLabel', { count: c.gap })}
-                  </span>
-                ) : null}
-              </div>
-            )
-          })}
-
           {layout.lanes.flatMap((lane) => {
-            if (!laneVisible(lane.key)) return []
             const dots = layout.dotsByLane.get(lane.key) ?? []
             const color = lane.arco?.cor || NEUTRAL_LANE_COLOR
             return dots.map((dot) => (
@@ -139,7 +163,7 @@ export function ArcosTimelineView({ arcos, sessoes, onBackToCronologico }: Arcos
                 key={`dot-${lane.key}-${dot.sessaoId}`}
                 className="arcos-timeline__dot"
                 style={{
-                  left: lane.x - DOT_RADIUS,
+                  left: dot.x - DOT_RADIUS,
                   top: dot.y + ROW_HEIGHT / 2 - DOT_RADIUS,
                   width: DOT_RADIUS * 2,
                   height: DOT_RADIUS * 2,
@@ -149,8 +173,7 @@ export function ArcosTimelineView({ arcos, sessoes, onBackToCronologico }: Arcos
             ))
           })}
 
-          {layout.rows.map((row) =>
-            rowVisible(row.sessao) ? (
+          {layout.rows.map((row) => (
               <div
                 key={`row-${row.sessao.id}`}
                 className="arcos-timeline__row-label"
@@ -162,8 +185,7 @@ export function ArcosTimelineView({ arcos, sessoes, onBackToCronologico }: Arcos
                   <span className="arcos-timeline__row-sem-arco">{t('arcos.semArco')}</span>
                 ) : null}
               </div>
-            ) : null,
-          )}
+          ))}
         </div>
       </div>
     </div>

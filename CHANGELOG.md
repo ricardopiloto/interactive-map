@@ -7,6 +7,21 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.24.2] — 2026-10-04
+
+### Added
+
+- Ao criar um arco, manualmente ou a partir de uma proposta de IA, a cor abre numa sugestão aleatória de uma paleta fixa, evitando as cores já gravadas na campanha. O mestre pode alterá-la antes de guardar. Editar um arco mantém a cor gravada. Se a paleta estiver esgotada, a criação continua e a sugestão pode repetir uma cor.
+
+### Changed
+
+- Modo Por arcos deixa de reservar uma coluna por arco. A história linear fica numa única coluna vertical, mesmo quando as sessões mudam de arco. Uma coluna nova, com curva contínua no estilo de um grafo de git, só aparece quando a data de uma sessão cai entre a mais antiga e a mais recente de outro arco, ou quando duas sessões de arcos diferentes têm a mesma data. A coluna que continua mantém o traço vertical. Cada ligação mostra o tempo entre as datas dos eventos, em pt-BR e en; um intervalo de mais de 12 meses fica tracejado.
+- "Gerenciar arcos" sai do menu de ferramentas do mapa e passa para o cabeçalho da Linha do Tempo, visível com o modo de edição ligado, nos três modos da página. O jogador não vê o controlo.
+
+### Fixed
+
+- Abrir mesa a partir do Painel carrega o mapa dessa campanha na primeira navegação, sem refresh e sem "Falha ao carregar dados", inclusive quando a configuração já está em memória. Trocar de página dentro da campanha e abrir outra campanha a seguir usam o slug da rota atual (BUG-004).
+
 ## [0.24.1] — 2026-10-04
 
 ### Fixed

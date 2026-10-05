@@ -7,6 +7,7 @@
   "emptyGm": "No events yet. Create the first one in Edit mode.",
   "loadError": "Could not load the timeline.",
   "new": "New event",
+  "gestaoBack": "Back to the timeline",
   "edit": "Edit event",
   "delete": "Delete event",
   "deleteConfirmTitle": "Delete this event?",
@@ -39,8 +40,12 @@
     "filterAria": "Filter by arc",
     "filterAll": "Show all",
     "semArco": "No arc",
-    "gapLabel_one": "{{count}} session later",
-    "gapLabel_other": "{{count}} sessions later"
+    "elapsedYears_one": "{{count}} year",
+    "elapsedYears_other": "{{count}} years",
+    "elapsedMonths_one": "{{count}} month",
+    "elapsedMonths_other": "{{count}} months",
+    "elapsedBoth": "{{years}} and {{months}}",
+    "elapsedSame": "In the same period"
   },
   "modeDescoberta": "By discovery",
   "descoberta": {

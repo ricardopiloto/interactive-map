@@ -7,6 +7,7 @@
   "emptyGm": "Ainda não há eventos. Crie o primeiro em Modo edição.",
   "loadError": "Não foi possível carregar a linha do tempo.",
   "new": "Novo evento",
+  "gestaoBack": "Voltar à linha do tempo",
   "edit": "Editar evento",
   "delete": "Excluir evento",
   "deleteConfirmTitle": "Excluir este evento?",
@@ -39,8 +40,12 @@
     "filterAria": "Filtrar por arco",
     "filterAll": "Mostrar todos",
     "semArco": "Sem arco",
-    "gapLabel_one": "{{count}} sessão depois",
-    "gapLabel_other": "{{count}} sessões depois"
+    "elapsedYears_one": "{{count}} ano",
+    "elapsedYears_other": "{{count}} anos",
+    "elapsedMonths_one": "{{count}} mês",
+    "elapsedMonths_other": "{{count}} meses",
+    "elapsedBoth": "{{years}} e {{months}}",
+    "elapsedSame": "No mesmo período"
   },
   "modeDescoberta": "Por descoberta",
   "descoberta": {
