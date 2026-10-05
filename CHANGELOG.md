@@ -7,6 +7,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.24.1] — 2026-10-04
+
+### Fixed
+
+- A imagem Docker da API não instalava `httpx` (estava só nas dependências de teste) e o contentor encerrava ao importar o motor de arcos. `httpx` passa a ser dependência de produção.
+
 ## [0.24.0] — 2026-10-04
 
 ### Added
