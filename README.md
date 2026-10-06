@@ -29,8 +29,6 @@ Capturas geradas a partir da versão **0.24.5** com o seed E2E do projeto.
 
 ![Sessões e linha do tempo do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-sessoes-dark.png)
 
-![Planejador de rotas do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-rota-dark.png)
-
 ---
 
 ## Funcionalidades
