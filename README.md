@@ -2,36 +2,34 @@
 
 Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas**, **rede de relações** entre personagens e **Modo GM** na mesma interface.
 
-**Versão:** 0.19.1 — [`CHANGELOG.md`](CHANGELOG.md)  
+**Versão:** 0.24.5 — [`CHANGELOG.md`](CHANGELOG.md)
 **Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/wfrp` e `/c/wod`
 
 ---
 
 ## Capturas de ecrã
 
-### Mapa (Modo GM)
+Capturas geradas a partir da versão **0.24.5** com o seed E2E do projeto.
 
-![Mapa da campanha em Modo GM com pins e lista de locais](assets/Screenshot_20260813_123218.png)
+### Entrada e exploração
 
-### Ficha de local
+![Página inicial do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-home-dark.png)
 
-![Modal de leitura de um local no mapa](assets/Screenshot_20260813_123252.png)
+![Catálogo Explorar do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-explorar-dark.png)
 
-### Calcular rota
+### Painel do mestre
 
-![Planeador de rotas com opções de viagem e overlay no mapa](assets/Screenshot_20260813_123311.png)
+![Painel de campanhas do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-painel-dark.png)
 
-### Rede de Relações
+### Mapa, relações e sessões
 
-![Grafo de personagens e vínculos tipados](assets/Screenshot_20260813_123326.png)
+![Mapa da campanha do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-mapa-dark.png)
 
-### Ficha de personagem na Rede
+![Rede de relações do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-relacoes-dark.png)
 
-![Personagem seleccionado com lista de vínculos e grafo focado](assets/Screenshot_20260813_123337.png)
+![Sessões e linha do tempo do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-sessoes-dark.png)
 
-### Filtros e legenda de vínculos
-
-![Coluna de filtros por tipo de vínculo (8 tipos) e legenda PJ/NPC](assets/Screenshot_20260813_123346.png)
+![Planejador de rotas do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-rota-dark.png)
 
 ---
 
@@ -91,6 +89,90 @@ Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** i
 - Design system **Nocturne** (tema escuro)
 - Idiomas **PT-BR** e **EN** (combo-box na barra; conteúdo escrito pelo mestre não é traduzido)
 - Erros da API surfaced com códigos estruturados e mensagens localizadas
+
+---
+
+## Funcionalidades da versão 0.24.5
+
+- Linha do Tempo com modos **Cronológica**, **Por arcos** e **Por descoberta**.
+- Arcos com cor persistida, vínculo com sessões, transições entre arcos e intervalos tracejados.
+- Sugestão opcional por IA para criar arcos e sugerir locais/personagens em sessões e eventos; nada é salvo sem revisão do mestre.
+- Modo Por descoberta para personagens, locais, facções e itens, respeitando visibilidade para jogadores.
+- Cadastro e CRUD de itens de campanha.
+- Associação de PJs e NPCs a locais, com retratos, filtros e regras de visibilidade.
+- Tema **Auto / Claro / Escuro** e internacionalização **PT-BR / EN**.
+- Multi-campanha por slug, com módulos por campanha e importação de instâncias legadas.
+- Mapa com pins, estado Conhecido/Visitado, saídas, grupo, imagens e rede de rotas.
+- Rede de relações com oito tipos de vínculo, direção, qualificador, filtros, privacidade e edição pelo GM.
+- Sessões e eventos com Markdown, associações N:N, visibilidade, ordenação e navegação contextual.
+- API fail-closed para escrita, autenticação de mestre, dados isolados por campanha e respostas estruturadas.
+
+## API e contratos
+
+A API possui **102 operações OpenAPI** e **110 schemas** na revisão atual. O inventário completo de métodos, rotas, parâmetros, corpos, respostas e schemas está em [`docs/api-contracts.md`](docs/api-contracts.md).
+
+Domínios cobertos:
+
+- saúde, catálogo, configuração, autenticação e sessão;
+- campanhas, proprietários, convites, módulos, género, capa, visibilidade e unidade de distância;
+- locais, NPCs, personagens, arcos, sessões, eventos e itens;
+- relações entre personagens;
+- waypoints, segmentos e planeamento de rotas;
+- descoberta, associações sugeridas por IA, export/import e uploads;
+- administração de utilizadores e recuperação de acesso.
+
+A especificação executável fica disponível em `/openapi.json` quando a API está em execução.
+
+## Fluxos principais
+
+### Entrada pública
+
+```mermaid
+flowchart LR
+  A[Usuário acessa /c/:slug] --> B[Carrega configuração pública]
+  B --> C{Mapa disponível?}
+  C -- Sim --> D[Mapa, locais e saídas]
+  C -- Não --> E[Abre Relações]
+  D --> F[Navegação Mapa, Relações, Rota ou Sessões]
+  E --> F
+  F --> G[API aplica visibilidade]
+  G --> H[Interface renderiza dados localizados]
+```
+
+### CRUD do mestre
+
+```mermaid
+sequenceDiagram
+  actor GM as Mestre
+  participant UI as SPA
+  participant API as FastAPI
+  participant DB as SQLite
+  GM->>UI: Ativa Modo GM
+  UI->>API: Login e leitura administrativa
+  API->>DB: Consulta campanha
+  DB-->>API: Dados autorizados
+  API-->>UI: Resposta tipada
+  GM->>UI: Cria ou edita entidade
+  UI->>API: POST/PATCH/PUT
+  API->>DB: Valida e persiste
+  API-->>UI: 201/200
+```
+
+### Sugestões por IA
+
+```mermaid
+flowchart TD
+  A[Mestre informa resumo ou descrição] --> B{Texto vazio?}
+  B -- Sim --> C[Não chama IA]
+  B -- Não --> D[Backend valida GM e campanha]
+  D --> E[Provedor recebe contexto mínimo]
+  E --> F{Resposta válida?}
+  F -- Não --> G[Erro explícito; seleção preservada]
+  F -- Sim --> H[Filtra referências inválidas ou ocultas]
+  H --> I[Mestre revisa e salva separadamente]
+```
+
+Mais diagramas: [`docs/flows.md`](docs/flows.md).
 
 ---
 
@@ -183,5 +265,7 @@ docker compose --profile with-caddy up --build   # porta 8080
 | [`docs/manual-mapa.md`](docs/manual-mapa.md) | Mapa: pins, menu, fichas, grupo, calcular rotas, CRUD GM |
 | [`docs/manual-rede-rotas.md`](docs/manual-rede-rotas.md) | Nós e segmentos da rede de vias (Modo GM) |
 | [`docs/manual-relacoes.md`](docs/manual-relacoes.md) | Rede de Relações: grafo, tipos de vínculo, criar e visualizar |
+| [`docs/api-contracts.md`](docs/api-contracts.md) | Inventário OpenAPI: rotas, parâmetros, corpos, respostas e schemas |
+| [`docs/flows.md`](docs/flows.md) | Fluxos funcionais e operacionais em Mermaid |
 | [`specs/`](specs/) | Specs Speckit por funcionalidade (histórico de desenho) |
 | [`frontend/README.md`](frontend/README.md) · [`backend/README.md`](backend/README.md) | Detalhe por camada |
