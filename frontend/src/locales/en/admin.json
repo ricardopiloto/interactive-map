@@ -64,6 +64,28 @@
     "sessaoTransicaoHelp": "The session that closes the previous arc and opens this one. It appears in both lanes without duplicating the session.",
     "locaisSugeridos": "Suggested locations"
   },
+  "capitulo": {
+    "listTitle": "Chapters",
+    "newBtn": "+ New chapter",
+    "new": "New chapter",
+    "edit": "Edit chapter",
+    "group": "Chapter",
+    "body": "Prep (Markdown)",
+    "order": "Order",
+    "arco": "Arc",
+    "arcoNone": "— none (standalone chapter) —",
+    "arcoHelp": "Optional. A chapter can exist without belonging to any arc.",
+    "visible": "Visible to everyone",
+    "hidden": "Hidden from players",
+    "empty": "No chapters in this arc.",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "confirmDelete": "Delete this chapter?"
+  },
+  "statBlock": {
+    "title": "Sheet",
+    "listHint": "One item per line"
+  },
   "digitizer": {
     "title": "Route network",
     "subtitle": "No lore pins — navigation only",

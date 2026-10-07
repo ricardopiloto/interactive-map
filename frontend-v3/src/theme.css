@@ -1,0 +1,127 @@
+/* Três temas completos, trocáveis em runtime via [data-theme] na raiz. */
+
+:root {
+  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Georgia', 'Iowan Old Style', serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Nocturne — escuro, dourado, continuidade com o produto atual           */
+/* ---------------------------------------------------------------------- */
+[data-theme='nocturne'] {
+  --bg: #15161c;
+  --bg-elevated: #1d1f28;
+  --bg-sunken: #0e0f13;
+  --bg-hover: #262935;
+  --border: #2d303d;
+  --border-strong: #3c4052;
+  --text: #ede9e0;
+  --text-secondary: #a8a9b8;
+  --text-muted: #6d6f80;
+  --accent: #d8aa5a;
+  --accent-contrast: #1b1206;
+  --accent-soft: rgba(216, 170, 90, 0.16);
+  --link: #d8aa5a;
+  --danger: #d9655a;
+  --success: #6aa87a;
+  --warning: #d9b35a;
+  --font-display: var(--font-sans);
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Pergaminho — claro, sépia, "grimório de campanha"                      */
+/* ---------------------------------------------------------------------- */
+[data-theme='pergaminho'] {
+  --bg: #ece2cd;
+  --bg-elevated: #f7efdd;
+  --bg-sunken: #ddcfae;
+  --bg-hover: #e2d4b6;
+  --border: #c9b78e;
+  --border-strong: #ab9568;
+  --text: #2c2114;
+  --text-secondary: #5a4b32;
+  --text-muted: #837151;
+  --accent: #8a2b2b;
+  --accent-contrast: #fbefe0;
+  --accent-soft: rgba(138, 43, 43, 0.12);
+  --link: #6b3f17;
+  --danger: #a1352a;
+  --success: #3f6b3f;
+  --warning: #9a6a1f;
+  --font-display: var(--font-serif);
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Arcano — escuro, violeta/teal, mais "fantasia vívida"                  */
+/* ---------------------------------------------------------------------- */
+[data-theme='arcano'] {
+  --bg: #16131f;
+  --bg-elevated: #211c32;
+  --bg-sunken: #0d0b14;
+  --bg-hover: #2c2645;
+  --border: #37305a;
+  --border-strong: #4a4078;
+  --text: #ece9f7;
+  --text-secondary: #b1a8d1;
+  --text-muted: #746b96;
+  --accent: #3fc9b4;
+  --accent-contrast: #06201c;
+  --accent-soft: rgba(63, 201, 180, 0.16);
+  --link: #9d7bf0;
+  --danger: #e2607a;
+  --success: #3fc9b4;
+  --warning: #e2a860;
+  --font-display: var(--font-sans);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--link);
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* scrollbars, kept subtle across themes */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}

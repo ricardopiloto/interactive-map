@@ -65,8 +65,27 @@ def _identity_migrator(
 
 
 # Older recognized revisions → migrator to next (chain until head)
+def _from_009_item(
+    manifest: dict[str, Any], content: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Packages from before Capítulo and stat_block stay importable."""
+    out_m = dict(manifest)
+    out_m["schema_version"] = campaign_head_revision()
+    out_c = dict(content)
+    out_c.setdefault("capitulos", [])
+    npcs = []
+    for row in out_c.get("npcs") or []:
+        npc = dict(row)
+        npc.setdefault("stat_block", {})
+        npcs.append(npc)
+    if npcs or "npcs" in out_c:
+        out_c["npcs"] = npcs
+    return out_m, out_c
+
+
 SCHEMA_MIGRATORS: dict[str, ContentMigrator] = {
     "000_pre": _identity_migrator,
+    "009_item": _from_009_item,
 }
 
 

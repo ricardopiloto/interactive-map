@@ -8,7 +8,7 @@ Cada item tem um ID único (`BKLG-NNN`) no título, na ordem em que foi registra
 
 ## [BKLG-001] Gap — Gestão de Arcos não foi desenhada no `frontend-next`
 
-**Status:** Spec e plano criados — [123-gestao-arcos](../../specs/123-gestao-arcos/spec.md) (`Draft`; pronta para `speckit-tasks`).
+**Status:** Implementado (falta só validação) — [123-gestao-arcos](../../specs/123-gestao-arcos/spec.md), 16/19 tarefas. O gap original está resolvido: `frontend-next` já tem [`ArcoManagerPanel.tsx`](../../frontend-next/src/components/map/ArcoManagerPanel.tsx)/`arcoCopy.ts`, e o produto (`frontend/`) tem a gestão real de Arcos. Restam só tarefas de execução de testes/build (T017-T019 em `tasks.md`). Em seguida, o change OpenSpec [`gestao-arcos-linha-tempo`](../../openspec/changes/archive/2026-10-04-gestao-arcos-linha-tempo/proposal.md) (implementado) moveu a entrada "Gerenciar arcos" do menu do mapa para a Linha do Tempo — ver BKLG-039.
 
 **Registrado em:** 2026-09-23.
 
@@ -27,7 +27,7 @@ Cada item tem um ID único (`BKLG-NNN`) no título, na ordem em que foi registra
 
 ## [BKLG-002] Gap — Mover o marcador do grupo (e trocar formato bandeira/brasão) não existe no `frontend-next`
 
-**Status:** Spec e plano criados — [124-marcador-grupo-mapa](../../specs/124-marcador-grupo-mapa/spec.md) (`Draft`; depende do menu do mestre definido em 123; pronta para `speckit-tasks`).
+**Status:** Implementado (falta só validação) — [124-marcador-grupo-mapa](../../specs/124-marcador-grupo-mapa/spec.md), 14/17 tarefas. Restam só tarefas de execução de testes/build (T015-T017 em `tasks.md`).
 
 **Registrado em:** 2026-09-23.
 
@@ -43,7 +43,7 @@ Cada item tem um ID único (`BKLG-NNN`) no título, na ordem em que foi registra
 
 ## [BKLG-003] Débito técnico — escala de espaço fora de ordem em `tokens.css`
 
-**Status:** Spec e plano criados — [125-escala-tokens-espacamento](../../specs/125-escala-tokens-espacamento/spec.md) (`Draft`; pronta para `speckit-tasks`).
+**Status:** Implementado (falta só validação) — [125-escala-tokens-espacamento](../../specs/125-escala-tokens-espacamento/spec.md), 8/11 tarefas. Restam tarefas de captura/execução da matriz visual e build (T001, T010, T011 em `tasks.md`).
 
 **Registrado em:** 2026-09-23, ao investigar a sobreposição em `/explorar`.
 
@@ -133,7 +133,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-008] Design — Login em modal flutuante, em vez de página separada
 
-**Status:** Spec e plano criados — [126-login-modal-rota](../../specs/126-login-modal-rota/spec.md) (`Draft`; incorpora o TR e está pronta para `speckit-tasks`).
+**Status:** Implementado (falta só validação) — [126-login-modal-rota](../../specs/126-login-modal-rota/spec.md), 16/18 tarefas. Restam tarefas de execução de E2E e checagem axe/build (T016, T017 em `tasks.md`).
 
 **Registrado em:** 2026-09-23.
 
@@ -153,7 +153,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-009] Design — Botão de tema só com ícone (três estados)
 
-**Status:** Spec e plano criados — [127-seletor-tema-icone](../../specs/127-seletor-tema-icone/spec.md) (pronta para `speckit-tasks`).
+**Status:** Implementado (falta só validação) — [127-seletor-tema-icone](../../specs/127-seletor-tema-icone/spec.md), 6/8 tarefas. Restam T007 (Playwright/axe, bloqueada por Chromium não instalado no ambiente) e T008 (capturas desktop/mobile pendentes pelo mesmo bloqueio).
 
 **Registrado em:** 2026-09-23.
 
@@ -167,7 +167,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-016] Produto/Design — Unificar Mapa e Rota numa única tela
 
-**Status:** Modelo de interação fechado + TR feito — [`docs/v2/tr-mapa-rota-unificado.md`](../v2/tr-mapa-rota-unificado.md). Pronta pra virar spec, depois de decidir ordem com `BKLG-002`/`BKLG-004`.
+**Status:** Modelo de interação fechado + TR feito — [`docs/v2/tr-mapa-rota-unificado.md`](../v2/tr-mapa-rota-unificado.md). Pronta pra virar spec — `BKLG-002` e `BKLG-004`, de quem dependia a ordem, já estão implementados. Ainda não implementado: `RotaPage.tsx` continua como tela própria no código, sem o modo interno (`explorar`/`rota`) absorvido pelo `MapPage.tsx`.
 
 **Registrado em:** 2026-09-23.
 
@@ -241,7 +241,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-024] Design — Hover no token do personagem (grafo de Relações) não destaca os vínculos dele
 
-**Status:** Spec criada — [135-hover-token-destaca-vinculos](../../specs/135-hover-token-destaca-vinculos/spec.md) (`Draft`; pronta para `speckit-plan`).
+**Status:** Implementado — [135-hover-token-destaca-vinculos](../../specs/135-hover-token-destaca-vinculos/spec.md) (10/10 tarefas). Confirmado no código: `GraphStage.tsx` tem `onPointerEnter`/`onPointerLeave` no token chamando `onHoverPersonagem`.
 
 **Registrado em:** 2026-09-24.
 
@@ -257,7 +257,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-025] Design — Remover destaque ao passar o mouse sobre uma linha de vínculo (grafo de Relações)
 
-**Status:** Spec criada — [136-remover-hover-linha-vinculo](../../specs/136-remover-hover-linha-vinculo/spec.md) (`Draft`; pronta para `speckit-plan`).
+**Status:** Implementado — [136-remover-hover-linha-vinculo](../../specs/136-remover-hover-linha-vinculo/spec.md) (10/10 tarefas). Confirmado no código: `hoveredEdgeId` não existe mais em `GraphStage.tsx`.
 
 **Registrado em:** 2026-09-24.
 
@@ -273,7 +273,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-027] Design — Diminuir a distância entre os tokens no grafo de Relações em 30%
 
-**Status:** Spec criada — [138-diminuir-distancia-tokens](../../specs/138-diminuir-distancia-tokens/spec.md) (`Draft`; pronta para `speckit-plan`).
+**Status:** Implementado — [138-diminuir-distancia-tokens](../../specs/138-diminuir-distancia-tokens/spec.md) (13/13 tarefas).
 
 **Registrado em:** 2026-09-24.
 
@@ -289,7 +289,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-029] Produto — Sistema de RPG deveria ser system agnostic (aceitar qualquer nome)
 
-**Status:** Spec criada — [140-sistema-agnostico](../../specs/140-sistema-agnostico/spec.md) (`Draft`; pronta para `speckit-plan`).
+**Status:** Implementado — [140-sistema-agnostico](../../specs/140-sistema-agnostico/spec.md) (16/16 tarefas).
 
 **Registrado em:** 2026-09-24.
 
@@ -350,6 +350,8 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-034] Produto — Dono pode alterar o tema visual da campanha depois da criação
 
+**Status:** Implementado (falta só validação) — [146-tema-campanha-editavel](../../specs/146-tema-campanha-editavel/spec.md), 11/12 tarefas. Confirmado no código: `set_genero` em [`campanha_admin.py`](../../backend/app/services/campanha_admin.py#L279) + `patchGenero` em `campanhasApi` + UI em [`PainelPage.tsx`](../../frontend/src/pages/PainelPage.tsx#L110). Resta só T012 (rodar o roteiro completo de `quickstart.md`).
+
 **Registrado em:** 2026-09-24.
 
 **Pedido:** permitir que o mestre altere o tema visual de uma campanha já criada.
@@ -366,7 +368,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-035] Produto — Tela de administração de usuários e mesas
 
-**Status:** Spec criada — [148-administracao-usuarios-mesas](../../specs/148-administracao-usuarios-mesas/spec.md) (`Draft`; pronta para `speckit-plan`).
+**Status:** Implementado — [148-administracao-usuarios-mesas](../../specs/148-administracao-usuarios-mesas/spec.md) (33/33 tarefas).
 
 **Registrado em:** 2026-09-24.
 
@@ -389,7 +391,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-036] Produto — Alternância entre tema claro e escuro em todos os temas de campanha
 
-**Status:** Spec criada — [150-tema-claro-escuro-universal](../../specs/150-tema-claro-escuro-universal/spec.md) (`Draft`; pronta para `speckit-plan`).
+**Status:** Implementado — [150-tema-claro-escuro-universal](../../specs/150-tema-claro-escuro-universal/spec.md) (7/7 tarefas).
 
 **Registrado em:** 2026-09-24.
 
@@ -407,7 +409,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-037] Produto — Associar qualquer personagem a um local
 
-**Status:** Spec e plano criados — [151-associacao-personagem-local](../../specs/151-associacao-personagem-local/spec.md) ([plan.md](../../specs/151-associacao-personagem-local/plan.md); pronta para `speckit-tasks`).
+**Status:** Implementado — [151-associacao-personagem-local](../../specs/151-associacao-personagem-local/spec.md) (9/9 tarefas). Isso também resolve a dúvida aberta em [BKLG-017](../bugs/bugs.md): PJs agora participam dos vínculos com Local.
 
 **Registrado em:** 2026-09-24.
 
@@ -425,7 +427,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-038] Débito técnico — Otimizar o tempo de execução dos scripts de teste
 
-**Status:** Spec, plano e tarefas criados — [152-perfil-rapido-testes](../../specs/152-perfil-rapido-testes/spec.md) ([plan.md](../../specs/152-perfil-rapido-testes/plan.md), [tasks.md](../../specs/152-perfil-rapido-testes/tasks.md)); pronta para implementação.
+**Status:** Em implementação — [152-perfil-rapido-testes](../../specs/152-perfil-rapido-testes/spec.md), 9/17 tarefas. Medição inicial (pytest/frontend) feita; faltam as otimizações em si (`conftest.py`, `playwright.config.ts`, `seed_e2e.py` — T009-T011), a execução completa comparativa (T013) e as medições finais com percentual de redução (T003, T004, T014, T017 em `tasks.md`).
 
 **Registrado em:** 2026-09-24.
 
@@ -445,7 +447,9 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-039] Produto — Linha do Tempo por arcos e por descoberta
 
-**Status:** Specs criadas, validadas e convertidas para changes OpenSpec, prontas pra `apply`. Decisões de produto fechadas (ver abaixo) — direção vertical escolhida, Itens incluídos nesta fase, 1 arco por sessão (com excessão de transição), sem teto de arcos no filtro.
+**Status:** Implementado. As changes OpenSpec foram aplicadas e arquivadas, todas com 100% das tarefas concluídas: [`linha-tempo-por-arcos`](../../openspec/changes/archive/2026-10-04-linha-tempo-por-arcos/proposal.md) (21/21), [`linha-tempo-por-descoberta`](../../openspec/changes/archive/2026-10-04-linha-tempo-por-descoberta/proposal.md) (25/25), [`backend-ia-deepseek`](../../openspec/changes/archive/2026-10-04-backend-ia-deepseek/proposal.md) e [`motor-ia-arcos`](../../openspec/changes/archive/2026-10-04-motor-ia-arcos/proposal.md). Decisões de produto fechadas (ver abaixo) — direção vertical escolhida, Itens incluídos nesta fase, 1 arco por sessão (com excessão de transição), sem teto de arcos no filtro.
+
+**Evolução posterior, já implementada também:** [`seletor-modos-linha-tempo`](../../openspec/changes/archive/2026-10-04-seletor-modos-linha-tempo/proposal.md) (removeu o opt-in por campanha, cronológico passou a ser o padrão ao abrir a tela — ver nota de revisão abaixo), [`gestao-arcos-linha-tempo`](../../openspec/changes/archive/2026-10-04-gestao-arcos-linha-tempo/proposal.md) (moveu "Gerenciar arcos" do menu do mapa para a própria Linha do Tempo, resolvendo o gap original do BKLG-001), [`conexoes-arcos-no-tempo`](../../openspec/changes/archive/2026-10-04-conexoes-arcos-no-tempo/proposal.md) (colunas do modo Por arcos agora seguem a data real, estilo Git Graph) e [`ia-arcos-so-sessoes-sem-arco`](../../openspec/changes/archive/2026-10-05-ia-arcos-so-sessoes-sem-arco/proposal.md) (a proposta de arco por IA passou a considerar só sessões ainda sem arco).
 - Speckit: [`specs/153-linha-tempo-por-arcos`](../../specs/153-linha-tempo-por-arcos/spec.md) e [`specs/154-linha-tempo-por-descoberta`](../../specs/154-linha-tempo-por-descoberta/spec.md) — validadas em 2026-09-28 (3 achados resolvidos com o usuário: dado de "evento multi-sessão" ainda é FK única hoje — ver nota em Achados; alerta de mestre pra sessão oculta anterior adicionado como FR-014/SC-007 na 154).
 - OpenSpec: [`openspec/changes/linha-tempo-por-arcos`](../../openspec/changes/linha-tempo-por-arcos/proposal.md) e [`openspec/changes/linha-tempo-por-descoberta`](../../openspec/changes/linha-tempo-por-descoberta/proposal.md) — conversão 1:1 do conteúdo das specs pro modelo OpenSpec deste repositório (proposal/specs delta/design/tasks), ambas validadas com `openspec validate --strict`. `design.md` de cada change inclui a análise técnica completa (decisões de schema, riscos, plano de migração) com base no TR.
 - O motor de IA de detecção de arcos, antes fora de escopo, agora tem duas changes OpenSpec próprias: [`openspec/changes/backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md) (infraestrutura genérica de chamada a provedor de IA, DeepSeek, reutilizável por qualquer feature de IA do produto) e [`openspec/changes/motor-ia-arcos`](../../openspec/changes/motor-ia-arcos/proposal.md) (lógica de negócio que lê sessões e propõe arcos, preenchendo a lacuna que `linha-tempo-por-arcos` deixou aberta de propósito, agora incluindo um prompt padrão fixo e versionado — ver `motor-ia-arcos/design.md` e o Requirement "Prompt padrão de contexto para o provedor de IA"). `motor-ia-arcos` não precisou de delta nas outras duas changes (`Modified Capabilities: nenhuma`) — só as consome.
@@ -478,13 +482,13 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 **Achado residual (não bloqueia, registrado pra consciência futura):** a descrição de `Evento` como "pode ter ocorrido dentro de uma sessão ou múltiplas sessões" (esclarecimento do usuário na validação das specs) não bate com o schema atual — `Evento.sessao_id` é uma FK única opcional, não N:N. Nenhuma das specs 153/154 depende dessa relação ser N:N, então não é um gap de spec; só fica anotado aqui caso vire relevante numa fase futura.
 
-**Próximo passo:** `apply` das changes OpenSpec (`openspec/changes/linha-tempo-por-arcos` e `openspec/changes/linha-tempo-por-descoberta`) quando a implementação for priorizada.
+**Próximo passo:** nenhum — item concluído.
 
 ---
 
 ## [BKLG-040] Produto — IA resume transcrição de sessão e sugere NPCs/Locais vinculados
 
-**Status:** Ideia registrada — precisa de uma análise melhor (provavelmente BP/DR via `po-virtual`) antes de qualquer TR. Não é pra virar `/speckit-specify` direto.
+**Status:** Parcialmente coberto — ainda não é a mesma coisa que o pedido original. Dois changes OpenSpec implementados (100% das tarefas) já cobrem a metade "sugere NPCs/Locais vinculados", mas a partir do resumo/descrição já escritos pelo mestre, não de transcrição bruta: [`ia-sugestao-associacoes-sessao`](../../openspec/changes/archive/2026-10-05-ia-sugestao-associacoes-sessao/proposal.md) (sugere `local_ids`/`personagem_ids` a partir do resumo da Sessão) e [`ia-sugestao-associacoes-evento`](../../openspec/changes/archive/2026-10-05-ia-sugestao-associacoes-evento/proposal.md) (mesma coisa a partir da descrição do Evento). A parte "IA resume transcrição bruta" continua sem implementação — ainda precisa da análise/BP mencionada abaixo antes de qualquer TR. Não é pra virar `/speckit-specify` direto.
 
 **Registrado em:** 2026-09-28.
 

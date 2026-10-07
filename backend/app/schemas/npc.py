@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,6 +14,7 @@ class NPCCreate(BaseModel):
     status: Optional[NPCStatus] = NPCStatus.desconhecido
     retrato_url: Optional[str] = Field(default=None, max_length=500)
     visivel_para_todos: bool = True
+    stat_block: Optional[dict[str, Any]] = None
 
 
 class NPCUpdate(BaseModel):
@@ -25,6 +26,7 @@ class NPCUpdate(BaseModel):
     status: Optional[NPCStatus] = None
     retrato_url: Optional[str] = Field(default=None, max_length=500)
     visivel_para_todos: Optional[bool] = None
+    stat_block: Optional[dict[str, Any]] = None
 
 
 class NPCRead(BaseModel):
@@ -40,3 +42,20 @@ class NPCRead(BaseModel):
     retrato_url: Optional[str]
     visivel_para_todos: bool = True
     local_ids: list[int] = Field(default_factory=list)
+
+
+class NPCAdmin(NPCRead):
+    """Administrative NPC payload. Public NPCRead never includes stat_block."""
+
+    stat_block: dict[str, Any] = Field(default_factory=dict)
+
+
+class StatBlockFieldRead(BaseModel):
+    nome: str
+    rotulo: str
+    tipo: str
+
+
+class StatBlockSchemaRead(BaseModel):
+    sistema: str
+    fields: list[StatBlockFieldRead] = Field(default_factory=list)

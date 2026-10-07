@@ -41,5 +41,9 @@ class NPC(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column(JSON, nullable=False),
     )
+    stat_block: dict[str, Any] = Field(
+        default_factory=dict,
+        sa_column=Column(JSON, nullable=True),
+    )
 
     locais: list["Local"] = Relationship(back_populates="npcs", link_model=LocalNPCLink)

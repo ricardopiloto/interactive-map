@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconPencil, IconTrash } from '@tabler/icons-react'
-import { ConfirmDialog, DropdownMenu, EmptyState, IconButton, Button, Input, Select} from '../ui'
+import { ConfirmDialog, DropdownMenu, EmptyState, IconButton, Button, Input, Select } from '../ui'
+import { StatBlockFields } from './StatBlockFields'
 import type { NPC, NPCStatus } from '../../types'
 import { formSnapshot, isFormDirty } from '../forms/dirty'
 import { FormDrawer } from '../forms/FormDrawer'
@@ -17,6 +18,7 @@ interface NpcFormDialogProps {
   faccao: string
   status: NPCStatus
   retrato_url: string | null
+  stat_block?: Record<string, unknown>
   onChange: (
     patch: Partial<{
       nome: string
@@ -25,6 +27,7 @@ interface NpcFormDialogProps {
       faccao: string
       status: NPCStatus
       retrato_url: string | null
+      stat_block: Record<string, unknown>
     }>,
   ) => void
   onSave: () => void
@@ -39,6 +42,7 @@ export function NpcFormDialog({
   faccao,
   status,
   retrato_url,
+  stat_block = {},
   onChange,
   onSave,
   onCancel,
@@ -46,8 +50,8 @@ export function NpcFormDialog({
   const { t } = useTranslation('admin')
   const { t: tc } = useTranslation('comum')
   const snapshot = useMemo(
-    () => ({ nome, papel, descricao, faccao, status, retrato_url }),
-    [nome, papel, descricao, faccao, status, retrato_url],
+    () => ({ nome, papel, descricao, faccao, status, retrato_url, stat_block }),
+    [nome, papel, descricao, faccao, status, retrato_url, stat_block],
   )
   const baseline = useRef(formSnapshot(snapshot))
   const [submitted, setSubmitted] = useState(false)
@@ -98,6 +102,7 @@ export function NpcFormDialog({
           value={descricao}
           onChange={(v) => onChange({ descricao: v })}
         />
+        <StatBlockFields value={stat_block} onChange={(next) => onChange({ stat_block: next })} />
         <div className="field">
           <label>{tc('form.faccaoOpcional')}</label>
           <Input

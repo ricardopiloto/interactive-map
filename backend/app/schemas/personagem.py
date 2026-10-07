@@ -15,6 +15,7 @@ class PersonagemCreate(BaseModel):
     retrato_url: Optional[str] = Field(default=None, max_length=500)
     visivel_para_todos: bool = True
     extensoes_mecanica: dict[str, Any] = Field(default_factory=dict)
+    stat_block: Optional[dict[str, Any]] = None
 
 
 class PersonagemUpdate(BaseModel):
@@ -27,6 +28,7 @@ class PersonagemUpdate(BaseModel):
     retrato_url: Optional[str] = Field(default=None, max_length=500)
     visivel_para_todos: Optional[bool] = None
     extensoes_mecanica: Optional[dict[str, Any]] = None
+    stat_block: Optional[dict[str, Any]] = None
 
 
 class PersonagemRead(BaseModel):
@@ -43,3 +45,9 @@ class PersonagemRead(BaseModel):
     visivel_para_todos: bool = True
     extensoes_mecanica: dict[str, Any] = Field(default_factory=dict)
     local_ids: list[int] = Field(default_factory=list)
+
+
+class PersonagemAdmin(PersonagemRead):
+    """Ficha mecânica só na API do mestre. PersonagemRead público não a inclui."""
+
+    stat_block: dict[str, Any] = Field(default_factory=dict)

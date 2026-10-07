@@ -64,6 +64,28 @@
     "sessaoTransicaoHelp": "A sessão que encerra o arco anterior e abre este. Aparece nas duas raias sem duplicar a sessão.",
     "locaisSugeridos": "Locais sugeridos"
   },
+  "capitulo": {
+    "listTitle": "Capítulos",
+    "newBtn": "+ Novo capítulo",
+    "new": "Novo capítulo",
+    "edit": "Editar capítulo",
+    "group": "Capítulo",
+    "body": "Preparação (Markdown)",
+    "order": "Ordem",
+    "arco": "Arco",
+    "arcoNone": "— nenhum (capítulo avulso) —",
+    "arcoHelp": "Opcional. O capítulo pode existir sem pertencer a nenhum arco.",
+    "visible": "Visível para todos",
+    "hidden": "Oculto aos jogadores",
+    "empty": "Nenhum capítulo neste arco.",
+    "moveUp": "Mover para cima",
+    "moveDown": "Mover para baixo",
+    "confirmDelete": "Excluir este capítulo?"
+  },
+  "statBlock": {
+    "title": "Ficha",
+    "listHint": "Um item por linha"
+  },
   "digitizer": {
     "title": "Rede de rotas",
     "subtitle": "Sem pins de lore — só navegação",

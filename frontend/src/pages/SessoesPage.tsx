@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react'
-import { adminApi } from '../api/admin'
+import { adminApi, type Capitulo } from '../api/admin'
 import { campaignApi } from '../api/campaign'
 import { MarkdownSafe } from '../components/common/MarkdownSafe'
 import { FormDrawer } from '../components/forms/FormDrawer'
@@ -12,7 +12,7 @@ import { ConfirmDialog, EmptyState, IconButton, Button, Input } from '../compone
 import { useEditMode } from '../context/EditModeContext'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
 import { getCachedInstanceConfig, useInstanceConfig } from '../hooks/useInstanceConfig'
-import type { Local, Personagem, Sessao } from '../types'
+import type { Arco, Local, Personagem, Sessao } from '../types'
 import './SessoesPage.css'
 
 interface SessaoDraft {
@@ -25,6 +25,7 @@ interface SessaoDraft {
   visivel_para_todos: boolean
   local_ids: number[]
   personagem_ids: number[]
+  capitulo_id: number | null
 }
 
 export function SessoesPage() {
@@ -39,6 +40,8 @@ export function SessoesPage() {
   const [sessoes, setSessoes] = useState<Sessao[]>([])
   const [locais, setLocais] = useState<Local[]>([])
   const [personagens, setPersonagens] = useState<Personagem[]>([])
+  const [capitulos, setCapitulos] = useState<Capitulo[]>([])
+  const [arcos, setArcos] = useState<Arco[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busyError, setBusyError] = useState<string | null>(null)
@@ -54,19 +57,25 @@ export function SessoesPage() {
     setError(null)
     try {
       if (isGm) {
-        const [s, locs, ps] = await Promise.all([
+        const [s, locs, ps, caps, arcs] = await Promise.all([
           adminApi.listSessoesAdmin(),
           adminApi.listLocaisAdmin(),
           adminApi.listPersonagensAdmin(),
+          adminApi.listCapitulos(),
+          adminApi.listArcosAdmin(),
         ])
         setSessoes(s.sessoes)
         setLocais(locs)
         setPersonagens(ps)
+        setCapitulos(caps.capitulos)
+        setArcos(arcs)
       } else {
         const s = await campaignApi.listSessoes()
         setSessoes(s.sessoes)
         setLocais([])
         setPersonagens([])
+        setCapitulos([])
+        setArcos([])
       }
     } catch (err) {
       setError(apiErrorMessage(err) || t('loadError'))
@@ -98,6 +107,7 @@ export function SessoesPage() {
         visivel_para_todos: true,
         local_ids: [],
         personagem_ids: [],
+        capitulo_id: null,
       }
       setDraft(next)
       setDraftBaseline(JSON.stringify(next))
@@ -118,6 +128,7 @@ export function SessoesPage() {
       visivel_para_todos: s.visivel_para_todos !== false,
       local_ids: s.locais.map((l) => l.id),
       personagem_ids: s.personagens.map((p) => p.id),
+      capitulo_id: s.capitulo_id ?? null,
     }
     setDraft(next)
     setDraftBaseline(JSON.stringify(next))
@@ -163,6 +174,7 @@ export function SessoesPage() {
       visivel_para_todos: draft.visivel_para_todos,
       local_ids: draft.local_ids,
       personagem_ids: draft.personagem_ids,
+      capitulo_id: draft.capitulo_id,
     }
     try {
       if (draft.isNew) await adminApi.createSessao(payload)
@@ -328,6 +340,35 @@ export function SessoesPage() {
               onChange={(e) => setDraft({ ...draft, data_rotulo: e.target.value })}
             />
           </label>
+          <label className="field">
+            <span>{t('fieldCapitulo')}</span>
+            <select
+              value={draft.capitulo_id ?? ''}
+              onChange={(e) =>
+                setDraft({
+                  ...draft,
+                  capitulo_id: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            >
+              <option value="">{t('fieldCapituloNone')}</option>
+              {capitulos.map((cap) => (
+                <option key={cap.id} value={cap.id}>
+                  {cap.titulo}
+                </option>
+              ))}
+            </select>
+          </label>
+          {draft.capitulo_id != null ? (
+            <p className="text-muted">
+              {t('fieldCapituloArcoDerivado', {
+                arco:
+                  arcos.find(
+                    (a) => a.id === capitulos.find((c) => c.id === draft.capitulo_id)?.arco_id,
+                  )?.titulo ?? t('fieldCapituloArcoNenhum'),
+              })}
+            </p>
+          ) : null}
           <MarkdownField
             label={t('fieldResumo')}
             value={draft.resumo}

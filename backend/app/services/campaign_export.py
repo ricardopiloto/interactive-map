@@ -18,6 +18,7 @@ from app.campaign_db import (
     resolve_campaign_session,
 )
 from app.models.arco import Arco
+from app.models.capitulo import Capitulo
 from app.models.grupo import GrupoPosicao
 from app.models.links import LocalConexaoLink, LocalNPCLink, SessaoLocalLink, SessaoNpcLink
 from app.models.local import Local
@@ -64,6 +65,7 @@ def build_content_dict(session: Session) -> dict[str, Any]:
         "route_segments": _rows(session, RouteSegment),
         "map_scale": scales[0] if scales else None,
         "sessoes": _rows(session, Sessao),
+        "capitulos": _rows(session, Capitulo),
         "sessao_local": _rows(session, SessaoLocalLink),
         "sessao_npc": _rows(session, SessaoNpcLink),
     }

@@ -17,6 +17,7 @@ import { MapSidePanel } from '../components/map/MapSidePanel'
 import { CodexHeader } from '../components/layout/CodexHeader'
 import { LocalFormDialog, localToDraft, type LocalFormDraft } from '../components/admin/LocalFormDialog'
 import { NpcFormDialog } from '../components/admin/NpcAdminList'
+import { StatBlockSummary } from '../components/admin/StatBlockFields'
 import { ImageSlot } from '../components/media/ImageSlot'
 import { MarkdownSafe } from '../components/common/MarkdownSafe'
 import { ConfirmDialog, IconButton, Button, Chip} from '../components/ui'
@@ -108,6 +109,7 @@ export function MapPage() {
     faccao: string
     status: NPCStatus
     retrato_url: string | null
+    stat_block: Record<string, unknown>
     isNew: boolean
   } | null>(null)
 
@@ -310,6 +312,7 @@ export function MapPage() {
         faccao: npcDraft.faccao.trim() || null,
         status: npcDraft.status,
         retrato_url: npcDraft.retrato_url,
+        stat_block: npcDraft.stat_block,
       }
       if (npcDraft.isNew) await adminApi.createNpc(payload)
       else if (npcDraft.id != null) await adminApi.updateNpc(npcDraft.id, payload)
@@ -514,6 +517,22 @@ export function MapPage() {
       npc={selectedNpc}
       localById={localById}
       onSelectLocal={selectLocalFromList}
+      onEdit={
+        isGm
+          ? () =>
+              setNpcDraft({
+                id: selectedNpc.id,
+                nome: selectedNpc.nome,
+                papel: selectedNpc.papel ?? '',
+                descricao: selectedNpc.descricao,
+                faccao: selectedNpc.faccao ?? '',
+                status: selectedNpc.status ?? 'desconhecido',
+                retrato_url: selectedNpc.retrato_url,
+                stat_block: selectedNpc.stat_block ?? {},
+                isNew: false,
+              })
+          : undefined
+      }
     />
   ) : null
 
@@ -547,6 +566,7 @@ export function MapPage() {
                         faccao: '',
                         status: 'vivo',
                         retrato_url: null,
+                        stat_block: {},
                         isNew: true,
                       })
                       setGmMenuOpen(false)
@@ -714,6 +734,7 @@ export function MapPage() {
           faccao={npcDraft.faccao}
           status={npcDraft.status}
           retrato_url={npcDraft.retrato_url}
+          stat_block={npcDraft.stat_block}
           onChange={(patch) => setNpcDraft({ ...npcDraft, ...patch })}
           onSave={() => void saveNpc()}
           onCancel={() => setNpcDraft(null)}
@@ -833,12 +854,15 @@ function NpcDetail({
   npc,
   localById,
   onSelectLocal,
+  onEdit,
 }: {
   npc: NPC
   localById: Map<number, Local>
   onSelectLocal: (id: number) => void
+  onEdit?: () => void
 }) {
   const { t } = useTranslation('mapa')
+  const { t: tc } = useTranslation('comum')
   const descricao = npc.descricao.trim()
 
   return (
@@ -852,6 +876,11 @@ function NpcDetail({
             {npc.tipo === 'pj' ? 'PJ' : 'NPC'}
           </div>
           <h2 className="map-page__detail-title">{npc.nome}</h2>
+          {onEdit ? (
+            <Button size="sm" type="button" onClick={onEdit}>
+              {tc('buttons.edit')}
+            </Button>
+          ) : null}
           <span className="map-page__row-meta">
             {[npc.papel, npc.faccao].filter(Boolean).join(' · ')}
           </span>
@@ -865,6 +894,7 @@ function NpcDetail({
           <p className="text-muted">{t('panel.noDescription')}</p>
         )}
       </div>
+      {onEdit ? <StatBlockSummary value={npc.stat_block} /> : null}
       {npc.local_ids.length > 0 && (
         <>
           <h3 className="map-page__section-title">{t('panel.seenAt')}</h3>

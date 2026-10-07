@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.routers.public import (
     arcos,
+    capitulos,
     config,
     descoberta,
     eventos,
@@ -24,6 +25,7 @@ router.include_router(npcs.router, tags=["npcs"])
 router.include_router(personagens.router, tags=["personagens"])
 router.include_router(vinculos.router, tags=["vinculos"])
 router.include_router(arcos.router, tags=["arcos"])
+router.include_router(capitulos.router, tags=["capitulos"])
 router.include_router(grupo.router, tags=["grupo"])
 router.include_router(routes.router, tags=["routes"])
 router.include_router(sessoes.router, tags=["sessoes"])

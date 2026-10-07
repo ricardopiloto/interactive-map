@@ -7,6 +7,7 @@ from sqlmodel import Session, col, select
 
 from app.errors import raise_api_error
 from app.models.arco import Arco
+from app.models.capitulo import Capitulo
 from app.models.links import ItemSessaoLink, SessaoLocalLink, SessaoNpcLink
 from app.schemas.descoberta import AlertaInconsistencia
 from app.models.local import Local
@@ -83,6 +84,7 @@ def to_public(session: Session, sessao: Sessao, *, filter_hidden_npcs: bool) -> 
         personagens=personagens,
         arco_id=sessao.arco_id,
         arco_transicao_id=sessao.arco_transicao_id,
+        capitulo_id=sessao.capitulo_id,
     )
 
 
@@ -196,16 +198,32 @@ def _validate_arco_vinculo(
             raise_api_error("SESSAO_TRANSICAO_ARCO_IGUAL", status_code=400)
 
 
+def _resolve_arco_via_capitulo(
+    session: Session, capitulo_id: int | None, arco_id_informado: int | None
+) -> int | None:
+    """Enforce: a session's arco is derived from its capitulo, when it has one."""
+    if capitulo_id is None:
+        return arco_id_informado
+    capitulo = session.get(Capitulo, capitulo_id)
+    if capitulo is None:
+        raise_api_error("SESSAO_CAPITULO_INVALIDO", status_code=422)
+    if arco_id_informado is not None and arco_id_informado != capitulo.arco_id:
+        raise_api_error("SESSAO_ARCO_DERIVADO_DE_CAPITULO", status_code=409)
+    return capitulo.arco_id
+
+
 def create_sessao(session: Session, payload: SessaoCreate) -> SessaoAdmin:
-    _validate_arco_vinculo(session, payload.arco_id, payload.arco_transicao_id)
+    arco_id = _resolve_arco_via_capitulo(session, payload.capitulo_id, payload.arco_id)
+    _validate_arco_vinculo(session, arco_id, payload.arco_transicao_id)
     row = Sessao(
         numero=payload.numero,
         titulo=payload.titulo.strip(),
         data_rotulo=(payload.data_rotulo.strip() if payload.data_rotulo else None) or None,
         resumo=payload.resumo or "",
         visivel_para_todos=payload.visivel_para_todos,
-        arco_id=payload.arco_id,
+        arco_id=arco_id,
         arco_transicao_id=payload.arco_transicao_id,
+        capitulo_id=payload.capitulo_id,
     )
     session.add(row)
     try:
@@ -241,6 +259,19 @@ def update_sessao(session: Session, sessao_id: int, payload: SessaoUpdate) -> Se
     if "data_rotulo" in data:
         raw = data["data_rotulo"]
         data["data_rotulo"] = (raw.strip() if isinstance(raw, str) and raw else None) or None
+    capitulo_id_provided = "capitulo_id" in data
+    capitulo_id_novo = data.get("capitulo_id", row.capitulo_id)
+    arco_id_provided = "arco_id" in data
+    arco_id_pedido = data.get("arco_id")
+
+    if capitulo_id_provided and capitulo_id_novo is not None:
+        data["arco_id"] = _resolve_arco_via_capitulo(
+            session, capitulo_id_novo, arco_id_pedido if arco_id_provided else None
+        )
+    elif not capitulo_id_provided and row.capitulo_id is not None:
+        if arco_id_provided and arco_id_pedido != row.arco_id:
+            raise_api_error("SESSAO_ARCO_DERIVADO_DE_CAPITULO", status_code=409)
+
     if "arco_id" in data or "arco_transicao_id" in data:
         effective_arco_id = data.get("arco_id", row.arco_id)
         effective_arco_transicao_id = data.get("arco_transicao_id", row.arco_transicao_id)

@@ -2,14 +2,14 @@
 
 Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas**, **rede de relações** entre personagens e **Modo GM** na mesma interface.
 
-**Versão:** 0.24.5 — [`CHANGELOG.md`](CHANGELOG.md)
+**Versão:** 0.25.0 — [`CHANGELOG.md`](CHANGELOG.md)
 **Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/wfrp` e `/c/wod`
 
 ---
 
 ## Capturas de ecrã
 
-Capturas geradas a partir da versão **0.24.5** com o seed E2E do projeto.
+Capturas geradas a partir da versão **0.24.5** com as campanhas deste ambiente: Warhammer Old World (`wfrp`) e Shadow of the Demon Lord.
 
 ### Entrada e exploração
 
@@ -66,6 +66,12 @@ Capturas geradas a partir da versão **0.24.5** com o seed E2E do projeto.
 - Filtros por tipo, busca, isolar selecção, legenda PJ/NPC
 - Painel de detalhe com ficha e lista de vínculos
 - GM: criar/editar personagens e conexões; ocultar sentidos aos jogadores
+
+### Preparação e fichas
+
+- Capítulos de preparação: corpo em Markdown, ordem, vínculo **opcional** com um arco (podem existir avulsos) e visibilidade própria. O jogador só lê capítulos marcados como visíveis.
+- Uma sessão pode registar qual capítulo jogou; o arco da sessão é então sincronizado automaticamente a partir do capítulo (um mesmo capítulo pode ser jogado ao longo de várias sessões).
+- Ficha mecânica do NPC (`stat_block`) separada da descrição, apresentada como tabela de atributos (mesmo formato usado em Markdown fora do produto). Os campos seguem o sistema da campanha (WFRP ou WoD). A API pública nunca devolve a ficha.
 
 ### Modo GM
 

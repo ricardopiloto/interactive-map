@@ -1,5 +1,6 @@
 from typing import Optional
 
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import Field, SQLModel
 
 
@@ -20,4 +21,14 @@ class Sessao(SQLModel, table=True):
         foreign_key="arco.id",
         index=True,
         description="Arco que esta sessão também inicia, quando é a sessão de transição entre dois arcos adjacentes",
+    )
+    capitulo_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(
+            Integer,
+            ForeignKey("capitulo.id", ondelete="SET NULL"),
+            nullable=True,
+            index=True,
+        ),
+        description="Capítulo de preparação jogado nesta sessão; o arco_id é sincronizado a partir dele",
     )

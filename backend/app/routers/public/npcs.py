@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.errors import raise_api_error
 from app.models.npc import NPC, PersonagemTipo
-from app.schemas.npc import NPCRead
+from app.schemas.npc import NPCAdmin, NPCRead
 from app.services.url_rewrite import rewrite_media_url
 from app.services.visibility import is_visivel_para_jogador
 
@@ -32,6 +32,12 @@ def _to_read(npc: NPC, *, for_player: bool = True) -> NPCRead:
         visivel_para_todos=bool(getattr(npc, "visivel_para_todos", True)),
         local_ids=local_ids,
     )
+
+
+def _to_admin(npc: NPC) -> NPCAdmin:
+    public = _to_read(npc, for_player=False)
+    raw = npc.stat_block if isinstance(npc.stat_block, dict) else {}
+    return NPCAdmin(**public.model_dump(), stat_block=raw)
 
 
 @router.get("/npcs", response_model=list[NPCRead])

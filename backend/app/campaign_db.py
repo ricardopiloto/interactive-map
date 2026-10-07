@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
+from threading import Lock
 from typing import Generator, Iterator
 from datetime import datetime
 
@@ -22,6 +23,10 @@ _BACKEND_ROOT = Path(__file__).resolve().parent.parent
 _control_engine: Engine | None = None
 _campaign_engines: dict[str, Engine] = {}
 _last_campanha: Campanha | None = None
+# Alembic installs the migration context in module globals. Parallel requests
+# that upgrade the same process (opening a campaign hits several endpoints at
+# once) delete that proxy out from under each other and raise KeyError.
+_schema_lock = Lock()
 
 
 def _track_campaign_writes(session: Session, _flush_context: object, _instances: object) -> None:
@@ -154,22 +159,23 @@ def _has_content_tables(engine: Engine) -> bool:
 
 def ensure_campaign_schema(engine: Engine, *, fresh: bool = False) -> None:
     """Upgrade or bridge+stamp a campaign database to Alembic head."""
-    cfg = _alembic_config("campaign", str(engine.url))
-    head = _campaign_head_revision()
-    current = _alembic_current_revision(engine)
+    with _schema_lock:
+        cfg = _alembic_config("campaign", str(engine.url))
+        head = _campaign_head_revision()
+        current = _alembic_current_revision(engine)
 
-    if current == head:
-        return
-
-    if current is None:
-        if fresh or not _has_content_tables(engine):
-            command.upgrade(cfg, "head")
+        if current == head:
             return
-        migrate_sqlite_legacy(engine)
-        command.stamp(cfg, "head")
-        return
 
-    command.upgrade(cfg, "head")
+        if current is None:
+            if fresh or not _has_content_tables(engine):
+                command.upgrade(cfg, "head")
+                return
+            migrate_sqlite_legacy(engine)
+            command.stamp(cfg, "head")
+            return
+
+        command.upgrade(cfg, "head")
 
 
 def lookup_campanha(slug: str) -> Campanha:

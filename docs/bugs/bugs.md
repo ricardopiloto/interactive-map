@@ -169,7 +169,7 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 
 ## [BUG-002] Não é possível alternar estado de localidade entre Conhecido e Visitado
 
-**Status:** Corrigido na implementação da [spec 149](../../specs/149-estado-local-scroll-sessoes/spec.md). Migração, isolamento e E2E desktop aprovados; validar novamente após deploy.
+**Status:** Implementado — [spec 149](../../specs/149-estado-local-scroll-sessoes/spec.md) (12/12 tarefas). Migração, isolamento e E2E desktop aprovados.
 
 **Registrado em:** 2026-09-24.
 
@@ -181,7 +181,7 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 
 ## [BUG-003] Lista de sessões sem rolagem no desktop
 
-**Status:** Corrigido na implementação da [spec 149](../../specs/149-estado-local-scroll-sessoes/spec.md). E2E desktop aprovado; validar gesto touch em dispositivo mobile após deploy.
+**Status:** Implementado — [spec 149](../../specs/149-estado-local-scroll-sessoes/spec.md) (12/12 tarefas). E2E desktop e viewport mobile aprovados (T010); validação em dispositivo touch físico não foi feita por este agente.
 
 **Registrado em:** 2026-09-24.
 
@@ -193,7 +193,7 @@ Esse hook alimenta tanto `MapPage.tsx` quanto `RotaPage.tsx` — as duas telas *
 
 ## [BUG-004] Abrir mesa a partir do Painel mostra “Falha ao carregar dados”
 
-**Status:** Aberto. Causa confirmada no código — [TR](../v2/tr-bug-004-abrir-mesa.md). Correção especificada em [`corrige-abrir-mesa`](../../openspec/changes/corrige-abrir-mesa/proposal.md).
+**Status:** Implementado — change OpenSpec [`corrige-abrir-mesa`](../../openspec/changes/archive/2026-10-04-corrige-abrir-mesa/proposal.md), aplicada e arquivada (3/3 tarefas). Causa confirmada no código — [TR](../v2/tr-bug-004-abrir-mesa.md). `CampaignShell`/`campaignSlug.ts` passaram a disponibilizar o slug antes dos efeitos das páginas (Mapa, Relações, Rota, Sessões e Linha do Tempo).
 
 **Registrado em:** 2026-10-04.
 

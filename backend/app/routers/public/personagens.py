@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.errors import raise_api_error
 from app.models.npc import NPC, PersonagemTipo
-from app.schemas.personagem import PersonagemRead
+from app.schemas.personagem import PersonagemAdmin, PersonagemRead
 from app.services.mecanica import filter_extensoes
 from app.services.url_rewrite import rewrite_media_url
 from app.services.visibility import is_visivel_para_jogador
@@ -36,6 +36,12 @@ def personagem_to_read(npc: NPC, *, for_player: bool = True) -> PersonagemRead:
         extensoes_mecanica=filter_extensoes(raw_ext),
         local_ids=local_ids,
     )
+
+
+def personagem_to_admin(npc: NPC) -> PersonagemAdmin:
+    public = personagem_to_read(npc, for_player=False)
+    raw = npc.stat_block if isinstance(npc.stat_block, dict) else {}
+    return PersonagemAdmin(**public.model_dump(), stat_block=raw)
 
 
 @router.get("/personagens", response_model=list[PersonagemRead])

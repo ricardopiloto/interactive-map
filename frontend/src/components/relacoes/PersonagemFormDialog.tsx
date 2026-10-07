@@ -5,6 +5,7 @@ import { formSnapshot, isFormDirty } from '../forms/dirty'
 import { FormDrawer } from '../forms/FormDrawer'
 import { MarkdownField } from '../forms/MarkdownField'
 import { ImageSlot } from '../media/ImageSlot'
+import { StatBlockFields } from '../admin/StatBlockFields'
 import { Input, Select, SegmentedControl } from '../ui'
 import {
   activeImplementedModules,
@@ -23,6 +24,7 @@ export interface PersonagemDraft {
   retrato_url: string | null
   visivel_para_todos: boolean
   extensoes_mecanica: Record<string, unknown>
+  stat_block: Record<string, unknown>
   isNew: boolean
 }
 
@@ -131,6 +133,10 @@ export function PersonagemFormDialog({
 
       <section className="form-drawer__section">
         <h6 className="form-drawer__section-title">{t('personagemForm.atributos')}</h6>
+        <StatBlockFields
+          value={draft.stat_block}
+          onChange={(stat_block) => onChange({ stat_block })}
+        />
         <div className="field">
           <label>{tc('form.faccaoOpcional')}</label>
           <Input

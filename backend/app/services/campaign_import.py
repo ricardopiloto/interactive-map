@@ -24,6 +24,7 @@ from app.campaign_db import (
     get_control_engine,
 )
 from app.models.arco import Arco
+from app.models.capitulo import Capitulo
 from app.models.campanha import Campanha
 from app.models.grupo import GrupoPosicao
 from app.models.links import LocalConexaoLink, LocalNPCLink, SessaoLocalLink, SessaoNpcLink
@@ -311,6 +312,9 @@ def _insert_content(session: Session, content: dict[str, Any]) -> None:
         session.add(SessaoLocalLink(sessao_id=row["sessao_id"], local_id=row["local_id"]))
     for row in content.get("sessao_npc") or []:
         session.add(SessaoNpcLink(sessao_id=row["sessao_id"], npc_id=row["npc_id"]))
+    session.flush()
+    for row in content.get("capitulos") or []:
+        session.add(Capitulo(**{k: v for k, v in row.items() if k in Capitulo.model_fields}))
     session.commit()
 
 

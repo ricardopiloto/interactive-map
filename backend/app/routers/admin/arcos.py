@@ -14,6 +14,7 @@ from app.services.arco_service import (
     sync_sessoes_do_arco,
     to_arco_read,
 )
+from app.services.capitulo_service import delete_capitulos_do_arco
 from app.services.rate_limit import limiter
 
 router = APIRouter()
@@ -110,5 +111,6 @@ def delete_arco(
         local.arco_id = None
         session.add(local)
     clear_arco_from_sessoes(session, arco_id)
+    delete_capitulos_do_arco(session, arco_id)
     session.delete(arco)
     session.commit()

@@ -33,7 +33,7 @@ def test_admin_get_with_session_is_not_401(client, path: str) -> None:
 def test_admin_session_returns_email(client) -> None:
     response = client.get(api("/api/admin/session"))
     assert response.status_code == 200
-    assert response.json() == {"email": "gm@teste.local"}
+    assert response.json() == {"email": "gm@teste.local", "papel": "dono"}
 
 
 def test_basic_auth_no_longer_authorizes(client_anon) -> None:

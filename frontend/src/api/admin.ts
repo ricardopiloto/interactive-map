@@ -49,6 +49,30 @@ export interface NPCPayload {
   status?: NPC['status']
   retrato_url?: string | null
   visivel_para_todos?: boolean
+  stat_block?: Record<string, unknown>
+}
+
+export interface StatBlockField {
+  nome: string
+  rotulo: string
+  tipo: 'int' | 'str' | 'list[str]'
+}
+
+export interface Capitulo {
+  id: number
+  arco_id: number | null
+  titulo: string
+  ordem: number
+  corpo_markdown: string
+  visivel_para_todos: boolean
+}
+
+export interface CapituloPayload {
+  arco_id?: number | null
+  titulo?: string
+  ordem?: number
+  corpo_markdown?: string
+  visivel_para_todos?: boolean
 }
 
 export interface PersonagemPayload {
@@ -61,6 +85,7 @@ export interface PersonagemPayload {
   retrato_url?: string | null
   visivel_para_todos?: boolean
   extensoes_mecanica?: Record<string, unknown>
+  stat_block?: Record<string, unknown>
 }
 
 export interface VinculoPayload {
@@ -137,6 +162,10 @@ export const adminApi = {
   deletePersonagem: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/personagens/${id}`),
   listPersonagensAdmin: () => api.adminGet<Personagem[]>(campaignAdminPrefix() + '/personagens'),
   listNpcsAdmin: () => api.adminGet<NPC[]>(campaignAdminPrefix() + '/npcs'),
+  statBlockSchema: () =>
+    api.adminGet<{ sistema: string; fields: StatBlockField[] }>(
+      campaignAdminPrefix() + '/npcs/stat-block-schema',
+    ),
   listLocaisAdmin: () => api.adminGet<Local[]>(campaignAdminPrefix() + '/locais'),
 
   listVinculosAdmin: () => api.adminGet<Vinculo[]>(campaignAdminPrefix() + '/vinculos'),
@@ -153,6 +182,16 @@ export const adminApi = {
     api.adminPut<Arco>(`${campaignAdminPrefix()}/arcos/${id}`, body),
   deleteArco: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/arcos/${id}`),
   listArcosAdmin: () => api.adminGet<Arco[]>(campaignAdminPrefix() + '/arcos'),
+
+  listCapitulos: (arcoId?: number) =>
+    api.adminGet<{ capitulos: Capitulo[] }>(
+      `${campaignAdminPrefix()}/capitulos${arcoId != null ? `?arco_id=${arcoId}` : ''}`,
+    ),
+  createCapitulo: (body: CapituloPayload) =>
+    api.adminPost<Capitulo>(campaignAdminPrefix() + '/capitulos', body),
+  updateCapitulo: (id: number, body: CapituloPayload) =>
+    api.adminPatch<Capitulo>(`${campaignAdminPrefix()}/capitulos/${id}`, body),
+  deleteCapitulo: (id: number) => api.adminDelete(`${campaignAdminPrefix()}/capitulos/${id}`),
 
   updateGrupo: (body: { x: number; y: number; formato?: GrupoFormato }) =>
     api.adminPut<GrupoPosicao>(campaignAdminPrefix() + '/grupo', body),

@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { IconArrowLeft, IconPlus, IconSearch } from '@tabler/icons-react'
 import { adminApi } from '../api/admin'
+import { StatBlockSummary } from '../components/admin/StatBlockFields'
 import { campaignApi } from '../api/campaign'
 import { CodexHeader } from '../components/layout/CodexHeader'
 import { MapSidePanel } from '../components/map/MapSidePanel'
@@ -292,6 +293,7 @@ export function RelacoesPage() {
       retrato_url: null,
       visivel_para_todos: true,
       extensoes_mecanica: {},
+      stat_block: {},
       isNew: true,
     })
   }
@@ -308,6 +310,7 @@ export function RelacoesPage() {
       retrato_url: p.retrato_url,
       visivel_para_todos: p.visivel_para_todos !== false,
       extensoes_mecanica: { ...(p.extensoes_mecanica ?? {}) },
+      stat_block: { ...(p.stat_block ?? {}) },
       isNew: false,
     })
   }
@@ -326,6 +329,7 @@ export function RelacoesPage() {
         retrato_url: personagemDraft.retrato_url,
         visivel_para_todos: personagemDraft.visivel_para_todos,
         extensoes_mecanica: personagemDraft.extensoes_mecanica,
+        stat_block: personagemDraft.stat_block,
       }
       if (personagemDraft.isNew) await adminApi.createPersonagem(payload)
       else if (personagemDraft.id != null) await adminApi.updatePersonagem(personagemDraft.id, payload)
@@ -761,6 +765,8 @@ function PersonagemDetailBody({
       {personagem.descricao.trim() ? (
         <p className="relacoes-page__detail-desc">{personagem.descricao}</p>
       ) : null}
+
+      {isGm ? <StatBlockSummary value={personagem.stat_block} /> : null}
 
       {isGm && (
         <div className="relacoes-page__detail-actions">

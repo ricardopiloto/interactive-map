@@ -62,6 +62,7 @@ export interface NPC {
   local_ids: number[]
   visivel_para_todos?: boolean
   extensoes_mecanica?: ExtensoesMecanica
+  stat_block?: Record<string, unknown>
 }
 
 /** Personagem unificado (PJ|NPC) — mesma API/shape do NPC evoluído. */
@@ -203,6 +204,7 @@ export interface Sessao {
   visivel_para_todos?: boolean
   arco_id?: number | null
   arco_transicao_id?: number | null
+  capitulo_id?: number | null
   alertas_inconsistencia?: AlertaInconsistencia[]
 }
 
@@ -216,6 +218,7 @@ export interface SessaoPayload {
   personagem_ids?: number[]
   arco_id?: number | null
   arco_transicao_id?: number | null
+  capitulo_id?: number | null
 }
 
 export interface EventoRefLocal {

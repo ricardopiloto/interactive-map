@@ -1,5 +1,6 @@
 from app.models.arco import Arco
 from app.models.campaign_state import CampaignState
+from app.models.capitulo import Capitulo
 from app.models.evento import Evento
 from app.models.grupo import GrupoPosicao
 from app.models.item import Item
@@ -22,6 +23,7 @@ from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
 __all__ = [
     "Arco",
     "CampaignState",
+    "Capitulo",
     "Evento",
     "EventoLocalLink",
     "EventoNpcLink",

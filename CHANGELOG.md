@@ -7,6 +7,13 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.25.0] — 2026-10-06
+
+### Added
+
+- Capítulos de preparação: o mestre escreve o conteúdo da aventura em Markdown e ordena os capítulos. Um capítulo pode, opcionalmente, pertencer a um arco — ou existir avulso. Uma sessão pode registar qual capítulo jogou; o arco dessa sessão passa a ser sincronizado automaticamente a partir do arco do capítulo (um mesmo capítulo pode ter sido jogado ao longo de várias sessões). Um capítulo oculto não aparece para o jogador. Apagar o arco apaga os capítulos vinculados a ele e mantém as sessões; apagar um capítulo mantém as sessões, só desfazendo o vínculo.
+- Ficha mecânica do NPC, separada da descrição e apresentada como tabela (cabeçalho + valores, igual à convenção já usada em Markdown fora do produto). Campanhas WFRP usam características, perícias, talentos e pertences; campanhas WoD usam atributos, habilidades, poderes e equipamento. A ficha fica só na API do mestre.
+
 ## [0.24.5] — 2026-10-05
 
 ### Added

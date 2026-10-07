@@ -241,3 +241,36 @@ def migrate_sqlite_legacy(engine: Engine) -> None:
             and "extensoes_mecanica" in npc_cols
         ):
             conn.execute(text("ALTER TABLE npc DROP COLUMN fadiga"))
+
+        arco_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(arco)")).fetchall()}
+        if arco_cols and "cor" not in arco_cols:
+            conn.execute(text("ALTER TABLE arco ADD COLUMN cor VARCHAR(7)"))
+
+        sessao_cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(sessao)")).fetchall()
+        }
+        if sessao_cols and "arco_id" not in sessao_cols:
+            conn.execute(text("ALTER TABLE sessao ADD COLUMN arco_id INTEGER"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_sessao_arco_id ON sessao (arco_id)")
+            )
+        if sessao_cols and "arco_transicao_id" not in sessao_cols:
+            conn.execute(text("ALTER TABLE sessao ADD COLUMN arco_transicao_id INTEGER"))
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_sessao_arco_transicao_id "
+                    "ON sessao (arco_transicao_id)"
+                )
+            )
+        if sessao_cols and "capitulo_id" not in sessao_cols:
+            conn.execute(text("ALTER TABLE sessao ADD COLUMN capitulo_id INTEGER"))
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_sessao_capitulo_id "
+                    "ON sessao (capitulo_id)"
+                )
+            )
+
+        npc_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(npc)")).fetchall()}
+        if npc_cols and "stat_block" not in npc_cols:
+            conn.execute(text("ALTER TABLE npc ADD COLUMN stat_block JSON"))

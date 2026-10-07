@@ -41,13 +41,21 @@ def to_arco_read(session: Session, arco: Arco, *, apenas_visiveis: bool = False)
 
 
 def sync_sessoes_do_arco(session: Session, arco_id: int, sessao_ids: list[int] | None) -> None:
-    """Replace the set of sessions with normal membership (Sessao.arco_id) in this arc."""
+    """Replace the set of sessions with normal membership (Sessao.arco_id) in this arc.
+
+    A session with a Capitulo vinculado has its arco_id derived from that Capitulo
+    (capitulo-prep capability) — this bulk sync cannot move or detach such a session;
+    the mestre must change it via the Capitulo instead."""
     if sessao_ids is None:
         return
     missing: list[int] = []
+    bloqueadas: list[int] = []
     wanted = set(sessao_ids)
     for row in session.exec(select(Sessao).where(Sessao.arco_id == arco_id)).all():
         if row.id not in wanted:
+            if row.capitulo_id is not None:
+                bloqueadas.append(row.id)  # type: ignore[arg-type]
+                continue
             row.arco_id = None
             session.add(row)
     for sid in sessao_ids:
@@ -55,10 +63,19 @@ def sync_sessoes_do_arco(session: Session, arco_id: int, sessao_ids: list[int] |
         if row is None:
             missing.append(sid)
             continue
+        if row.arco_id == arco_id:
+            continue
+        if row.capitulo_id is not None:
+            bloqueadas.append(sid)
+            continue
         row.arco_id = arco_id
         session.add(row)
     if missing:
         raise_api_error("SESSOES_NAO_ENCONTRADAS", status_code=400, detalhes={"ids": missing})
+    if bloqueadas:
+        raise_api_error(
+            "SESSAO_ARCO_DERIVADO_DE_CAPITULO", status_code=409, detalhes={"ids": bloqueadas}
+        )
 
 
 def sync_sessao_transicao_do_arco(

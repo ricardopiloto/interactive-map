@@ -3,6 +3,7 @@ import { ConfirmDialog, DropdownMenu, EmptyState, IconButton, Button, Input, Tex
 import { useTranslation } from 'react-i18next'
 import { IconPencil, IconTrash } from '@tabler/icons-react'
 import type { Arco, Sessao } from '../../types'
+import { CapituloAdminList } from './CapituloFormDialog'
 import { formSnapshot, isFormDirty } from '../forms/dirty'
 import { FormDrawer } from '../forms/FormDrawer'
 import './adminList.css'
@@ -19,6 +20,8 @@ interface ArcoFormDialogProps {
   sessaoIds: number[]
   sessaoTransicaoId: number | null
   sessoes: Sessao[]
+  arcos: Arco[]
+  arcoId?: number
   localOpcoes?: { id: number; nome: string }[]
   localIds?: number[]
   onChange: (
@@ -47,6 +50,8 @@ export function ArcoFormDialog({
   sessaoIds,
   sessaoTransicaoId,
   sessoes,
+  arcos,
+  arcoId,
   localOpcoes = [],
   localIds = [],
   onChange,
@@ -199,6 +204,7 @@ export function ArcoFormDialog({
           </fieldset>
         ) : null}
       </section>
+      {arcoId != null ? <CapituloAdminList arcoId={arcoId} arcos={arcos} /> : null}
     </FormDrawer>
   )
 }

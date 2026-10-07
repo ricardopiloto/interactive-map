@@ -28,6 +28,7 @@ class SessaoPublic(BaseModel):
     personagens: list[SessaoRefPersonagem] = Field(default_factory=list)
     arco_id: Optional[int] = None
     arco_transicao_id: Optional[int] = None
+    capitulo_id: Optional[int] = None
 
 
 class SessaoAdmin(SessaoPublic):
@@ -45,6 +46,7 @@ class SessaoCreate(BaseModel):
     personagem_ids: list[int] = Field(default_factory=list)
     arco_id: Optional[int] = None
     arco_transicao_id: Optional[int] = None
+    capitulo_id: Optional[int] = None
 
 
 class SessaoUpdate(BaseModel):
@@ -57,6 +59,7 @@ class SessaoUpdate(BaseModel):
     personagem_ids: Optional[list[int]] = None
     arco_id: Optional[int] = None
     arco_transicao_id: Optional[int] = None
+    capitulo_id: Optional[int] = None
 
 
 class ProximoNumeroResponse(BaseModel):

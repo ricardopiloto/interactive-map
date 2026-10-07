@@ -210,6 +210,8 @@ export function ArcoManager({
           localIds={draft.localIds}
           localOpcoes={draft.localOpcoes}
           sessoes={sessoes}
+          arcos={arcos}
+          arcoId={draft.isNew ? undefined : draft.id}
           onChange={(patch) => setDraft({ ...draft, ...patch })}
           onSave={() => void save()}
           onCancel={() => setDraft(null)}
