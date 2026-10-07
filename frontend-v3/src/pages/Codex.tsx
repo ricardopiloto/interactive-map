@@ -13,6 +13,7 @@ import {
   locais,
   faccoes,
   itens,
+  arcos,
   backlinksPara,
   vinculosDe,
   ROTULOS_VINCULO,
@@ -141,6 +142,7 @@ export function Codex({ gmMode }: { gmMode: boolean }) {
 function PersonagemDetail({ item, gmMode }: { item: Personagem; gmMode: boolean }) {
   const backlinks = backlinksPara(item.nome)
   const relacoes = vinculosDe(item.id)
+  const faccao = faccoes.find((f) => f.id === item.faccaoId)
   return (
     <article className="detail">
       <header className="detail__header">
@@ -155,6 +157,25 @@ function PersonagemDetail({ item, gmMode }: { item: Personagem; gmMode: boolean 
           </div>
         </div>
       </header>
+
+      <div className="infobox">
+        <div className="infobox__row">
+          <span className="infobox__label">Status</span>
+          <div className="infobox__chips">
+            <span className="infobox__chip">{item.status}</span>
+          </div>
+        </div>
+        {faccao ? (
+          <div className="infobox__row">
+            <span className="infobox__label">Facção</span>
+            <div className="infobox__chips">
+              <Link to={`/codex/faccoes/${faccao.id}`} className="infobox__chip" style={{ color: faccao.corAccent }}>
+                {faccao.nome}
+              </Link>
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       {gmMode && item.statBlock ? (
         <section className="detail__section">
@@ -230,6 +251,7 @@ function PersonagemDetail({ item, gmMode }: { item: Personagem; gmMode: boolean 
 
 function GenericDetail({ item }: { item: Local | Faccao | Item }) {
   const backlinks = backlinksPara(item.nome)
+  const arco = 'arcoId' in item ? arcos.find((a) => a.id === item.arcoId) : undefined
   return (
     <article className="detail">
       <header className="detail__header">
@@ -241,6 +263,18 @@ function GenericDetail({ item }: { item: Local | Faccao | Item }) {
           ) : null}
         </div>
       </header>
+      {arco ? (
+        <div className="infobox">
+          <div className="infobox__row">
+            <span className="infobox__label">Arco</span>
+            <div className="infobox__chips">
+              <Link to="/prep" className="infobox__chip" style={{ color: arco.cor }}>
+                {arco.titulo}
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <section className="detail__section">
         <WikiText>{item.descricao}</WikiText>
       </section>

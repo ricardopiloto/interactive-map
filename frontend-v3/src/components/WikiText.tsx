@@ -6,10 +6,20 @@ import { resolverWikilink } from '../data/mock'
 import { IconLink, IconLinkOff } from '@tabler/icons-react'
 
 const WIKILINK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g
+const CALLOUT_MARKER_RE = /^(\s*>\s*)\[!(\w+)\]\s*(.*)$/
 
-/** Converte [[Nome]] / [[Nome|Rótulo]] em links markdown (wiki:Nome) antes do parse. */
+/** Converte [[Nome]] / [[Nome|Rótulo]] em links markdown (wiki:Nome) e deixa marcadores
+ * de callout estilo Obsidian ("> [!handout] Título") só com o título em negrito. */
 function preprocess(src: string): string {
-  return src.replace(WIKILINK_RE, (_m, nome: string, rotulo?: string) => {
+  const semMarcadorCallout = src
+    .split('\n')
+    .map((line) =>
+      line.replace(CALLOUT_MARKER_RE, (_m, prefix: string, _kind: string, resto: string) =>
+        resto ? `${prefix}**${resto}**` : prefix,
+      ),
+    )
+    .join('\n')
+  return semMarcadorCallout.replace(WIKILINK_RE, (_m, nome: string, rotulo?: string) => {
     const label = (rotulo ?? nome).trim()
     const safeLabel = label.replace(/[[\]]/g, '')
     return `[${safeLabel}](wiki:${encodeURIComponent(nome.trim())})`

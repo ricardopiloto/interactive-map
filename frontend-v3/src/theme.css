@@ -1,11 +1,19 @@
-/* Três temas completos, trocáveis em runtime via [data-theme] na raiz. */
+/* Três temas completos, trocáveis em runtime via [data-theme] na raiz.
+   Linguagem visual inspirada no vvd.world: fundo quase-preto, textura
+   pontilhada, dourado quente como accent, serifada elegante nos títulos
+   (Fraunces, no lugar da Arizona Flare proprietária deles) + Space Grotesk
+   no corpo/UI (mesma fonte que eles usam). */
 
 :root {
-  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  --font-serif: 'Georgia', 'Iowan Old Style', serif;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --font-sans: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-display: var(--font-serif);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -13,32 +21,38 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-8: 48px;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  --dot-size: 22px;
 }
 
 /* ---------------------------------------------------------------------- */
-/* Nocturne — escuro, dourado, continuidade com o produto atual           */
+/* Nocturne — o tratamento principal, bem próximo do vvd.world            */
 /* ---------------------------------------------------------------------- */
 [data-theme='nocturne'] {
-  --bg: #15161c;
-  --bg-elevated: #1d1f28;
-  --bg-sunken: #0e0f13;
-  --bg-hover: #262935;
-  --border: #2d303d;
-  --border-strong: #3c4052;
+  --bg: #0a0a0e;
+  --bg-elevated: #151620;
+  --bg-sunken: #060609;
+  --bg-hover: #1f2030;
+  --border: #23242f;
+  --border-strong: #34364a;
   --text: #ede9e0;
-  --text-secondary: #a8a9b8;
-  --text-muted: #6d6f80;
-  --accent: #d8aa5a;
+  --text-secondary: #a6a7b8;
+  --text-muted: #6c6d80;
+  --accent: #e3a752;
   --accent-contrast: #1b1206;
-  --accent-soft: rgba(216, 170, 90, 0.16);
-  --link: #d8aa5a;
-  --danger: #d9655a;
-  --success: #6aa87a;
-  --warning: #d9b35a;
-  --font-display: var(--font-sans);
+  --accent-soft: rgba(227, 167, 82, 0.14);
+  --accent-glow: rgba(227, 167, 82, 0.28);
+  --link: #e3a752;
+  --danger: #ef6a63;
+  --success: #5fc08a;
+  --warning: #e3c252;
+  --dot-color: rgba(255, 255, 255, 0.055);
+  --aura-1: rgba(227, 167, 82, 0.22);
+  --aura-2: rgba(120, 90, 200, 0.16);
   color-scheme: dark;
 }
 
@@ -57,12 +71,15 @@
   --text-muted: #837151;
   --accent: #8a2b2b;
   --accent-contrast: #fbefe0;
-  --accent-soft: rgba(138, 43, 43, 0.12);
+  --accent-soft: rgba(138, 43, 43, 0.1);
+  --accent-glow: rgba(138, 43, 43, 0.18);
   --link: #6b3f17;
   --danger: #a1352a;
   --success: #3f6b3f;
   --warning: #9a6a1f;
-  --font-display: var(--font-serif);
+  --dot-color: rgba(44, 33, 20, 0.08);
+  --aura-1: rgba(138, 43, 43, 0.14);
+  --aura-2: rgba(154, 106, 31, 0.14);
   color-scheme: light;
 }
 
@@ -70,23 +87,26 @@
 /* Arcano — escuro, violeta/teal, mais "fantasia vívida"                  */
 /* ---------------------------------------------------------------------- */
 [data-theme='arcano'] {
-  --bg: #16131f;
-  --bg-elevated: #211c32;
-  --bg-sunken: #0d0b14;
-  --bg-hover: #2c2645;
-  --border: #37305a;
-  --border-strong: #4a4078;
+  --bg: #0c0a16;
+  --bg-elevated: #191430;
+  --bg-sunken: #07060d;
+  --bg-hover: #241c3f;
+  --border: #2b2248;
+  --border-strong: #3d3263;
   --text: #ece9f7;
   --text-secondary: #b1a8d1;
   --text-muted: #746b96;
   --accent: #3fc9b4;
   --accent-contrast: #06201c;
-  --accent-soft: rgba(63, 201, 180, 0.16);
-  --link: #9d7bf0;
+  --accent-soft: rgba(63, 201, 180, 0.14);
+  --accent-glow: rgba(63, 201, 180, 0.26);
+  --link: #a98bff;
   --danger: #e2607a;
   --success: #3fc9b4;
   --warning: #e2a860;
-  --font-display: var(--font-sans);
+  --dot-color: rgba(255, 255, 255, 0.06);
+  --aura-1: rgba(63, 201, 180, 0.2);
+  --aura-2: rgba(157, 123, 240, 0.22);
   color-scheme: dark;
 }
 
@@ -120,8 +140,13 @@ button {
   background: var(--accent-soft);
 }
 
-/* scrollbars, kept subtle across themes */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Textura pontilhada reutilizável, como o fundo das páginas de pricing/why do vvd */
+.dot-grid {
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+  background-size: var(--dot-size) var(--dot-size);
 }

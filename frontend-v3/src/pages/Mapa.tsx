@@ -53,6 +53,21 @@ export function Mapa({ gmMode }: { gmMode: boolean }) {
         ))}
       </div>
 
+      <nav className="mapa-locations">
+        <p className="mapa-locations__title">Locais</p>
+        {pontos.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            className={`mapa-locations__item${selecionadoId === l.id ? ' mapa-locations__item--active' : ''}`}
+            onClick={() => setSelecionadoId(l.id)}
+          >
+            <span className="mapa-locations__dot" style={{ background: l.corPin }} />
+            {l.nome}
+          </button>
+        ))}
+      </nav>
+
       <aside className="mapa-side">
         {!selecionado ? (
           <EmptyState title="Clique num ponto do mapa" />
