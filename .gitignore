@@ -25,6 +25,13 @@ frontend/e2e/.auth/
 frontend/e2e-report/
 frontend/test-results/
 frontend/playwright-report/
+frontend-v2/node_modules/
+frontend-v2/dist/
+frontend-v2/e2e/.data/
+frontend-v2/e2e/.auth/
+frontend-v2/e2e-report/
+frontend-v2/test-results/
+frontend-v2/playwright-report/
 
 # OS / IDE
 .DS_Store
