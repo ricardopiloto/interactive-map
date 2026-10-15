@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test'
 import { applyAuth, loadSession, preparePage } from './helpers'
 
-test('mestre cria, edita e confirma exclusão de arco pelo mapa', async ({ page, context }) => {
+test('mestre cria, edita e confirma exclusão de arco pela linha do tempo', async ({ page, context }) => {
   const session = loadSession()
   await applyAuth(context, session)
   await preparePage(page, { locale: 'pt-BR', theme: 'light' })
   await page.goto(`/c/${session.slug}`)
   await page.getByTitle('Modo edição desligado — clicar para editar').click()
-  await page.getByRole('button', { name: 'Menu de ferramentas do mapa' }).click()
-  await page.getByRole('menuitem', { name: 'Gerenciar arcos' }).click()
+  await page.goto(`/c/${session.slug}/linha-do-tempo`)
+  await page.getByRole('button', { name: 'Gerenciar arcos' }).click()
   await page.getByRole('button', { name: '+ Novo arco' }).click()
   await page.getByRole('button', { name: 'Criar manualmente' }).click()
   await page.locator('.ui-drawer input').nth(0).fill('Arco E2E criado')
@@ -19,9 +19,7 @@ test('mestre cria, edita e confirma exclusão de arco pelo mapa', async ({ page,
   expect((await createResponse).status()).toBe(201)
   const afterCreate = await page.request.get(`/api/c/${session.slug}/admin/arcos`)
   expect((await afterCreate.json()).some((item: { titulo: string }) => item.titulo === 'Arco E2E criado')).toBe(true)
-  await page.getByRole('button', { name: 'Voltar à lista' }).click()
-  await page.getByRole('button', { name: 'Menu de ferramentas do mapa' }).click()
-  await page.getByRole('menuitem', { name: 'Gerenciar arcos' }).click()
+  await expect(page.locator('.list-row', { hasText: 'Arco E2E criado' })).toBeVisible()
   const row = page.locator('.list-row', { hasText: 'Arco E2E criado' })
   await row.getByRole('button', { name: 'Acções da linha' }).click()
   await page.getByRole('menuitem', { name: 'Editar' }).click()
@@ -34,9 +32,7 @@ test('mestre cria, edita e confirma exclusão de arco pelo mapa', async ({ page,
   expect((await updateResponse).status()).toBe(200)
   const afterEdit = await page.request.get(`/api/c/${session.slug}/admin/arcos`)
   expect((await afterEdit.json()).some((item: { titulo: string }) => item.titulo === 'Arco E2E editado')).toBe(true)
-  await page.getByRole('button', { name: 'Voltar à lista' }).click()
-  await page.getByRole('button', { name: 'Menu de ferramentas do mapa' }).click()
-  await page.getByRole('menuitem', { name: 'Gerenciar arcos' }).click()
+  await expect(page.locator('.list-row', { hasText: 'Arco E2E editado' })).toBeVisible()
   const edited = page.locator('.list-row', { hasText: 'Arco E2E editado' })
   await edited.getByRole('button', { name: 'Acções da linha' }).click()
   await page.getByRole('menuitem', { name: 'Excluir' }).click()

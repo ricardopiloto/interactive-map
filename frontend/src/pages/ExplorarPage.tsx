@@ -4,24 +4,15 @@ import { IconSearch } from '@tabler/icons-react'
 import { campanhasApi, type CatalogoItem } from '../api/campanhas'
 import { CampaignCard } from '../components/campaign/CampaignCard'
 import { SiteChrome } from '../components/layout/SiteChrome'
-import { Chip, EmptyState, Input } from '../components/ui'
-import { applyCampaignGenre, clearCampaignGenre } from '../theme/campaignGenre'
-import { GENRES, type GenreId } from '../theme/genres'
+import { EmptyState, Input } from '../components/ui'
 import './ExplorarPage.css'
 
-type GenreFilter = GenreId | 'todos'
 
 export function ExplorarPage() {
   const { t } = useTranslation('comum')
   const [items, setItems] = useState<CatalogoItem[] | null>(null)
   const [error, setError] = useState(false)
   const [query, setQuery] = useState('')
-  const [genreFilter, setGenreFilter] = useState<GenreFilter>('todos')
-
-  useEffect(() => {
-    applyCampaignGenre('fantasia')
-    return () => clearCampaignGenre()
-  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -49,10 +40,9 @@ export function ExplorarPage() {
         !q ||
         c.nome.toLowerCase().includes(q) ||
         c.sistema.toLowerCase().includes(q)
-      const matchesGenre = genreFilter === 'todos' || c.genero === genreFilter
-      return matchesQuery && matchesGenre
+      return matchesQuery
     })
-  }, [items, query, genreFilter])
+  }, [items, query])
 
   return (
     <SiteChrome>
@@ -71,25 +61,6 @@ export function ExplorarPage() {
               aria-label={t('explorar.searchAria')}
             />
           </label>
-          <div className="explore-page__chips" role="group" aria-label={t('painel.genre')}>
-            <Chip
-              variant={genreFilter === 'todos' ? 'accent' : 'outline'}
-              aria-pressed={genreFilter === 'todos'}
-              onClick={() => setGenreFilter('todos')}
-            >
-              {t('explorar.allGenres')}
-            </Chip>
-            {GENRES.map((g) => (
-              <Chip
-                key={g.id}
-                variant={genreFilter === g.id ? 'accent' : 'outline'}
-                aria-pressed={genreFilter === g.id}
-                onClick={() => setGenreFilter(g.id)}
-              >
-                {t(`painel.genre_${g.id}`)}
-              </Chip>
-            ))}
-          </div>
         </div>
 
         {error ? <p className="explore-page__error">{t('explorar.loadError')}</p> : null}
@@ -106,7 +77,6 @@ export function ExplorarPage() {
                 slug={c.slug}
                 nome={c.nome}
                 sistema={c.sistema}
-                genero={c.genero}
                 capa_url={c.capa_url}
                 linkTo={`/c/${c.slug}`}
               />

@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Pelo menos dois personagens na Rede (`/relacoes`)
 - Modo GM para criar vínculos de teste (se ainda não existirem os três tipos)
 

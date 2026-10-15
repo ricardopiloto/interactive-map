@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { Footprints, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ApiError, api, campaignPath } from "@/api/client";
-import type { CampaignConfig } from "@/api/campaign";
+import { useCampaignKey, type CampaignConfig } from "@/api/campaign";
 import {
   localPayload,
   mapApi,
@@ -44,7 +44,7 @@ function message(error: unknown, fallback: string) {
 }
 
 export function MapPage() {
-  const { slug = "" } = useParams();
+  const slug = useCampaignKey();
   const config = useOutletContext<CampaignConfig>();
   const { t } = useTranslation("mapa");
   const { t: tc } = useTranslation("comum");
@@ -298,7 +298,7 @@ export function MapPage() {
             ? { x: data.grupo.x * 100, y: data.grupo.y * 100, formato: data.grupo.formato }
             : null
         }
-        focusOffsetX={selected && !isMobile ? 440 : 0}
+        focusOffsetX={selected && !isMobile ? -220 : 0}
         interactive={placement === "none"}
         placing={placement !== "none"}
         placeLabel={placeLabel}

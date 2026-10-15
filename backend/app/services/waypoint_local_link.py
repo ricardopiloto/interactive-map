@@ -15,6 +15,11 @@ def snap_local_to_waypoint(local: Local, waypoint: Waypoint) -> None:
     local.y = float(waypoint.y)
 
 
+def snap_waypoint_to_local(waypoint: Waypoint, local: Local) -> None:
+    waypoint.x = float(local.x)
+    waypoint.y = float(local.y)
+
+
 def set_waypoint_local_id(
     session: Session, waypoint: Waypoint, local_id: int | None
 ) -> None:

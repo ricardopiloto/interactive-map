@@ -74,7 +74,9 @@ test("mestre cria sessão com associações e o módulo de IA desligado não sug
     await editor.getByRole("checkbox", { name: "Visível para todos" }).uncheck();
     await editor.getByRole("button", { name: "Salvar" }).click();
     await expect(page.getByRole("heading", { name: edited })).toBeVisible();
-    await expect(page.getByText("Oculta")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: new RegExp(edited) }).getByText("Oculta", { exact: true }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Visualização" }).click();
     await expect(page.getByText(edited)).toHaveCount(0);

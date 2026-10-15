@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Pelo menos um personagem com **4** conexões visíveis e outro com **8** (criar no Modo GM se preciso)
 - Ideal: um com **12** conexões, incluindo um tipo de nome longo (ex. Vínculo de Sangue) e, se possível, um vínculo de duas pontas
 - Viewport de secretária

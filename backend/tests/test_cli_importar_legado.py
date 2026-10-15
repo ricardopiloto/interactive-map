@@ -51,9 +51,10 @@ def test_importar_legado_happy_path(data_root, tmp_path: Path) -> None:
         ).first()
         assert dono is not None
         assert camp.mapa_arquivo == "campaign-map.webp"
-    with resolve_campaign_session("wfrp") as session:
+        canonical = camp.slug
+    with resolve_campaign_session(canonical) as session:
         npc = session.exec(select(NPC).where(NPC.id == 1)).one()
-        assert npc.retrato_url == "/api/c/wfrp/media/portraits/p-wfrp-1.webp"
+        assert npc.retrato_url == f"/api/c/{canonical}/media/portraits/p-wfrp-1.webp"
     payload = json.loads(rel.read_text(encoding="utf-8"))
     assert payload["resultado"] == "PASS"
     assert payload["origem_intacta"] is True

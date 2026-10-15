@@ -10,7 +10,7 @@
 
 ```bash
 cd frontend && npm run dev
-# backend se necessário: cd backend && uv run uvicorn app.main:app --reload --port 8000
+# backend se necessário: cd backend && uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 ```
 
 Abrir `http://localhost:5173`.

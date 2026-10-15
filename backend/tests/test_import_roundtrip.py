@@ -180,3 +180,28 @@ def test_cli_import(data_root, tmp_path: Path) -> None:
     with Session(get_control_engine()) as session:
         camp = session.exec(select(Campanha).where(Campanha.slug == "cli-copia")).first()
         assert camp is not None
+
+
+def test_import_ignores_legacy_genero(client, data_root) -> None:
+    import io
+    import json
+    import zipfile
+
+    source = export_campaign_to_bytes(TEST_CAMPAIGN_SLUG)
+    with zipfile.ZipFile(io.BytesIO(source)) as original:
+        members = {name: original.read(name) for name in original.namelist()}
+    manifest = json.loads(members["manifest.json"])
+    assert "genero" not in manifest
+    manifest["genero"] = "valor-legado-desconhecido"
+    members["manifest.json"] = json.dumps(manifest).encode()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as updated:
+        for name, value in members.items():
+            updated.writestr(name, value)
+    response = client.post(
+        "/api/campanhas/import",
+        files={"file": ("legacy.zip", buffer.getvalue(), "application/zip")},
+        data={"slug": "legado-sem-genero"},
+    )
+    assert response.status_code == 201, response.text
+    assert "genero" not in response.json()

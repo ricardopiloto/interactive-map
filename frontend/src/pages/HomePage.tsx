@@ -13,8 +13,6 @@ import { campanhasApi, type CatalogoItem } from '../api/campanhas'
 import { CampaignCard } from '../components/campaign/CampaignCard'
 import { SiteChrome } from '../components/layout/SiteChrome'
 import { Chip } from '../components/ui'
-import { applyCampaignGenre, clearCampaignGenre } from '../theme/campaignGenre'
-import { GENRES, genreSwatchVar, type GenreId } from '../theme/genres'
 import './HomePage.css'
 import { createLoginModalState } from '../utils/loginNavigation'
 
@@ -22,7 +20,6 @@ export function HomePage() {
   const { t } = useTranslation('comum')
   const location = useLocation()
   const [featured, setFeatured] = useState<CatalogoItem[]>([])
-  const [previewGenre, setPreviewGenre] = useState<GenreId>('fantasia')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
@@ -39,11 +36,6 @@ export function HomePage() {
       cancelled = true
     }
   }, [])
-
-  useEffect(() => {
-    applyCampaignGenre(previewGenre)
-    return () => clearCampaignGenre()
-  }, [previewGenre])
 
   useEffect(() => {
     let cancelled = false
@@ -144,31 +136,6 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="landing__genres">
-          <div className="landing__genres-inner">
-            <h2>{t('landing.genresTitle')}</h2>
-            <p className="landing__genres-lead">{t('landing.genresLead')}</p>
-            <div className="landing__genre-grid">
-              {GENRES.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  className={`landing__genre-card${previewGenre === g.id ? ' is-active' : ''}`}
-                  onClick={() => setPreviewGenre(g.id)}
-                >
-                  <span
-                    className="landing__genre-swatch"
-                    style={{ background: genreSwatchVar(g.id) }}
-                    aria-hidden
-                  />
-                  <span className="landing__genre-label">{t(`painel.genre_${g.id}`)}</span>
-                  <span className="landing__genre-tag">{t(`painel.genreTag_${g.id}`)}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {featured.length > 0 ? (
           <section className="landing__showcase">
             <h2>{t('landing.featuredTitle')}</h2>
@@ -179,7 +146,6 @@ export function HomePage() {
                   slug={c.slug}
                   nome={c.nome}
                   sistema={c.sistema}
-                  genero={c.genero}
                   capa_url={c.capa_url}
                   linkTo={`/c/${c.slug}`}
                   compact

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "@/api/client";
+import { safeInternalPath } from "@/lib/safePath";
 
 export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const { t } = useTranslation("comum");
@@ -78,10 +79,13 @@ export function LoginPage() {
   const { t } = useTranslation("comum");
   const navigate = useNavigate();
   const location = useLocation();
+  const [params] = useSearchParams();
   const background = (
     location.state as { background?: { pathname: string; search?: string } } | null
   )?.background;
-  const returnTo = background ? `${background.pathname}${background.search ?? ""}` : "/";
+  const returnTo = background
+    ? `${background.pathname}${background.search ?? ""}`
+    : (safeInternalPath(params.get("next")) ?? "/");
   if (background)
     return (
       <Dialog

@@ -66,6 +66,8 @@
   },
   "digitizer": {
     "title": "Rede de rotas",
+    "moverNo": "Mover nó",
+    "moverNoInstrucao": "Clique no mapa para escolher a nova posição. Os pontos intermediários dos segmentos permanecem fixos; o ângulo perto do nó pode mudar.",
     "subtitle": "Sem pins de lore — só navegação",
     "lista": "Lista",
     "novoNo": "Novo nó",

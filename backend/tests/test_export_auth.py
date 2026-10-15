@@ -31,7 +31,7 @@ def test_export_anon_401(client_anon, data_root) -> None:
 
 
 def test_export_other_campaign_dono_403(client_anon, data_root) -> None:
-    _create_campanha(slug="outra-mesa", nome="O", sistema="wfrp4e")
+    outra_mesa = _create_campanha(slug="outra-mesa", nome="O", sistema="wfrp4e").slug
     with Session(get_control_engine()) as session:
         session.add(
             Usuario(
@@ -43,7 +43,7 @@ def test_export_other_campaign_dono_403(client_anon, data_root) -> None:
             )
         )
         session.commit()
-        assign_owner(session, "outra-mesa", "outro@teste.local")
+        assign_owner(session, outra_mesa, "outro@teste.local")
 
     with TestClient(app, headers={"Origin": TEST_ORIGIN}) as other:
         login_as(other, email="outro@teste.local", password="password-ok")

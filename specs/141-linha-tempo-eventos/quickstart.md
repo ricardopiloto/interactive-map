@@ -5,7 +5,7 @@ Validar [spec.md](./spec.md) SC-001–005 e [contracts/eventos-api.md](./contrac
 ## Pré-requisitos
 
 ```bash
-cd backend && uv run uvicorn app.main:app --reload --port 8000
+cd backend && uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 cd frontend && npm run dev
 ```
 

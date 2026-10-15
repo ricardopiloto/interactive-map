@@ -4,16 +4,21 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { CodexProvider } from "@/components/codex/codex-context";
 import { AuthProvider } from "@/auth/AuthContext";
 import { LoginPage } from "@/auth/Login";
-import { CampaignLayout, CampaignIndex } from "@/routes/CampaignLayout";
-import { MapPage } from "@/routes/index";
-import { Relations } from "@/routes/relacoes";
-import { RoutePage } from "@/routes/rota";
-import { Sessions } from "@/routes/sessoes";
-import { Timeline } from "@/routes/cronologia";
+import { RequireSession } from "@/components/site/RequireSession";
+import { useCampaignRouteElements } from "@/routes/campaignRoutes";
+import { HomePage } from "@/routes/home";
+import { ExplorarPage } from "@/routes/explorar";
+import { ConvitePage } from "@/routes/convite";
+import { ResetPage } from "@/routes/reset";
+import { ContaPage } from "@/routes/conta";
+import { PainelPage } from "@/routes/painel";
+import { NovoCodexPage } from "@/routes/novo";
+import { AdminConsolePage } from "@/routes/admin";
+import { AdminConvitesPage } from "@/routes/admin-convites";
+import { NotFoundPage } from "@/routes/not-found";
 import { lazy, Suspense } from "react";
 import "./styles.css";
 import "./i18n";
-import { useTranslation } from "react-i18next";
 
 const StyleGuide = import.meta.env.DEV
   ? lazy(() => import("@/routes/styleguide").then((m) => ({ default: m.StyleGuide })))
@@ -32,25 +37,58 @@ export function App() {
 }
 
 function AppRoutes() {
-  const { t } = useTranslation("comum");
   const location = useLocation();
+  const campaignRoutes = useCampaignRouteElements();
   const background = (location.state as { background?: typeof location } | null)?.background;
   return (
     <>
       <Routes location={background ?? location}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/explorar" element={<ExplorarPage />} />
+        <Route path="/convite/:token" element={<ConvitePage />} />
+        <Route path="/reset/:token" element={<ResetPage />} />
         <Route
-          path="/"
-          element={<main className="p-8 font-display text-2xl">{t("v2.codex")}</main>}
+          path="/conta"
+          element={
+            <RequireSession>
+              <ContaPage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/painel"
+          element={
+            <RequireSession>
+              <PainelPage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/painel/novo"
+          element={
+            <RequireSession>
+              <NovoCodexPage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireSession admin>
+              <AdminConsolePage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/admin/convites"
+          element={
+            <RequireSession admin>
+              <AdminConvitesPage />
+            </RequireSession>
+          }
         />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/c/:slug" element={<CampaignLayout />}>
-          <Route index element={<CampaignIndex />} />
-          <Route path="mapa" element={<MapPage />} />
-          <Route path="relacoes" element={<Relations />} />
-          <Route path="rota" element={<RoutePage />} />
-          <Route path="sessoes" element={<Sessions />} />
-          <Route path="cronologia" element={<Timeline />} />
-        </Route>
+        {campaignRoutes}
         {StyleGuide && (
           <Route
             path="/__styleguide"
@@ -61,6 +99,7 @@ function AppRoutes() {
             }
           />
         )}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       {background && (
         <Routes>

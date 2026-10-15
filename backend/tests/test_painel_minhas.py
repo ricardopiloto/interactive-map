@@ -22,8 +22,8 @@ from tests.conftest import (
 
 
 def test_minhas_isolation_and_cota(client_anon, data_root) -> None:
-    _create_campanha(slug="mesa-a", nome="A", sistema="wfrp4e")
-    _create_campanha(slug="mesa-b", nome="B", sistema="wod")
+    mesa_a = _create_campanha(slug="mesa-a", nome="A", sistema="wfrp4e").slug
+    mesa_b = _create_campanha(slug="mesa-b", nome="B", sistema="wod").slug
     with Session(get_control_engine()) as session:
         session.add(
             Usuario(
@@ -44,8 +44,8 @@ def test_minhas_isolation_and_cota(client_anon, data_root) -> None:
             )
         )
         session.commit()
-        assign_owner(session, "mesa-a", "ua@teste.local")
-        assign_owner(session, "mesa-b", "ub@teste.local")
+        assign_owner(session, mesa_a, "ua@teste.local")
+        assign_owner(session, mesa_b, "ub@teste.local")
 
         # Co-mestre of mesa-a (not dono) — should not see it in minhas
         session.add(
@@ -59,7 +59,7 @@ def test_minhas_isolation_and_cota(client_anon, data_root) -> None:
         )
         session.commit()
         co = session.exec(select(Usuario).where(Usuario.email == "co@teste.local")).first()
-        camp_a = session.exec(select(Campanha).where(Campanha.slug == "mesa-a")).first()
+        camp_a = session.exec(select(Campanha).where(Campanha.slug == mesa_a)).first()
         assert co and camp_a
         session.add(
             Membro(
@@ -73,10 +73,10 @@ def test_minhas_isolation_and_cota(client_anon, data_root) -> None:
         session.add(camp_a)
         session.commit()
 
-    _create_campanha(slug="morta-a", nome="MortaA", sistema="wfrp4e")
+    morta_a = _create_campanha(slug="morta-a", nome="MortaA", sistema="wfrp4e").slug
     with Session(get_control_engine()) as session:
-        assign_owner(session, "morta-a", "ua@teste.local")
-        morta = session.exec(select(Campanha).where(Campanha.slug == "morta-a")).first()
+        assign_owner(session, morta_a, "ua@teste.local")
+        morta = session.exec(select(Campanha).where(Campanha.slug == morta_a)).first()
         assert morta
         morta.activa = False
         session.add(morta)
@@ -90,10 +90,10 @@ def test_minhas_isolation_and_cota(client_anon, data_root) -> None:
         r = a.get("/api/campanhas/minhas")
         assert r.status_code == 200
         slugs = {c["slug"] for c in r.json()["campanhas"]}
-        assert "mesa-a" in slugs
-        assert "mesa-b" not in slugs
-        assert "morta-a" not in slugs
-        item = next(c for c in r.json()["campanhas"] if c["slug"] == "mesa-a")
+        assert mesa_a in slugs
+        assert mesa_b not in slugs
+        assert morta_a not in slugs
+        item = next(c for c in r.json()["campanhas"] if c["slug"] == mesa_a)
         assert item["aviso_cota"] is True
         assert "bytes_usados" in item and "cota_bytes" in item
 
@@ -101,4 +101,4 @@ def test_minhas_isolation_and_cota(client_anon, data_root) -> None:
         login_as(co_client, email="co@teste.local", password="password-ok")
         r = co_client.get("/api/campanhas/minhas")
         assert r.status_code == 200
-        assert "mesa-a" not in {c["slug"] for c in r.json()["campanhas"]}
+        assert mesa_a not in {c["slug"] for c in r.json()["campanhas"]}

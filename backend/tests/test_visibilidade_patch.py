@@ -15,30 +15,30 @@ from tests.conftest import TEST_ORIGIN, login_as
 
 
 def test_patch_visibilidade_dono(client, data_root) -> None:
-    _create_campanha(slug="vis-a", nome="VA", sistema="wfrp4e", visibilidade="listada")
+    vis_a = _create_campanha(slug="vis-a", nome="VA", sistema="wfrp4e", visibilidade="listada").slug
     with Session(get_control_engine()) as session:
-        assign_owner(session, "vis-a", "gm@teste.local")
+        assign_owner(session, vis_a, "gm@teste.local")
 
     r = client.patch(
-        "/api/campanhas/vis-a/visibilidade",
+        f"/api/campanhas/{vis_a}/visibilidade",
         json={"visibilidade": "so_link"},
     )
     assert r.status_code == 200, r.text
     assert r.json()["visibilidade"] == "so_link"
     cat = client.get("/api/campanhas/catalogo")
-    assert "vis-a" not in {c["slug"] for c in cat.json()["campanhas"]}
+    assert vis_a not in {c["slug"] for c in cat.json()["campanhas"]}
 
     r2 = client.patch(
-        "/api/campanhas/vis-a/visibilidade",
+        f"/api/campanhas/{vis_a}/visibilidade",
         json={"visibilidade": "listada"},
     )
     assert r2.status_code == 200
     cat2 = client.get("/api/campanhas/catalogo")
-    assert "vis-a" in {c["slug"] for c in cat2.json()["campanhas"]}
+    assert vis_a in {c["slug"] for c in cat2.json()["campanhas"]}
 
 
 def test_patch_visibilidade_forbidden(client_anon, data_root) -> None:
-    _create_campanha(slug="vis-b", nome="VB", sistema="wfrp4e")
+    vis_b = _create_campanha(slug="vis-b", nome="VB", sistema="wfrp4e").slug
     with Session(get_control_engine()) as session:
         session.add(
             Usuario(
@@ -50,10 +50,10 @@ def test_patch_visibilidade_forbidden(client_anon, data_root) -> None:
             )
         )
         session.commit()
-        assign_owner(session, "vis-b", "outro@teste.local")
+        assign_owner(session, vis_b, "outro@teste.local")
 
     anon = client_anon.patch(
-        "/api/campanhas/vis-b/visibilidade",
+        f"/api/campanhas/{vis_b}/visibilidade",
         json={"visibilidade": "so_link"},
     )
     assert anon.status_code == 401
@@ -61,7 +61,7 @@ def test_patch_visibilidade_forbidden(client_anon, data_root) -> None:
     with TestClient(app, headers={"Origin": TEST_ORIGIN}) as other:
         login_as(other, email="gm@teste.local", password="test-secret-ok")
         r = other.patch(
-            "/api/campanhas/vis-b/visibilidade",
+            f"/api/campanhas/{vis_b}/visibilidade",
             json={"visibilidade": "so_link"},
         )
         assert r.status_code == 403

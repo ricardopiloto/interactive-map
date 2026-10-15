@@ -13,7 +13,7 @@ uv run python -m app.cli campanha criar --slug minha-campanha --nome "Minha Camp
 uv run python -m app.cli campanha listar
 
 # Arranque (HTTP não precisa de CAMPAIGN_SLUG)
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 # Ex.: GET /api/c/minha-campanha/config
 # Mídia: GET /api/c/minha-campanha/media/map/…
 
@@ -68,7 +68,7 @@ Mutações exigem `Origin`/`Referer` na allowlist `CORS_ORIGINS` (CSRF). Com `TR
 ```bash
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 # Suíte de testes do backend
 uv sync --group dev

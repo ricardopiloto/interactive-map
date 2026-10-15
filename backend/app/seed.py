@@ -12,8 +12,10 @@ import os
 
 from sqlmodel import Session, select
 
+from app.campaign_db import get_control_engine, init_control, resolve_campaign_session
 from app.config import settings
-from app.database import engine, init_db
+from app.models.campanha import Campanha
+from app.services.campanha_admin import create_campanha
 from app.models.arco import Arco
 from app.models.grupo import GrupoPosicao
 from app.models.local import Local
@@ -454,8 +456,20 @@ def seed(session: Session) -> None:
 def main() -> None:
     if os.getenv("ALLOW_SEED", "1") == "0":
         raise SystemExit("ALLOW_SEED=0 — seed bloqueado.")
-    init_db()
-    with Session(engine) as session:
+    slug = settings.campaign_slug
+    if not slug:
+        raise SystemExit("CAMPAIGN_SLUG não definido — indique a campanha a semear.")
+    init_control()
+    with Session(get_control_engine()) as session:
+        existing = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
+        canonical = existing.slug if existing is not None else None
+    if canonical is None:
+        row = create_campanha(slug=slug, nome=slug, sistema=settings.sistema)
+        canonical = row.slug
+        print(f"Campanha criada: {row.slug} ({row.caminho})")
+    else:
+        print(f"Campanha existente: {canonical}")
+    with resolve_campaign_session(canonical) as session:
         seed(session)
 
 

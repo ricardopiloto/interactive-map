@@ -6,7 +6,7 @@ Validar [spec.md](./spec.md) SC-001–003 e [contracts/sistema-livre.md](./contr
 
 ```bash
 # backend
-cd backend && uv run uvicorn app.main:app --reload --port 8000
+cd backend && uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 # frontend (opcional p/ UI)
 cd frontend && npm run dev
 ```

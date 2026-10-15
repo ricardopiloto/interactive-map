@@ -7,7 +7,8 @@ export const MI_TO_KM = 1.609344;
 export type DistanceUnit = "mi" | "km";
 
 /** Clicking this close to a node (map units, 0–1) counts as clicking the node. */
-export const NODE_SNAP = 0.02;
+export const ORIGIN_SNAP = 0.01;
+export const FINISH_SNAP = 0.005;
 
 export function distanceUnit(value: string | null | undefined): DistanceUnit {
   return value === "km" ? "km" : "mi";
@@ -58,7 +59,7 @@ export function nearestWaypoint(
   waypoints: Waypoint[],
   x: number,
   y: number,
-  maxDist = NODE_SNAP,
+  maxDist = ORIGIN_SNAP,
 ): Waypoint | null {
   let best: Waypoint | null = null;
   let bestDistance = maxDist;

@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Personagens com **2**, **5** e **8** conexões visíveis (criar no Modo GM se preciso)
 - Ideal: um com **3** e um com **4** para o limiar
 - Viewport de secretária

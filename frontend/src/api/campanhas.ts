@@ -1,5 +1,4 @@
 import { parseApiError } from './parseApiError'
-import type { GenreId } from '../theme/genres'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
@@ -7,7 +6,6 @@ export type CatalogoItem = {
   slug: string
   nome: string
   sistema: string
-  genero: GenreId | string
   capa_url?: string | null
 }
 export type PainelItem = {
@@ -16,7 +14,6 @@ export type PainelItem = {
   sistema: string
   visibilidade: 'listada' | 'so_link' | string
   unidade_distancia?: 'mi' | 'km' | string
-  genero: GenreId | string
   capa_url?: string | null
   bytes_usados: number
   cota_bytes: number
@@ -52,7 +49,6 @@ export const campanhasApi = {
     nome: string
     slug: string
     sistema: string
-    genero: GenreId
     visibilidade?: 'listada' | 'so_link'
   }) =>
     req<{
@@ -60,7 +56,6 @@ export const campanhasApi = {
       id: number
       nome: string
       sistema: string
-      genero: string
       visibilidade: string
     }>('/api/campanhas', { method: 'POST', body: JSON.stringify(body) }, true),
   patchVisibilidade: (slug: string, visibilidade: 'listada' | 'so_link') =>
@@ -83,12 +78,6 @@ export const campanhasApi = {
     req<{ slug: string; modulos_ativos: string[] }>(
       `/api/campanhas/${encodeURIComponent(slug)}/modulos`,
       { method: 'PATCH', body: JSON.stringify({ modulo, ativo }) },
-      true,
-    ),
-  patchGenero: (slug: string, genero: GenreId) =>
-    req<{ slug: string; genero: GenreId }>(
-      `/api/campanhas/${encodeURIComponent(slug)}/genero`,
-      { method: 'PATCH', body: JSON.stringify({ genero }) },
       true,
     ),
   patchCapa: (
@@ -121,7 +110,7 @@ export const campanhasApi = {
     const body = new FormData()
     body.append('file', file)
     if (slug) body.append('slug', slug)
-    return req<{ slug: string; id: number; nome: string; sistema: string; genero?: string }>(
+    return req<{ slug: string; id: number; nome: string; sistema: string }>(
       '/api/campanhas/import',
       { method: 'POST', body },
       true,

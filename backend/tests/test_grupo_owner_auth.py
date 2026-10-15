@@ -23,8 +23,8 @@ def _add_member(email: str, password: str, *, slug: str, role: str) -> None:
 
 
 def test_group_write_requires_campaign_owner(client, client_anon: TestClient, data_root):
-    _create_campanha(slug="grupo-b", nome="B", sistema="wfrp4e")
-    _add_member("outsider@teste.local", "outsider-pass", slug="grupo-b", role="dono")
+    grupo_b = _create_campanha(slug="grupo-b", nome="B", sistema="wfrp4e").slug
+    _add_member("outsider@teste.local", "outsider-pass", slug=grupo_b, role="dono")
     _add_member("player@teste.local", "player-pass", slug=TEST_CAMPAIGN_SLUG, role="jogador")
 
     path = api("/api/admin/grupo")
@@ -47,10 +47,10 @@ def test_group_write_requires_campaign_owner(client, client_anon: TestClient, da
 
 
 def test_group_validation_persistence_and_campaign_isolation(client, db_session, data_root):
-    _create_campanha(slug="grupo-b", nome="B", sistema="wfrp4e")
+    grupo_b = _create_campanha(slug="grupo-b", nome="B", sistema="wfrp4e").slug
     with Session(get_control_engine()) as control:
-        assign_owner(control, "grupo-b", TEST_GM_EMAIL)
-    with resolve_campaign_session("grupo-b") as session_b:
+        assign_owner(control, grupo_b, TEST_GM_EMAIL)
+    with resolve_campaign_session(grupo_b) as session_b:
         group_b = GrupoPosicao(id=1, x=0.1, y=0.2, formato="bandeira")
         session_b.add(group_b)
         session_b.commit()
@@ -69,7 +69,7 @@ def test_group_validation_persistence_and_campaign_isolation(client, db_session,
     updated = client.put(path, json={"x": 0.8, "y": 0.7, "formato": "brasao"})
     assert updated.status_code == 200
     assert client.get(api("/api/grupo")).json()["formato"] == "brasao"
-    with resolve_campaign_session("grupo-b") as session_b:
+    with resolve_campaign_session(grupo_b) as session_b:
         persisted_b = session_b.get(GrupoPosicao, 1)
         assert (persisted_b.x, persisted_b.y, persisted_b.formato) == (0.1, 0.2, "bandeira")
 

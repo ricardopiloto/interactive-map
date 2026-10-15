@@ -11,8 +11,6 @@ from app.schemas.campanhas import (
     CapaResponse,
     CriarCampanhaRequest,
     CriarCampanhaResponse,
-    GeneroRequest,
-    GeneroResponse,
     MinhasResponse,
     ModuloToggleRequest,
     ModuloToggleResponse,
@@ -28,7 +26,6 @@ from app.services.campanha_admin import (
     list_catalogo_publico,
     list_minhas_campanhas,
     set_capa,
-    set_genero,
     set_modulo_ativo,
     set_unidade_distancia,
     set_visibilidade,
@@ -72,7 +69,6 @@ def criar_campanha_http(
             slug=body.slug.strip(),
             nome=body.nome.strip(),
             sistema=body.sistema.strip(),
-            genero=body.genero,
             visibilidade=vis,
         )
         with Session(get_control_engine()) as session:
@@ -84,7 +80,6 @@ def criar_campanha_http(
         id=camp.id,  # type: ignore[arg-type]
         nome=camp.nome,
         sistema=camp.sistema,
-        genero=camp.genero,
         visibilidade=camp.visibilidade,
     )
 
@@ -150,19 +145,6 @@ def patch_capa(
     )
 
 
-@router.patch("/{slug}/genero", response_model=GeneroResponse)
-def patch_genero(
-    slug: str,
-    body: GeneroRequest,
-    _ctx: MembroContext = Depends(require_dono),
-) -> GeneroResponse:
-    try:
-        camp = set_genero(slug, body.genero)
-    except CampanhaAdminError as exc:
-        raise_api_error(exc.codigo, status_code=_admin_error_status(exc.codigo))
-    return GeneroResponse(slug=camp.slug, genero=camp.genero)
-
-
 @router.post("/import", status_code=status.HTTP_201_CREATED)
 async def import_campaign(
     file: UploadFile = File(...),
@@ -186,5 +168,4 @@ async def import_campaign(
         "id": camp.id,
         "nome": camp.nome,
         "sistema": camp.sistema,
-        "genero": camp.genero,
     }

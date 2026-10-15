@@ -34,7 +34,6 @@ def _create_campanha(
     slug: str,
     nome: str,
     sistema: str,
-    genero: str = "fantasia",
     visibilidade: str = "listada",
     modulos: list[str] | None = None,
 ) -> Campanha:
@@ -43,7 +42,6 @@ def _create_campanha(
         slug=slug,
         nome=nome,
         sistema=sistema,
-        genero=genero,
         visibilidade=visibilidade,
         modulos=modulos,
     )

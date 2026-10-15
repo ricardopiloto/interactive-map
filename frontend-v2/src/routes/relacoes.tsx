@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { ApiError } from "@/api/client";
-import type { CampaignConfig } from "@/api/campaign";
+import { useCampaignKey, type CampaignConfig } from "@/api/campaign";
 import {
   VINCULO_TIPOS,
   relacoesApi,
@@ -162,7 +162,7 @@ function vinculoPayload(draft: VinculoDraft): VinculoPayload | null {
 }
 
 export function Relations() {
-  const { slug = "" } = useParams();
+  const slug = useCampaignKey();
   const config = useOutletContext<CampaignConfig>();
   const { t } = useTranslation("relacoes");
   const { t: tc } = useTranslation("comum");

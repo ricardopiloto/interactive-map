@@ -29,7 +29,6 @@ class Campanha(ControlSQLModel, table=True):
     )
     visibilidade: str = Field(default="listada", max_length=20)
     unidade_distancia: str = Field(default="mi", max_length=8)
-    genero: str = Field(default="fantasia", max_length=16)
     capa_arquivo: str = Field(default="", max_length=500)
     caminho: str = Field(max_length=200)
     mapa_arquivo: str = Field(default="", max_length=500)

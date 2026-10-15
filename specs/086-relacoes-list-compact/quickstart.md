@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Rede com **≥8** personagens visíveis (mistura PJ + NPC) e pelo menos um personagem com **8** vínculos directos visíveis e outro com **4**
 - Modo GM para criar vínculos de teste se a campanha ainda for pequena
 

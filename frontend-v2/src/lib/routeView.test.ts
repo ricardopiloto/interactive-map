@@ -3,10 +3,13 @@ import type { Waypoint } from "@/api/map";
 import type { RouteSegment } from "@/api/routes";
 import {
   MI_TO_KM,
+  ORIGIN_SNAP,
+  FINISH_SNAP,
   formatDistancia,
   isNamedWaypoint,
   milesToScaleInput,
   namedWaypointOptions,
+  nearestWaypoint,
   polylinePath,
   scaleInputToMiles,
   segmentPoints,
@@ -19,6 +22,16 @@ const blank: Waypoint = { id: 3, nome: "  ", x: 0.8, y: 0.8, local_id: null };
 it("formata milhas da API e converte só na exibição em km", () => {
   expect(formatDistancia(10, "mi")).toBe("10 mi");
   expect(formatDistancia(10, "km")).toBe(`${Math.round(10 * MI_TO_KM)} km`);
+});
+
+it("preserva pontos intermediários próximos de nós durante o desenho", () => {
+  const near: Waypoint = { id: 2, nome: "Próximo", x: 0.115, y: 0.2, local_id: null };
+  const waypoints = [porto, near];
+  expect(nearestWaypoint(waypoints, 0.103, 0.2, ORIGIN_SNAP)?.id).toBe(1);
+  expect(nearestWaypoint(waypoints, 0.106, 0.2, FINISH_SNAP)).toBeNull();
+  expect(nearestWaypoint(waypoints, 0.109, 0.2, FINISH_SNAP)).toBeNull();
+  expect(nearestWaypoint(waypoints, 0.111, 0.2, FINISH_SNAP)?.id).toBe(2);
+  expect(nearestWaypoint(waypoints, 0.115, 0.2, FINISH_SNAP)?.id).toBe(2);
 });
 
 it("converte a escala de km para milhas por unidade de mapa", () => {

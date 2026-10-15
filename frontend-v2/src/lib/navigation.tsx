@@ -16,13 +16,33 @@ export function destination(to: string, search?: Search, hash?: string) {
   return `${to}${query.size ? `?${query}` : ""}${hash ? `#${hash}` : ""}`;
 }
 
+const CAMPAIGN_SUBROUTES = [
+  "/relacoes",
+  "/rota",
+  "/sessoes",
+  "/cronologia",
+  "/linha-do-tempo",
+  "/itens",
+];
+
+/** Prefix of the campaign currently in the URL, keeping `/c/{id}/{slug}` when that is the path. */
+export function campaignBase(pathname: string): string | null {
+  const canonical = pathname.match(/^\/c\/(\d+)\/([^/]+)/);
+  if (canonical) return `/c/${canonical[1]}/${canonical[2]}`;
+  const compat = pathname.match(/^\/c\/([^/]+)/);
+  if (compat) return `/c/${compat[1]}`;
+  return null;
+}
+
+export function campaignHref(id: number, slug: string): string {
+  return `/c/${id}/${slug}`;
+}
+
 export function campaignRoute(to: string, pathname: string) {
-  const match = pathname.match(/^\/c\/([^/]+)/);
-  if (!match) return to;
-  if (to === "/") return `/c/${match[1]}/mapa`;
-  if (["/relacoes", "/rota", "/sessoes", "/cronologia"].includes(to)) {
-    return `/c/${match[1]}${to}`;
-  }
+  const base = campaignBase(pathname);
+  if (!base) return to;
+  if (to === "/") return `${base}/mapa`;
+  if (CAMPAIGN_SUBROUTES.includes(to)) return `${base}${to}`;
   return to;
 }
 

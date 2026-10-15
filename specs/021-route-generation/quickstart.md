@@ -10,7 +10,7 @@
 
 ```bash
 cd backend && uv sync   # inclui networkx após implementação
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 cd frontend && npm run dev
 ```

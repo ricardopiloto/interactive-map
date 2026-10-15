@@ -16,12 +16,12 @@ def test_isolation_and_inactive(tmp_path, monkeypatch) -> None:
     a = _create_campanha(slug="isola-a", nome="A", sistema="wfrp4e")
     b = _create_campanha(slug="isola-b", nome="B", sistema="wod")
 
-    with resolve_campaign_session("isola-a") as sa:
+    with resolve_campaign_session(a.slug) as sa:
         sa.add(Local(nome="SoEmA", descricao="", x=0.1, y=0.1))
         sa.add(GrupoPosicao(id=1, x=0.2, y=0.3, formato="bandeira"))
         sa.commit()
 
-    with resolve_campaign_session("isola-b") as sb:
+    with resolve_campaign_session(b.slug) as sb:
         sb.add(GrupoPosicao(id=1, x=0.8, y=0.9, formato="brasao"))
         sb.commit()
         nomes = [loc.nome for loc in sb.exec(select(Local)).all()]
@@ -30,7 +30,7 @@ def test_isolation_and_inactive(tmp_path, monkeypatch) -> None:
         assert grupo_b is not None
         assert grupo_b.x == 0.8
 
-    with resolve_campaign_session("isola-a") as sa2:
+    with resolve_campaign_session(a.slug) as sa2:
         nomes_a = [loc.nome for loc in sa2.exec(select(Local)).all()]
         assert "SoEmA" in nomes_a
         grupo_a = sa2.get(GrupoPosicao, 1)
@@ -38,9 +38,9 @@ def test_isolation_and_inactive(tmp_path, monkeypatch) -> None:
         assert grupo_a.x == 0.2
 
     # A → B → A again
-    with resolve_campaign_session("isola-b") as sb2:
+    with resolve_campaign_session(b.slug) as sb2:
         assert sb2.exec(select(Local)).all() == []
-    with resolve_campaign_session("isola-a") as sa3:
+    with resolve_campaign_session(a.slug) as sa3:
         assert any(loc.nome == "SoEmA" for loc in sa3.exec(select(Local)).all())
 
     from app.campaign_db import get_control_engine
@@ -48,13 +48,13 @@ def test_isolation_and_inactive(tmp_path, monkeypatch) -> None:
     from fastapi import HTTPException
 
     with Session(get_control_engine()) as ctrl:
-        row = ctrl.exec(select(Campanha).where(Campanha.slug == "isola-b")).one()
+        row = ctrl.exec(select(Campanha).where(Campanha.slug == b.slug)).one()
         row.activa = False
         ctrl.add(row)
         ctrl.commit()
 
     try:
-        with resolve_campaign_session("isola-b"):
+        with resolve_campaign_session(b.slug):
             pass
         raise AssertionError("expected inactive")
     except HTTPException as exc:

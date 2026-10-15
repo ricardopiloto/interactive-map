@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Viewport de secretária; repetir o cenário 6 em viewport estreita (≤800px)
 
 ## Scenarios

@@ -27,7 +27,6 @@ import { SessoesPage } from './pages/SessoesPage'
 import { LinhaTempoPage } from './pages/LinhaTempoPage'
 import { StyleGuidePage } from './pages/StyleGuidePage'
 import { createLoginModalState, publicLoginBackground, readLoginModalState } from './utils/loginNavigation'
-import { applyCampaignGenre, clearCampaignGenre } from './theme/campaignGenre'
 
 function CampaignShell({ children }: { children: React.ReactNode }) {
   const { slug } = useParams<{ slug: string }>()
@@ -59,12 +58,6 @@ function CampaignShell({ children }: { children: React.ReactNode }) {
     }
     document.title = `${cfg.nome} · Campaign Codex`
   }, [cfg?.nome])
-
-  useEffect(() => {
-    if (!cfg) return
-    applyCampaignGenre(cfg.genero)
-    return () => clearCampaignGenre()
-  }, [cfg, cfg?.genero])
 
   if (!slug) return <CampaignMissingPage />
   if (loading && !cfg) return null

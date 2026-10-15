@@ -18,7 +18,7 @@ uv run python -m app.cli campanha criar --slug mesa-b --nome "B" --sistema wod
 uv run python -m app.cli usuario criar --email mestre-a@example.com
 # copiar link /convite/... ; aceitar na UI ou via API
 uv run python -m app.cli campanha atribuir-dono --slug mesa-a --email mestre-a@example.com
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 # frontend: npm run dev → /login
 ```
 

@@ -18,8 +18,8 @@ def test_export_package_layout_and_isolation(client, data_root) -> None:
         arco_id = catalog.arco.id
         assert arco_id is not None
 
-    _create_campanha(slug="mesa-b", nome="B", sistema="wod")
-    with resolve_campaign_session("mesa-b") as session:
+    mesa_b = _create_campanha(slug="mesa-b", nome="B", sistema="wod").slug
+    with resolve_campaign_session(mesa_b) as session:
         seed_arco(session, titulo="So em B")
         seed_personagem(session, nome="So B")
 

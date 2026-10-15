@@ -1,4 +1,4 @@
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Waypoints } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type {
   ModoTransporte,
@@ -85,7 +85,19 @@ export function RoutePlannerPanel({
       className="glass absolute inset-x-2 bottom-20 z-20 max-h-[60vh] overflow-y-auto rounded-2xl p-5 lg:top-20 lg:right-auto lg:bottom-auto lg:left-4 lg:w-[380px]"
       aria-label={t("v2.travelPlanner")}
     >
-      <h1 className="font-display text-3xl font-medium">{t("v2.whereNext")}</h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="font-display text-3xl font-medium">{t("v2.whereNext")}</h1>
+        {onOpenNetwork && (
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-2 rounded-xl border border-seal bg-card px-3 py-2 text-sm font-medium text-seal hover:bg-accent"
+            onClick={onOpenNetwork}
+          >
+            <Waypoints className="h-4 w-4" aria-hidden />
+            {ta("digitizer.title")}
+          </button>
+        )}
+      </div>
       <div className="mt-4 space-y-1">
         <WaypointCombobox
           id="de"
@@ -263,15 +275,6 @@ export function RoutePlannerPanel({
       <p className="sr-only" aria-live="polite">
         {plan.length > 0 ? t("routePlanner.liveResults", { count: plan.length }) : ""}
       </p>
-      {onOpenNetwork && (
-        <button
-          type="button"
-          className="mt-4 text-sm text-muted-foreground hover:text-foreground"
-          onClick={onOpenNetwork}
-        >
-          {ta("digitizer.title")}
-        </button>
-      )}
     </aside>
   );
 }

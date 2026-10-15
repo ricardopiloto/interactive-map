@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CatalogoItem(BaseModel):
+    id: int
     slug: str
     nome: str
     sistema: str
-    genero: str = "fantasia"
     capa_url: str | None = None
 
 
@@ -18,12 +18,12 @@ class CatalogoResponse(BaseModel):
 
 
 class PainelItem(BaseModel):
+    id: int
     slug: str
     nome: str
     sistema: str
     visibilidade: str
     unidade_distancia: str = "mi"
-    genero: str = "fantasia"
     capa_url: str | None = None
     bytes_usados: int
     cota_bytes: int
@@ -36,10 +36,11 @@ class MinhasResponse(BaseModel):
 
 
 class CriarCampanhaRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     nome: str = Field(min_length=1, max_length=200)
     slug: str = Field(min_length=2, max_length=48)
     sistema: str = Field(min_length=1, max_length=40)
-    genero: Literal["fantasia", "gotico", "scifi", "urbano"]
     visibilidade: Literal["listada", "so_link"] | None = None
 
 
@@ -48,7 +49,6 @@ class CriarCampanhaResponse(BaseModel):
     id: int
     nome: str
     sistema: str
-    genero: str
     visibilidade: str
 
 
@@ -94,12 +94,3 @@ class CapaResponse(BaseModel):
     slug: str
     capa_arquivo: str = ""
     capa_url: str | None = None
-
-
-class GeneroRequest(BaseModel):
-    genero: str
-
-
-class GeneroResponse(BaseModel):
-    slug: str
-    genero: str

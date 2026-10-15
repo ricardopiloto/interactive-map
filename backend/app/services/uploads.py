@@ -13,8 +13,13 @@ from app.models.campanha import Campanha
 from app.services.media_paths import MEDIA_CATEGORIES, media_url
 
 
-def _campanha_by_slug(session: Session, slug: str) -> Campanha:
-    row = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
+def _campanha_by_slug(session: Session, identifier: str) -> Campanha:
+    """Resolve by numeric id or by slug, matching lookup_campanha."""
+    key = (identifier or "").strip()
+    if key.isdigit():
+        row = session.get(Campanha, int(key))
+    else:
+        row = session.exec(select(Campanha).where(Campanha.slug == key)).first()
     if row is None or not row.activa:
         raise_api_error("CAMPANHA_NAO_ENCONTRADA", status_code=404)
     return row

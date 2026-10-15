@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { IconArrowLeft, IconArrowRight, IconCheck, IconExternalLink, IconSparkles } from '@tabler/icons-react'
+import { IconArrowLeft, IconArrowRight, IconCheck, IconExternalLink } from '@tabler/icons-react'
 import { authApi } from '../api/client'
 import { campanhasApi } from '../api/campanhas'
-import { Button, Chip } from '../components/ui'
+import { Button } from '../components/ui'
 import { SiteChrome } from '../components/layout/SiteChrome'
 import { useApiErrorMessage } from '../hooks/useApiErrorMessage'
-import { applyCampaignGenre } from '../theme/campaignGenre'
-import { GENRES, genreSwatchVar, type GenreId } from '../theme/genres'
 import { slugify } from '../utils/slugify'
 import './NovoCodexPage.css'
 import { createLoginModalState, publicLoginBackground } from '../utils/loginNavigation'
@@ -26,7 +24,6 @@ export function NovoCodexPage() {
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
   const [sistema, setSistema] = useState('')
-  const [genero, setGenero] = useState<GenreId>('fantasia')
   const [visibilidade, setVisibilidade] = useState<Visibility>('listada')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -45,20 +42,6 @@ export function NovoCodexPage() {
     return () => { cancelled = true }
   }, [navigate])
 
-  useEffect(() => {
-    const root = document.documentElement
-    const previousGenre = root.dataset.genre
-    const previousTheme = root.dataset.theme
-    applyCampaignGenre(genero)
-    return () => {
-      if (previousGenre) root.dataset.genre = previousGenre
-      else delete root.dataset.genre
-      if (previousTheme) root.dataset.theme = previousTheme
-      else delete root.dataset.theme
-    }
-  }, [genero])
-
-  const genreMeta = GENRES.find((item) => item.id === genero) ?? GENRES[0]
   const canAdvance = step === 0
     ? nome.trim().length > 1 && slug.trim().length > 1
     : step === 1 ? sistema.trim().length > 1 : true
@@ -79,7 +62,7 @@ export function NovoCodexPage() {
     setError(null)
     try {
       const result = await campanhasApi.criar({
-        nome: nome.trim(), slug: slug.trim(), sistema: sistema.trim(), genero, visibilidade,
+        nome: nome.trim(), slug: slug.trim(), sistema: sistema.trim(), visibilidade,
       })
       setCreated({ slug: result.slug, nome: result.nome })
     } catch (err) {
@@ -93,7 +76,7 @@ export function NovoCodexPage() {
 
   return (
     <SiteChrome>
-      <section className="novo-codex" data-genre={genero}>
+      <section className="novo-codex">
         {created ? (
           <div className="novo-codex__success">
             <span className="novo-codex__success-icon"><IconCheck size={26} aria-hidden /></span>
@@ -135,21 +118,8 @@ export function NovoCodexPage() {
                 <p className="novo-codex__muted">{t('painel.wizard.systemLead')}</p>
                 <label className="novo-codex__field">
                   {t('painel.sistema')}
-                  <input className="ui-input ui-input--new-codex" list="novo-codex-sistemas" value={sistema} onChange={(event) => setSistema(event.target.value)} placeholder={t('painel.wizard.systemPlaceholder')} />
-                  <datalist id="novo-codex-sistemas">{genreMeta.suggestedSystems.map((item) => <option key={item} value={item} />)}</datalist>
-                  <span className="novo-codex__hint">{t('painel.suggestedSystems')}</span>
+                  <input className="ui-input ui-input--new-codex" value={sistema} onChange={(event) => setSistema(event.target.value)} placeholder={t('painel.wizard.systemPlaceholder')} />
                 </label>
-                <fieldset className="novo-codex__genre-field">
-                  <legend>{t('painel.genre')}</legend>
-                  <div className="novo-codex__genre-grid" role="radiogroup" aria-label={t('painel.genre')}>
-                    {GENRES.map((item) => <button key={item.id} type="button" role="radio" aria-checked={genero === item.id} className={`novo-codex__genre${genero === item.id ? ' is-active' : ''}`} onClick={() => setGenero(item.id)}>
-                      <span className="novo-codex__swatch" style={{ background: genreSwatchVar(item.id) }} />
-                      <strong>{t(`painel.genre_${item.id}`)}</strong>
-                      <Chip className="novo-codex__genre-tag">{t(`painel.genreTag_${item.id}`)}</Chip>
-                    </button>)}
-                  </div>
-                  <span className="novo-codex__hint"><IconSparkles size={13} aria-hidden /> {t('painel.wizard.genrePreview')}</span>
-                </fieldset>
               </div>}
               {step === 2 && <div className="novo-codex__content">
                 <h1>{t('painel.wizard.visibilityTitle')}</h1>
@@ -166,7 +136,6 @@ export function NovoCodexPage() {
                 <div className="novo-codex__review">
                   <div className="novo-codex__review-badges"><span>{sistema}</span><span>{t(visibilidade === 'listada' ? 'painel.visListada' : 'painel.visSoLink')}</span></div>
                   <h2>{nome}</h2><p>/c/{slug}</p>
-                  <div className="novo-codex__review-genre"><span className="novo-codex__swatch" style={{ background: genreSwatchVar(genero) }} />{t(`painel.genre_${genero}`)}</div>
                 </div>
               </div>}
               {error && <p className="novo-codex__error" role="alert">{error}</p>}

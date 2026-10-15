@@ -14,29 +14,29 @@ from tests.helpers import seed_evento
 
 def test_eventos_isolation_a_b(client: TestClient, data_root: Path) -> None:
     _ = data_root
-    _create_campanha(slug="mesa-a", nome="A", sistema="wfrp4e")
-    _create_campanha(slug="mesa-b", nome="B", sistema="wod")
+    mesa_a = _create_campanha(slug="mesa-a", nome="A", sistema="wfrp4e").slug
+    mesa_b = _create_campanha(slug="mesa-b", nome="B", sistema="wod").slug
     with Session(get_control_engine()) as ctrl:
-        assign_owner(ctrl, "mesa-a", TEST_GM_EMAIL)
-        assign_owner(ctrl, "mesa-b", TEST_GM_EMAIL)
+        assign_owner(ctrl, mesa_a, TEST_GM_EMAIL)
+        assign_owner(ctrl, mesa_b, TEST_GM_EMAIL)
 
-    with resolve_campaign_session("mesa-a") as session:
+    with resolve_campaign_session(mesa_a) as session:
         seed_evento(session, titulo="So em A", ano=2400, visivel=False)
 
     login_as(client)
 
-    pub_a = client.get("/api/c/mesa-a/eventos")
+    pub_a = client.get(f"/api/c/{mesa_a}/eventos")
     assert pub_a.status_code == 200
     assert pub_a.json()["eventos"] == []
 
-    admin_a = client.get("/api/c/mesa-a/admin/eventos")
+    admin_a = client.get(f"/api/c/{mesa_a}/admin/eventos")
     assert admin_a.status_code == 200
     assert any(e["titulo"] == "So em A" for e in admin_a.json()["eventos"])
 
-    pub_b = client.get("/api/c/mesa-b/eventos")
+    pub_b = client.get(f"/api/c/{mesa_b}/eventos")
     assert pub_b.status_code == 200
     assert pub_b.json()["eventos"] == []
 
-    admin_b = client.get("/api/c/mesa-b/admin/eventos")
+    admin_b = client.get(f"/api/c/{mesa_b}/admin/eventos")
     assert admin_b.status_code == 200
     assert all(e["titulo"] != "So em A" for e in admin_b.json()["eventos"])

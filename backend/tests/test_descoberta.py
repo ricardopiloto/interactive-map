@@ -171,12 +171,12 @@ def test_item_com_todas_associacoes_ocultas_nao_aparece_ao_jogador(client: TestC
 
 def test_itens_isolation_a_b(client: TestClient, data_root: Path) -> None:
     _ = data_root
-    _create_campanha(slug="mesa-item-b", nome="B", sistema="wod")
+    mesa_item_b = _create_campanha(slug="mesa-item-b", nome="B", sistema="wod").slug
     with Session(get_control_engine()) as ctrl:
-        assign_owner(ctrl, "mesa-item-b", TEST_GM_EMAIL)
+        assign_owner(ctrl, mesa_item_b, TEST_GM_EMAIL)
     login_as(client)
 
-    created = client.post("/api/c/mesa-item-b/admin/itens", json={"nome": "Relíquia de B"})
+    created = client.post(f"/api/c/{mesa_item_b}/admin/itens", json={"nome": "Relíquia de B"})
     assert created.status_code == 201, created.text
     item_id = created.json()["id"]
 
@@ -187,7 +187,7 @@ def test_itens_isolation_a_b(client: TestClient, data_root: Path) -> None:
 
     descoberta_a = client.get(f"/api/c/{TEST_CAMPAIGN_SLUG}/descoberta").text
     assert "Relíquia de B" not in descoberta_a
-    descoberta_b = client.get("/api/c/mesa-item-b/descoberta").json()
+    descoberta_b = client.get(f"/api/c/{mesa_item_b}/descoberta").json()
     assert any(e["nome"] == "Relíquia de B" for e in descoberta_b["entidades"]) is False
     # Sem associação, o item existe na mesa B mas não entra na descoberta — e não vaza para A.
-    assert any(item["nome"] == "Relíquia de B" for item in client.get("/api/c/mesa-item-b/admin/itens").json()["itens"])
+    assert any(item["nome"] == "Relíquia de B" for item in client.get(f"/api/c/{mesa_item_b}/admin/itens").json()["itens"])

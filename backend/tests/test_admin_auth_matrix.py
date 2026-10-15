@@ -57,7 +57,7 @@ def _sample_path(path: str, slug: str) -> str:
 
 
 def test_admin_auth_matrix(client_anon, data_root) -> None:
-    _create_campanha(slug="camp-b", nome="B", sistema="wfrp4e")
+    camp_b = _create_campanha(slug="camp-b", nome="B", sistema="wfrp4e").slug
     with Session(get_control_engine()) as session:
         session.add(
             Usuario(
@@ -69,7 +69,7 @@ def test_admin_auth_matrix(client_anon, data_root) -> None:
             )
         )
         session.commit()
-        assign_owner(session, "camp-b", "ub@teste.local")
+        assign_owner(session, camp_b, "ub@teste.local")
 
     admin_paths = _admin_openapi_routes()
     assert admin_paths, "expected admin routes"
@@ -119,7 +119,7 @@ def test_local_update_requires_campaign_membership(client_anon, data_root) -> No
     anonymous = client_anon.put(path, json={"npc_ids": [personagem_id]})
     assert anonymous.status_code == 401
 
-    _create_campanha(slug="camp-sem-acesso", nome="Sem acesso", sistema="wfrp4e")
+    camp_sem_acesso = _create_campanha(slug="camp-sem-acesso", nome="Sem acesso", sistema="wfrp4e").slug
     with Session(get_control_engine()) as session:
         session.add(
             Usuario(
@@ -131,7 +131,7 @@ def test_local_update_requires_campaign_membership(client_anon, data_root) -> No
             )
         )
         session.commit()
-        assign_owner(session, "camp-sem-acesso", "sem-acesso@teste.local")
+        assign_owner(session, camp_sem_acesso, "sem-acesso@teste.local")
 
     login_as(client_anon, email="sem-acesso@teste.local", password="password-sem-acesso")
     forbidden = client_anon.put(path, json={"npc_ids": [personagem_id]})

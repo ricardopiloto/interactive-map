@@ -1,0 +1,20 @@
+{
+  "title": "Itens",
+  "eyebrow": "Inventário da campanha",
+  "listAria": "Lista de itens",
+  "search": "Buscar por nome",
+  "searchPlaceholder": "Nome do item…",
+  "loading": "A carregar itens…",
+  "loadError": "Não foi possível carregar os itens.",
+  "empty": "Ainda não há itens visíveis nesta campanha.",
+  "emptyGm": "Ainda não há itens cadastrados. Cadastre-os na Linha do Tempo.",
+  "notFound": "Item não encontrado.",
+  "hiddenBadge": "Oculto",
+  "sessions": "Sessões",
+  "events": "Eventos",
+  "chipSession": "Sessão",
+  "chipEvent": "Evento",
+  "manageLink": "Gerir itens na Linha do Tempo",
+  "noDescription": "Sem descrição.",
+  "selectHint": "Selecione um item na lista."
+}

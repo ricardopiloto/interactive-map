@@ -657,3 +657,25 @@ def recompute_all_distances(session: Session) -> int:
         n += 1
     session.commit()
     return n
+
+
+def recompute_waypoint_distances(session: Session, waypoint_id: int) -> int:
+    """Update only segments touching a moved waypoint in the current transaction."""
+    segments = session.exec(select(RouteSegment).where(
+        (RouteSegment.waypoint_a_id == waypoint_id)
+        | (RouteSegment.waypoint_b_id == waypoint_id)
+    )).all()
+    if not segments:
+        return 0
+    scale = session.get(MapScale, 1)
+    miles_per_map_unit = scale.miles_per_map_unit if scale is not None else 100.0
+    for seg in segments:
+        a = session.get(Waypoint, seg.waypoint_a_id)
+        b = session.get(Waypoint, seg.waypoint_b_id)
+        if a is None or b is None:
+            continue
+        seg.distancia_milhas = compute_distancia_milhas(
+            a, b, parse_pontos(seg.pontos_intermediarios), miles_per_map_unit
+        )
+        session.add(seg)
+    return len(segments)

@@ -58,8 +58,8 @@ def test_local_rejects_character_id_from_another_campaign_without_mutation(
 
     from app.cli import _create_campanha
 
-    _create_campanha(slug="personagens-outra-campanha", nome="Outra", sistema="wfrp4e")
-    with resolve_campaign_session("personagens-outra-campanha") as other_session:
+    personagens_outra_campanha = _create_campanha(slug="personagens-outra-campanha", nome="Outra", sistema="wfrp4e").slug
+    with resolve_campaign_session(personagens_outra_campanha) as other_session:
         remote = NPC(id=987654, nome="Somente outra campanha", tipo=PersonagemTipo.pj)
         other_session.add(remote)
         other_session.commit()

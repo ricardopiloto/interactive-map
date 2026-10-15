@@ -20,7 +20,7 @@ cp .env.example .env
 cd backend
 uv sync
 uv run python -m app.seed   # opcional, só dev
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 ```
 
 ```bash

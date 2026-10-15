@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { CampaignConfig } from "@/api/campaign";
+import { useCampaignKey, type CampaignConfig } from "@/api/campaign";
 import { ApiError } from "@/api/client";
 import {
   sessoesApi,
@@ -111,7 +111,7 @@ function InconsistencyAlerts({ alertas }: { alertas: AlertaInconsistencia[] }) {
 }
 
 export function Sessions() {
-  const { slug = "" } = useParams();
+  const slug = useCampaignKey();
   const config = useOutletContext<CampaignConfig>();
   const { t } = useTranslation("sessoes");
   const { t: tc } = useTranslation("comum");

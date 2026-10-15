@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Modo GM: pelo menos **um** personagem em cada estado (`vivo`, `morto`, `desaparecido`, `desconhecido`) e ≥4 vivos
 - Viewport de secretária
 

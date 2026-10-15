@@ -5,12 +5,16 @@ from app.database import get_session
 from app.errors import raise_api_error
 from app.models.links import LocalConexaoLink
 from app.models.local import Local
+from app.models.waypoint import Waypoint
 from app.models.arco import Arco
 from app.models.npc import NPC
 from app.routers.public.locais import _to_read
 from app.schemas.local import LocalCreate, LocalRead, LocalUpdate
 from app.services.rate_limit import limiter
-from app.services.waypoint_local_link import set_local_waypoint_id
+from app.services.waypoint_local_link import (
+    set_local_waypoint_id, snap_waypoint_to_local, waypoint_id_for_local,
+)
+from app.services.route_planner import recompute_waypoint_distances
 
 router = APIRouter()
 
@@ -127,7 +131,12 @@ def create_local(
         _sync_npcs(session, local, payload.npc_ids)
     if payload.saida_ids:
         _sync_saidas(session, local, payload.saida_ids)
-    if payload.waypoint_id is not None:
+    if payload.waypoint_id is None:
+        wp = Waypoint(x=local.x, y=local.y)
+        session.add(wp)
+        session.flush()
+        set_local_waypoint_id(session, local, wp.id)
+    else:
         set_local_waypoint_id(session, local, payload.waypoint_id)
     session.commit()
     session.refresh(local)
@@ -151,6 +160,8 @@ def update_local(
     saida_ids = data.pop("saida_ids", None)
     waypoint_id_provided = "waypoint_id" in data
     waypoint_id_val = data.pop("waypoint_id", None) if waypoint_id_provided else None
+    old_waypoint_id = waypoint_id_for_local(session, local_id)
+    position_changed = any(key in data and data[key] != getattr(local, key) for key in ("x", "y"))
     if "arco_id" in data:
         _validate_arco_id(session, data["arco_id"])
     for key, value in data.items():
@@ -159,8 +170,14 @@ def update_local(
         _sync_npcs(session, local, npc_ids)
     if saida_ids is not None:
         _sync_saidas(session, local, saida_ids)
-    if waypoint_id_provided:
+    if waypoint_id_provided and waypoint_id_val != old_waypoint_id:
         set_local_waypoint_id(session, local, waypoint_id_val)
+    elif position_changed and old_waypoint_id is not None:
+        waypoint = session.get(Waypoint, old_waypoint_id)
+        if waypoint is not None:
+            snap_waypoint_to_local(waypoint, local)
+            session.add(waypoint)
+            recompute_waypoint_distances(session, old_waypoint_id)
 
     session.add(local)
     session.commit()

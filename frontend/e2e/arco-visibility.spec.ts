@@ -5,12 +5,16 @@ test('mestre alterna visibilidade e associação nula em Local', async ({ page, 
   const session = loadSession()
   await applyAuth(context, session)
   await preparePage(page, { locale: 'pt-BR', theme: 'light' })
+  const hiddenTitle = `Arco E2E visibilidade ${Date.now()}`
+  const seededArcResponse = await page.request.post(`/api/c/${session.slug}/admin/arcos`, { data: {
+    titulo: hiddenTitle, ordem: 9, visivel_para_todos: true,
+  } })
+  expect(seededArcResponse.status()).toBe(201)
   await page.goto(`/c/${session.slug}`)
   await page.getByTitle('Modo edição desligado — clicar para editar').click()
-  await page.getByRole('button', { name: 'Menu de ferramentas do mapa' }).click()
-  await page.getByRole('menuitem', { name: 'Gerenciar arcos' }).click()
-  const arc = page.locator('.list-row').first()
-  const hiddenTitle = await arc.locator('.list-row__title').innerText()
+  await page.goto(`/c/${session.slug}/linha-do-tempo`)
+  await page.getByRole('button', { name: 'Gerenciar arcos' }).click()
+  const arc = page.locator('.list-row', { hasText: hiddenTitle })
   await arc.getByRole('button', { name: 'Acções da linha' }).click()
   await page.getByRole('menuitem', { name: 'Editar' }).click()
   await page.getByLabel('Visível para todos').uncheck()

@@ -1,0 +1,20 @@
+{
+  "title": "Items",
+  "eyebrow": "Campaign inventory",
+  "listAria": "Item list",
+  "search": "Search by name",
+  "searchPlaceholder": "Item name…",
+  "loading": "Loading items…",
+  "loadError": "Could not load items.",
+  "empty": "No visible items in this campaign yet.",
+  "emptyGm": "No items yet. Create them on the Timeline.",
+  "notFound": "Item not found.",
+  "hiddenBadge": "Hidden",
+  "sessions": "Sessions",
+  "events": "Events",
+  "chipSession": "Session",
+  "chipEvent": "Event",
+  "manageLink": "Manage items on the Timeline",
+  "noDescription": "No description.",
+  "selectHint": "Select an item from the list."
+}

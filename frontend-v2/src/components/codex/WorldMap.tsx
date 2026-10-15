@@ -113,11 +113,13 @@ function FocusSelected({
   enabled: boolean;
 }) {
   const { zoomToElement } = useControls();
+  const zoomToElementRef = useRef(zoomToElement);
+  zoomToElementRef.current = zoomToElement;
   useEffect(() => {
     if (!enabled || !id) return;
     const pin = document.getElementById(`map-pin-${id}`);
-    if (pin) void zoomToElement(pin, 1.2, 400, "easeOut", offsetX);
-  }, [enabled, id, offsetX, zoomToElement]);
+    if (pin) void zoomToElementRef.current(pin, 1.2, 400, "easeOut", offsetX);
+  }, [enabled, id, offsetX]);
   return null;
 }
 
@@ -179,7 +181,7 @@ export function WorldMap({
         centerOnInit
         wheel={{ step: 0.01 }}
         pinch={{ step: 5 }}
-        panning={{ disabled: placing }}
+        panning={{ disabled: false }}
         doubleClick={{ disabled: true }}
         onInit={(ref) => {
           apiRef.current = ref;
@@ -214,7 +216,7 @@ export function WorldMap({
                 src={mapUrl}
                 alt={t("v2.mapImage")}
                 draggable={false}
-                className="map-tint absolute inset-0 h-full w-full"
+                className="absolute inset-0 h-full w-full"
                 onLoad={(event) => {
                   const image = event.currentTarget;
                   if (image.naturalWidth > 0 && image.naturalHeight > 0) {
@@ -248,7 +250,7 @@ export function WorldMap({
                     if (interactive) onSelect?.(pin.id);
                   }}
                   className={cn(
-                    "group absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 transition-opacity",
+                    "group absolute flex h-6 w-6 items-center justify-center transition-opacity",
                     dim.includes(pin.id) && "opacity-40",
                   )}
                   style={{
@@ -277,7 +279,7 @@ export function WorldMap({
                   </span>
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-0.5 font-display text-sm whitespace-nowrap shadow-float",
+                      "absolute top-[calc(100%+0.375rem)] left-1/2 -translate-x-1/2 rounded-full px-2.5 py-0.5 font-display text-sm whitespace-nowrap shadow-float",
                       isSel ? "bg-seal text-seal-foreground" : "glass text-foreground",
                       !pin.visited && !isSel && "italic",
                     )}

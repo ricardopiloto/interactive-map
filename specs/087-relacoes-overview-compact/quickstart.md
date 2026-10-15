@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-- Backend + frontend (`uv run uvicorn app.main:app --reload --port 8000`, `npm run dev`)
+- Backend + frontend (`uv run uvicorn app.main:app --reload --reload-dir app --port 8000`, `npm run dev`)
 - Rede com **≥4 PJs** e **≥12 NPCs** visíveis (criar no Modo GM se preciso)
 - Viewport de secretária (palco largo, não só o breakpoint mobile)
 

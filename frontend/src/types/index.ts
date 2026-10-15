@@ -27,7 +27,6 @@ export interface InstanceConfig {
   mapa_arquivo?: string | null
   map_url?: string | null
   unidade_distancia?: 'mi' | 'km'
-  genero?: string
   capa_url?: string | null
 }
 

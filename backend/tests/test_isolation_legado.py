@@ -43,8 +43,15 @@ def test_isolation_wfrp_wod(client_anon: TestClient, data_root: Path, tmp_path: 
     assert _import(wfrp, "wfrp", "wfrp4e", "WFRP", TEST_GM_EMAIL) == 0
     assert _import(wod, "wod", "wod", "WoD", "wod@teste.local") == 0
 
-    lista_w = client_anon.get("/api/c/wfrp/locais")
-    lista_d = client_anon.get("/api/c/wod/locais")
+    with Session(get_control_engine()) as session:
+        a = session.exec(select(Campanha).where(Campanha.nome == "WFRP")).one()
+        b = session.exec(select(Campanha).where(Campanha.nome == "WoD")).one()
+        slug_w, slug_d = a.slug, b.slug
+        files_a = {p.name for p in campaign_uploads_path(a.caminho).rglob("*") if p.is_file()}
+        files_b = {p.name for p in campaign_uploads_path(b.caminho).rglob("*") if p.is_file()}
+
+    lista_w = client_anon.get(f"/api/c/{slug_w}/locais")
+    lista_d = client_anon.get(f"/api/c/{slug_d}/locais")
     assert lista_w.status_code == 200
     assert lista_d.status_code == 200
     names_w = {row["nome"] for row in lista_w.json()}
@@ -53,17 +60,12 @@ def test_isolation_wfrp_wod(client_anon: TestClient, data_root: Path, tmp_path: 
     assert len(lista_w.json()) == 2
     assert len(lista_d.json()) == 1
 
-    assert client_anon.get("/api/c/wfrp/media/portraits/p-wfrp-1.webp").status_code == 200
-    assert client_anon.get("/api/c/wod/media/portraits/p-wfrp-1.webp").status_code == 404
-    assert client_anon.get("/api/c/wod/media/map/campaign-map.webp").status_code == 200
-    assert client_anon.get("/api/c/wfrp/media/map/campaign-map.webp").status_code == 200
+    assert client_anon.get(f"/api/c/{slug_w}/media/portraits/p-wfrp-1.webp").status_code == 200
+    assert client_anon.get(f"/api/c/{slug_d}/media/portraits/p-wfrp-1.webp").status_code == 404
+    assert client_anon.get(f"/api/c/{slug_d}/media/map/campaign-map.webp").status_code == 200
+    assert client_anon.get(f"/api/c/{slug_w}/media/map/campaign-map.webp").status_code == 200
 
-    with Session(get_control_engine()) as session:
-        a = session.exec(select(Campanha).where(Campanha.slug == "wfrp")).one()
-        b = session.exec(select(Campanha).where(Campanha.slug == "wod")).one()
-        files_a = {p.name for p in campaign_uploads_path(a.caminho).rglob("*") if p.is_file()}
-        files_b = {p.name for p in campaign_uploads_path(b.caminho).rglob("*") if p.is_file()}
-        assert "p-wfrp-1.webp" in files_a
-        assert "p-wfrp-1.webp" not in files_b
-        assert "p-wod-1.webp" in files_b
-        assert "p-wod-1.webp" not in files_a
+    assert "p-wfrp-1.webp" in files_a
+    assert "p-wfrp-1.webp" not in files_b
+    assert "p-wod-1.webp" in files_b
+    assert "p-wod-1.webp" not in files_a

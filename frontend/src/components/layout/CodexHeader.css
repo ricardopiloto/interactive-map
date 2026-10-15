@@ -183,6 +183,24 @@
 }
 
 @media (max-width: 860px) {
+  .codex-header {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+  }
+
+  .codex-header__left,
+  .codex-header__right {
+    width: 100%;
+  }
+
+  .codex-header__right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .codex-header__tabs {
     display: none;
   }

@@ -5,6 +5,7 @@ import {
   Route as RouteIcon,
   ScrollText,
   Hourglass,
+  Package,
   PenLine,
   Sun,
   Moon,
@@ -15,6 +16,7 @@ import { useCodex, type ThemePref } from "./codex-context";
 import { useEditMode } from "@/auth/EditModeContext";
 import { useAuth } from "@/auth/AuthContext";
 import type { CampaignConfig } from "@/api/campaign";
+import { campaignHref } from "@/lib/navigation";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
 
@@ -23,7 +25,8 @@ const lenses = [
   { path: "relacoes", label: "Relações", icon: Network },
   { path: "rota", label: "Rota", icon: RouteIcon },
   { path: "sessoes", label: "Sessões", icon: ScrollText },
-  { path: "cronologia", label: "Cronologia", icon: Hourglass },
+  { path: "linha-do-tempo", label: "Cronologia", icon: Hourglass },
+  { path: "itens", label: "Itens", icon: Package },
 ] as const;
 
 export function TopBar({ campaign }: { campaign: CampaignConfig }) {
@@ -32,7 +35,7 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
   const { theme, setTheme } = useCodex();
   const { user, logout } = useAuth();
   const { canEdit, enabled, setEnabled } = useEditMode();
-  const base = `/c/${encodeURIComponent(campaign.slug)}`;
+  const base = campaignHref(campaign.id, campaign.slug);
   const themes: { value: ThemePref; icon: typeof Sun; label: string }[] = [
     { value: "claro", icon: Sun, label: t("v2.themeLight") },
     { value: "escuro", icon: Moon, label: t("v2.themeDark") },
@@ -48,7 +51,8 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
         relacoes: "relations",
         rota: "route",
         sessoes: "sessions",
-        cronologia: "timeline",
+        "linha-do-tempo": "timeline",
+        itens: "items",
       } as const;
       return (
         <Link

@@ -79,7 +79,7 @@ def test_legacy_bridge_stamp_and_new_skips_bridge(tmp_path, monkeypatch) -> None
     reset_engines()
     monkeypatch.setattr(settings, "data_dir", tmp_path / "data")
 
-    with resolve_campaign_session("legado-um") as session:
+    with resolve_campaign_session(camp.slug) as session:
         locs = list(session.exec(select(Local)).all())
         npcs = list(session.exec(select(NPC)).all())
         assert len(locs) == n_loc
@@ -93,12 +93,12 @@ def test_legacy_bridge_stamp_and_new_skips_bridge(tmp_path, monkeypatch) -> None
     assert rev is not None
 
     # Second open — still same counts
-    with resolve_campaign_session("legado-um") as session:
+    with resolve_campaign_session(camp.slug) as session:
         assert len(list(session.exec(select(Local)).all())) == n_loc
 
     # New campaign: head without needing bridge
     novo = _create_campanha(slug="nova-limpa", nome="Nova", sistema="wfrp4e")
-    with resolve_campaign_session("nova-limpa") as session:
+    with resolve_campaign_session(novo.slug) as session:
         assert list(session.exec(select(Local)).all()) == []
     eng2 = get_campaign_engine(Path(novo.caminho).name, novo.caminho)
     with eng2.connect() as conn:

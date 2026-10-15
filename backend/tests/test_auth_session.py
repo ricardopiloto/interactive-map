@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from tests.conftest import TEST_GM_EMAIL, TEST_GM_PASSWORD, TEST_ORIGIN
+from tests.conftest import TEST_CAMPAIGN_SLUG, TEST_GM_EMAIL, TEST_GM_PASSWORD, TEST_ORIGIN
 
 
 def test_login_logout_me(client_anon, data_root) -> None:
@@ -47,5 +47,5 @@ def test_login_inactive_user(client_anon, data_root) -> None:
 
 def test_public_routes_without_login(client_anon, data_root) -> None:
     assert client_anon.get("/api/health").status_code == 200
-    assert client_anon.get("/api/c/teste-suite/config").status_code == 200
-    assert client_anon.get("/api/c/teste-suite/locais").status_code == 200
+    assert client_anon.get(f"/api/c/{TEST_CAMPAIGN_SLUG}/config").status_code == 200
+    assert client_anon.get(f"/api/c/{TEST_CAMPAIGN_SLUG}/locais").status_code == 200

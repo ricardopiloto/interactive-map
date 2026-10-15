@@ -10,7 +10,7 @@
 
 ```bash
 # terminal 1 — backend
-cd backend && uv run uvicorn app.main:app --reload --port 8000
+cd backend && uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 # terminal 2 — frontend
 cd frontend && npm run dev

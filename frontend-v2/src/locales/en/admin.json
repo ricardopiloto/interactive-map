@@ -66,6 +66,8 @@
   },
   "digitizer": {
     "title": "Route network",
+    "moverNo": "Move node",
+    "moverNoInstrucao": "Click the map to choose a new position. Segment intermediate points stay fixed; the angle near the node may change.",
     "subtitle": "No lore pins — navigation only",
     "lista": "List",
     "novoNo": "New node",

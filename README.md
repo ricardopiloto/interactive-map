@@ -198,7 +198,7 @@ Selecione validações conforme o escopo: por exemplo, CSS usa o perfil `--front
 cd backend
 uv sync
 # Defina ADMIN_USER e ADMIN_PASSWORD no .env (obrigatório para Modo GM)
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 # Seed opcional (só dev/teste)
 uv run python -m app.seed

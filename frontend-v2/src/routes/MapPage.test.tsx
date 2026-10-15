@@ -67,10 +67,10 @@ interface Store {
 
 function config(slug: string, mapUrl: string | null): CampaignConfig {
   return {
+    id: 1,
     slug,
     nome: slug,
     sistema: "wfrp4e",
-    genero: "fantasia",
     has_map_image: Boolean(mapUrl),
     map_url: mapUrl,
     modulos_ativos: [],

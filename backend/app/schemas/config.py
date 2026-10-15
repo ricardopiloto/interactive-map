@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class InstanceConfigRead(BaseModel):
+    id: int
     slug: str
     nome: str
     sistema: str
@@ -10,5 +11,4 @@ class InstanceConfigRead(BaseModel):
     mapa_arquivo: str | None = None
     map_url: str | None = None
     unidade_distancia: str = "mi"
-    genero: str = "fantasia"
     capa_url: str | None = None

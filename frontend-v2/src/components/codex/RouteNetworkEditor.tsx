@@ -33,6 +33,7 @@ export function RouteNetworkEditor({
   onSegTipo,
   onStartPlace,
   onStartDraw,
+  onStartMove,
   onUndoPoint,
   onCancelDraw,
   onSelect,
@@ -50,7 +51,7 @@ export function RouteNetworkEditor({
   unit: DistanceUnit;
   busy: boolean;
   notice: string | null;
-  mode: "idle" | "place-node" | "draw-segment";
+  mode: "idle" | "place-node" | "draw-segment" | "move-node";
   nodeName: string;
   segTipo: RouteTipo;
   draftOriginId: number | null;
@@ -60,6 +61,7 @@ export function RouteNetworkEditor({
   onSegTipo: (value: RouteTipo) => void;
   onStartPlace: () => void;
   onStartDraw: () => void;
+  onStartMove: () => void;
   onUndoPoint: () => void;
   onCancelDraw: () => void;
   onSelect: (id: number) => void;
@@ -212,6 +214,14 @@ export function RouteNetworkEditor({
           </div>
         </div>
       )}
+      {mode === "move-node" && (
+        <div className="mt-2 text-sm text-muted-foreground">
+          <p>{t("digitizer.moverNoInstrucao")}</p>
+          <button type="button" onClick={onCancelDraw}>
+            {t("digitizer.cancelarTraco")}
+          </button>
+        </div>
+      )}
 
       {notice && (
         <p role="alert" className="mt-3 text-sm text-destructive">
@@ -270,6 +280,9 @@ export function RouteNetworkEditor({
           </label>
           <button type="submit" className="text-sm" disabled={busy}>
             {t("digitizer.renomear")}
+          </button>
+          <button type="button" className="ml-3 text-sm" disabled={busy} onClick={onStartMove}>
+            {t("digitizer.moverNo")}
           </button>
           <label className="block text-sm">
             <span className="eyebrow">{t("digitizer.vincularLocal")}</span>

@@ -151,12 +151,6 @@
   color: var(--color-muted-foreground);
 }
 
-@utility map-tint {
-  .dark & {
-    filter: brightness(0.62) saturate(0.75) contrast(1.05);
-  }
-}
-
 @utility drop-cap {
   &::first-letter {
     font-family: var(--font-display);

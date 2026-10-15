@@ -259,6 +259,7 @@ def import_legacy_instance(
             visibilidade=visibilidade,
         )
         caminho = row.caminho
+        slug = row.slug
         uuid_key = Path(caminho).name
         forget_campaign_engine(uuid_key)
 

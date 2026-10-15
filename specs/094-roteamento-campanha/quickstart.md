@@ -16,7 +16,7 @@ cd backend
 uv sync
 uv run python -m app.cli campanha criar --slug mesa-a --nome "Mesa A" --sistema wfrp4e
 uv run python -m app.cli campanha criar --slug mesa-b --nome "Mesa B" --sistema wod
-uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 # noutro terminal
 cd frontend && npm run dev

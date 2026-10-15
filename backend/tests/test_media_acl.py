@@ -69,7 +69,7 @@ def test_other_campaign_member_denied(client_anon, data_root) -> None:
     from app.models.usuario import Usuario
     from app.services.auth_password import hash_password
 
-    _create_campanha(slug="outra", nome="O", sistema="wfrp4e")
+    outra = _create_campanha(slug="outra", nome="O", sistema="wfrp4e").slug
     name = "so-a.webp"
     _write_portrait(TEST_CAMPAIGN_SLUG, name)
     url = f"/api/c/{TEST_CAMPAIGN_SLUG}/media/portraits/{name}"
@@ -90,7 +90,7 @@ def test_other_campaign_member_denied(client_anon, data_root) -> None:
             )
         )
         session.commit()
-        assign_owner(session, "outra", "outro@teste.local")
+        assign_owner(session, outra, "outro@teste.local")
 
     login_as(client_anon, email="outro@teste.local", password="password99")
     assert client_anon.get(url).status_code == 404

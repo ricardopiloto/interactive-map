@@ -4,9 +4,11 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.errors import raise_api_error
 from app.models.waypoint import Waypoint
+from app.models.local import Local
 from app.schemas.routes import WaypointCreate, WaypointRead, WaypointUpdate
 from app.services.rate_limit import limiter
-from app.services.waypoint_local_link import set_waypoint_local_id
+from app.services.waypoint_local_link import set_waypoint_local_id, snap_local_to_waypoint
+from app.services.route_planner import recompute_waypoint_distances
 
 router = APIRouter()
 
@@ -57,12 +59,20 @@ def update_waypoint(
     data = payload.model_dump(exclude_unset=True)
     local_id_provided = "local_id" in data
     local_id_val = data.pop("local_id", None) if local_id_provided else None
+    position_changed = any(key in data and data[key] != getattr(wp, key) for key in ("x", "y"))
     for key, value in data.items():
         setattr(wp, key, value)
-    if local_id_provided:
+    if local_id_provided and local_id_val != wp.local_id:
         set_waypoint_local_id(session, wp, local_id_val)
     else:
         session.add(wp)
+        if position_changed and wp.local_id is not None:
+            local = session.get(Local, wp.local_id)
+            if local is not None:
+                snap_local_to_waypoint(local, wp)
+                session.add(local)
+    if position_changed:
+        recompute_waypoint_distances(session, waypoint_id)
     session.commit()
     session.refresh(wp)
     return wp

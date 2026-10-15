@@ -11,6 +11,33 @@ export class ApiError extends Error {
   }
 }
 
+function notifyExpired(path: string, status: number) {
+  if (status === 401 && path !== "/api/auth/login" && path !== "/api/auth/me") {
+    window.dispatchEvent(new Event("codex:auth-expired"));
+  }
+}
+
+async function throwApiError(response: Response): Promise<never> {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  const detail =
+    payload && typeof payload === "object" && "detail" in payload ? payload.detail : payload;
+  if (detail && typeof detail === "object" && "erro" in detail && typeof detail.erro === "string") {
+    throw new ApiError(
+      response.status,
+      detail.erro,
+      "detalhes" in detail && detail.detalhes && typeof detail.detalhes === "object"
+        ? (detail.detalhes as Record<string, unknown>)
+        : {},
+    );
+  }
+  throw new ApiError(response.status, typeof detail === "string" ? detail : null);
+}
+
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
@@ -24,34 +51,19 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     },
   });
   if (!response.ok) {
-    if (response.status === 401 && path !== "/api/auth/login" && path !== "/api/auth/me") {
-      window.dispatchEvent(new Event("codex:auth-expired"));
-    }
-    let payload: unknown;
-    try {
-      payload = await response.json();
-    } catch {
-      payload = null;
-    }
-    const detail =
-      payload && typeof payload === "object" && "detail" in payload ? payload.detail : payload;
-    if (
-      detail &&
-      typeof detail === "object" &&
-      "erro" in detail &&
-      typeof detail.erro === "string"
-    ) {
-      throw new ApiError(
-        response.status,
-        detail.erro,
-        "detalhes" in detail && detail.detalhes && typeof detail.detalhes === "object"
-          ? (detail.detalhes as Record<string, unknown>)
-          : {},
-      );
-    }
-    throw new ApiError(response.status, typeof detail === "string" ? detail : null);
+    notifyExpired(path, response.status);
+    await throwApiError(response);
   }
   return response.status === 204 ? (undefined as T) : (response.json() as Promise<T>);
+}
+
+export async function requestBlob(path: string): Promise<Blob> {
+  const response = await fetch(`${API_BASE}${path}`, { credentials: "include" });
+  if (!response.ok) {
+    notifyExpired(path, response.status);
+    await throwApiError(response);
+  }
+  return response.blob();
 }
 
 export const api = {

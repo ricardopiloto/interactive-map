@@ -50,16 +50,16 @@ def get_instance_config_for_slug(slug: str) -> InstanceConfigRead:
         ud = "mi"
     capa = (getattr(camp, "capa_arquivo", None) or "").strip()
     return InstanceConfigRead(
+        id=camp.id,  # type: ignore[arg-type]
         slug=camp.slug,
         nome=camp.nome,
         sistema=camp.sistema,
         modulos_ativos=list(mods),
         has_map_image=bool(mapa),
         mapa_arquivo=mapa or None,
-        map_url=media_url(slug, "map", mapa) if mapa else None,
+        map_url=media_url(camp.slug, "map", mapa) if mapa else None,
         unidade_distancia=ud,
-        genero=getattr(camp, "genero", None) or "fantasia",
-        capa_url=media_url(slug, "covers", capa) if capa else None,
+        capa_url=media_url(camp.slug, "covers", capa) if capa else None,
     )
 
 

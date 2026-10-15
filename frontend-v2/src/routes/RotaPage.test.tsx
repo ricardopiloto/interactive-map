@@ -86,10 +86,10 @@ function planItem(id: number, miles: number, texto: string): RoutePlanItem {
 
 function config(unit: "mi" | "km" = "mi"): CampaignConfig {
   return {
+    id: 1,
     slug: "alpha",
     nome: "Alpha",
     sistema: "wfrp4e",
-    genero: "fantasia",
     has_map_image: true,
     map_url: "/mapas/alpha.jpg",
     modulos_ativos: [],
@@ -166,6 +166,12 @@ function installApi(store: Store, signedIn: boolean) {
         store.waypoints = store.waypoints.map((item) =>
           item.id === id ? { ...item, ...payload, id } : item,
         );
+        if (payload["x"] != null || payload["y"] != null) {
+          const updated = store.waypoints.find((item) => item.id === id)!;
+          store.locais = store.locais.map((item) =>
+            item.id === updated.local_id ? { ...item, x: updated.x, y: updated.y } : item,
+          );
+        }
         return respond(store.waypoints.find((item) => item.id === id));
       }
       if (waypointMatch && method === "DELETE") {
@@ -358,3 +364,29 @@ it("edita nós, segmento com ponto intermediário e escala, e a rota nova entra 
   );
   await waitFor(() => expect(screen.queryByTestId("segment-3-distance")).not.toBeInTheDocument());
 }, 15000);
+
+it("move nó vinculado no mapa e redesenha o segmento sem recarregar a página", async () => {
+  const store = baseStore();
+  store.waypoints[0]!.local_id = 7;
+  renderRoute("/c/alpha/rota", store, true);
+  fireEvent.click(await screen.findByRole("button", { name: "Rede de rotas" }));
+  const stage = screen.getByTestId("map-stage");
+  const path = stage.querySelector("svg path")!;
+  expect(path.getAttribute("d")).toContain("M10.00,20.00");
+  fireEvent.click(screen.getByRole("button", { name: "Porto" }));
+  fireEvent.click(screen.getByRole("button", { name: "Mover nó" }));
+  vi.spyOn(stage, "getBoundingClientRect").mockReturnValue({
+    left: 0,
+    top: 0,
+    width: 100,
+    height: 100,
+  } as DOMRect);
+  fireEvent.click(stage, { clientX: 40, clientY: 50 });
+  await waitFor(() => expect(store.waypoints[0]).toMatchObject({ x: 0.4, y: 0.5 }));
+  await waitFor(() => expect(store.locais[0]).toMatchObject({ x: 0.4, y: 0.5 }));
+  await waitFor(() =>
+    expect(stage.querySelector("svg path")?.getAttribute("d")).toContain("M40.00,50.00"),
+  );
+  expect(store.segments[0]?.pontos_intermediarios).toEqual([{ x: 0.5, y: 0.25 }]);
+  expect(screen.getByRole("button", { name: "Porto, Visitado" })).toBeVisible();
+});

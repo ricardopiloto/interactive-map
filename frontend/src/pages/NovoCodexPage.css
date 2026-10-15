@@ -20,13 +20,7 @@
 .novo-codex__slug { display: flex; align-items: center; gap: 8px; color: var(--color-text-tertiary); font-family: var(--font-mono, monospace); }
 .novo-codex__slug input { flex: 1; }
 .novo-codex__hint { display: flex; align-items: center; gap: 5px; color: var(--color-text-tertiary); font-size: var(--font-size-xs); font-weight: 400; line-height: 1.45; }
-.novo-codex__genre-field { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; border: 0; }
-.novo-codex__genre-field legend { margin-bottom: 8px; font-size: var(--font-size-sm); font-weight: 600; }
-.novo-codex__genre-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.novo-codex__genre { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 118px; padding: 12px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); background: var(--color-surface-2); color: var(--color-text); text-align: left; cursor: pointer; }
-.novo-codex__genre.is-active { border-color: var(--color-accent); background: var(--color-accent-label-bg); box-shadow: 0 0 0 1px var(--color-accent); }
 .novo-codex__swatch { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 50%; }
-.novo-codex__genre-tag { font-size: var(--font-size-xs); line-height: 1.4; }
 .novo-codex__visibility { display: flex; flex-direction: column; gap: 10px; }
 .novo-codex__radio-card { display: flex; gap: 10px; align-items: flex-start; padding: 14px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); background: var(--color-surface-2); cursor: pointer; }
 .novo-codex__radio-card.is-active { border-color: var(--color-accent); background: var(--color-accent-label-bg); }
@@ -37,7 +31,6 @@
 .novo-codex__review-badges { display: flex; justify-content: space-between; gap: 10px; color: var(--color-text-secondary); font-size: var(--font-size-xs); }
 .novo-codex__review h2 { margin: 12px 0 3px; font-size: 1.2rem; }
 .novo-codex__review p { margin: 0; color: var(--color-text-tertiary); font-family: var(--font-mono, monospace); font-size: var(--font-size-sm); }
-.novo-codex__review-genre { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--color-text-secondary); }
 .novo-codex__actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: var(--space-5); }
 .novo-codex__actions > * { display: inline-flex; align-items: center; gap: 7px; }
 .novo-codex__actions--center { justify-content: center; flex-wrap: wrap; }
@@ -52,4 +45,3 @@
   .novo-codex__steps { gap: 9px 12px; }
   .novo-codex__step { font-size: var(--font-size-xs); }
 }
-@media (max-width: 420px) { .novo-codex__genre-grid { grid-template-columns: 1fr; } }

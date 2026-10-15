@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.campaign_db import (
@@ -20,7 +21,6 @@ from app.campaign_db import (
 from app.config import DEFAULT_MODULOS_BY_SISTEMA
 from app.models.campanha import Campanha
 from app.models.usuario import Membro
-from app.services.genre_palette import DEFAULT_GENRE, normalize_genero
 from app.services.media_paths import media_url
 
 SLUG_RE = re.compile(r"^[a-z][a-z0-9-]{1,47}$")
@@ -80,25 +80,14 @@ def create_campanha(
     slug: str,
     nome: str,
     sistema: str,
-    genero: str = DEFAULT_GENRE,
     visibilidade: str = "listada",
     modulos: list[str] | None = None,
 ) -> Campanha:
     validate_slug(slug)
     if visibilidade not in ("listada", "so_link"):
         raise CampanhaAdminError("VISIBILIDADE_INVALIDA")
-    try:
-        genero_n = normalize_genero(genero)
-    except ValueError as exc:
-        raise CampanhaAdminError(str(exc)) from None
-
     init_control()
     engine = get_control_engine()
-    with Session(engine) as session:
-        existing = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
-        if existing is not None:
-            raise CampanhaAdminError("SLUG_DUPLICADO")
-
     camp_uuid = str(uuid.uuid4())
     caminho = f"campanhas/{camp_uuid}"
     site = campaign_site_path(caminho)
@@ -114,7 +103,6 @@ def create_campanha(
             slug=slug,
             nome=nome,
             sistema=sistema,
-            genero=genero_n,
             modulos_ativos=modulos if modulos is not None else default_modulos(sistema),
             visibilidade=visibilidade,
             caminho=caminho,
@@ -126,7 +114,11 @@ def create_campanha(
         )
         with Session(engine) as session:
             session.add(row)
-            session.commit()
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+                raise CampanhaAdminError("SLUG_DUPLICADO") from None
             session.refresh(row)
             session.expunge(row)
             return row
@@ -150,10 +142,10 @@ def list_catalogo_publico() -> list[dict[str, Any]]:
             capa = (getattr(r, "capa_arquivo", None) or "").strip()
             out.append(
                 {
+                    "id": r.id,
                     "slug": r.slug,
                     "nome": r.nome,
                     "sistema": r.sistema,
-                    "genero": getattr(r, "genero", None) or DEFAULT_GENRE,
                     "capa_url": media_url(r.slug, "covers", capa) if capa else None,
                 }
             )
@@ -177,12 +169,12 @@ def list_minhas_campanhas(usuario_id: int) -> list[dict[str, Any]]:
             capa = (getattr(r, "capa_arquivo", None) or "").strip()
             out.append(
                 {
+                    "id": r.id,
                     "slug": r.slug,
                     "nome": r.nome,
                     "sistema": r.sistema,
                     "visibilidade": r.visibilidade,
                     "unidade_distancia": getattr(r, "unidade_distancia", None) or "mi",
-                    "genero": getattr(r, "genero", None) or DEFAULT_GENRE,
                     "capa_url": media_url(r.slug, "covers", capa) if capa else None,
                     "bytes_usados": r.bytes_usados,
                     "cota_bytes": r.cota_bytes,
@@ -269,26 +261,6 @@ def set_capa(
                 raise CampanhaAdminError("CAPA_INVALIDA")
             row.capa_arquivo = name
             row.modificado_em = datetime.utcnow()
-        session.add(row)
-        session.commit()
-        session.refresh(row)
-        session.expunge(row)
-        return row
-
-
-def set_genero(slug: str, genero: str) -> Campanha:
-    try:
-        genero_n = normalize_genero(genero)
-    except ValueError as exc:
-        raise CampanhaAdminError(str(exc)) from None
-
-    init_control()
-    with Session(get_control_engine()) as session:
-        row = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
-        if row is None or not row.activa:
-            raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
-        row.genero = genero_n
-        row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()
         session.refresh(row)

@@ -25,7 +25,7 @@ a.campaign-card:hover {
   background:
     linear-gradient(
       135deg,
-      color-mix(in srgb, var(--card-genre-swatch, var(--color-accent)) 35%, transparent),
+      color-mix(in srgb, var(--color-accent) 35%, transparent),
       var(--color-elevated, var(--color-surface))
     );
 }
@@ -47,16 +47,7 @@ a.campaign-card:hover {
   inset: 0;
 }
 
-.campaign-card__genre-badge {
-  position: relative;
-  z-index: 1;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-full);
-  background: var(--card-genre-swatch, var(--color-accent));
-  color: var(--color-bg, #17140d);
-}
+
 
 .campaign-card__body {
   padding: var(--space-3);

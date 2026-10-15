@@ -172,10 +172,19 @@ def ensure_campaign_schema(engine: Engine, *, fresh: bool = False) -> None:
     command.upgrade(cfg, "head")
 
 
-def lookup_campanha(slug: str) -> Campanha:
-    """HTTP-facing lookup: missing and inactive share opaque CAMPANHA_NAO_ENCONTRADA."""
+def lookup_campanha(identifier: str) -> Campanha:
+    """Resolve a campaign by numeric id, or by slug when the identifier is not numeric.
+
+    A valid slug always starts with a letter, so a purely numeric identifier is
+    never a slug. Missing and inactive rows share opaque CAMPANHA_NAO_ENCONTRADA.
+    """
+    key = (identifier or "").strip()
     with Session(get_control_engine()) as session:
-        row = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
+        row: Campanha | None
+        if key.isdigit():
+            row = session.get(Campanha, int(key))
+        else:
+            row = session.exec(select(Campanha).where(Campanha.slug == key)).first()
         if row is None or not row.activa:
             raise_api_error("CAMPANHA_NAO_ENCONTRADA", status_code=404)
         session.expunge(row)

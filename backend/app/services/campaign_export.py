@@ -80,7 +80,6 @@ def build_manifest(camp) -> dict[str, Any]:
         "nome": camp.nome,
         "visibilidade": camp.visibilidade,
         "mapa_arquivo": camp.mapa_arquivo or "",
-        "genero": getattr(camp, "genero", None) or "fantasia",
         "capa_arquivo": getattr(camp, "capa_arquivo", None) or "",
     }
 

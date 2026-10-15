@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { CampaignConfig } from "@/api/campaign";
+import { useCampaignKey, type CampaignConfig } from "@/api/campaign";
 import type { Local, Waypoint } from "@/api/map";
 import { ApiError } from "@/api/client";
 import {
@@ -29,6 +29,7 @@ import {
 import { useNavigate, useSearch } from "@/lib/navigation";
 import {
   distanceUnit,
+  FINISH_SNAP,
   locaisById,
   namedWaypointOptions,
   nearestWaypoint,
@@ -40,7 +41,7 @@ import {
 } from "@/lib/routeView";
 
 type Surface = "plan" | "network";
-type DrawMode = "idle" | "place-node" | "draw-segment";
+type DrawMode = "idle" | "place-node" | "draw-segment" | "move-node";
 
 const noLocais: Local[] = [];
 const noWaypoints: Waypoint[] = [];
@@ -65,7 +66,7 @@ function readId(value: string | undefined): number | null {
 }
 
 export function RoutePage() {
-  const { slug = "" } = useParams();
+  const slug = useCampaignKey();
   const config = useOutletContext<CampaignConfig>();
   const { enabled: editing } = useEditMode();
   const { t } = useTranslation("mapa");
@@ -234,6 +235,20 @@ export function RoutePage() {
   }
 
   async function onPlace(point: MapPoint) {
+    if (mode === "move-node" && selectedNode != null) {
+      setBusy(true);
+      setNotice(null);
+      try {
+        await routeApi.updateWaypoint(slug, selectedNode, { x: point.x, y: point.y });
+        setMode("idle");
+        bundle.reload();
+      } catch (error) {
+        setNotice(message(error, ta("digitizer.falhaCriarNo")));
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     if (mode === "place-node") {
       setBusy(true);
       setNotice(null);
@@ -255,7 +270,12 @@ export function RoutePage() {
       return;
     }
     if (mode !== "draw-segment") return;
-    const hit = nearestWaypoint(waypoints, point.x, point.y);
+    const hit = nearestWaypoint(
+      waypoints,
+      point.x,
+      point.y,
+      draftOrigin == null ? undefined : FINISH_SNAP,
+    );
     if (hit) {
       void chooseDrawNode(hit.id);
       return;
@@ -423,7 +443,13 @@ export function RoutePage() {
         onSelect={onPin}
         overlay={overlay}
         placing={surface === "network" && mode !== "idle"}
-        placeLabel={mode === "place-node" ? ta("digitizer.novoNo") : ta("digitizer.tracarSegmento")}
+        placeLabel={
+          mode === "place-node"
+            ? ta("digitizer.novoNo")
+            : mode === "move-node"
+              ? ta("digitizer.moverNo")
+              : ta("digitizer.tracarSegmento")
+        }
         onPlace={(point) => void onPlace(point)}
         onContextMenu={
           mode === "draw-segment" && draftMids.length > 0
@@ -456,6 +482,12 @@ export function RoutePage() {
             }}
             onStartDraw={() => {
               setMode("draw-segment");
+              setDraftOrigin(null);
+              setDraftMids([]);
+              setNotice(null);
+            }}
+            onStartMove={() => {
+              setMode("move-node");
               setDraftOrigin(null);
               setDraftMids([]);
               setNotice(null);

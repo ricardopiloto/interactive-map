@@ -107,7 +107,7 @@ export function LocalEditor({
   }
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onCancel()}>
+    <Dialog open modal={false} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-medium">
@@ -307,7 +307,7 @@ export function NpcEditor({
   const statuses: NpcStatus[] = ["vivo", "morto", "desaparecido", "desconhecido"];
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onCancel()}>
+    <Dialog open modal={false} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-medium">

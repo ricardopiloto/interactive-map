@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.campaign_db import (
@@ -40,7 +41,6 @@ from app.services.campanha_admin import (
     validate_slug,
     CampanhaAdminError,
 )
-from app.services.genre_palette import genero_from_legacy, normalize_genero
 from app.services.package_schema import (
     CONTENT_FILENAME,
     COTA_EXCEDIDA,
@@ -314,18 +314,6 @@ def _insert_content(session: Session, content: dict[str, Any]) -> None:
     session.commit()
 
 
-def _resolve_manifest_genero(manifest: dict[str, Any]) -> str:
-    raw = manifest.get("genero")
-    if raw is not None and str(raw).strip() != "":
-        try:
-            return normalize_genero(str(raw).strip())
-        except ValueError as exc:
-            raise PackageError(str(exc)) from None
-    acento = manifest.get("acento_id")
-    acento_s = str(acento).strip() if acento else None
-    return genero_from_legacy(str(manifest.get("sistema") or ""), acento_s)
-
-
 def import_campaign_from_zip(
     zip_path: Path,
     *,
@@ -362,7 +350,6 @@ def import_campaign_from_zip(
             slug=slug,
             nome=str(manifest["nome"]),
             sistema=str(manifest["sistema"]),
-            genero=_resolve_manifest_genero(manifest),
             modulos_ativos=list(manifest.get("modulos_ativos") or []),
             visibilidade=str(manifest.get("visibilidade") or "listada"),
             caminho=caminho,
@@ -375,7 +362,11 @@ def import_campaign_from_zip(
         )
         with Session(control) as session:
             session.add(row)
-            session.commit()
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+                raise PackageError(SLUG_OCUPADO) from None
             session.refresh(row)
             session.expunge(row)
             assign_owner(session, slug, owner_email)

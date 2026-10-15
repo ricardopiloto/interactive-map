@@ -95,8 +95,11 @@ def main() -> int:
     with resolve_campaign_session(E2E_SLUG) as session:
         from sqlmodel import select as sel
         from app.models.local import Local
+        from app.models.item import Item
+        from app.models.links import ItemSessaoLink
         from app.campaign_db import campaign_uploads_path, lookup_campanha
         from app.models.campanha import Campanha
+        from tests.helpers import seed_sessao
 
         if session.exec(sel(Local)).first() is None:
             arco = seed_arco(session, titulo="Arco E2E")
@@ -105,6 +108,42 @@ def main() -> int:
             a = seed_personagem(session, nome="Ada")
             b = seed_personagem(session, nome="Bruno")
             seed_vinculo_publico(session, a.id, b.id)
+
+        # Fixtures for public Items screen (visibilidade + chips de sessão)
+        if session.exec(sel(Item).where(Item.nome == "Amuleto E2E Oculto")).first() is None:
+            sess_visivel = seed_sessao(
+                session,
+                numero=901,
+                titulo="Sessão E2E Visível",
+                visivel=True,
+                resumo="Sessão visível para testes de Itens.",
+            )
+            sess_oculta = seed_sessao(
+                session,
+                numero=902,
+                titulo="Sessão E2E Privada",
+                visivel=False,
+                resumo="Sessão oculta para testes de Itens.",
+            )
+            item_visivel = Item(
+                nome="Relíquia E2E Visível",
+                descricao="Uma **relíquia** ligada a sessões mistas.",
+                visivel_para_todos=True,
+            )
+            item_oculto = Item(
+                nome="Amuleto E2E Oculto",
+                descricao="Amuleto ainda secreto.",
+                visivel_para_todos=False,
+            )
+            session.add(item_visivel)
+            session.add(item_oculto)
+            session.commit()
+            session.refresh(item_visivel)
+            session.refresh(item_oculto)
+            assert item_visivel.id is not None and sess_visivel.id is not None and sess_oculta.id is not None
+            session.add(ItemSessaoLink(item_id=item_visivel.id, sessao_id=sess_visivel.id))
+            session.add(ItemSessaoLink(item_id=item_visivel.id, sessao_id=sess_oculta.id))
+            session.commit()
 
         camp = lookup_campanha(E2E_SLUG)
         uploads = campaign_uploads_path(camp.caminho)

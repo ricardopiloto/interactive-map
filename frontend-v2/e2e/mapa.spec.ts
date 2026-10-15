@@ -4,9 +4,20 @@ import { applyAuth, loadSession, setLocale } from "./helpers";
 async function clickStage(page: Page, xRatio: number, yRatio: number) {
   const stage = page.getByTestId("map-stage");
   await expect(stage).toBeVisible();
-  const box = await stage.boundingBox();
-  if (!box) throw new Error("O palco do mapa não tem caixa visível.");
-  await page.mouse.click(box.x + box.width * xRatio, box.y + box.height * yRatio);
+  await stage.evaluate(
+    (element, ratio) => {
+      const rect = element.getBoundingClientRect();
+      element.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          clientX: rect.left + rect.width * ratio.x,
+          clientY: rect.top + rect.height * ratio.y,
+        }),
+      );
+    },
+    { x: xRatio, y: yRatio },
+  );
 }
 
 test("mapa público mostra locais da campanha e abre o deep-link", async ({ page, request }) => {
@@ -22,6 +33,13 @@ test("mapa público mostra locais da campanha e abre o deep-link", async ({ page
   await expect(page.getByRole("heading", { name: "Altdorf" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Ubersreik/ })).toBeVisible();
   await expect(page.getByRole("img", { name: "Mapa da campanha" })).toBeVisible();
+  const image = page.getByRole("img", { name: "Mapa da campanha" });
+  const filter = () => image.evaluate((element) => getComputedStyle(element).filter);
+  const lightFilter = await filter();
+  await page.getByRole("radio", { name: "Tema escuro" }).click();
+  expect(await filter()).toBe(lightFilter);
+  await page.getByRole("radio", { name: "Tema claro" }).click();
+  expect(await filter()).toBe(lightFilter);
 });
 
 test("mestre cria, edita e exclui local, cria NPC e move o grupo", async ({ page, request }) => {
@@ -44,6 +62,19 @@ test("mestre cria, edita e exclui local, cria NPC e move o grupo", async ({ page
     (row) => row.nome === createdName,
   );
   expect(created).toBeTruthy();
+
+  const mapContent = page.locator(".react-transform-component");
+  const transform = () => mapContent.evaluate((element) => getComputedStyle(element).transform);
+  // A seleção do local anima o foco por 400 ms; medir depois que ela termina.
+  await page.waitForTimeout(2000);
+  const beforeEditor = await transform();
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await page.getByRole("button", { name: "Editar" }).click();
+    await expect(page.getByRole("textbox", { name: "Nome" })).toBeVisible();
+    expect(await transform()).toBe(beforeEditor);
+    await page.getByRole("dialog").getByRole("button", { name: "Cancelar" }).click();
+    expect(await transform()).toBe(beforeEditor);
+  }
 
   await page.getByRole("button", { name: "Editar" }).click();
   const editedName = `${createdName} editada`;
