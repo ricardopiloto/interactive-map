@@ -590,6 +590,13 @@ function Profile({
 
   return (
     <div className="mt-4" aria-label={t("v2.profile", { name: person.nome })}>
+      {person.retrato_url && (
+        <img
+          src={person.retrato_url}
+          alt={t("v2.illustration", { name: person.nome })}
+          className="aspect-square w-full object-cover"
+        />
+      )}
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="eyebrow">

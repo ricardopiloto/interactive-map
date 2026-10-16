@@ -125,6 +125,7 @@
     "whoIsWho": "Who is who",
     "overviewHint": "Select someone to view their bonds. The rest of the network fades.",
     "profile": "Profile of {{name}}",
+    "illustration": "Illustration of {{name}}",
     "closeProfile": "Close profile",
     "directBonds": "Direct bonds",
     "places": "Places",

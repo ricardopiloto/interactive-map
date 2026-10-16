@@ -104,6 +104,7 @@ export function RelationsGraph({
   const [scale, setScale] = useState(1);
   // Kept in memory for this visit only. layoutRing stays the position of record.
   const [sessionShifts, setSessionShifts] = useState<Map<number, Shift>>(() => new Map());
+  const [failedPortraits, setFailedPortraits] = useState<Set<number>>(() => new Set());
   const [grabbedId, setGrabbedId] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const scaleRef = useRef(scale);
@@ -416,25 +417,50 @@ export function RelationsGraph({
                   if (event.key === "Enter") onSelect(selected ? null : person.id);
                 }}
               >
-                {person.tipo === "pj" && (
-                  <circle r={radius + 6} fill="none" stroke="var(--seal)" strokeWidth={1.5} />
+                {person.retrato_url && (
+                  <defs>
+                    <clipPath id={`avatar-clip-${person.id}`}>
+                      <circle r={radius} />
+                    </clipPath>
+                  </defs>
+                )}
+                <circle r={radius} fill={person.tipo === "pj" ? "var(--primary)" : "var(--card)"} />
+                {person.retrato_url && !failedPortraits.has(person.id) && (
+                  <image
+                    href={person.retrato_url}
+                    x={-radius}
+                    y={-radius}
+                    width={radius * 2}
+                    height={radius * 2}
+                    clipPath={`url(#avatar-clip-${person.id})`}
+                    preserveAspectRatio="xMidYMid slice"
+                    onError={() =>
+                      setFailedPortraits((previous) => new Set(previous).add(person.id))
+                    }
+                  />
+                )}
+                {(!person.retrato_url || failedPortraits.has(person.id)) && (
+                  <text
+                    textAnchor="middle"
+                    dy={radius * 0.35}
+                    fontSize={radius * 0.7}
+                    fontFamily="var(--font-display)"
+                    fill={person.tipo === "pj" ? "var(--primary-foreground)" : "var(--foreground)"}
+                  >
+                    {initials(person.nome)}
+                  </text>
                 )}
                 <circle
                   r={radius}
-                  fill={person.tipo === "pj" ? "var(--primary)" : "var(--card)"}
+                  fill="none"
                   stroke={selected || grabbed ? "var(--seal)" : "var(--border)"}
                   strokeWidth={selected || grabbed ? 3 : 1.5}
                   strokeDasharray={person.status === "morto" ? "3 3" : undefined}
+                  pointerEvents="none"
                 />
-                <text
-                  textAnchor="middle"
-                  dy={radius * 0.35}
-                  fontSize={radius * 0.7}
-                  fontFamily="var(--font-display)"
-                  fill={person.tipo === "pj" ? "var(--primary-foreground)" : "var(--foreground)"}
-                >
-                  {initials(person.nome)}
-                </text>
+                {person.tipo === "pj" && (
+                  <circle r={radius + 6} fill="none" stroke="var(--seal)" strokeWidth={1.5} />
+                )}
                 <text
                   textAnchor="middle"
                   y={radius + 22}

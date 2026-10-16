@@ -250,18 +250,22 @@ export function WorldMap({
                     if (interactive) onSelect?.(pin.id);
                   }}
                   className={cn(
-                    "group absolute flex h-6 w-6 items-center justify-center transition-opacity",
+                    "group absolute transition-opacity",
                     dim.includes(pin.id) && "opacity-40",
                   )}
                   style={{
                     left: `${pin.x}%`,
                     top: `${pin.y}%`,
-                    transform: `translate(-50%,-50%) scale(${pinScale})`,
                   }}
                   aria-label={`${pin.name}, ${pin.visited ? t("v2.visited") : t("v2.knownNotVisited")}`}
                   aria-pressed={isSel}
                 >
-                  <span className="relative flex h-6 w-6 items-center justify-center">
+                  <span
+                    className="relative flex h-6 w-6 items-center justify-center"
+                    style={{
+                      transform: `translate(-50%,-50%) scale(${pinScale})`,
+                    }}
+                  >
                     {isSel && (
                       <span className="animate-pulse-ring absolute inset-0 rounded-full border-2 border-seal" />
                     )}
@@ -276,15 +280,15 @@ export function WorldMap({
                       )}
                       style={isSel || !pin.color ? undefined : { backgroundColor: pin.color }}
                     />
-                  </span>
-                  <span
-                    className={cn(
-                      "absolute top-[calc(100%+0.375rem)] left-1/2 -translate-x-1/2 rounded-full px-2.5 py-0.5 font-display text-sm whitespace-nowrap shadow-float",
-                      isSel ? "bg-seal text-seal-foreground" : "glass text-foreground",
-                      !pin.visited && !isSel && "italic",
-                    )}
-                  >
-                    {pin.name}
+                    <span
+                      className={cn(
+                        "absolute top-[calc(100%+0.375rem)] left-1/2 -translate-x-1/2 rounded-full px-2.5 py-0.5 font-display text-sm whitespace-nowrap shadow-float",
+                        isSel ? "bg-seal text-seal-foreground" : "glass text-foreground",
+                        !pin.visited && !isSel && "italic",
+                      )}
+                    >
+                      {pin.name}
+                    </span>
                   </span>
                 </button>
               );

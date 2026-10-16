@@ -212,6 +212,27 @@ it("mostra todos os personagens e vínculos da campanha e abre o deep-link", asy
   expect(document.querySelector("[data-node-id='3']")).toBeTruthy();
 });
 
+it("exibe retrato cadastrado no perfil e grafo, sem espaço de imagem para outro personagem", async () => {
+  const ada = person({ id: 1, nome: "Ada", tipo: "pj", retrato_url: "/media/portraits/ada.webp" });
+  const bruno = person({ id: 2, nome: "Bruno" });
+  renderRelations("/c/alpha/relacoes?personagem=1", {
+    personagens: [ada, bruno],
+    vinculos: [],
+    nextId: 3,
+  });
+
+  expect(await screen.findByRole("img", { name: "Ilustração de Ada" })).toHaveAttribute(
+    "src",
+    ada.retrato_url,
+  );
+  expect(document.querySelector("[data-node-id='1'] image")?.getAttribute("href")).toBe(
+    ada.retrato_url,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Bruno" }));
+  expect(await screen.findByRole("heading", { name: "Bruno" })).toBeVisible();
+  expect(screen.queryByRole("img", { name: /Ilustração de/ })).not.toBeInTheDocument();
+});
+
 it("filtra por tipo e status e isola a seleção", async () => {
   renderRelations("/c/alpha/relacoes", {
     personagens: cast,

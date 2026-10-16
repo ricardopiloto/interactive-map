@@ -125,6 +125,7 @@
     "whoIsWho": "Quem é quem",
     "overviewHint": "Toque em alguém para ver seus laços. O resto da rede se afasta.",
     "profile": "Perfil de {{name}}",
+    "illustration": "Ilustração de {{name}}",
     "closeProfile": "Fechar perfil",
     "directBonds": "Laços diretos",
     "places": "Lugares",

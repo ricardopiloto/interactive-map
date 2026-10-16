@@ -150,12 +150,16 @@ export function PersonagemEditor({
           </label>
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("personagemForm.retrato")}</span>
+            {draft.retrato_url && (
+              <img src={draft.retrato_url} alt="" className="h-24 w-24 rounded-full object-cover" />
+            )}
             <Input
               type="file"
               accept="image/*"
               aria-label={t("personagemForm.retrato")}
               onChange={(event) => {
                 const file = event.target.files?.[0];
+                event.target.value = "";
                 if (file) onUploadPortrait(file);
               }}
             />

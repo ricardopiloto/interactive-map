@@ -140,3 +140,31 @@ it("desloca só o nó arrastado, sem persistir e sem mexer no anel dos outros", 
   expect(translation(2).raw).toBe(bruno.raw);
   expect(fetchMock).not.toHaveBeenCalled();
 });
+
+it("mostra retrato circular e mantém iniciais sem retrato ou após erro", () => {
+  const ada = { ...person(1, "Ada Lovelace"), tipo: "pj" as const, retrato_url: "/portrait.jpg" };
+  render(
+    <RelationsGraph
+      campaignSlug="alpha"
+      personagens={[ada, person(2, "Bruno Costa")]}
+      vinculos={[]}
+      selectedId={null}
+      isolate={false}
+      activeTipos={new Set<VinculoTipo>()}
+      query=""
+      isGm={false}
+      onSelect={vi.fn()}
+    />,
+  );
+  const portrait = document.querySelector("[data-node-id='1'] image");
+  expect(portrait?.getAttribute("href")).toBe("/portrait.jpg");
+  expect(portrait?.getAttribute("clip-path")).toBe("url(#avatar-clip-1)");
+  expect(document.querySelector("#avatar-clip-1 circle")).not.toBeNull();
+  expect(document.querySelector("[data-node-id='1']")?.textContent).not.toContain("AL");
+  expect(document.querySelector("[data-node-id='2']")?.textContent).toContain("BC");
+  expect(document.querySelector("[data-node-id='1'] circle[stroke='var(--seal)']")).not.toBeNull();
+
+  fireEvent.error(portrait!);
+  expect(document.querySelector("[data-node-id='1'] image")).toBeNull();
+  expect(document.querySelector("[data-node-id='1']")?.textContent).toContain("AL");
+});
