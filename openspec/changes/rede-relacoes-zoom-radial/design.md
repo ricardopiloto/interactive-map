@@ -1,0 +1,52 @@
+# Design
+
+## Context
+
+Ver `proposal.md` - Why para a motivação completa (achada testando `frontend-v2/` contra uma cópia real de produção). Estado atual relevante, lido por completo:
+
+- `frontend-v2/src/lib/graphLayout.ts`: `layoutRing(ids, box, gap)` — um único anel, raio calculado por `ringRadius(count, separation)` (polígono regular), `separation = minCenterDistance(box, gap) = Math.hypot(box.width, box.height) + gap`. Garante matematicamente que nenhuma caixa de nó se sobrepõe, pra qualquer `count` — não é um bug de sobreposição, é o anel ficando maior que qualquer viewport alcançável com os controles atuais.
+- `frontend-v2/src/components/codex/RelationsGraph.tsx`: `scale` (state local, 0.4–2×) multiplica `width`/`height` do `<svg>` (não o `viewBox`) — um zoom "fake" de CSS. "Ajustar à tela" (`graph.fitView`) só faz `setScale(1)`. Pan é só `overflow-auto` nativo no `<div data-testid="relations-stage">`. Arrastar um nó (`beginGrab`, linhas 185-252) usa `setPointerCapture` + listeners de `pointermove`/`pointerup` na `window`, com `event.stopPropagation()` no `pointerdown` do nó; a conversão de pixels de tela pra unidades do grafo (`pixelsPerGraphUnit`) lê o `scale` atual via `scaleRef`.
+- `frontend-v2/src/components/codex/WorldMap.tsx`: já usa `react-zoom-pan-pinch` (`TransformWrapper`/`TransformComponent`/`useControls`/`ReactZoomPanPinchRef`), com `minScale={0.5} maxScale={4}`, `wheel={{step:0.01}}`, `pinch={{step:5}}`, `onTransform={(_ref, state) => setScale(state.scale)}` guardando a escala atual, e `ref.fitToView({mode:"cover", animationTime:0})` no `onInit`. **Importante**: os pins do Mapa são `<button>` simples com `onClick` — não há hoje nenhum precedente de "nó arrastável dentro de um `TransformWrapper`" neste código; a Decision 2 abaixo cobre esse risco específico.
+- `openspec/changes/frontend-v2-paper-parchment/design.md`, Decision 5: layout do grafo de Relações é cálculo geométrico determinístico em TS puro, **sem** lib de física/simulação (`d3-force` etc.). `react-zoom-pan-pinch` é uma camada de interação de viewport (pan/zoom), não uma lib de layout — adotá-la não contradiz essa decisão (é o mesmo raciocínio que já levou a usá-la no Mapa).
+- `frontend/src/components/relacoes/graphLayout.ts` (legado, não portado): `computeInitialLayout(pjIds, npcIds, center, spacing)` — PJ num anel interno, NPC num anel externo. `frontend/src/components/relacoes/GraphStage.tsx`: zoom por roda do mouse, pan por arrastar, pinça em touch, `fitScalePan` calculando escala real a partir do bounding box do conteúdo (`MIN_SCALE=0.35`, `MAX_SCALE=2.5`). Referência de comportamento, não de implementação — `frontend-v2-paper-parchment` Decision 9 já decidiu não portar visual/CSS do legado; esta proposta recalcula a lógica pro sistema novo, só reaproveitando a ideia.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Zoom e pan reais (roda do mouse, arrastar a tela, pinça em touch) na Rede de Relações, suficientes pra navegar um grafo de qualquer tamanho real de produção.
+- "Ajustar à tela" calculando a escala de verdade a partir do conteúdo, não resetando pra um valor fixo.
+- PJ sempre num anel interno centralizado; NPC sempre num anel externo ao redor — sem exigir nenhuma mudança de dado persistido (posição continua calculada em tempo de render, como hoje).
+- Arrastar um nó individual continuar funcionando exatamente como hoje (reposicionamento de sessão, não persistido), coexistindo com o pan da viewport.
+
+**Non-Goals:**
+- Qualquer sub-agrupamento de NPCs por proximidade com o PJ a que estão ligados (ex. um NPC renderizado mais perto do PJ específico com quem tem vínculo) — fica um anel externo "achatado", sem ordenação por relação. Pode ser proposto depois se a navegação ainda incomodar num elenco muito denso.
+- Qualquer mudança nos 8 tipos de vínculo, direção, qualificador ou nas regras de visibilidade já especificadas em `frontend-v2-paper-parchment/specs/frontend-v2/spec.md` ("Rede de Relações usa os tipos reais de vínculo").
+- Persistir a posição calculada de um Personagem no backend — continua 100% derivada em tempo de render.
+- Portar a implementação visual (cores, CSS, HTML) do `frontend/` legado — só a lógica de duas-camadas-de-anel e de zoom/pan real.
+
+## Decisions
+
+### 1. Adotar `react-zoom-pan-pinch`, substituindo o zoom de CSS e o pan de scroll nativo
+**Decisão**: envolver o `<svg>` do grafo num `TransformWrapper`/`TransformComponent`, igual ao padrão já usado em `WorldMap.tsx` — mesmos imports, mesmo uso de `onTransform` pra guardar a escala atual, mesmo uso de `useControls()` pros botões de zoom in/out. O `<svg>` volta a ter `width`/`height` fixos no tamanho natural do grafo (sem multiplicar por `scale`); quem escala é o `TransformComponent`. "Ajustar à tela" chama `ref.fitToView({ mode: "contain", animationTime })` (não `"cover"` como o Mapa — aqui queremos o grafo inteiro visível, não preenchendo a tela e cortando borda) em vez de resetar pra escala 1.
+**Por quê**: a biblioteca já é dependência do projeto, já resolve exatamente este problema (zoom real, pan real, pinça em touch) pro Mapa, e já tem um método `fitToView` que calcula a escala a partir do conteúdo — elimina a necessidade de portar a matemática de `fitScalePan` do legado.
+**Alternativa considerada**: portar o `usePinchZoom`/`GraphStage` do legado como está. Rejeitada — duplicaria uma capacidade que o projeto já resolveu de forma reaproveitável com uma lib já integrada, só pra evitar "copiar visual do legado" (Decision 9 de `frontend-v2-paper-parchment` é sobre visual/CSS, não sobre reaproveitar uma lib de interação já adotada no projeto).
+
+### 2. Arrastar um nó tem precedência sobre o pan da viewport
+**Decisão**: manter a lógica de `beginGrab` como está (pointer capture + `event.stopPropagation()` no `pointerdown` do nó), ajustando só `pixelsPerGraphUnit`/a conversão de pixel-pra-unidade-do-grafo pra ler a escala atual vinda do `onTransform` do `TransformWrapper` (não mais o `scale` state antigo, que deixa de existir). Como `react-zoom-pan-pinch` inicia o pan a partir de um listener de `pointerdown` no wrapper, e o `stopPropagation()` do nó já impede esse evento de borbulhar até lá, arrastar um nó não deve disparar pan simultâneo — mas isso é a interação de maior risco de regressão desta mudança (dois sistemas de pointer-event, um de cada lib/código, competindo pelo mesmo gesto) e precisa de um teste explícito, não só inferência (ver `tasks.md`).
+**Por quê**: é o comportamento já existente e já testado (`RelationsGraph.test.tsx`, "dragging a node moves only that node") — a mudança é só a fonte da escala usada na conversão de pixel, não a mecânica do drag em si.
+**Alternativa considerada**: desabilitar o pan da viewport enquanto um nó está sendo arrastado (via a prop `panning.disabled` do `TransformWrapper`, alternada por estado). Mantida como fallback caso o teste da task correspondente mostre que o `stopPropagation()` sozinho não é suficiente nesta versão da lib.
+
+### 3. Layout radial: PJ sempre no anel interno, NPC sempre no anel externo
+**Decisão**: nova função em `graphLayout.ts`, algo como `layoutRadialByTipo(personagens: { id: number; tipo: "pj" | "npc" }[], box, gap)`, retornando o mesmo formato `GraphFrame` já usado hoje (pra não exigir mudança no resto de `RelationsGraph.tsx` além de trocar qual função popula `frame`). Internamente: raio do anel interno = `ringRadius(countPJ, minCenterDistance(box, gap))` (reaproveita a mesma matemática de `layoutRing`); raio do anel externo = o maior entre (a) `ringRadius(countNPC, minCenterDistance(box, gap))` calculado isoladamente pro próprio anel externo não ter sobreposição entre si, e (b) raio do anel interno + `minCenterDistance(box, gap)` (garante que as caixas do anel externo não entram na área do anel interno). Quando não há nenhum PJ, ou nenhum NPC, a função degrada pra `layoutRing` normal sobre o grupo que existe (continua determinística, mesmos ids sempre no mesmo ponto).
+**Por quê**: reaproveita a mesma garantia matemática de não-sobreposição que `layoutRing`/`ringRadius`/`minCenterDistance` já dão, só aplicada duas vezes (uma por anel) mais uma checagem de distância mínima entre os dois anéis — consistente com a Decision 5 de `frontend-v2-paper-parchment` (determinístico, sem física).
+**Alternativa considerada**: ordenar o anel externo por proximidade de vínculo com os PJs (NPC mais perto visualmente do PJ com quem tem relação). Rejeitada por este Non-Goal — aumentaria bastante a complexidade do algoritmo (viraria um problema de otimização, não mais geometria direta) pra um ganho que não foi pedido; o anel externo "achatado" já resolve o problema relatado (zoom/pan ausentes + hierarquia visual PJ/NPC ausente).
+
+## Risks / Trade-offs
+
+- **Dois sistemas de pointer-event competindo pelo mesmo gesto** (arrastar nó vs. pan da viewport) — maior risco técnico desta mudança; mitigado por manter o `stopPropagation()` já existente e por um teste explícito dedicado (ver Decision 2 e `tasks.md`), com `panning.disabled` condicional como plano B documentado.
+- **Elenco de produção real ainda pode ficar grande mesmo com dois anéis** (em vez de um) — aceito como trade-off: zoom/pan reais (em vez de 0.4–2× fixo) já resolvem a navegabilidade; a hierarquia PJ/NPC resolve a legibilidade. Não há um limite rígido de "até quantos Personagens isso continua confortável" definido aqor — se a cópia real de produção usada pra validar (`tmp/producao-copia`, campanha com mais Personagens) ainda incomodar depois desta mudança, é um achado pra uma iteração futura, não um bloqueio desta.
+- **Teste e2e existente de Relações** (`frontend-v2/e2e/relacoes.spec.ts`) pode depender dos seletores/comportamento antigo dos botões de zoom — precisa ser revisado e, se necessário, ajustado como parte da task de integração (não um teste novo, um teste que já existe e não pode regredir).
+
+## Migration Plan
+
+Não há migração de dados — posição de Personagem continua 100% calculada em tempo de render, nunca persistida. Entrega é uma troca isolada de implementação numa única tela (`RelationsGraph.tsx` + `graphLayout.ts`); reversível trocando a função de layout de volta e removendo o `TransformWrapper`, sem efeito em dados.
