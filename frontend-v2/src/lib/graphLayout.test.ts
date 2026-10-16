@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { NODE_BOX, layoutRing, minCenterDistance } from "./graphLayout";
+import { NODE_BOX, layoutRadialByTipo, layoutRing, minCenterDistance } from "./graphLayout";
 
 function assertSeparated(ids: number[], box = NODE_BOX) {
   const frame = layoutRing(ids, box);
@@ -39,4 +39,45 @@ it("afasta os centros quando o card é mais largo", () => {
   const span = (frame: ReturnType<typeof layoutRing>) =>
     Math.hypot(frame.nodes[0]!.x - frame.nodes[1]!.x, frame.nodes[0]!.y - frame.nodes[1]!.y);
   expect(span(wide)).toBeGreaterThan(span(narrow));
+});
+
+it("coloca PJs no anel interno e NPCs no externo", () => {
+  const cast = [
+    { id: 5, tipo: "npc" as const },
+    { id: 2, tipo: "pj" as const },
+    { id: 4, tipo: "npc" as const },
+    { id: 1, tipo: "pj" as const },
+    { id: 3, tipo: "npc" as const },
+  ];
+  const frame = layoutRadialByTipo(cast);
+  const center = frame.width / 2;
+  const radius = (id: number) => {
+    const node = frame.nodes.find((point) => point.id === id)!;
+    return Math.hypot(node.x - center, node.y - center);
+  };
+  expect(Math.max(radius(1), radius(2))).toBeLessThan(Math.min(radius(3), radius(4), radius(5)));
+  expect(layoutRadialByTipo([...cast].reverse())).toEqual(frame);
+});
+
+it("degrada para um anel quando só há um tipo", () => {
+  for (const tipo of ["pj", "npc"] as const) {
+    expect(layoutRadialByTipo([1, 2, 3].map((id) => ({ id, tipo })))).toEqual(
+      layoutRing([1, 2, 3]),
+    );
+  }
+});
+
+it("não sobrepõe caixas num elenco grande em nenhum anel", () => {
+  const cast = Array.from({ length: 45 }, (_, index) => ({
+    id: index + 1,
+    tipo: index < 5 ? ("pj" as const) : ("npc" as const),
+  }));
+  const frame = layoutRadialByTipo(cast);
+  for (let i = 0; i < frame.nodes.length; i += 1) {
+    for (let j = i + 1; j < frame.nodes.length; j += 1) {
+      const a = frame.nodes[i]!;
+      const b = frame.nodes[j]!;
+      expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(minCenterDistance() - 1e-6);
+    }
+  }
 });

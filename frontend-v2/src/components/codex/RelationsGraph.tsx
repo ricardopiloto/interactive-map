@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  TransformComponent,
+  TransformWrapper,
+  useControls,
+  type ReactZoomPanPinchRef,
+} from "react-zoom-pan-pinch";
 import type { Personagem, PersonagemStatus, Vinculo, VinculoTipo } from "@/api/relacoes";
-import { NODE_BOX, layoutRing } from "@/lib/graphLayout";
+import { NODE_BOX, layoutRadialByTipo } from "@/lib/graphLayout";
 import {
   edgeDisplayTipo,
   edgeMatchesTipos,
@@ -33,19 +39,39 @@ function graphExtent(svg: SVGSVGElement) {
   return { width: 1, height: 1 };
 }
 
-/** Screen pixels per graph unit, so a grab follows the parchment zoom. */
-function pixelsPerGraphUnit(svg: SVGSVGElement, fallbackScale: number) {
+/** Screen pixels per graph unit, including the viewport transform. */
+function pixelsPerGraphUnit(svg: SVGSVGElement, scale: number) {
   const graph = graphExtent(svg);
-  const rect = svg.getBoundingClientRect();
   const widthAttr = Number(svg.getAttribute("width"));
   const heightAttr = Number(svg.getAttribute("height"));
-  const screen =
-    rect.width > 0 && rect.height > 0
-      ? { width: rect.width, height: rect.height }
-      : widthAttr > 0 && heightAttr > 0
-        ? { width: widthAttr, height: heightAttr }
-        : { width: graph.width * fallbackScale, height: graph.height * fallbackScale };
-  return { x: screen.width / graph.width, y: screen.height / graph.height };
+  const natural =
+    widthAttr > 0 && heightAttr > 0
+      ? { width: widthAttr, height: heightAttr }
+      : { width: graph.width, height: graph.height };
+  return { x: (natural.width / graph.width) * scale, y: (natural.height / graph.height) * scale };
+}
+
+function GraphControls({ apiRef }: { apiRef: React.RefObject<ReactZoomPanPinchRef | null> }) {
+  const { t } = useTranslation("relacoes");
+  const { zoomIn, zoomOut } = useControls();
+  return (
+    <div className="glass absolute top-20 left-3 z-10 flex gap-1 rounded-full p-1">
+      <button type="button" className="rounded-full px-3 py-1 text-xs" onClick={() => zoomIn()}>
+        {t("graph.zoomIn")}
+      </button>
+      <button type="button" className="rounded-full px-3 py-1 text-xs" onClick={() => zoomOut()}>
+        {t("graph.zoomOut")}
+      </button>
+      <button
+        type="button"
+        className="rounded-full px-3 py-1 text-xs"
+        aria-label={t("graph.fitViewAria")}
+        onClick={() => void apiRef.current?.fitToView({ mode: "contain", animationTime: 0 })}
+      >
+        {t("graph.fitView")}
+      </button>
+    </div>
+  );
 }
 
 function initials(nome: string) {
@@ -101,18 +127,18 @@ export function RelationsGraph({
   onSelect: (id: number | null) => void;
 }) {
   const { t } = useTranslation("relacoes");
-  const [scale, setScale] = useState(1);
-  // Kept in memory for this visit only. layoutRing stays the position of record.
+  // Kept in memory for this visit only. The radial layout stays the position of record.
   const [sessionShifts, setSessionShifts] = useState<Map<number, Shift>>(() => new Map());
   const [failedPortraits, setFailedPortraits] = useState<Set<number>>(() => new Set());
   const [grabbedId, setGrabbedId] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const scaleRef = useRef(scale);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const scaleRef = useRef(1);
   const shiftsRef = useRef(sessionShifts);
   const releaseGrabRef = useRef<((quiet?: boolean) => void) | null>(null);
   const skipClickRef = useRef(false);
   const seenSlugRef = useRef(campaignSlug);
-  scaleRef.current = scale;
   shiftsRef.current = sessionShifts;
   const byId = useMemo(() => new Map(personagens.map((p) => [p.id, p])), [personagens]);
   const box = useMemo(
@@ -124,12 +150,15 @@ export function RelationsGraph({
   );
   const frame = useMemo(
     () =>
-      layoutRing(
-        personagens.map((p) => p.id),
+      layoutRadialByTipo(
+        personagens.map((p) => ({ id: p.id, tipo: p.tipo })),
         box,
       ),
     [personagens, box],
   );
+  useEffect(() => {
+    void apiRef.current?.fitToView({ mode: "contain", animationTime: 0 });
+  }, [campaignSlug, frame.width, frame.height]);
   const placed = useMemo(() => {
     const map = new Map(frame.nodes.map((node) => [node.id, node]));
     for (const [id, shift] of sessionShifts) {
@@ -187,6 +216,7 @@ export function RelationsGraph({
     const button = event.nativeEvent.button;
     if (button > 0 || releaseGrabRef.current) return;
     event.stopPropagation();
+    setGrabbedId(id);
     const host = event.currentTarget;
     const pointerId = event.nativeEvent.pointerId;
     try {
@@ -231,7 +261,6 @@ export function RelationsGraph({
       const unitX = ratio.x > 0 && Number.isFinite(ratio.x) ? ratio.x : 1;
       const unitY = ratio.y > 0 && Number.isFinite(ratio.y) ? ratio.y : 1;
       const next = { x: start.x + dx / unitX, y: start.y + dy / unitY };
-      setGrabbedId(id);
       setSessionShifts((prev) => {
         const current = prev.get(id);
         if (current && current.x === next.x && current.y === next.y) return prev;
@@ -254,257 +283,273 @@ export function RelationsGraph({
 
   return (
     <div
-      className="absolute inset-0 overflow-auto pt-16 pb-24 lg:pr-[400px]"
+      ref={stageRef}
+      className="absolute inset-0 overflow-hidden pt-16 pb-24 lg:pr-[400px]"
       data-testid="relations-stage"
+      data-viewport-scale="1"
+      data-viewport-x="0"
+      data-viewport-y="0"
     >
-      <div className="flex min-h-full min-w-full items-center justify-center p-10">
-        <svg
-          ref={svgRef}
-          width={frame.width * scale}
-          height={frame.height * scale}
-          viewBox={`0 0 ${frame.width} ${frame.height}`}
-          overflow="visible"
-          role="img"
-          aria-label={t("v2.network")}
-          onClick={() => {
-            if (consumeSuppressedClick()) return;
-            onSelect(null);
-          }}
-        >
-          <defs>
-            <marker
-              id="bond-arrow"
-              viewBox="0 0 10 10"
-              refX="8"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
-              <path d="M0,0 L10,5 L0,10 z" fill="var(--foreground)" />
-            </marker>
-            {edges.filter(isDuasVias).map((bond) => {
+      <TransformWrapper
+        ref={apiRef}
+        minScale={0.05}
+        maxScale={4}
+        centerOnInit
+        wheel={{ step: 0.01 }}
+        pinch={{ step: 5 }}
+        panning={{ disabled: grabbedId != null }}
+        doubleClick={{ disabled: true }}
+        onInit={(ref) => {
+          apiRef.current = ref;
+          void ref.fitToView({ mode: "contain", animationTime: 0 });
+        }}
+        onTransform={(_ref, state) => {
+          scaleRef.current = state.scale;
+          if (stageRef.current) {
+            stageRef.current.dataset["viewportScale"] = String(state.scale);
+            stageRef.current.dataset["viewportX"] = String(state.positionX);
+            stageRef.current.dataset["viewportY"] = String(state.positionY);
+          }
+        }}
+      >
+        <GraphControls apiRef={apiRef} />
+        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+          <svg
+            ref={svgRef}
+            width={frame.width}
+            height={frame.height}
+            viewBox={`0 0 ${frame.width} ${frame.height}`}
+            overflow="visible"
+            role="img"
+            aria-label={t("v2.network")}
+            onClick={() => {
+              if (consumeSuppressedClick()) return;
+              onSelect(null);
+            }}
+          >
+            <defs>
+              <marker
+                id="bond-arrow"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--foreground)" />
+              </marker>
+              {edges.filter(isDuasVias).map((bond) => {
+                const a = placed.get(bond.personagem_a_id);
+                const b = placed.get(bond.personagem_b_id);
+                if (!a || !b || !bond.tipo_ab || !bond.tipo_ba) return null;
+                return (
+                  <linearGradient
+                    key={bond.id}
+                    id={`bond-grad-${bond.id}`}
+                    gradientUnits="userSpaceOnUse"
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                  >
+                    <stop offset="0%" stopColor={edgeStyle[bond.tipo_ab].color} />
+                    <stop offset="42%" stopColor={edgeStyle[bond.tipo_ab].color} />
+                    <stop offset="58%" stopColor={edgeStyle[bond.tipo_ba].color} />
+                    <stop offset="100%" stopColor={edgeStyle[bond.tipo_ba].color} />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+            {edges.map((bond) => {
               const a = placed.get(bond.personagem_a_id);
               const b = placed.get(bond.personagem_b_id);
-              if (!a || !b || !bond.tipo_ab || !bond.tipo_ba) return null;
-              return (
-                <linearGradient
-                  key={bond.id}
-                  id={`bond-grad-${bond.id}`}
-                  gradientUnits="userSpaceOnUse"
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                >
-                  <stop offset="0%" stopColor={edgeStyle[bond.tipo_ab].color} />
-                  <stop offset="42%" stopColor={edgeStyle[bond.tipo_ab].color} />
-                  <stop offset="58%" stopColor={edgeStyle[bond.tipo_ba].color} />
-                  <stop offset="100%" stopColor={edgeStyle[bond.tipo_ba].color} />
-                </linearGradient>
+              const tipo = edgeDisplayTipo(bond);
+              if (!a || !b || !tipo) return null;
+              const duas = isDuasVias(bond);
+              const styleA = edgeStyle[bond.tipo_ab ?? tipo];
+              const styleB = edgeStyle[bond.tipo_ba ?? tipo];
+              const on = edgeOn(bond);
+              if (isolated && !on) return null;
+              const start = trimEnd(b, a, DISC + 8);
+              const end = trimEnd(a, b, DISC + 8);
+              const nomeA = byId.get(bond.personagem_a_id)?.nome ?? "?";
+              const nomeB = byId.get(bond.personagem_b_id)?.nome ?? "?";
+              const labelA = formatTipoWithQual(
+                t(`vinculoTipo.${bond.tipo_ab ?? tipo}`),
+                bond.qualificador_ab,
               );
-            })}
-          </defs>
-          {edges.map((bond) => {
-            const a = placed.get(bond.personagem_a_id);
-            const b = placed.get(bond.personagem_b_id);
-            const tipo = edgeDisplayTipo(bond);
-            if (!a || !b || !tipo) return null;
-            const duas = isDuasVias(bond);
-            const styleA = edgeStyle[bond.tipo_ab ?? tipo];
-            const styleB = edgeStyle[bond.tipo_ba ?? tipo];
-            const on = edgeOn(bond);
-            if (isolated && !on) return null;
-            const start = trimEnd(b, a, DISC + 8);
-            const end = trimEnd(a, b, DISC + 8);
-            const nomeA = byId.get(bond.personagem_a_id)?.nome ?? "?";
-            const nomeB = byId.get(bond.personagem_b_id)?.nome ?? "?";
-            const labelA = formatTipoWithQual(
-              t(`vinculoTipo.${bond.tipo_ab ?? tipo}`),
-              bond.qualificador_ab,
-            );
-            const labelB = bond.tipo_ba
-              ? formatTipoWithQual(t(`vinculoTipo.${bond.tipo_ba}`), bond.qualificador_ba)
-              : "";
-            const midLabel = formatTipoWithQual(
-              t(`vinculoTipo.${tipo}`),
-              bond.qualificador_ab || bond.qualificador_ba,
-            );
-            const aria = t("graph.edgeAria", {
-              nomeA,
-              nomeB,
-              tipo: duas ? `${labelA} / ${labelB}` : midLabel,
-            });
-            return (
-              <g key={bond.id} data-vinculo-id={bond.id} opacity={on ? 1 : 0.12}>
-                <line
-                  x1={start.x}
-                  y1={start.y}
-                  x2={end.x}
-                  y2={end.y}
-                  stroke={duas ? `url(#bond-grad-${bond.id})` : styleA.color}
-                  strokeWidth={duas ? Math.max(styleA.w, styleB.w) : styleA.w}
-                  strokeDasharray={styleA.dash ?? styleB.dash}
-                  strokeLinecap="round"
-                  markerEnd={bond.direcao === "a_para_b" ? "url(#bond-arrow)" : undefined}
-                  markerStart={bond.direcao === "b_para_a" ? "url(#bond-arrow)" : undefined}
-                />
-                {!duas && tipo === "vinculo_sangue" && (
+              const labelB = bond.tipo_ba
+                ? formatTipoWithQual(t(`vinculoTipo.${bond.tipo_ba}`), bond.qualificador_ba)
+                : "";
+              const midLabel = formatTipoWithQual(
+                t(`vinculoTipo.${tipo}`),
+                bond.qualificador_ab || bond.qualificador_ba,
+              );
+              const aria = t("graph.edgeAria", {
+                nomeA,
+                nomeB,
+                tipo: duas ? `${labelA} / ${labelB}` : midLabel,
+              });
+              return (
+                <g key={bond.id} data-vinculo-id={bond.id} opacity={on ? 1 : 0.12}>
                   <line
                     x1={start.x}
                     y1={start.y}
                     x2={end.x}
                     y2={end.y}
-                    stroke="var(--background)"
-                    strokeWidth={1.2}
+                    stroke={duas ? `url(#bond-grad-${bond.id})` : styleA.color}
+                    strokeWidth={duas ? Math.max(styleA.w, styleB.w) : styleA.w}
+                    strokeDasharray={styleA.dash ?? styleB.dash}
+                    strokeLinecap="round"
+                    markerEnd={bond.direcao === "a_para_b" ? "url(#bond-arrow)" : undefined}
+                    markerStart={bond.direcao === "b_para_a" ? "url(#bond-arrow)" : undefined}
                   />
-                )}
-                <title>{bond.publico ? aria : t("graph.edgeAriaOculto", { label: aria })}</title>
-                {isGm && !bond.publico && (
-                  <EdgeNote point={pointAlong(start, end, 0.5)} text={t("graph.privateMarker")} />
-                )}
-                {isGm && tipHiddenFromPlayers(bond, bond.personagem_a_id) && (
-                  <EdgeNote point={pointAlong(start, end, 0.28)} text={t("graph.unknownMarker")} />
-                )}
-                {isGm && tipHiddenFromPlayers(bond, bond.personagem_b_id) && (
-                  <EdgeNote point={pointAlong(start, end, 0.72)} text={t("graph.unknownMarker")} />
-                )}
-                {on && selectedId != null && duas && (
-                  <>
-                    <EdgeLabel point={pointAlong(start, end, 0.3)} text={labelA} />
-                    <EdgeLabel point={pointAlong(start, end, 0.7)} text={labelB} />
-                  </>
-                )}
-                {on && selectedId != null && !duas && (
-                  <EdgeLabel
-                    point={pointAlong(start, end, 0.5)}
-                    text={bond.direcao ? `${midLabel} →` : midLabel}
+                  {!duas && tipo === "vinculo_sangue" && (
+                    <line
+                      x1={start.x}
+                      y1={start.y}
+                      x2={end.x}
+                      y2={end.y}
+                      stroke="var(--background)"
+                      strokeWidth={1.2}
+                    />
+                  )}
+                  <title>{bond.publico ? aria : t("graph.edgeAriaOculto", { label: aria })}</title>
+                  {isGm && !bond.publico && (
+                    <EdgeNote point={pointAlong(start, end, 0.5)} text={t("graph.privateMarker")} />
+                  )}
+                  {isGm && tipHiddenFromPlayers(bond, bond.personagem_a_id) && (
+                    <EdgeNote
+                      point={pointAlong(start, end, 0.28)}
+                      text={t("graph.unknownMarker")}
+                    />
+                  )}
+                  {isGm && tipHiddenFromPlayers(bond, bond.personagem_b_id) && (
+                    <EdgeNote
+                      point={pointAlong(start, end, 0.72)}
+                      text={t("graph.unknownMarker")}
+                    />
+                  )}
+                  {on && selectedId != null && duas && (
+                    <>
+                      <EdgeLabel point={pointAlong(start, end, 0.3)} text={labelA} />
+                      <EdgeLabel point={pointAlong(start, end, 0.7)} text={labelB} />
+                    </>
+                  )}
+                  {on && selectedId != null && !duas && (
+                    <EdgeLabel
+                      point={pointAlong(start, end, 0.5)}
+                      text={bond.direcao ? `${midLabel} →` : midLabel}
+                    />
+                  )}
+                </g>
+              );
+            })}
+            {frame.nodes.map((node) => {
+              const person = byId.get(node.id);
+              const spot = placed.get(node.id) ?? node;
+              if (!person) return null;
+              const selected = person.id === selectedId;
+              const grabbed = person.id === grabbedId;
+              const radius = selected ? 38 : DISC;
+              const faded = nodeOpacity(person.id) < 1;
+              return (
+                <g
+                  key={person.id}
+                  data-node-id={person.id}
+                  data-dimmed={faded ? "true" : "false"}
+                  transform={`translate(${spot.x},${spot.y})`}
+                  opacity={nodeOpacity(person.id)}
+                  className={
+                    grabbed
+                      ? "cursor-grabbing touch-none select-none"
+                      : "cursor-grab touch-none select-none"
+                  }
+                  onPointerDown={(event) => beginGrab(event, person.id)}
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (consumeSuppressedClick()) return;
+                    onSelect(selected ? null : person.id);
+                  }}
+                  role="button"
+                  aria-label={person.nome}
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") onSelect(selected ? null : person.id);
+                  }}
+                >
+                  {person.retrato_url && (
+                    <defs>
+                      <clipPath id={`avatar-clip-${person.id}`}>
+                        <circle r={radius} />
+                      </clipPath>
+                    </defs>
+                  )}
+                  <circle
+                    r={radius}
+                    fill={person.tipo === "pj" ? "var(--primary)" : "var(--card)"}
                   />
-                )}
-              </g>
-            );
-          })}
-          {frame.nodes.map((node) => {
-            const person = byId.get(node.id);
-            const spot = placed.get(node.id) ?? node;
-            if (!person) return null;
-            const selected = person.id === selectedId;
-            const grabbed = person.id === grabbedId;
-            const radius = selected ? 38 : DISC;
-            const faded = nodeOpacity(person.id) < 1;
-            return (
-              <g
-                key={person.id}
-                data-node-id={person.id}
-                data-dimmed={faded ? "true" : "false"}
-                transform={`translate(${spot.x},${spot.y})`}
-                opacity={nodeOpacity(person.id)}
-                className={
-                  grabbed
-                    ? "cursor-grabbing touch-none select-none"
-                    : "cursor-grab touch-none select-none"
-                }
-                onPointerDown={(event) => beginGrab(event, person.id)}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  if (consumeSuppressedClick()) return;
-                  onSelect(selected ? null : person.id);
-                }}
-                role="button"
-                aria-label={person.nome}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") onSelect(selected ? null : person.id);
-                }}
-              >
-                {person.retrato_url && (
-                  <defs>
-                    <clipPath id={`avatar-clip-${person.id}`}>
-                      <circle r={radius} />
-                    </clipPath>
-                  </defs>
-                )}
-                <circle r={radius} fill={person.tipo === "pj" ? "var(--primary)" : "var(--card)"} />
-                {person.retrato_url && !failedPortraits.has(person.id) && (
-                  <image
-                    href={person.retrato_url}
-                    x={-radius}
-                    y={-radius}
-                    width={radius * 2}
-                    height={radius * 2}
-                    clipPath={`url(#avatar-clip-${person.id})`}
-                    preserveAspectRatio="xMidYMid slice"
-                    onError={() =>
-                      setFailedPortraits((previous) => new Set(previous).add(person.id))
-                    }
+                  {person.retrato_url && !failedPortraits.has(person.id) && (
+                    <image
+                      href={person.retrato_url}
+                      x={-radius}
+                      y={-radius}
+                      width={radius * 2}
+                      height={radius * 2}
+                      clipPath={`url(#avatar-clip-${person.id})`}
+                      preserveAspectRatio="xMidYMid slice"
+                      onError={() =>
+                        setFailedPortraits((previous) => new Set(previous).add(person.id))
+                      }
+                    />
+                  )}
+                  {(!person.retrato_url || failedPortraits.has(person.id)) && (
+                    <text
+                      textAnchor="middle"
+                      dy={radius * 0.35}
+                      fontSize={radius * 0.7}
+                      fontFamily="var(--font-display)"
+                      fill={
+                        person.tipo === "pj" ? "var(--primary-foreground)" : "var(--foreground)"
+                      }
+                    >
+                      {initials(person.nome)}
+                    </text>
+                  )}
+                  <circle
+                    r={radius}
+                    fill="none"
+                    stroke={selected || grabbed ? "var(--seal)" : "var(--border)"}
+                    strokeWidth={selected || grabbed ? 3 : 1.5}
+                    strokeDasharray={person.status === "morto" ? "3 3" : undefined}
+                    pointerEvents="none"
                   />
-                )}
-                {(!person.retrato_url || failedPortraits.has(person.id)) && (
+                  {person.tipo === "pj" && (
+                    <circle r={radius + 6} fill="none" stroke="var(--seal)" strokeWidth={1.5} />
+                  )}
                   <text
                     textAnchor="middle"
-                    dy={radius * 0.35}
-                    fontSize={radius * 0.7}
+                    y={radius + 22}
+                    fontSize={14}
                     fontFamily="var(--font-display)"
-                    fill={person.tipo === "pj" ? "var(--primary-foreground)" : "var(--foreground)"}
+                    fill="var(--foreground)"
                   >
-                    {initials(person.nome)}
+                    {person.nome}
+                    {statusMark(person.status)}
                   </text>
-                )}
-                <circle
-                  r={radius}
-                  fill="none"
-                  stroke={selected || grabbed ? "var(--seal)" : "var(--border)"}
-                  strokeWidth={selected || grabbed ? 3 : 1.5}
-                  strokeDasharray={person.status === "morto" ? "3 3" : undefined}
-                  pointerEvents="none"
-                />
-                {person.tipo === "pj" && (
-                  <circle r={radius + 6} fill="none" stroke="var(--seal)" strokeWidth={1.5} />
-                )}
-                <text
-                  textAnchor="middle"
-                  y={radius + 22}
-                  fontSize={14}
-                  fontFamily="var(--font-display)"
-                  fill="var(--foreground)"
-                >
-                  {person.nome}
-                  {statusMark(person.status)}
-                </text>
-                {isGm && person.visivel_para_todos === false && (
-                  <text y={radius + 38} textAnchor="middle" fontSize={10} fill="var(--seal)">
-                    {t("graph.ocultoAria")}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-      <div className="glass absolute top-20 left-3 z-10 flex gap-1 rounded-full p-1">
-        <button
-          type="button"
-          className="rounded-full px-3 py-1 text-xs"
-          onClick={() => setScale((s) => Math.min(2, s * 1.15))}
-        >
-          {t("graph.zoomIn")}
-        </button>
-        <button
-          type="button"
-          className="rounded-full px-3 py-1 text-xs"
-          onClick={() => setScale((s) => Math.max(0.4, s / 1.15))}
-        >
-          {t("graph.zoomOut")}
-        </button>
-        <button
-          type="button"
-          className="rounded-full px-3 py-1 text-xs"
-          aria-label={t("graph.fitViewAria")}
-          onClick={() => setScale(1)}
-        >
-          {t("graph.fitView")}
-        </button>
-      </div>
+                  {isGm && person.visivel_para_todos === false && (
+                    <text y={radius + 38} textAnchor="middle" fontSize={10} fill="var(--seal)">
+                      {t("graph.ocultoAria")}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+        </TransformComponent>
+      </TransformWrapper>
     </div>
   );
 }

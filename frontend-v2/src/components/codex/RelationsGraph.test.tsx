@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Personagem, Vinculo, VinculoTipo } from "@/api/relacoes";
 import i18n from "@/i18n";
@@ -167,4 +167,66 @@ it("mostra retrato circular e mantém iniciais sem retrato ou após erro", () =>
   fireEvent.error(portrait!);
   expect(document.querySelector("[data-node-id='1'] image")).toBeNull();
   expect(document.querySelector("[data-node-id='1']")?.textContent).toContain("AL");
+});
+
+it("renderiza PJs mais perto do centro que NPCs", () => {
+  render(
+    <RelationsGraph
+      campaignSlug="alpha"
+      personagens={[{ ...person(1, "Ada"), tipo: "pj" }, person(2, "Bruno"), person(3, "Carla")]}
+      vinculos={[]}
+      selectedId={null}
+      isolate={false}
+      activeTipos={new Set<VinculoTipo>()}
+      query=""
+      isGm={false}
+      onSelect={vi.fn()}
+    />,
+  );
+  const svg = document.querySelector("svg")!;
+  const center = Number(svg.getAttribute("width")) / 2;
+  const distance = (id: number) => {
+    const node = translation(id);
+    return Math.hypot(node.x - center, node.y - center);
+  };
+  expect(distance(1)).toBeLessThan(distance(2));
+  expect(distance(1)).toBeLessThan(distance(3));
+  expect(document.querySelector("[data-node-id='1'] circle[stroke='var(--seal)']")).not.toBeNull();
+});
+
+it("arrastar um nó não inicia pan nem zoom da viewport", () => {
+  renderGraph();
+  const stage = screen.getByTestId("relations-stage");
+  const viewportBefore = [
+    stage.dataset["viewportScale"],
+    stage.dataset["viewportX"],
+    stage.dataset["viewportY"],
+  ];
+  const positions = [1, 2, 3].map((id) => translation(id).raw);
+  const node = screen.getByRole("button", { name: "Ada" });
+  fireEvent.pointerDown(node, { button: 0, pointerId: 7, clientX: 20, clientY: 20 });
+  fireEvent.mouseDown(node, { button: 0, clientX: 20, clientY: 20 });
+  fireEvent.pointerMove(window, { pointerId: 7, clientX: 70, clientY: 40 });
+  fireEvent.mouseMove(window, { clientX: 70, clientY: 40 });
+  fireEvent.pointerUp(window, { pointerId: 7, clientX: 70, clientY: 40 });
+  fireEvent.mouseUp(window, { clientX: 70, clientY: 40 });
+  expect(translation(1).raw).not.toBe(positions[0]);
+  expect(translation(2).raw).toBe(positions[1]);
+  expect(translation(3).raw).toBe(positions[2]);
+  expect([
+    stage.dataset["viewportScale"],
+    stage.dataset["viewportX"],
+    stage.dataset["viewportY"],
+  ]).toEqual(viewportBefore);
+});
+
+it("usa a escala da viewport para converter o arrasto em unidades do grafo", async () => {
+  renderGraph();
+  const stage = screen.getByTestId("relations-stage");
+  fireEvent.click(screen.getByRole("button", { name: "Aumentar zoom" }));
+  await waitFor(() => expect(Number(stage.dataset["viewportScale"])).toBeGreaterThan(1));
+  const scale = Number(stage.dataset["viewportScale"]);
+  const before = translation(1);
+  grab("Ada", 80, 0);
+  expect(translation(1).x - before.x).toBeCloseTo(80 / scale, 1);
 });

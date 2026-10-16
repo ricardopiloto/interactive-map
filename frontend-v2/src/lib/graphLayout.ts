@@ -55,3 +55,31 @@ export function layoutRing(
   });
   return { nodes, width: span, height: span };
 }
+
+export function layoutRadialByTipo(
+  personagens: readonly { id: number; tipo: "pj" | "npc" }[],
+  box: { width: number; height: number } = NODE_BOX,
+  gap = NODE_GAP,
+): GraphFrame {
+  const pjs = personagens.filter((person) => person.tipo === "pj").map((person) => person.id);
+  const npcs = personagens.filter((person) => person.tipo === "npc").map((person) => person.id);
+  if (!pjs.length || !npcs.length) return layoutRing(pjs.length ? pjs : npcs, box, gap);
+
+  const separation = minCenterDistance(box, gap);
+  const innerRadius = ringRadius(pjs.length, separation);
+  const outerRadius = Math.max(ringRadius(npcs.length, separation), innerRadius + separation);
+  const pad = Math.max(box.width, box.height) / 2 + gap;
+  const origin = outerRadius + pad;
+  const onRing = (ids: number[], radius: number): GraphPoint[] =>
+    ids
+      .sort((a, b) => a - b)
+      .map((id, index) => {
+        const angle = -Math.PI / 2 + (index * 2 * Math.PI) / ids.length;
+        return { id, x: origin + radius * Math.cos(angle), y: origin + radius * Math.sin(angle) };
+      });
+  return {
+    nodes: [...onRing(pjs, innerRadius), ...onRing(npcs, outerRadius)],
+    width: origin * 2,
+    height: origin * 2,
+  };
+}
