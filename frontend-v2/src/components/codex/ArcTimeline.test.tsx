@@ -102,12 +102,17 @@ describe("ligação sequencial com gradiente", () => {
     );
     const path = container.querySelector('[data-link="sequential"]');
     expect(path).not.toBeNull();
-    expect(path).toHaveAttribute("stroke-dasharray", "6 5");
+    expect(path).toHaveAttribute("stroke-dasharray", "8 7");
+    expect(path).toHaveAttribute("stroke-width", "3");
     const stroke = path!.getAttribute("stroke") ?? "";
     expect(stroke).toMatch(/^url\(#.+\)$/);
     const gradId = stroke.slice(5, -1);
     const grad = container.querySelector(`linearGradient#${CSS.escape(gradId)}`);
     expect(grad).not.toBeNull();
+    // Vertical connectors have zero-width bbox; objectBoundingBox gradients vanish.
+    expect(grad).toHaveAttribute("gradientUnits", "userSpaceOnUse");
+    expect(grad).toHaveAttribute("y1");
+    expect(grad).toHaveAttribute("y2");
     const d = path!.getAttribute("d") ?? "";
     expect(d).toMatch(/^M[\d.]+ [\d.]+ V[\d.]+$/);
     expect(d).not.toContain("C");
@@ -126,6 +131,7 @@ describe("ligação sequencial com gradiente", () => {
     expect(labelPt).toBeVisible();
     expect(labelPt.closest("svg")).toBeNull();
     expect(labelPt.textContent).toMatch(/1 mês/);
+    expect(labelPt.style.transform).toContain("rotate(-90deg)");
     unmount();
 
     await i18n.changeLanguage("en");
@@ -133,6 +139,7 @@ describe("ligação sequencial com gradiente", () => {
     const labelEn = screen.getByLabelText(/elapsed time between arcs/i);
     expect(labelEn).toBeVisible();
     expect(labelEn.textContent).toMatch(/1 month/);
+    expect(labelEn.style.transform).toContain("rotate(-90deg)");
   });
 });
 

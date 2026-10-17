@@ -7,6 +7,22 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-10-17
+
+### Fixed
+
+- No modo Por arcos da Linha do Tempo, a ligação tracejada entre arcos sequenciais deixava de aparecer: o gradiente usava `objectBoundingBox` e um traço vertical tem caixa de largura zero. O gradiente passa a `userSpaceOnUse`, com traço mais espesso e cantos arredondados.
+
+### Changed
+
+- O rótulo de tempo decorrido na ligação sequencial entre arcos fica rodado ao longo do traço, alinhado ao meio do intervalo.
+- O nome e o brasão da campanha na barra superior passam a ser um atalho para **Explorar**.
+- Barras de rolagem mais discretas no documento e nos painéis de Sessões (lista e descrição), no estilo do tema paper-parchment.
+
+### Documentation
+
+- README reescrito para a linha 1.0, com capturas do `frontend-v2` e diagramas dos fluxos de URL canónica, pernoite na rota e itens públicos.
+
 ## [1.0.0] — 2026-10-16
 
 ### Added

@@ -240,8 +240,11 @@ export function Sessions() {
     : "";
 
   return (
-    <main className="mx-auto grid fixed inset-0 max-w-6xl gap-10 overflow-y-auto px-4 pt-24 pb-28 lg:grid-cols-[300px_1fr] lg:grid-rows-1 lg:overflow-hidden lg:pb-16">
-      <nav aria-label={t("v2.archive")} className="lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-2">
+    <main className="scroll-ink mx-auto grid fixed inset-0 max-w-6xl gap-10 overflow-y-auto px-4 pt-24 pb-28 lg:grid-cols-[300px_1fr] lg:grid-rows-1 lg:overflow-hidden lg:pb-16">
+      <nav
+        aria-label={t("v2.archive")}
+        className="scroll-ink lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+      >
         <p className="eyebrow">{t("v2.tableJournal")}</p>
         <h1 className="mt-1 font-display text-3xl font-medium">{t("v2.sessionsTitle")}</h1>
         {enabled && (
@@ -309,7 +312,7 @@ export function Sessions() {
 
       {current && (
         <article
-          className="max-w-2xl animate-in fade-in lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-2"
+          className="scroll-ink max-w-2xl animate-in fade-in lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1"
           key={current.id}
         >
           <div className="flex items-start justify-between gap-4">

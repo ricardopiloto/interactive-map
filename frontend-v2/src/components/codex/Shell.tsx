@@ -77,7 +77,11 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
   return (
     <>
       <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-start justify-between gap-3 p-3 md:p-4">
-        <div className="glass pointer-events-auto flex items-center gap-3 rounded-full py-1.5 pr-4 pl-1.5">
+        <Link
+          to="/explorar"
+          className="glass pointer-events-auto flex items-center gap-3 rounded-full py-1.5 pr-4 pl-1.5 transition-colors hover:bg-accent"
+          aria-label={t("explorar.nav")}
+        >
           <span
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-seal font-display text-lg italic text-seal-foreground shadow-float"
             aria-hidden
@@ -88,7 +92,7 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
             <p className="font-display text-[15px] font-medium">{campaign.nome}</p>
             <p className="eyebrow !text-[0.6rem]">{campaign.sistema}</p>
           </div>
-        </div>
+        </Link>
         <nav
           aria-label={t("v2.nav")}
           className="glass pointer-events-auto absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 rounded-full p-1 lg:flex"

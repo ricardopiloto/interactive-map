@@ -1,33 +1,37 @@
 # Codex da Campanha
 
-Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas**, **rede de relações** entre personagens e **Modo GM** na mesma interface.
+Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens** e **Modo GM** na mesma interface.
 
-**Versão:** 0.24.5 — [`CHANGELOG.md`](CHANGELOG.md)
-**Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/wfrp` e `/c/wod`
+**Versão:** 1.0.1 — [`CHANGELOG.md`](CHANGELOG.md)
+**Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/1/wfrp` e `/c/2/wod`
 
 ---
 
 ## Capturas de ecrã
 
-Capturas geradas a partir da versão **0.24.5** com o seed E2E do projeto.
+Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 
 ### Entrada e exploração
 
-![Página inicial do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-home-dark.png)
+![Página inicial do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-home.png)
 
-![Catálogo Explorar do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-explorar-dark.png)
+![Catálogo Explorar do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-explorar.png)
 
-### Painel do mestre
+### Mapa, rota e relações
 
-![Painel de campanhas do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-painel-dark.png)
+![Mapa da campanha do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-mapa.jpg)
 
-### Mapa, relações e sessões
+![Planeador de rota com pernoite do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-rota.jpg)
 
-![Mapa da campanha do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-mapa-dark.png)
+![Rede de relações do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-relacoes.png)
 
-![Rede de relações do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-relacoes-dark.png)
+### Sessões, cronologia e itens
 
-![Sessões e linha do tempo do Campaign Codex 0.24.5](assets/campaign-codex-0.24.5-sessoes-dark.png)
+![Sessões do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-sessoes.png)
+
+![Linha do Tempo Por arcos do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-cronologia.png)
+
+![Itens públicos do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-itens.png)
 
 ---
 
@@ -35,79 +39,102 @@ Capturas geradas a partir da versão **0.24.5** com o seed E2E do projeto.
 
 ### Mapa interativo
 
-- Zoom e pan (roda suave + pinch); controlos `+` / `−` / `1:1` e **Ir ao grupo**
-- Pins de locais com cor livre e convenção visual (visitado / conhecido); marcador do **grupo** (bandeira ou brasão)
-- Tamanho de ecrã estável dos pins ao zoom
-- Clique no pin (jogador) ou no local no menu foca a vista com pan/zoom animado
-- Modal de leitura ao lado do pin (descrição em texto ou Markdown seguro)
-- Hover no menu destaca o pin **sem** mover a câmara; pré-visualiza linhas de saída quando não há selecção
+- Zoom e pan (roda suave + pinch); controlos `+` / `−` e **Ir ao grupo**
+- Pins de locais com cor livre e convenção visual (visitado / conhecido); marcador do **grupo**
+- Tamanho estável dos pins ao zoom; clique no pin ou no menu foca a vista
+- Modal de leitura ao lado do pin (texto ou Markdown seguro)
 - Com local aberto: linhas de **saídas** no mapa
-- Sem imagem de mapa na instância: a app abre directamente em **Relações**
-
-### Locais, NPCs e História
-
-- Menu lateral com abas Locais, NPCs, História, Rota e Grupo
-- Listas com scroll e busca
-- Locais agrupados por arco; NPCs com status, facção, retrato e papel
-- Personagens unificados (PJ / NPC) na Rede de Relações
+- Sem imagem de mapa na campanha: a app abre directamente em **Relações**
 
 ### Rotas e viagem
 
 - Rede de vias (estrada / rio / trilha) digitalizada pelo GM
 - **Calcular rota**: De/Para entre nós nomeados; transporte pago/próprio; ritmo; ordenação por tempo ou custo; preferência de via
-- Várias alternativas no mapa (mais rápida destacada)
+- Alternativas no mapa (mais rápida destacada)
+- **Pernoite** no mapa: pin «ao relento», destaque quando a noite é num Local, e coloração do traçado por fadiga no ritmo intenso
+- Pernoite perto de uma cidade (raio em unidades do mapa) deixa de ser «ao relento» e recupera fadiga como noite local
 - Vincular nó da rede ↔ Local (o pin segue o nó)
 
 ### Rede de Relações (`/relacoes`)
 
-- Grafo PJ/NPC com zoom (roda + pinch), pan e arrastar nós (só na sessão)
+- Grafo PJ/NPC com zoom e pan reais (roda, arrastar fundo, pinça, **Ajustar à tela**)
+- Layout radial: sem selecção, PJs no anel interno e NPCs no externo; ao seleccionar, o personagem vai ao centro com vizinhos no anel interno
+- Retratos circulares nos nós (fallback para iniciais)
 - **8 tipos** de vínculo com cor/estilo: Aliado, Vínculo de Sangue, Amizade, Inimizade, Adversário, Romance, Família, Conhecido
-- Modo recíproco ou **duas vias**; qualificador opcional (ex. Mentor, Lacaio, Medo); direcção opcional (mútuo / A→B / B→A)
+- Modo recíproco ou **duas vias**; qualificador e direcção opcionais
 - Filtros por tipo, busca, isolar selecção, legenda PJ/NPC
-- Painel de detalhe com ficha e lista de vínculos
+- Pan na área vazia **não** desseleciona; só um clique simples limpa a selecção
 - GM: criar/editar personagens e conexões; ocultar sentidos aos jogadores
 
-### Modo GM
+### Sessões
 
-- Gate “Acesso restrito (GM)” na barra (ou `/?gm=1`) — sem dica de senha na UI
-- CRUD de locais (cor do pin, saídas, nó da rede, Markdown), NPCs/personagens, arcos; upload de imagens; mover grupo
-- Substituir a imagem do mapa; **Rede de rotas** para digitalizar waypoints/segmentos (coluna lateral / bottom sheet no mobile)
-- API de escrita protegida com HTTP Basic Auth
+- Lista de sessões com resumo em Markdown, associações e visibilidade
+- Em desktop, lista e descrição rolam de forma independente
+- Clique no nome da campanha na barra leva a **Explorar**
+
+### Linha do Tempo (`/linha-do-tempo`)
+
+- Três modos: **Cronológica**, **Por arcos** e **Por descoberta** (escolha só enquanto está na tela)
+- **Por arcos**: coluna vertical por sequência; cor do arco; filtro por arco
+- Ligação tracejada com tempo decorrido entre arcos sequenciais; curva automática quando há overlap de datas
+- No mesmo mês, desempate pelo número da sessão (mais recente acima); sessões sem data ficam no bloco do próprio arco
+- **Por descoberta**: personagens, locais, facções e itens pela primeira aparição (respeita ocultos para jogadores)
+- Sugestão opcional por IA para arcos e associações — nada é gravado sem revisão do mestre
+
+### Itens (`/itens`)
+
+- Inventário público da campanha: listagem com busca, detalhe com Markdown e chips de sessões/eventos
+- Deep-link `?item=ID`
+- Mestre vê também os ocultos (indicação visual) e atalho para criar/editar na Linha do Tempo
+
+### Locais, NPCs e História
+
+- Menu lateral no mapa com Locais, NPCs, História, Rota e Grupo
+- Locais agrupados por arco; NPCs com status, facção, retrato e papel
+- Associação de PJs/NPCs a locais, com regras de visibilidade
+
+### Modo GM / Painel
+
+- Sessão de mestre em `/login` → `/painel` (criar e gerir campanhas)
+- CRUD de locais, personagens, arcos, sessões, eventos e itens; upload de imagens; mover grupo
+- Substituir a imagem do mapa; **Rede de rotas** para digitalizar waypoints/segmentos
+- API de escrita protegida (membro/dono da campanha); gate «Entrar» na barra
 
 ### Multi-sistema e multi-campanha
 
-- Uma instância Campaign Codex: várias mesas (`/c/<slug>`), catálogo em `/`, painel do mestre em `/painel`
-- Sistema e módulos por campanha (`control.db`); `GET /api/c/{slug}/config`
+- Uma instância: várias mesas; catálogo em `/explorar` e home em `/`
+- Endereço canónico `/c/{id}/{slug}/…` (ex. `/c/1/wfrp/mapa`); links antigos `/c/{slug}/…` redireccionam
+- Sistema e módulos por campanha (`control.db`); `GET /api/c/{id|slug}/config`
 - Extensões mecânicas por personagem (ex. **fadiga** 0–6 quando o módulo está activo)
-- Campanha nova: UI `/painel` ou `uv run python -m app.cli campanha criar` (os scripts `nova-campanha.sh` / `migrar-wfrp.sh` estão **aposentados**)
-- Import de instância legada: `campanha importar-legado` — ver [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
+- Campanha nova: UI `/painel/novo` ou `uv run python -m app.cli campanha criar`
+- Import de instância legada: `campanha importar-legado` — ver runbook de corte
 
 ### Interface
 
-- Design system **Nocturne** (tema escuro)
-- Idiomas **PT-BR** e **EN** (combo-box na barra; conteúdo escrito pelo mestre não é traduzido)
-- Erros da API surfaced com códigos estruturados e mensagens localizadas
+- Design system **paper-parchment** (`frontend-v2`): tema **Claro / Escuro / Automático**
+- Idiomas **PT-BR** e **EN** (conteúdo escrito pelo mestre não é traduzido)
+- Erros da API com códigos estruturados e mensagens localizadas
 
 ---
 
-## Funcionalidades da versão 0.24.5
+## Novidades da linha 1.0
 
-- Linha do Tempo com modos **Cronológica**, **Por arcos** e **Por descoberta**.
-- Arcos com cor persistida, vínculo com sessões, transições entre arcos e intervalos tracejados.
-- Sugestão opcional por IA para criar arcos e sugerir locais/personagens em sessões e eventos; nada é salvo sem revisão do mestre.
-- Modo Por descoberta para personagens, locais, facções e itens, respeitando visibilidade para jogadores.
-- Cadastro e CRUD de itens de campanha.
-- Associação de PJs e NPCs a locais, com retratos, filtros e regras de visibilidade.
-- Tema **Auto / Claro / Escuro** e internacionalização **PT-BR / EN**.
-- Multi-campanha por slug, com módulos por campanha e importação de instâncias legadas.
-- Mapa com pins, estado Conhecido/Visitado, saídas, grupo, imagens e rede de rotas.
-- Rede de relações com oito tipos de vínculo, direção, qualificador, filtros, privacidade e edição pelo GM.
-- Sessões e eventos com Markdown, associações N:N, visibilidade, ordenação e navegação contextual.
-- API fail-closed para escrita, autenticação de mestre, dados isolados por campanha e respostas estruturadas.
+- SPA **frontend-v2** (paper-parchment) com navegação Mapa · Relações · Rota · Sessões · Cronologia · Itens
+- Itens públicos com busca, detalhe e deep-link
+- Rede de Relações com zoom/pan reais, layout radial e retratos nos nós
+- Pernoite no mapa de Rota (ao relento / local / raio de abrigo)
+- URL canónica `/c/{id}/{slug}`
+- Conectores tracejados e desempate no modo Por arcos; rótulos de intervalo rodados ao longo do traço
+- Sessões com rolagem independente lista/descrição no desktop
+- Atalho do nome da campanha para **Explorar**; barras de rolagem no estilo paper-parchment
+
+Detalhe completo: [`CHANGELOG.md`](CHANGELOG.md).
+
+---
 
 ## API e contratos
 
-A API possui **102 operações OpenAPI** e **110 schemas** na revisão atual. O inventário completo de métodos, rotas, parâmetros, corpos, respostas e schemas está em [`docs/api-contracts.md`](docs/api-contracts.md).
+A API expõe OpenAPI em `/openapi.json` quando está em execução. Inventário de rotas, parâmetros e schemas: [`docs/api-contracts.md`](docs/api-contracts.md).
 
 Domínios cobertos:
 
@@ -115,11 +142,11 @@ Domínios cobertos:
 - campanhas, proprietários, convites, módulos, género, capa, visibilidade e unidade de distância;
 - locais, NPCs, personagens, arcos, sessões, eventos e itens;
 - relações entre personagens;
-- waypoints, segmentos e planeamento de rotas;
+- waypoints, segmentos e planeamento de rotas (incl. pernoite);
 - descoberta, associações sugeridas por IA, export/import e uploads;
 - administração de utilizadores e recuperação de acesso.
 
-A especificação executável fica disponível em `/openapi.json` quando a API está em execução.
+---
 
 ## Fluxos principais
 
@@ -127,14 +154,54 @@ A especificação executável fica disponível em `/openapi.json` quando a API e
 
 ```mermaid
 flowchart LR
-  A[Usuário acessa /c/:slug] --> B[Carrega configuração pública]
+  A[Usuário acessa /c/:id/:slug] --> B[Carrega configuração pública]
   B --> C{Mapa disponível?}
   C -- Sim --> D[Mapa, locais e saídas]
   C -- Não --> E[Abre Relações]
-  D --> F[Navegação Mapa, Relações, Rota ou Sessões]
+  D --> F[Navegação Mapa / Relações / Rota / Sessões / Cronologia / Itens]
   E --> F
   F --> G[API aplica visibilidade]
   G --> H[Interface renderiza dados localizados]
+```
+
+### URL canónica da campanha
+
+```mermaid
+flowchart TD
+  A["Pedido /c/:slug/..."] --> B{Slug resolve?}
+  B -- Sim --> C["Redirect  → /c/:id/:slug/..."]
+  B -- Não --> D[404]
+  E["Pedido /c/:id/:slug/..."] --> F[Usa id; slug é decorativo]
+  F --> G[Corrige slug na URL se estiver desatualizado]
+```
+
+### Calcular rota com pernoite
+
+```mermaid
+flowchart TD
+  A[Escolher De / Para] --> B[Preferências: transporte, ritmo, via]
+  B --> C[POST planeamento de rota]
+  C --> D[Alternativas no mapa]
+  D --> E{Cada noite}
+  E -- Num Local --> F[Marcador de abrigo]
+  E -- Perto de cidade no raio --> G[Trata como noite local]
+  E -- Campo aberto --> H[Pin ao relento]
+  F --> I[Traçado colorido por fadiga se ritmo intenso]
+  G --> I
+  H --> I
+```
+
+### Itens públicos
+
+```mermaid
+flowchart LR
+  A[Jogador abre /itens] --> B[GET itens visíveis]
+  B --> C[Lista + busca]
+  C --> D[Detalhe Markdown]
+  D --> E[Chips sessões / eventos]
+  F[Deep-link ?item=ID] --> D
+  G[Mestre autenticado] --> H[Vê também ocultos]
+  H --> I[Atalho para editar na Cronologia]
 ```
 
 ### CRUD do mestre
@@ -145,7 +212,7 @@ sequenceDiagram
   participant UI as SPA
   participant API as FastAPI
   participant DB as SQLite
-  GM->>UI: Ativa Modo GM
+  GM->>UI: Entrar / Painel
   UI->>API: Login e leitura administrativa
   API->>DB: Consulta campanha
   DB-->>API: Dados autorizados
@@ -178,9 +245,9 @@ Mais diagramas: [`docs/flows.md`](docs/flows.md).
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | React + Vite + TypeScript + Nocturne DS + `react-i18next` |
-| Backend | FastAPI + SQLModel + SQLite + HTTP Basic Auth em `/api/admin/*` |
-| Infra | Docker Compose + Caddy (opcional); hub estático multi-campanha |
+| Frontend | React + Vite + TypeScript + paper-parchment (`frontend-v2`) + `react-i18next` |
+| Backend | FastAPI + SQLModel + SQLite |
+| Infra | Docker Compose + Caddy (opcional) |
 
 ---
 
@@ -188,16 +255,14 @@ Mais diagramas: [`docs/flows.md`](docs/flows.md).
 
 ### Testes
 
-Na raiz do repositório, `./scripts/test-fast.sh --frontend` executa lint e contraste do frontend, adequado para mudanças visuais simples. `./scripts/test-fast.sh --backend` executa nove testes selecionados; sem opção, roda ambos. Requer as dependências locais correspondentes já instaladas e não executa build, seed ou serviços E2E.
-
-Selecione validações conforme o escopo: por exemplo, CSS usa o perfil `--frontend`; mudanças de lógica executam testes focados; alterações de integração usam build e jornadas Playwright afetadas. Reserve as suites completas para mudanças de alto risco, marcos de entrega e CI. O Playwright requer dados preparados pelo seed documentado em `frontend/README.md`.
+Na raiz, `./scripts/test-fast.sh --frontend` e `--backend` (ou ambos). Playwright e seed: ver [`frontend-v2/README.md`](frontend-v2/README.md).
 
 ### Backend
 
 ```bash
 cd backend
 uv sync
-# Defina ADMIN_USER e ADMIN_PASSWORD no .env (obrigatório para Modo GM)
+# Defina ADMIN_USER e ADMIN_PASSWORD no .env
 uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 # Seed opcional (só dev/teste)
@@ -206,24 +271,29 @@ uv run python -m app.seed
 
 Detalhes: [`backend/README.md`](backend/README.md)
 
-### Frontend
+### Frontend (v2)
 
 ```bash
-cd frontend
+cd frontend-v2
 npm install
 npm run dev
 ```
 
 http://localhost:5173 — proxy `/api` e `/uploads` → `:8000`
 
-Detalhes: [`frontend/README.md`](frontend/README.md)
+Detalhes: [`frontend-v2/README.md`](frontend-v2/README.md)
 
-- `/` — catálogo público
-- `/c/<slug>` — mapa da mesa (ex. `/c/wfrp`, `/c/wod`)
-- `/c/<slug>/relacoes` — rede de relações
+Rotas úteis:
+
+- `/` — home
+- `/explorar` — catálogo público de campanhas
+- `/c/{id}/{slug}` — mapa da mesa (ex. `/c/1/wfrp`)
+- `/c/{id}/{slug}/relacoes` · `/rota` · `/sessoes` · `/linha-do-tempo` · `/itens`
 - `/painel` — minhas campanhas (mestre)
+- `/painel/novo` — criar campanha
 - `/login` — sessão de mestre
-- `/admin` — redireciona para o mapa da mesa com Modo GM
+
+> O pacote legado `frontend/` (Nocturne) permanece no repositório para referência; o desenvolvimento activo e as capturas desta versão usam `frontend-v2`.
 
 ### Docker
 
@@ -237,18 +307,17 @@ docker compose --profile with-caddy up --build   # porta 8080
 
 ### Campaign Codex (uma instância)
 
-- Criar mesa: `/painel` ou `uv run python -m app.cli campanha criar …`
-- Import legado: `uv run python -m app.cli campanha importar-legado …` (ver runbook de corte)
+- Criar mesa: `/painel/novo` ou `uv run python -m app.cli campanha criar …`
+- Import legado: `uv run python -m app.cli campanha importar-legado …`
 - Snippets Caddy/Tunnel: `./scripts/imprimir-snippets-codex.sh --porta-api PORT --porta-web PORT`
-- `scripts/nova-campanha.sh` e `scripts/migrar-wfrp.sh` recusam (aposentados). O hub em [`hub/`](hub/) é histórico (078).
 - Runbook: [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
 
 ---
 
 ## Segurança
 
-- Leitura pública; escrita em `/api/admin/*` exige **Basic Auth** na API (fail closed sem `ADMIN_USER` / `ADMIN_PASSWORD`)
-- Gate na SPA: dialog “Acesso do Mestre”
+- Leitura pública; escrita exige sessão de membro/dono da campanha (fail closed)
+- Gate na SPA: «Entrar» → login do mestre
 - Caddy pode reforçar rotas GM em produção
 - Jogadores vêem actualizações ao **recarregar** (sem sync ao vivo)
 
@@ -263,7 +332,7 @@ docker compose --profile with-caddy up --build   # porta 8080
 | [`docs/manual-mapa.md`](docs/manual-mapa.md) | Mapa: pins, menu, fichas, grupo, calcular rotas, CRUD GM |
 | [`docs/manual-rede-rotas.md`](docs/manual-rede-rotas.md) | Nós e segmentos da rede de vias (Modo GM) |
 | [`docs/manual-relacoes.md`](docs/manual-relacoes.md) | Rede de Relações: grafo, tipos de vínculo, criar e visualizar |
-| [`docs/api-contracts.md`](docs/api-contracts.md) | Inventário OpenAPI: rotas, parâmetros, corpos, respostas e schemas |
+| [`docs/api-contracts.md`](docs/api-contracts.md) | Inventário OpenAPI |
 | [`docs/flows.md`](docs/flows.md) | Fluxos funcionais e operacionais em Mermaid |
-| [`specs/`](specs/) | Specs Speckit por funcionalidade (histórico de desenho) |
-| [`frontend/README.md`](frontend/README.md) · [`backend/README.md`](backend/README.md) | Detalhe por camada |
+| [`openspec/`](openspec/) | Specs OpenSpec por mudança |
+| [`frontend-v2/README.md`](frontend-v2/README.md) · [`backend/README.md`](backend/README.md) | Detalhe por camada |

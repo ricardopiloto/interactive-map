@@ -127,12 +127,28 @@ export function ArcTimeline({
       });
     });
 
+  // userSpaceOnUse is required: a vertical connector has objectBoundingBox width 0,
+  // so the default gradientUnits leave the dashed stroke invisible.
   const sequentialGradients = visibleSequential.map((p, idx) => {
+    const newer = shown[p.newerRowIndex]!;
+    const older = shown[p.olderRowIndex]!;
     const newerArc = arcos.find((a) => a.id === p.newerArcId);
     const olderArc = arcos.find((a) => a.id === p.olderArcId);
     const id = `${uid}-seq-${idx}`;
+    const x1 = newer.column * 64 + 12;
+    const x2 = older.column * 64 + 12;
+    const y1 = p.newerRowIndex * 96 + 45;
+    const y2 = p.olderRowIndex * 96 + 45;
     return (
-      <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
+      <linearGradient
+        key={id}
+        id={id}
+        gradientUnits="userSpaceOnUse"
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+      >
         <stop offset="0%" stopColor={newerArc?.cor ?? "var(--border)"} />
         <stop offset="100%" stopColor={olderArc?.cor ?? "var(--border)"} />
       </linearGradient>
@@ -158,8 +174,9 @@ export function ArcTimeline({
         d={straight ? `M${x1} ${y1} V${y2}` : `M${x1} ${y1} C${x1} ${mid} ${x2} ${mid} ${x2} ${y2}`}
         fill="none"
         stroke={`url(#${gradId})`}
-        strokeWidth="2"
-        strokeDasharray="6 5"
+        strokeWidth="3"
+        strokeDasharray="8 7"
+        strokeLinecap="round"
       />
     );
   });
@@ -202,14 +219,20 @@ export function ArcTimeline({
     const gap = elapsed(newer.date, older.date);
     const text = formatElapsed(gap, t);
     if (!text) return null;
+    // Midpoint of the dashed sequential stroke; rotate so the copy runs with the line
+    // and sits just "above" it (left of a vertical connector).
+    const x = ((newer.column + older.column) / 2) * 64 + 12;
     const y = ((p.newerRowIndex + p.olderRowIndex) / 2) * 96 + 45;
-    const x = ((newer.column + older.column) / 2) * 64 + 28;
     return (
       <span
         key={`seq-label:${p.newerArcId}:${p.olderArcId}`}
         data-sequential-label
-        className="pointer-events-none absolute z-20 text-xs text-muted-foreground"
-        style={{ top: y, left: x, transform: "translateY(-50%)" }}
+        className="pointer-events-none absolute z-20 whitespace-nowrap text-xs text-muted-foreground"
+        style={{
+          top: y,
+          left: x,
+          transform: "translate(-50%, -50%) rotate(-90deg) translateY(-0.7rem)",
+        }}
         aria-label={t("arcos.betweenArcsAria", { elapsed: text })}
       >
         {t("arcos.betweenArcs", { elapsed: text })}

@@ -28,7 +28,7 @@ services:
 
   web:
     build:
-      context: ./frontend
+      context: ./frontend-v2
     container_name: ${COMPOSE_PROJECT_NAME:-mapa}-web
     restart: unless-stopped
     depends_on:
