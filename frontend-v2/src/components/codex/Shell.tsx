@@ -5,6 +5,7 @@ import {
   Route as RouteIcon,
   ScrollText,
   Hourglass,
+  Package,
   PenLine,
   Sun,
   Moon,
@@ -25,6 +26,7 @@ const lenses = [
   { path: "rota", label: "Rota", icon: RouteIcon },
   { path: "sessoes", label: "Sessões", icon: ScrollText },
   { path: "linha-do-tempo", label: "Cronologia", icon: Hourglass },
+  { path: "itens", label: "Itens", icon: Package },
 ] as const;
 
 export function TopBar({ campaign }: { campaign: CampaignConfig }) {
@@ -50,6 +52,7 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
         rota: "route",
         sessoes: "sessions",
         "linha-do-tempo": "timeline",
+        itens: "items",
       } as const;
       return (
         <Link

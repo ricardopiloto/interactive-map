@@ -7,7 +7,12 @@ import {
   type ReactZoomPanPinchRef,
 } from "react-zoom-pan-pinch";
 import type { Personagem, PersonagemStatus, Vinculo, VinculoTipo } from "@/api/relacoes";
-import { NODE_BOX, layoutRadialByTipo } from "@/lib/graphLayout";
+import {
+  NODE_BOX,
+  layoutRadialByRelation,
+  layoutRadialByTipo,
+  type GraphFrame,
+} from "@/lib/graphLayout";
 import {
   edgeDisplayTipo,
   edgeMatchesTipos,
@@ -131,12 +136,14 @@ export function RelationsGraph({
   const [sessionShifts, setSessionShifts] = useState<Map<number, Shift>>(() => new Map());
   const [failedPortraits, setFailedPortraits] = useState<Set<number>>(() => new Set());
   const [grabbedId, setGrabbedId] = useState<number | null>(null);
+  const [viewportScale, setViewportScale] = useState(1);
   const svgRef = useRef<SVGSVGElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<ReactZoomPanPinchRef | null>(null);
   const scaleRef = useRef(1);
   const shiftsRef = useRef(sessionShifts);
   const releaseGrabRef = useRef<((quiet?: boolean) => void) | null>(null);
+  const releaseBackgroundRef = useRef<(() => void) | null>(null);
   const skipClickRef = useRef(false);
   const seenSlugRef = useRef(campaignSlug);
   shiftsRef.current = sessionShifts;
@@ -148,17 +155,61 @@ export function RelationsGraph({
     }),
     [personagens],
   );
+  const edges = useMemo(
+    () => vinculos.filter((v) => edgeMatchesTipos(v, activeTipos)),
+    [vinculos, activeTipos],
+  );
+  const visibleIds = useMemo(() => new Set(personagens.map((p) => p.id)), [personagens]);
+  const focusedId = selectedId != null && visibleIds.has(selectedId) ? selectedId : null;
+  const related = useMemo(() => {
+    const ids = new Set<number>();
+    if (focusedId == null) return ids;
+    ids.add(focusedId);
+    for (const bond of edges) {
+      if (bond.personagem_a_id === focusedId && visibleIds.has(bond.personagem_b_id))
+        ids.add(bond.personagem_b_id);
+      if (bond.personagem_b_id === focusedId && visibleIds.has(bond.personagem_a_id))
+        ids.add(bond.personagem_a_id);
+    }
+    return ids;
+  }, [edges, focusedId, visibleIds]);
   const frame = useMemo(
     () =>
-      layoutRadialByTipo(
-        personagens.map((p) => ({ id: p.id, tipo: p.tipo })),
-        box,
-      ),
-    [personagens, box],
+      focusedId == null
+        ? layoutRadialByTipo(
+            personagens.map((p) => ({ id: p.id, tipo: p.tipo })),
+            box,
+          )
+        : layoutRadialByRelation(
+            personagens.map((p) => p.id),
+            focusedId,
+            [...related],
+            box,
+          ),
+    [personagens, box, focusedId, related],
   );
+
+  function focusViewport(ref: ReactZoomPanPinchRef, currentFrame: GraphFrame, id: number | null) {
+    if (id == null) {
+      void ref.fitToView({ mode: "contain", animationTime: 0 });
+      return;
+    }
+    const wrapper = ref.instance.wrapperComponent;
+    const point = currentFrame.nodes.find((node) => node.id === id);
+    if (!wrapper || !point) return;
+    const shift = shiftsRef.current.get(id) ?? { x: 0, y: 0 };
+    const scale = Math.min(4, Math.max(1, scaleRef.current));
+    void ref.setTransform(
+      wrapper.clientWidth / 2 - (point.x + shift.x) * scale,
+      wrapper.clientHeight / 2 - (point.y + shift.y) * scale,
+      scale,
+      0,
+    );
+  }
+
   useEffect(() => {
-    void apiRef.current?.fitToView({ mode: "contain", animationTime: 0 });
-  }, [campaignSlug, frame.width, frame.height]);
+    if (apiRef.current) focusViewport(apiRef.current, frame, focusedId);
+  }, [campaignSlug, frame, focusedId]);
   const placed = useMemo(() => {
     const map = new Map(frame.nodes.map((node) => [node.id, node]));
     for (const [id, shift] of sessionShifts) {
@@ -168,15 +219,6 @@ export function RelationsGraph({
     }
     return map;
   }, [frame.nodes, sessionShifts]);
-  const edges = vinculos.filter((v) => edgeMatchesTipos(v, activeTipos));
-  const related = new Set<number>();
-  if (selectedId != null) {
-    related.add(selectedId);
-    for (const bond of edges) {
-      if (bond.personagem_a_id === selectedId) related.add(bond.personagem_b_id);
-      if (bond.personagem_b_id === selectedId) related.add(bond.personagem_a_id);
-    }
-  }
   const isolated = isolate && selectedId != null;
 
   function nodeOpacity(id: number) {
@@ -198,8 +240,18 @@ export function RelationsGraph({
     return true;
   }
 
+  function armSkipClick() {
+    skipClickRef.current = true;
+    requestAnimationFrame(() => {
+      skipClickRef.current = false;
+    });
+  }
+
   useEffect(() => {
-    return () => releaseGrabRef.current?.(true);
+    return () => {
+      releaseGrabRef.current?.(true);
+      releaseBackgroundRef.current?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -207,10 +259,48 @@ export function RelationsGraph({
     seenSlugRef.current = campaignSlug;
     releaseGrabRef.current?.();
     releaseGrabRef.current = null;
+    releaseBackgroundRef.current?.();
+    releaseBackgroundRef.current = null;
     skipClickRef.current = false;
     setGrabbedId(null);
     setSessionShifts(new Map());
   }, [campaignSlug]);
+
+  /** Track empty-area drags so pan does not clear selection. Must not stopPropagation. */
+  function noteBackgroundPointer(event: React.PointerEvent<SVGSVGElement>) {
+    if (event.nativeEvent.button > 0 || releaseBackgroundRef.current) return;
+    const target = event.target as Element | null;
+    if (target?.closest?.("[data-node-id]")) return;
+    const pointerId = event.nativeEvent.pointerId;
+    const originX = event.clientX;
+    const originY = event.clientY;
+    let moved = false;
+
+    const end = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (releaseBackgroundRef.current === end) releaseBackgroundRef.current = null;
+      if (moved) armSkipClick();
+    };
+
+    const onMove = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      if (moved) return;
+      if (Math.hypot(native.clientX - originX, native.clientY - originY) <= GRAB_SLOP_PX) return;
+      moved = true;
+    };
+
+    const onUp = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      end();
+    };
+
+    releaseBackgroundRef.current = end;
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
 
   function beginGrab(event: React.PointerEvent<SVGGElement>, id: number) {
     const button = event.nativeEvent.button;
@@ -241,12 +331,7 @@ export function RelationsGraph({
       }
       if (quiet) return;
       setGrabbedId(null);
-      if (moved) {
-        skipClickRef.current = true;
-        requestAnimationFrame(() => {
-          skipClickRef.current = false;
-        });
-      }
+      if (moved) armSkipClick();
     };
 
     const onMove = (native: PointerEvent) => {
@@ -294,17 +379,20 @@ export function RelationsGraph({
         ref={apiRef}
         minScale={0.05}
         maxScale={4}
+        limitToBounds={false}
         centerOnInit
-        wheel={{ step: 0.01 }}
+        smooth={false}
+        wheel={{ step: Math.max(0.005, viewportScale * 0.1) }}
         pinch={{ step: 5 }}
-        panning={{ disabled: grabbedId != null }}
+        panning={{ disabled: grabbedId != null, velocityDisabled: true, excluded: ["graph-node"] }}
         doubleClick={{ disabled: true }}
         onInit={(ref) => {
           apiRef.current = ref;
-          void ref.fitToView({ mode: "contain", animationTime: 0 });
+          focusViewport(ref, frame, focusedId);
         }}
         onTransform={(_ref, state) => {
           scaleRef.current = state.scale;
+          setViewportScale(state.scale);
           if (stageRef.current) {
             stageRef.current.dataset["viewportScale"] = String(state.scale);
             stageRef.current.dataset["viewportX"] = String(state.positionX);
@@ -322,6 +410,7 @@ export function RelationsGraph({
             overflow="visible"
             role="img"
             aria-label={t("v2.network")}
+            onPointerDown={noteBackgroundPointer}
             onClick={() => {
               if (consumeSuppressedClick()) return;
               onSelect(null);
@@ -463,8 +552,8 @@ export function RelationsGraph({
                   opacity={nodeOpacity(person.id)}
                   className={
                     grabbed
-                      ? "cursor-grabbing touch-none select-none"
-                      : "cursor-grab touch-none select-none"
+                      ? "graph-node cursor-grabbing touch-none select-none"
+                      : "graph-node cursor-grab touch-none select-none"
                   }
                   onPointerDown={(event) => beginGrab(event, person.id)}
                   onMouseDown={(event) => event.stopPropagation()}

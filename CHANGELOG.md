@@ -7,6 +7,29 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-10-16
+
+### Added
+
+- Aba e tela públicas de Itens: listagem com busca, detalhe com descrição em Markdown e chips de sessões/eventos associados. O mestre vê também os ocultos, com indicação visual, e um atalho leva à Linha do Tempo para criar ou editar. Deep-link `?item=ID`.
+- Rede de Relações com zoom e pan reais (roda, arrastar, pinça e "Ajustar à tela" a partir do conteúdo). Sem seleção, PJs ficam num anel interno e NPCs num anel externo; ao selecionar um Personagem, ele vai ao centro, vizinhos diretos no anel interno e os demais no externo, com a viewport centrada nele.
+- Retratos de Personagem de volta na Rede de Relações: prévia no editor, imagem no painel de detalhe e retrato circular nos nós do grafo (com fallback para iniciais se a imagem falhar). Sem mudança de backend — o upload já existia.
+- Marcadores de pernoite de volta no mapa de Rota: pin de "ao relento", destaque quando a noite é num Local, e coloração do traçado por fadiga do ritmo intenso. Regra nova: pernoite perto de uma cidade (raio em unidades do mapa) deixa de ser classificado como ao relento e passa a recuperar fadiga como noite local.
+- Endereço canônico de campanha `/c/{id}/{slug}`. Links antigos `/c/{slug}/...` continuam resolvendo e a navegação corrige para a forma canônica. Colisão de slug na criação passa a devolver 409 de forma confiável, sem janela de corrida que gerava 500.
+- No modo Por arcos da Linha do Tempo, ligação tracejada com gradiente e tempo decorrido entre arcos sequenciais, e curva automática quando uma coluna nasce por overlap de datas (sem exigir sessão de transição marcada).
+- Na tela de Sessões (desktop), lista e descrição passam a rolar de forma independente: a descrição permanece visível enquanto se navega uma lista longa, e o contrário também.
+
+### Changed
+
+- No modo Por arcos, sessões do mesmo mês desempatam pelo número da sessão (mais recente acima). Sessões sem data deixam de ir para um bloco genérico no fim da lista: ficam no bloco do próprio arco, posicionadas pela data de referência do arco (a mais recente entre as sessões datadas dele), sem inventar data na sessão.
+
+### Fixed
+
+- Ordenação invertida entre sessões do mesmo mês no modo Por arcos, que produzia zig-zag visível em campanhas com vários empates de data.
+- Arcos com mistura de sessões datadas e sem data deixavam as sem data misturadas no fim da lista com outros arcos; cada arco volta a aparecer como bloco contínuo.
+- Arrastar (pan) a área vazia do grafo de Relações deixava de limpar a seleção; só um clique simples na área vazia desseleciona. Arrastar um nó também preserva a seleção.
+- Marcador de pernoite no mapa ficava enorme e elíptico em mapas de alta resolução; passa a ter tamanho fixo em tela, sem distorção de aspecto.
+
 ## [0.24.5] — 2026-10-05
 
 ### Added

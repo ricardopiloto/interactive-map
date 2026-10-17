@@ -18,11 +18,28 @@
 
 ## 4. Validação com dados reais de produção
 
-- [ ] 4.1 Validar manualmente (ou com um teste de render usando um fixture com contagem real) contra a campanha com mais Personagens/Vínculos disponível numa cópia de dados reais de produção (ex. a usada para o ensaio da task 6.2 de `local-waypoint-vinculo-automatico`, se ainda disponível) — confirmar que a tela carrega, "Ajustar à tela" mostra o grafo inteiro de forma legível, e é possível navegar (zoom + pan) até qualquer Personagem sem travar ou ficar imperceptível.
+- [x] 4.1 Validar manualmente (ou com um teste de render usando um fixture com contagem real) contra a campanha com mais Personagens/Vínculos disponível numa cópia de dados reais de produção (ex. a usada para o ensaio da task 6.2 de `local-waypoint-vinculo-automatico`, se ainda disponível) — confirmar que a tela carrega, "Ajustar à tela" mostra o grafo inteiro de forma legível, e é possível navegar (zoom + pan) até qualquer Personagem sem travar ou ficar imperceptível.
 
 ## 5. Regressão
 
-- [ ] 5.1 Rodar `npm run lint`, `npx tsc --noEmit`, `npm run test` e `npx playwright test` completos em `frontend-v2/`; confirmar que `e2e/relacoes.spec.ts` (fluxo de criar vínculo de duas vias, visibilidade pro jogador) continua passando sem modificação de asserção — essa change não deveria quebrar nenhum comportamento de vínculo/visibilidade, só layout e navegação do grafo.
+- [x] 5.1 Rodar `npm run lint`, `npx tsc --noEmit`, `npm run test` e `npx playwright test` completos em `frontend-v2/`; confirmar que `e2e/relacoes.spec.ts` (fluxo de criar vínculo de duas vias, visibilidade pro jogador) continua passando sem modificação de asserção — essa change não deveria quebrar nenhum comportamento de vínculo/visibilidade, só layout e navegação do grafo.
+  - Validação do coordenador (revisão de arquitetura, 2026-10-17): lint 0 erros (17 warnings pré-existentes não relacionados), `tsc --noEmit` limpo, `npm run test` 78/78, e2e completo **32/32** (confirmado só depois de corrigir uma regressão não relacionada a esta change — ver nota abaixo). `e2e/relacoes.spec.ts` passa sem modificação.
+  - **Nota**: durante esta verificação, a suíte e2e completa revelou uma regressão real em `Shell.tsx` (a aba "Itens", de `itens-publicos`, tinha sumido do array `lenses` — import do ícone, entrada e chave de label todos ausentes, embora a rota e a página continuassem intactas). Não era causada por esta change; corrigida separadamente pelo cursor-agent e revalidada (32/32 e2e) antes de marcar esta task.
+
+## 6. Zoom gradual da roda
+
+- [x] 6.1 Reproduzir o salto atual com eventos de roda representativos e verificar como a versão instalada de `react-zoom-pan-pinch` interpreta `wheel.step` e `deltaY`; ajustar o controle para que cada incremento usual mude a escala em no máximo 15%, com vários níveis úteis entre enquadramento geral e ampliação, preservando zoom no ponteiro e limites.
+- [x] 6.2 Cobrir a progressão do zoom com teste de interação que compara escalas após incrementos sucessivos, incluindo roda de delta grande e afastamento; conferir pinça e botões existentes.
+
+## 7. Foco radial na seleção
+
+- [x] 7.1 Adicionar layout determinístico para seleção em `graphLayout.ts`: nó selecionado no centro, vizinhos diretos únicos no anel interno, demais ids visíveis no anel externo; calcular raios e `GraphFrame` sem sobreposição, inclusive grupos vazios e elenco grande. Cobrir no teste unitário casos com zero, um e muitos vizinhos, ids em ordem diferente e vínculos múltiplos.
+- [x] 7.2 Em `RelationsGraph.tsx`, usar os vínculos disponíveis já filtrados por tipo para descobrir vizinhos diretos, sem diferenciar direção ou PJ/NPC; manter `layoutRadialByTipo` quando não houver seleção. Recalcular ao mudar seleção, filtros, elenco ou vínculos, e preservar o arrasto manual de sessão.
+- [x] 7.3 Centralizar o nó selecionado na área visível do grafo após a mudança de layout, com escala legível e sem ser sobrescrito pelo `fitToView` geral; ao limpar a seleção, voltar ao enquadramento geral. Cobrir seleção por clique e URL, troca de personagem, filtros, seleção removida e nó isolado, com teste de interação e verificação visual em desktop e mobile.
+
+## 8. Validação da atualização
+
+- [x] 8.1 Validar a seleção e o zoom com elenco de produção ou fixture de tamanho equivalente; verificar ausência de sobreposição, centralização apesar do painel lateral, desempenho e navegação em ambos os anéis. Executar os testes e verificações pertinentes do `frontend-v2/` após a implementação.
 
 ## Workflow follow-up
 

@@ -45,6 +45,7 @@ class Settings(BaseSettings):
         validation_alias="MIGRATE_DROP_LEGACY_FADIGA",
     )
     tolerancia_pernoite_pct: float = 0.20
+    raio_abrigo_cidade_unidades_mapa: float = 0.02
     deepseek_api_key: str | None = Field(default=None, validation_alias="DEEPSEEK_API_KEY")
     deepseek_base_url: str = Field(
         default="https://api.deepseek.com",

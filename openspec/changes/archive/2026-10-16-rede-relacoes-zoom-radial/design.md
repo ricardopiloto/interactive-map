@@ -2,6 +2,8 @@
 
 ## Context
 
+**Estado após a implementação parcial:** `RelationsGraph.tsx` já usa `TransformWrapper` com `wheel={{ step: 0.01 }}`, `minScale={0.05}`, `maxScale={4}` e `layoutRadialByTipo`; já desabilita pan durante o arrasto de um nó. As descrições históricas do zoom CSS abaixo documentam o ponto de partida da change, não o código atual. A seleção atual só altera destaque/opacidade, sem mudar posições. A atualização abaixo substitui o antigo non-goal de não agrupar por vínculo para o estado selecionado; sem seleção, o layout PJ/NPC permanece.
+
 Ver `proposal.md` - Why para a motivação completa (achada testando `frontend-v2/` contra uma cópia real de produção). Estado atual relevante, lido por completo:
 
 - `frontend-v2/src/lib/graphLayout.ts`: `layoutRing(ids, box, gap)` — um único anel, raio calculado por `ringRadius(count, separation)` (polígono regular), `separation = minCenterDistance(box, gap) = Math.hypot(box.width, box.height) + gap`. Garante matematicamente que nenhuma caixa de nó se sobrepõe, pra qualquer `count` — não é um bug de sobreposição, é o anel ficando maior que qualquer viewport alcançável com os controles atuais.
@@ -15,11 +17,11 @@ Ver `proposal.md` - Why para a motivação completa (achada testando `frontend-v
 **Goals:**
 - Zoom e pan reais (roda do mouse, arrastar a tela, pinça em touch) na Rede de Relações, suficientes pra navegar um grafo de qualquer tamanho real de produção.
 - "Ajustar à tela" calculando a escala de verdade a partir do conteúdo, não resetando pra um valor fixo.
-- PJ sempre num anel interno centralizado; NPC sempre num anel externo ao redor — sem exigir nenhuma mudança de dado persistido (posição continua calculada em tempo de render, como hoje).
+- **Sem nenhum Personagem selecionado**: PJ sempre num anel interno centralizado; NPC sempre num anel externo ao redor — sem exigir nenhuma mudança de dado persistido (posição continua calculada em tempo de render, como hoje). **Com um Personagem selecionado** (qualquer um, PJ ou NPC — ver "Atualização: seleção e zoom gradual" em Risks/Trade-offs): o layout reorganiza por vínculo direto com o selecionado (selecionado no centro, vizinhos diretos no anel interno, demais no anel externo), substituindo temporariamente a separação PJ/NPC até a seleção ser limpa — mudança intencional e documentada, não uma regressão da regra acima.
 - Arrastar um nó individual continuar funcionando exatamente como hoje (reposicionamento de sessão, não persistido), coexistindo com o pan da viewport.
 
 **Non-Goals:**
-- Qualquer sub-agrupamento de NPCs por proximidade com o PJ a que estão ligados (ex. um NPC renderizado mais perto do PJ específico com quem tem vínculo) — fica um anel externo "achatado", sem ordenação por relação. Pode ser proposto depois se a navegação ainda incomodar num elenco muito denso.
+- Otimização angular dos nós por afinidade entre pares ou agrupamento por distância de dois ou mais vínculos. O foco usa apenas vizinhos diretos do Personagem selecionado.
 - Qualquer mudança nos 8 tipos de vínculo, direção, qualificador ou nas regras de visibilidade já especificadas em `frontend-v2-paper-parchment/specs/frontend-v2/spec.md` ("Rede de Relações usa os tipos reais de vínculo").
 - Persistir a posição calculada de um Personagem no backend — continua 100% derivada em tempo de render.
 - Portar a implementação visual (cores, CSS, HTML) do `frontend/` legado — só a lógica de duas-camadas-de-anel e de zoom/pan real.
@@ -42,6 +44,14 @@ Ver `proposal.md` - Why para a motivação completa (achada testando `frontend-v
 **Alternativa considerada**: ordenar o anel externo por proximidade de vínculo com os PJs (NPC mais perto visualmente do PJ com quem tem relação). Rejeitada por este Non-Goal — aumentaria bastante a complexidade do algoritmo (viraria um problema de otimização, não mais geometria direta) pra um ganho que não foi pedido; o anel externo "achatado" já resolve o problema relatado (zoom/pan ausentes + hierarquia visual PJ/NPC ausente).
 
 ## Risks / Trade-offs
+
+### Atualização: seleção e zoom gradual
+
+- **Layout:** manter `layoutRadialByTipo` como padrão sem seleção. Criar em `graphLayout.ts` um layout determinístico de três níveis que recebe ids visíveis, id selecionado e ids de vizinhos diretos. O selecionado ocupa a origem; `ringRadius` e `minCenterDistance` dimensionam o anel interno e o externo. Quando não houver vizinhos, o anel externo ainda precisa ficar afastado do centro. Quando não houver demais Personagens, não há anel externo. Ordenar ids antes de atribuir ângulos e dimensionar o `GraphFrame` pelo raio mais externo.
+- **Vínculos usados:** `RelationsGraph.tsx` recebe do route apenas Personagens/vínculos permitidos pelo filtro de status e pela resposta de visibilidade. Usar a lista `edges` já filtrada por `activeTipos` para classificar vizinhos em ambas as direções; ignorar pontas ausentes. Isso mantém o anel interno coerente com as arestas destacadas. Vínculos múltiplos entre o mesmo par contam uma vez.
+- **Viewport:** depois de atualizar o `frame` para uma seleção válida, ajustar o pan para que a posição do nó selecionado apareça no centro da área disponível, com escala que mantenha o nó legível; preservar a escala atual quando já for adequada, dentro de `minScale` e `maxScale`. Reaplicar quando se seleciona outro nó ou o conjunto visível muda. Ao limpar a seleção, enquadrar o grafo inteiro. Evitar que atualizações de `frame` disparem `fitToView` depois do foco e o desfaçam. Arrastos manuais seguem locais à visita e não devem acionar nova seleção.
+- **Roda:** avaliar o `wheel.step` e a normalização de `deltaY` da versão instalada de `react-zoom-pan-pinch` com evento de roda real (incluindo dispositivos que entregam delta grande); ajustar configuração ou tratar o evento para limitar cada incremento usual a até 15% e oferecer vários níveis úteis. Manter o zoom centrado no ponteiro, pinça, botões e limites existentes.
+- **Risco:** anéis com muitos vizinhos podem ficar extensos, reduzindo o contexto no enquadramento geral; validar com elenco grande e selecionar nós com zero, um e muitos vizinhos. O centro visual deve considerar a área efetiva do grafo, inclusive o painel lateral no desktop.
 
 - **Dois sistemas de pointer-event competindo pelo mesmo gesto** (arrastar nó vs. pan da viewport) — maior risco técnico desta mudança; mitigado por manter o `stopPropagation()` já existente e por um teste explícito dedicado (ver Decision 2 e `tasks.md`), com `panning.disabled` condicional como plano B documentado.
 - **Elenco de produção real ainda pode ficar grande mesmo com dois anéis** (em vez de um) — aceito como trade-off: zoom/pan reais (em vez de 0.4–2× fixo) já resolvem a navegabilidade; a hierarquia PJ/NPC resolve a legibilidade. Não há um limite rígido de "até quantos Personagens isso continua confortável" definido aqor — se a cópia real de produção usada pra validar (`tmp/producao-copia`, campanha com mais Personagens) ainda incomodar depois desta mudança, é um achado pra uma iteração futura, não um bloqueio desta.

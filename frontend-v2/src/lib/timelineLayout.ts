@@ -54,7 +54,7 @@ function arcsOverlapOrTie(
   return false;
 }
 
-/** Dated events anchor a session; its oldest event wins. Undated sessions remain below dated rows. */
+/** Dated events anchor a session; its oldest event wins. Undated sessions use their arc for placement. */
 export function layoutArcs(sessoes: Sessao[], eventos: Evento[], _arcos: Arco[]): TimelineLayout {
   const dates = new Map<number, number>();
   for (const e of eventos)
@@ -66,15 +66,19 @@ export function layoutArcs(sessoes: Sessao[], eventos: Evento[], _arcos: Arco[])
     date: dates.get(sessao.id) ?? null,
     column: 0,
   }));
-  rows.sort((a, b) =>
-    a.date === null
-      ? b.date === null
-        ? a.sessao.numero - b.sessao.numero
-        : 1
-      : b.date === null
-        ? -1
-        : b.date - a.date || a.sessao.numero - b.sessao.numero,
-  );
+  const arcAnchor = new Map<number, number>();
+  for (const row of rows)
+    if (row.arcId !== null && row.date !== null)
+      arcAnchor.set(row.arcId, Math.max(arcAnchor.get(row.arcId) ?? -Infinity, row.date));
+  const sortKey = (row: TimelineRow): number | null =>
+    row.date ?? (row.arcId !== null ? (arcAnchor.get(row.arcId) ?? null) : null);
+  rows.sort((a, b) => {
+    const ka = sortKey(a);
+    const kb = sortKey(b);
+    if (ka === null) return kb === null ? a.sessao.numero - b.sessao.numero : 1;
+    if (kb === null) return -1;
+    return kb - ka || b.sessao.numero - a.sessao.numero;
+  });
   const ranges = new Map<number, { min: number; max: number }>();
   for (const row of rows)
     if (row.arcId !== null && row.date !== null) {
@@ -154,7 +158,7 @@ export function layoutArcs(sessoes: Sessao[], eventos: Evento[], _arcos: Arco[])
   const last = new Map<number | null, number | null>();
   const withPrevious = rows.map((row) => {
     const previous = last.get(row.arcId);
-    last.set(row.arcId, row.date);
+    if (row.date !== null) last.set(row.arcId, row.date);
     return { ...row, previous };
   });
 

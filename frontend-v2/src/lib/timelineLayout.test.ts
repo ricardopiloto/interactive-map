@@ -62,9 +62,50 @@ describe("arc columns", () => {
       [e(1, 1, 100), e(3, 3, 100)],
       [a(1), a(2)],
     );
-    expect(r.map((x) => x.sessao.id)).toEqual([1, 3, 2, 4]);
+    expect(r.map((x) => x.sessao.id)).toEqual([3, 1, 2, 4]);
     expect(r[0]?.column).not.toBe(r[1]?.column);
     expect(r.slice(2).map((x) => x.date)).toEqual([null, null]);
+  });
+  it("orders same-month sessions in one arc by descending session number", () => {
+    const { rows } = layoutArcs(
+      [s(18, 5), s(21, 5)],
+      [e(18, 18, 2511, 10), e(21, 21, 2511, 10)],
+      [a(5)],
+    );
+    expect(rows.map((row) => row.sessao.numero)).toEqual([21, 18]);
+  });
+  it("orders same-month sessions across arcs and assigns the lower-numbered arc to the branch", () => {
+    const { rows, branchOrigins } = layoutArcs(
+      [s(18, 1), s(21, 2)],
+      [e(18, 18, 2511, 10), e(21, 21, 2511, 10)],
+      [a(1), a(2)],
+    );
+    expect(rows.map((row) => [row.sessao.numero, row.column])).toEqual([
+      [21, 0],
+      [18, 1],
+    ]);
+    expect([...branchOrigins]).toEqual([
+      [1, { fromArcId: 2, fromDate: 2511 * 12 + 9, atDate: 2511 * 12 + 9 }],
+    ]);
+  });
+  it("keeps undated sessions with their dated arc above older arcs and leaves unanchored rows last", () => {
+    const { rows } = layoutArcs(
+      [s(9, 3), s(13, 4), s(14, 4), s(15, 4), s(16, 4), s(17, 4), s(6, 2), s(7, 2), s(8, null)],
+      [e(9, 9, 2511, 7), e(13, 13, 2511, 8), e(17, 17, 2511, 8)],
+      [a(2), a(3), a(4)],
+    );
+    expect(rows.map((row) => row.sessao.numero)).toEqual([17, 16, 15, 14, 13, 9, 6, 7, 8]);
+    expect(rows.slice(1, 4).map((row) => row.date)).toEqual([null, null, null]);
+    expect(rows.slice(6).map((row) => row.date)).toEqual([null, null, null]);
+  });
+  it("keeps the last real date across undated sessions of the same arc", () => {
+    const { rows } = layoutArcs(
+      [s(13, 4), s(14, 4), s(15, 4), s(17, 4)],
+      [e(13, 13, 2511, 8), e(17, 17, 2511, 8)],
+      [a(4)],
+    );
+    expect(rows.map((row) => row.sessao.numero)).toEqual([17, 15, 14, 13]);
+    expect(rows.find((row) => row.sessao.numero === 13)?.previous).toBe(2511 * 12 + 7);
   });
   it("keeps an unassigned session visible in the shared column and a transition only once", () => {
     const transition = { ...s(2, 1), arco_transicao_id: 2 };

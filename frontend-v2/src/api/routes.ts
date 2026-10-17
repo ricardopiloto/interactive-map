@@ -38,6 +38,13 @@ export interface Pernoite {
   y: number;
 }
 
+export interface DiaVisual {
+  dia: number;
+  residual: boolean;
+  fadiga_apos: number;
+  geometria: MapPoint[];
+}
+
 export interface RoutePlanItem {
   waypoint_ids: number[];
   distancia_milhas: number;
@@ -50,6 +57,11 @@ export interface RoutePlanItem {
   custo_dentro_bp: number;
   custo_fora_bp: number;
   pernoites: Pernoite[];
+  fadiga_saldo: number;
+  fadiga_pico: number;
+  fadiga_aviso: boolean;
+  fadiga_morte: boolean;
+  dias_visuais: DiaVisual[];
 }
 
 export interface RoutePlanResponse {

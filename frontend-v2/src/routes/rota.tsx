@@ -108,6 +108,33 @@ export function RoutePage() {
     surface === "network"
       ? waypoints
       : waypoints.filter((waypoint) => options.some((option) => option.id === waypoint.id));
+  const selectedRoute = surface === "network" ? undefined : plan[selectedIndex];
+  const overnightNodes = new Set(
+    visibleNodes
+      .filter((node) =>
+        selectedRoute?.pernoites.some(
+          (stop) =>
+            stop.tipo === "local" && stop.local_id === node.local_id && node.local_id != null,
+        ),
+      )
+      .map((node) => node.id),
+  );
+  const overnightMarkers = (selectedRoute?.pernoites ?? []).flatMap((stop, index) => {
+    const hasPin =
+      stop.tipo === "local" &&
+      visibleNodes.some((node) => node.local_id === stop.local_id && node.local_id != null);
+    if (hasPin) return [];
+    return [
+      {
+        id: `overnight-${index}`,
+        x: stop.x * 100,
+        y: stop.y * 100,
+        color: stop.tipo === "local" ? "#d97706" : "#475569",
+        testid: stop.tipo === "local" ? "overnight-local-fallback" : "overnight-camp",
+        title: stop.nome ?? `Noite ${stop.dia}: ao relento`,
+      },
+    ];
+  });
 
   useEffect(() => {
     if (editing) return;
@@ -385,19 +412,40 @@ export function RoutePage() {
               style={{ strokeWidth: 3 }}
             />
           ))
-        : plan.map((route, index) => (
-            <path
-              key={`${route.waypoint_ids.join("-")}-${index}`}
-              d={polylinePath(route.geometria)}
-              fill="none"
-              stroke={tipoColor(route.tipos[0] ?? "estrada")}
-              strokeDasharray={tipoDash(route.tipos[0] ?? "estrada")}
-              opacity={index === selectedIndex ? 1 : 0.4}
-              vectorEffect="non-scaling-stroke"
-              strokeLinecap="round"
-              style={{ strokeWidth: index === selectedIndex ? 5 : 2.5 }}
-            />
-          ))}
+        : plan.map((route, index) =>
+            index === selectedIndex && route.dias_visuais?.length ? (
+              route.dias_visuais.map((day) => (
+                <path
+                  key={`${index}-day-${day.dia}`}
+                  data-testid="route-day"
+                  d={polylinePath(day.geometria)}
+                  fill="none"
+                  stroke={
+                    day.residual && day.fadiga_apos >= 1
+                      ? "#b45309"
+                      : tipoColor(route.tipos[0] ?? "estrada")
+                  }
+                  strokeDasharray={tipoDash(route.tipos[0] ?? "estrada")}
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinecap="round"
+                  style={{ strokeWidth: 5 }}
+                />
+              ))
+            ) : (
+              <path
+                key={`${route.waypoint_ids.join("-")}-${index}`}
+                data-testid={index === selectedIndex ? "route-selected" : "route-alternative"}
+                d={polylinePath(route.geometria)}
+                fill="none"
+                stroke={tipoColor(route.tipos[0] ?? "estrada")}
+                strokeDasharray={tipoDash(route.tipos[0] ?? "estrada")}
+                opacity={index === selectedIndex ? 1 : 0.4}
+                vectorEffect="non-scaling-stroke"
+                strokeLinecap="round"
+                style={{ strokeWidth: index === selectedIndex ? 5 : 2.5 }}
+              />
+            ),
+          )}
       {draftPoints.length > 0 && (
         <path
           d={polylinePath(draftPoints)}
@@ -431,12 +479,14 @@ export function RoutePage() {
       )}
       <WorldMap
         mapUrl={config.map_url}
+        markers={overnightMarkers}
         pins={visibleNodes.map((waypoint: Waypoint) => ({
           id: String(waypoint.id),
           name: waypointOptionLabel(waypoint, names),
           x: waypoint.x * 100,
           y: waypoint.y * 100,
           visited: waypoint.nome?.trim() != null && waypoint.nome.trim() !== "",
+          pernoite: overnightNodes.has(waypoint.id),
         }))}
         selected={selectedPin || undefined}
         focusOnSelect={false}

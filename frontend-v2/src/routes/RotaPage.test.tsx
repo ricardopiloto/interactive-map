@@ -33,6 +33,7 @@ interface Store {
   scale: MapScale;
   nextId: number;
   plans: string[];
+  planResults?: RoutePlanItem[];
 }
 
 function local(id: number, nome: string): Local {
@@ -81,6 +82,11 @@ function planItem(id: number, miles: number, texto: string): RoutePlanItem {
     custo_dentro_bp: 4,
     custo_fora_bp: 1.5,
     pernoites: [{ dia: 1, tipo: "local", local_id: 7, nome: "Estalagem", x: 0.4, y: 0.4 }],
+    fadiga_saldo: 0,
+    fadiga_pico: 0,
+    fadiga_aviso: false,
+    fadiga_morte: false,
+    dias_visuais: [],
   };
 }
 
@@ -120,9 +126,10 @@ function installApi(store: Store, signedIn: boolean) {
       if (url.includes("/routes/plan")) {
         store.plans.push(url);
         const routes =
-          store.segments.length >= 2
+          store.planResults ??
+          (store.segments.length >= 2
             ? [planItem(1, 10, "3 dias e 2 h"), planItem(2, 18, "5 dias e 1 h")]
-            : [planItem(1, 10, "3 dias e 2 h")];
+            : [planItem(1, 10, "3 dias e 2 h")]);
         return respond({ rotas: routes });
       }
       if (url.endsWith("/admin/map-scale") && method === "PUT") {
@@ -267,7 +274,7 @@ it("mostra distância, tempo e custo vindos do plano da API", async () => {
   expect(option).toHaveTextContent("3 dias e 2 h");
   expect(option).toHaveTextContent("Via 4 bp");
   expect(option).toHaveTextContent("Fora da via 1.5 bp");
-  expect(screen.getByText(/Estalagem/)).toBeVisible();
+  expect(screen.getAllByText(/Estalagem/).length).toBeGreaterThan(0);
   expect(screen.getByTestId("distance-unit")).toHaveTextContent("quilômetros");
   expect(store.plans[0]).toContain("origem_waypoint_id=1");
   expect(store.plans[0]).toContain("destino_waypoint_id=2");
@@ -389,4 +396,107 @@ it("move nó vinculado no mapa e redesenha o segmento sem recarregar a página",
   );
   expect(store.segments[0]?.pontos_intermediarios).toEqual([{ x: 0.5, y: 0.25 }]);
   expect(screen.getByRole("button", { name: "Porto, Visitado" })).toBeVisible();
+});
+
+async function calculate(store: Store) {
+  renderRoute("/c/alpha/rota", store);
+  await choose("Partindo de", "Porto");
+  await choose("Chegando a", "Vila");
+  fireEvent.click(screen.getByRole("button", { name: "Calcular" }));
+  await screen.findAllByTestId("route-option");
+}
+
+it("lê as fatias e a fadiga da resposta mockada e mantém as alternativas sem pernoites", async () => {
+  const store = baseStore();
+  const selected = planItem(1, 10, "3 dias");
+  selected.tipos = ["trilha"];
+  selected.pernoites = [{ dia: 1, tipo: "relento", local_id: null, nome: null, x: 0.4, y: 0.45 }];
+  selected.fadiga_saldo = 1;
+  selected.fadiga_pico = 2;
+  selected.fadiga_aviso = false;
+  selected.fadiga_morte = false;
+  selected.dias_visuais = [
+    {
+      dia: 1,
+      residual: true,
+      fadiga_apos: 1,
+      geometria: [
+        { x: 0.1, y: 0.2 },
+        { x: 0.4, y: 0.45 },
+      ],
+    },
+    {
+      dia: 2,
+      residual: false,
+      fadiga_apos: 0,
+      geometria: [
+        { x: 0.4, y: 0.45 },
+        { x: 0.9, y: 0.8 },
+      ],
+    },
+  ];
+  const alternative = planItem(2, 18, "5 dias");
+  alternative.pernoites = [{ dia: 1, tipo: "relento", local_id: null, nome: null, x: 0.7, y: 0.7 }];
+  store.planResults = [selected, alternative];
+  await calculate(store);
+  const days = screen.getAllByTestId("route-day");
+  expect(days).toHaveLength(2);
+  expect(days[0]).toHaveAttribute("stroke", "#b45309");
+  expect(days[1]).not.toHaveAttribute("stroke", "#b45309");
+  expect(days[0]?.getAttribute("stroke-dasharray")).toBe(days[1]?.getAttribute("stroke-dasharray"));
+  expect(days[0]?.getAttribute("stroke-dasharray")).toBe("0.3 0.5");
+  expect(screen.getAllByTestId("route-alternative")).toHaveLength(1);
+  expect(screen.getAllByTestId("overnight-camp")).toHaveLength(1);
+  const camp = screen.getByTestId("overnight-camp");
+  expect(camp.tagName).toBe("DIV");
+  expect(camp.closest("svg")).toBeNull();
+  expect(camp).toHaveClass("h-3", "w-3", "rounded-full", "pointer-events-none");
+  expect(camp).toHaveStyle({ left: "40%", top: "45%" });
+  expect(camp).toHaveAttribute("title", "Noite 1: ao relento");
+});
+
+it("destaca o Waypoint do Local abrigado e usa marcador avulso sem vínculo", async () => {
+  const store = baseStore();
+  store.waypoints[0]!.local_id = 7;
+  const selected = planItem(1, 10, "3 dias");
+  selected.pernoites = [
+    { dia: 1, tipo: "local", local_id: 7, nome: "Altdorf", x: 0.1, y: 0.2 },
+    { dia: 2, tipo: "local", local_id: 8, nome: "Abrigo", x: 0.5, y: 0.6 },
+  ];
+  store.planResults = [selected];
+  await calculate(store);
+  expect(screen.getByTestId("overnight-pin-1")).toBeInTheDocument();
+  expect(screen.queryByTestId("overnight-pin-2")).not.toBeInTheDocument();
+  const fallback = screen.getByTestId("overnight-local-fallback");
+  expect(fallback.tagName).toBe("DIV");
+  expect(fallback.closest("svg")).toBeNull();
+  expect(fallback).toHaveClass("h-3", "w-3", "rounded-full", "pointer-events-none");
+  expect(fallback).toHaveStyle({ left: "50%", top: "60%" });
+  expect(fallback).toHaveAttribute("title", "Abrigo");
+});
+
+it("sem pernoites mantém os pins comuns e a cor do tipo de via", async () => {
+  const store = baseStore();
+  store.waypoints[0]!.local_id = 7;
+  const selected = planItem(1, 10, "3 dias");
+  selected.pernoites = [];
+  selected.dias_visuais = [
+    { dia: 1, residual: false, fadiga_apos: 0, geometria: selected.geometria },
+  ];
+  store.planResults = [selected];
+  await calculate(store);
+  expect(screen.queryByTestId("overnight-pin-1")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("overnight-camp")).not.toBeInTheDocument();
+  expect(screen.getByTestId("route-day")).not.toHaveAttribute("stroke", "#b45309");
+});
+
+it("destaca o Local fora da rota calculada quando o abrigo é por raio", async () => {
+  const store = baseStore();
+  store.waypoints.push(waypoint(4, "Cidade lateral", 0.5, 0.01, 7));
+  const selected = planItem(1, 10, "3 dias");
+  selected.pernoites = [{ dia: 1, tipo: "local", local_id: 7, nome: "Altdorf", x: 0.5, y: 0 }];
+  store.planResults = [selected];
+  await calculate(store);
+  expect(screen.getByTestId("overnight-pin-4")).toBeInTheDocument();
+  expect(screen.queryByTestId("overnight-local-fallback")).not.toBeInTheDocument();
 });

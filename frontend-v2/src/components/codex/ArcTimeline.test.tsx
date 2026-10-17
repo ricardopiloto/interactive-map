@@ -73,6 +73,23 @@ describe("filtro recalcula colunas", () => {
   });
 });
 
+it("keeps elapsed labels between dated sessions separated by undated sessions", () => {
+  const { container } = render(
+    <ArcTimeline
+      sessoes={[s(12, 4), s(13, 4), s(14, 4), s(15, 4), s(16, 4), s(17, 4)]}
+      eventos={[e(12, 12, 2511, 7), e(13, 13, 2511, 8), e(17, 17, 2511, 8)]}
+      arcos={[a(4)]}
+      filter="all"
+    />,
+  );
+  const row13 = container.querySelector('[data-session-id="13"]');
+  const row12 = container.querySelector('[data-session-id="12"]');
+  expect(row13).not.toBeNull();
+  expect(row12).not.toBeNull();
+  expect(row13).toHaveTextContent("No mesmo período");
+  expect(row12).toHaveTextContent("1 mês");
+});
+
 describe("ligação sequencial com gradiente", () => {
   it("desenha traço reto tracejado com stroke url(#gradiente) na mesma coluna", () => {
     const { container } = render(

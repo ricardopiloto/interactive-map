@@ -17,6 +17,7 @@ export interface MapPin {
   y: number;
   visited: boolean;
   color?: string;
+  pernoite?: boolean;
 }
 
 export interface MapParty {
@@ -25,8 +26,18 @@ export interface MapParty {
   formato: "bandeira" | "brasao";
 }
 
+export interface MapMarker {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+  testid?: string;
+  title?: string;
+}
+
 export interface MapProps {
   pins: MapPin[];
+  markers?: MapMarker[];
   selected?: string | undefined;
   onSelect?: (id: string) => void;
   mapUrl?: string | null;
@@ -125,6 +136,7 @@ function FocusSelected({
 
 export function WorldMap({
   pins,
+  markers = [],
   selected,
   onSelect,
   mapUrl,
@@ -237,6 +249,20 @@ export function WorldMap({
                 {overlay}
               </svg>
             )}
+            {markers.map((marker) => (
+              <div
+                key={marker.id}
+                data-testid={marker.testid}
+                title={marker.title}
+                className="pointer-events-none absolute h-3 w-3 rounded-full border-2 border-card"
+                style={{
+                  left: `${marker.x}%`,
+                  top: `${marker.y}%`,
+                  backgroundColor: marker.color,
+                  transform: `scale(${1 / scale}) translate(-50%, -50%)`,
+                }}
+              />
+            ))}
             {pins.map((pin) => {
               const isSel = pin.id === selected;
               return (
@@ -268,6 +294,12 @@ export function WorldMap({
                   >
                     {isSel && (
                       <span className="animate-pulse-ring absolute inset-0 rounded-full border-2 border-seal" />
+                    )}
+                    {pin.pernoite && (
+                      <span
+                        className="absolute -inset-1 rounded-full border-[3px] border-amber-500"
+                        data-testid={`overnight-pin-${pin.id}`}
+                      />
                     )}
                     <span
                       className={cn(

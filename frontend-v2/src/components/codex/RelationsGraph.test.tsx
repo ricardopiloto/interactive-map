@@ -20,6 +20,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   sessionStorage.clear();
 });
@@ -220,6 +221,36 @@ it("arrastar um nó não inicia pan nem zoom da viewport", () => {
   ]).toEqual(viewportBefore);
 });
 
+it("pan na área vazia não desseleciona; clique simples limpa a seleção", () => {
+  const onSelect = vi.fn();
+  render(
+    <RelationsGraph
+      campaignSlug="alpha"
+      personagens={[person(1, "Ada"), person(2, "Bruno"), person(3, "Carla")]}
+      vinculos={[bond()]}
+      selectedId={1}
+      isolate={false}
+      activeTipos={new Set<VinculoTipo>()}
+      query=""
+      isGm={false}
+      onSelect={onSelect}
+    />,
+  );
+  const svg = document.querySelector("svg");
+  expect(svg).not.toBeNull();
+
+  fireEvent.pointerDown(svg!, { button: 0, pointerId: 3, clientX: 10, clientY: 10 });
+  fireEvent.pointerMove(window, { pointerId: 3, clientX: 80, clientY: 10 });
+  fireEvent.pointerUp(window, { pointerId: 3, clientX: 80, clientY: 10 });
+  fireEvent.click(svg!);
+  expect(onSelect).not.toHaveBeenCalled();
+
+  fireEvent.pointerDown(svg!, { button: 0, pointerId: 4, clientX: 12, clientY: 12 });
+  fireEvent.pointerUp(window, { pointerId: 4, clientX: 12, clientY: 12 });
+  fireEvent.click(svg!);
+  expect(onSelect).toHaveBeenCalledWith(null);
+});
+
 it("usa a escala da viewport para converter o arrasto em unidades do grafo", async () => {
   renderGraph();
   const stage = screen.getByTestId("relations-stage");
@@ -229,4 +260,91 @@ it("usa a escala da viewport para converter o arrasto em unidades do grafo", asy
   const before = translation(1);
   grab("Ada", 80, 0);
   expect(translation(1).x - before.x).toBeCloseTo(80 / scale, 1);
+});
+
+it("reorganiza o grafo ao selecionar e ao mudar o filtro de vínculo", () => {
+  const people = [person(1, "Ada"), person(2, "Bruno"), person(3, "Carla")];
+  const renderSelected = (activeTipos: Set<VinculoTipo>, selectedId: number | null) => (
+    <RelationsGraph
+      campaignSlug="alpha"
+      personagens={people}
+      vinculos={[bond()]}
+      selectedId={selectedId}
+      isolate={false}
+      activeTipos={activeTipos}
+      query=""
+      isGm={false}
+      onSelect={vi.fn()}
+    />
+  );
+  const view = render(renderSelected(new Set(), 1));
+  const distance = (id: number) => {
+    const center = Number(document.querySelector("svg")!.getAttribute("width")) / 2;
+    return Math.hypot(translation(id).x - center, translation(id).y - center);
+  };
+  expect(distance(1)).toBe(0);
+  expect(distance(2)).toBeLessThan(distance(3));
+
+  view.rerender(renderSelected(new Set(["adversario"]), 1));
+  expect(distance(1)).toBe(0);
+  expect(distance(2)).toBeCloseTo(distance(3));
+
+  view.rerender(renderSelected(new Set(), 2));
+  expect(distance(2)).toBe(0);
+  expect(distance(1)).toBeLessThan(distance(3));
+
+  view.rerender(renderSelected(new Set(), null));
+  expect(distance(2)).toBeGreaterThan(0);
+});
+
+it("aplica passos graduais de zoom mesmo com delta grande da roda", async () => {
+  renderGraph();
+  const stage = screen.getByTestId("relations-stage");
+  const wrapper = stage.querySelector(".react-transform-wrapper")!;
+  const scales = [Number(stage.dataset["viewportScale"])];
+  for (let i = 0; i < 4; i += 1) {
+    fireEvent.wheel(wrapper, { deltaY: -1200, clientX: 100, clientY: 100 });
+    await waitFor(() => expect(Number(stage.dataset["viewportScale"])).toBeGreaterThan(scales[i]!));
+    scales.push(Number(stage.dataset["viewportScale"]));
+  }
+  for (let i = 1; i < scales.length; i += 1) {
+    expect(scales[i]! / scales[i - 1]!).toBeLessThanOrEqual(1.15);
+  }
+  fireEvent.wheel(wrapper, { deltaY: 1200, clientX: 100, clientY: 100 });
+  await waitFor(() => expect(Number(stage.dataset["viewportScale"])).toBeLessThan(scales.at(-1)!));
+});
+
+it("centraliza a seleção na viewport e volta ao enquadramento geral ao limpar", async () => {
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1000);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(700);
+  const people = [person(1, "Ada"), person(2, "Bruno"), person(3, "Carla")];
+  const draw = (selectedId: number | null) => (
+    <RelationsGraph
+      campaignSlug="alpha"
+      personagens={people}
+      vinculos={[bond()]}
+      selectedId={selectedId}
+      isolate={false}
+      activeTipos={new Set<VinculoTipo>()}
+      query=""
+      isGm={false}
+      onSelect={vi.fn()}
+    />
+  );
+  const view = render(draw(1));
+  const stage = screen.getByTestId("relations-stage");
+  await waitFor(() => {
+    const selected = translation(1);
+    const scale = Number(stage.dataset["viewportScale"]);
+    expect(selected.x * scale + Number(stage.dataset["viewportX"])).toBeCloseTo(500);
+    expect(selected.y * scale + Number(stage.dataset["viewportY"])).toBeCloseTo(350);
+  });
+  view.rerender(draw(2));
+  await waitFor(() => {
+    const selected = translation(2);
+    const scale = Number(stage.dataset["viewportScale"]);
+    expect(selected.x * scale + Number(stage.dataset["viewportX"])).toBeCloseTo(500);
+  });
+  view.rerender(draw(null));
+  await waitFor(() => expect(Number(stage.dataset["viewportScale"])).toBeLessThanOrEqual(1));
 });

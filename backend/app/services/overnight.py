@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from typing import Literal
 
+from app.config import settings
 from app.models.waypoint import Waypoint
 from app.schemas.routes import DiaVisual, Pernoite, PernoiteTipo, Point
 
@@ -180,6 +181,7 @@ def simulate_overnights_and_fatigue(
     waypoints: dict[int, Waypoint],
     by_id: dict,
     local_names: dict[int, str],
+    locais_posicoes: list[tuple[int, float, float]],
     milhas_por_dia: float,
     tolerancia_pct: float,
     ritmo: Literal["normal", "intenso"] | str,
@@ -251,12 +253,22 @@ def simulate_overnights_and_fatigue(
             day_start = wp_cum[best_idx]
         else:
             x, y = interpolate_at_mile(samples, ideal)
+            nearest = min(
+                locais_posicoes,
+                key=lambda loc: math.hypot(x - loc[1], y - loc[2]),
+                default=None,
+            )
+            sheltered = (
+                nearest is not None
+                and math.hypot(x - nearest[1], y - nearest[2])
+                <= settings.raio_abrigo_cidade_unidades_mapa
+            )
             pernoites.append(
                 Pernoite(
                     dia=dia,
-                    tipo=PernoiteTipo.relento,
-                    local_id=None,
-                    nome=None,
+                    tipo=PernoiteTipo.local if sheltered else PernoiteTipo.relento,
+                    local_id=nearest[0] if sheltered and nearest else None,
+                    nome=local_names.get(nearest[0]) if sheltered and nearest else None,
                     x=_clamp01(x),
                     y=_clamp01(y),
                 )

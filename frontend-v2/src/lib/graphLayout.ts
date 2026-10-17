@@ -83,3 +83,43 @@ export function layoutRadialByTipo(
     height: origin * 2,
   };
 }
+
+/** The selected person anchors two deterministic rings of direct and other connections. */
+export function layoutRadialByRelation(
+  ids: readonly number[],
+  selectedId: number,
+  relatedIds: readonly number[],
+  box: { width: number; height: number } = NODE_BOX,
+  gap = NODE_GAP,
+): GraphFrame {
+  const visible = new Set(ids);
+  if (!visible.has(selectedId)) return layoutRing(ids, box, gap);
+
+  const related = new Set(relatedIds.filter((id) => id !== selectedId && visible.has(id)));
+  const inner = [...related].sort((a, b) => a - b);
+  const outer = [...visible]
+    .filter((id) => id !== selectedId && !related.has(id))
+    .sort((a, b) => a - b);
+  const separation = minCenterDistance(box, gap);
+  const innerRadius = inner.length ? Math.max(separation, ringRadius(inner.length, separation)) : 0;
+  const outerRadius = outer.length
+    ? Math.max(ringRadius(outer.length, separation), innerRadius + separation)
+    : 0;
+  const pad = Math.max(box.width, box.height) / 2 + gap;
+  const origin = Math.max(innerRadius, outerRadius) + pad;
+  const onRing = (group: number[], radius: number): GraphPoint[] =>
+    group.map((id, index) => {
+      const angle = -Math.PI / 2 + (index * 2 * Math.PI) / group.length;
+      return { id, x: origin + radius * Math.cos(angle), y: origin + radius * Math.sin(angle) };
+    });
+
+  return {
+    nodes: [
+      { id: selectedId, x: origin, y: origin },
+      ...onRing(inner, innerRadius),
+      ...onRing(outer, outerRadius),
+    ],
+    width: origin * 2,
+    height: origin * 2,
+  };
+}

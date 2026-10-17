@@ -1,5 +1,15 @@
 # Proposal
 
+## Atualização: zoom gradual e foco por vínculos
+
+A implementação parcial desta change já introduziu `react-zoom-pan-pinch` e o layout PJ/NPC. Na navegação atual, porém, a roda do mouse ainda produz apenas dois saltos grandes perceptíveis e selecionar um Personagem apenas destaca seus vínculos, sem reorganizar o grafo. Esta atualização inclui:
+
+- Ajustar a resposta da roda para permitir vários incrementos pequenos e previsíveis entre o enquadramento geral e a ampliação dos nós, preservando pan, pinça e os controles existentes.
+- Ao selecionar um Personagem, colocá-lo no centro do layout, distribuir seus vizinhos diretos em um anel interno e todos os demais Personagens visíveis em um anel externo, independentemente de serem PJ ou NPC.
+- Centralizar o foco também na viewport. Ao remover a seleção, voltar ao layout padrão por tipo (PJ interno, NPC externo).
+
+A mudança é somente de apresentação; vínculos e posições não são persistidos. Os vínculos considerados são os que a tela pode mostrar ao usuário e que passam pelo filtro de tipo ativo. O filtro de status continua definindo quais Personagens entram no grafo.
+
 ## Why
 
 Testando `frontend-v2/` contra uma cópia real dos dados de produção (não fixtures de teste), a tela de Rede de Relações (`frontend-v2/src/routes/relacoes.tsx` + `frontend-v2/src/components/codex/RelationsGraph.tsx`) ficou inutilizável: o volume real de Personagens e Vínculos de uma campanha de anos de jogo é muito maior que qualquer elenco de teste, e hoje:

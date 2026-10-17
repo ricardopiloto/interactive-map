@@ -7,7 +7,7 @@ Permite ao mestre e aos jogadores acompanhar a continuidade de cada arco narrati
 ## Requirements
 
 ### Requirement: Modo "Por arcos" na Linha do Tempo
-A Linha do Tempo SHALL oferecer um modo "Por arcos" além do modo cronológico existente, sem alterar o resultado ou os dados do modo cronológico. O modo "Por arcos" SHALL apresentar uma linha por sessão visível, ordenada pela data do evento associado a essa sessão, com as sessões mais recentes acima das mais antigas. A data do evento SHALL ser o ano e, quando existir, o mês do evento ligado à sessão; se a sessão tiver vários eventos, SHALL ser usada a data mais antiga. Uma sessão sem evento com ano SHALL permanecer visível, abaixo de todas as sessões que têm data, ordenada pelo número da sessão, sem data inventada. Enquanto as datas das sessões visíveis não se intercalarem, o modo SHALL desenhar todas essas sessões numa única coluna vertical, qualquer que seja o arco de cada uma. O modo SHALL abrir uma coluna adicional só quando a data de uma sessão visível fica estritamente entre a data mais antiga e a mais recente de outro arco, ou quando duas sessões visíveis de arcos diferentes têm a mesma data.
+A Linha do Tempo SHALL oferecer um modo "Por arcos" além do modo cronológico existente, sem alterar o resultado ou os dados do modo cronológico. O modo "Por arcos" SHALL apresentar uma linha por sessão visível, ordenada pela data do evento associado a essa sessão, com as sessões mais recentes acima das mais antigas. A data do evento SHALL ser o ano e, quando existir, o mês do evento ligado à sessão; se a sessão tiver vários eventos, SHALL ser usada a data mais antiga. Duas sessões visíveis com exatamente a mesma data (mesmo ano e mês) SHALL ser desempatadas pelo número da sessão, com a de número maior acima da de número menor — consistente com a regra de mais recente no topo, já que o número da sessão cresce com a cronologia real de jogo. Uma sessão sem evento com ano, cujo arco tem pelo menos uma outra sessão com evento datado, SHALL aparecer posicionada dentro do bloco contínuo desse arco — na posição correspondente à data mais recente entre as sessões datadas do próprio arco, desempatada pelas mesmas regras das demais sessões do arco — sem que o sistema lhe atribua uma data própria. Uma sessão sem evento com ano cujo arco não tem nenhuma sessão com evento datado (ou que não pertence a nenhum arco) SHALL permanecer visível, abaixo de todas as sessões posicionadas por data (própria ou do arco), ordenada pelo número da sessão em ordem crescente, sem data inventada. Enquanto as datas das sessões visíveis não se intercalarem, o modo SHALL desenhar todas essas sessões numa única coluna vertical, qualquer que seja o arco de cada uma. O modo SHALL abrir uma coluna adicional só quando a data de uma sessão visível fica estritamente entre a data mais antiga e a mais recente de outro arco, ou quando duas sessões visíveis de arcos diferentes têm a mesma data — essa regra de coluna continua baseada só nas sessões que têm data de evento própria, nunca na data de referência herdada do arco por uma sessão sem data. O texto de tempo decorrido entre duas sessões datadas consecutivas do mesmo arco SHALL continuar correto mesmo quando sessões sem data desse arco estiverem posicionadas entre elas.
 
 #### Scenario: Consultar sessões agrupadas por arco
 - **WHEN** uma campanha tem arcos e sessões associadas e o utilizador escolhe "Por arcos"
@@ -21,9 +21,21 @@ A Linha do Tempo SHALL oferecer um modo "Por arcos" além do modo cronológico e
 - **WHEN** a data de uma sessão visível fica estritamente entre a sessão mais antiga e a mais recente de outro arco
 - **THEN** o sistema abre uma coluna adicional para essa bifurcação e mantém o outro arco na coluna que já ocupava
 
+#### Scenario: Sessão sem evento datado, mas o arco tem outras sessões datadas
+- **WHEN** uma sessão visível não tem evento com ano, mas outra sessão do mesmo arco tem
+- **THEN** essa sessão aparece posicionada dentro do bloco do próprio arco, na posição correspondente à data mais recente entre as sessões datadas desse arco, sem o sistema lhe atribuir uma data própria
+
 #### Scenario: Sessão sem evento datado
-- **WHEN** uma sessão visível no modo "Por arcos" não tem evento com ano
-- **THEN** essa sessão continua visível abaixo das sessões que têm data de evento, sem o sistema lhe atribuir uma data
+- **WHEN** uma sessão visível não tem evento com ano e nenhuma outra sessão do mesmo arco tem (ou a sessão não pertence a nenhum arco)
+- **THEN** essa sessão continua visível abaixo de todas as sessões posicionadas por data, ordenada pelo número da sessão, sem o sistema lhe atribuir uma data
+
+#### Scenario: Tempo decorrido não se perde com uma sessão sem data no meio
+- **WHEN** duas sessões datadas do mesmo arco têm, entre elas na exibição, uma ou mais sessões sem data desse mesmo arco
+- **THEN** o texto de tempo decorrido entre as duas sessões datadas continua sendo calculado a partir da data real uma da outra, ignorando as sessões sem data intercaladas
+
+#### Scenario: Duas sessões do mesmo mês ficam na ordem certa entre si
+- **WHEN** duas sessões visíveis (do mesmo arco ou de arcos diferentes) têm o mesmo ano e mês de evento
+- **THEN** a sessão de número maior aparece acima da sessão de número menor
 
 #### Scenario: Alternar entre modo cronológico e por arcos
 - **WHEN** o utilizador seleciona "Por arcos" numa campanha com arcos cadastrados
@@ -49,7 +61,7 @@ A Linha do Tempo SHALL oferecer "Por arcos" no seletor de modos para mestre e jo
 - **THEN** não há controle para habilitar ou desabilitar a visualização "Por arcos"
 
 ### Requirement: Tempo decorrido entre sessões da mesma raia
-Cada ligação desenhada entre duas sessões SHALL indicar o tempo decorrido entre as datas dos eventos dessas sessões. Um intervalo longo SHALL ser visualmente distinguível por uma ligação tracejada. A coluna de um arco que continua no tempo SHALL manter a ligação vertical entre as suas sessões mesmo quando a data de uma sessão de outro arco fica entre elas; essa outra sessão SHALL aparecer na coluna da bifurcação, ligada por curva, e SHALL NOT substituir a vertical do arco que continua.
+Cada ligação desenhada entre duas sessões SHALL indicar o tempo decorrido entre as datas dos eventos dessas sessões. Um intervalo longo entre duas sessões do mesmo arco SHALL ser visualmente distinguível por uma ligação tracejada. A coluna de um arco que continua no tempo SHALL manter a ligação vertical entre as suas sessões mesmo quando a data de uma sessão de outro arco fica entre elas; essa outra sessão SHALL aparecer na coluna da bifurcação, ligada por curva, e SHALL NOT substituir a vertical do arco que continua. Quando a ligação entre duas sessões visíveis atravessa dois arcos sequenciais (a data mais antiga de um arco e a data mais recente de outro arco adjacente no tempo, sem nenhum arco com data entre eles), a ligação SHALL ser sempre tracejada, independentemente da duração do intervalo, e a cor do traço SHALL fazer uma transição gradual da cor do arco mais recente para a cor do arco mais antigo. Quando os dois arcos sequenciais ocupam a mesma coluna, essa ligação SHALL continuar sendo um traço reto vertical (não uma curva) — só o estilo (tracejado, gradiente) muda em relação à ligação sólida já usada dentro de um único arco.
 
 #### Scenario: Duas sessões do mesmo arco separadas no tempo
 - **WHEN** o utilizador consulta duas sessões da mesma coluna, vizinhas nessa coluna e separadas por um intervalo longo
@@ -58,6 +70,10 @@ Cada ligação desenhada entre duas sessões SHALL indicar o tempo decorrido ent
 #### Scenario: Outra sessão é mais próxima no tempo
 - **WHEN** duas sessões do mesmo arco têm outra sessão visível, de outro arco, com data estritamente entre elas
 - **THEN** o sistema mantém a ligação vertical entre as duas sessões do arco que continua e desenha a sessão intermédia na coluna da bifurcação
+
+#### Scenario: Dois arcos sequenciais, sem overlap de datas
+- **WHEN** a sessão mais antiga de um arco e a sessão mais recente de outro arco, adjacente no tempo e sem nenhuma data intercalada entre os dois, são vizinhas na ordenação visível
+- **THEN** o sistema exibe o tempo decorrido entre os dois arcos com uma ligação sempre tracejada, com transição de cor entre a cor de um arco e a do outro, mesmo que o intervalo seja curto
 
 ### Requirement: Sessão pertence a no máximo um arco, exceto na transição
 Cada sessão SHALL pertencer a no máximo um arco, exceto quando marcada como sessão de transição: uma sessão que encerra um arco e inicia o arco imediatamente seguinte SHALL poder ser o limite dos dois arcos. A exceção SHALL NOT duplicar nem criar outro registo de sessão. Quando os dois arcos ocupam a mesma coluna, a transição SHALL ser um único ponto. Quando ocupam colunas diferentes, as ligações SHALL encontrar-se nessa sessão.
@@ -148,11 +164,23 @@ O sistema SHALL permitir a escolha explícita entre criar um arco manualmente e 
 - **THEN** o sistema explica que a IA não está habilitada e oferece o caminho de habilitação ou a criação manual, sem executar nenhum motor de IA
 
 ### Requirement: Ligação ao ponto mais próximo no tempo
-No modo "Por arcos", as sessões visíveis da mesma coluna SHALL ligar-se na vertical, da mais recente para a mais antiga nessa coluna. Quando uma coluna existe por bifurcação, a ligação entre essa coluna e a coluna de onde saiu SHALL ser uma curva contínua, sem canto reto, que sai alinhada à coluna de origem e chega alinhada à outra coluna na altura da sessão que delimita o encontro. Uma sessão de transição SHALL fazer as colunas encontrarem-se na sua linha quando os arcos ocupam colunas diferentes, sem duplicar o registo da sessão. Um filtro de arcos SHALL recalcular colunas e ligações só entre as sessões que permanecem visíveis e SHALL NOT desenhar traço de um arco oculto. Duas sessões visíveis de arcos diferentes com a mesma data SHALL ocupar colunas diferentes.
+No modo "Por arcos", as sessões visíveis da mesma coluna SHALL ligar-se na vertical, da mais recente para a mais antiga nessa coluna. Quando uma coluna existe por bifurcação — seja por overlap de datas detectado automaticamente, seja por uma sessão de transição marcada pelo mestre —, a ligação entre essa coluna e a coluna de onde saiu SHALL ser desenhada automaticamente como uma curva contínua, sem canto reto, que sai alinhada à coluna de origem e chega alinhada à outra coluna na altura da sessão que delimita o encontro, sem exigir nenhuma ação do mestre para a bifurcação detectada por overlap. Quando mais de um arco já posicionado poderia ser a origem de uma bifurcação (overlap com mais de um arco ao mesmo tempo), o sistema SHALL escolher como origem o par de sessões (uma do arco novo, uma do arco já posicionado) com a menor distância de tempo entre si, de forma determinística. Uma sessão de transição marcada pelo mestre entre dois arcos específicos SHALL ter precedência sobre a curva automática desse mesmo par de arcos — o sistema SHALL NOT desenhar as duas ligações sobrepostas para o mesmo par. Um filtro de arcos SHALL recalcular colunas e ligações só entre as sessões que permanecem visíveis, incluindo as ligações tracejadas entre arcos sequenciais e as curvas de bifurcação automática, e SHALL NOT desenhar traço (de nenhum dos tipos de ligação) envolvendo um arco oculto. Duas sessões visíveis de arcos diferentes com a mesma data SHALL ocupar colunas diferentes.
 
 #### Scenario: Raias vizinhas no tempo encontram-se
 - **WHEN** uma sessão está numa coluna aberta por bifurcação e a sessão que delimita o encontro está noutra coluna
 - **THEN** a linha sai em curva, sem canto reto, e encontra essa sessão na altura da data dela
+
+#### Scenario: Bifurcação por overlap conecta automaticamente, sem sessão de transição
+- **WHEN** uma coluna é aberta porque a data de uma sessão visível fica estritamente entre a mais antiga e a mais recente de outro arco, e nenhuma sessão foi marcada como transição entre esses dois arcos
+- **THEN** o sistema ainda assim desenha a curva de ligação entre a coluna nova e a sessão do arco de origem mais próxima no tempo da sessão que causou a bifurcação, sem exigir nenhuma configuração adicional do mestre
+
+#### Scenario: Overlap com mais de um arco candidato escolhe o par mais próximo
+- **WHEN** a sessão que abre uma coluna nova tem overlap de datas com mais de um arco já posicionado
+- **THEN** o sistema escolhe como origem da curva o par de sessões (uma de cada arco) com a menor distância de tempo entre si, sempre o mesmo resultado para os mesmos dados
+
+#### Scenario: Transição explícita tem precedência sobre a curva automática
+- **WHEN** um par de arcos tem tanto overlap de datas (que abriria uma curva automática) quanto uma sessão marcada como transição entre eles
+- **THEN** o sistema desenha só a ligação da sessão de transição para esse par, sem desenhar uma segunda curva automática sobreposta
 
 #### Scenario: A mesma raia permanece vertical
 - **WHEN** duas sessões vizinhas na mesma coluna se seguem no tempo
@@ -165,3 +193,11 @@ No modo "Por arcos", as sessões visíveis da mesma coluna SHALL ligar-se na ver
 #### Scenario: Filtro recalcula o vizinho
 - **WHEN** o utilizador oculta o arco cuja sessão intercalava as datas de outro
 - **THEN** a coluna da bifurcação desaparece, as sessões restantes voltam a uma coluna quando deixam de se intercalar, e nenhum traço entra no arco oculto
+
+#### Scenario: Filtro esconde uma ligação tracejada entre arcos sequenciais
+- **WHEN** o utilizador oculta um dos dois arcos envolvidos numa ligação tracejada com gradiente entre arcos sequenciais
+- **THEN** essa ligação deixa de ser desenhada, e as sessões do arco que permanece visível recalculam seus vizinhos (de coluna e de ligação) só entre o que continua visível
+
+#### Scenario: Filtro esconde uma curva de bifurcação automática
+- **WHEN** o utilizador oculta o arco de origem ou o arco da bifurcação de uma curva automática (sem sessão de transição)
+- **THEN** essa curva deixa de ser desenhada, sem erro, e a coluna recalcula normalmente entre o que continua visível

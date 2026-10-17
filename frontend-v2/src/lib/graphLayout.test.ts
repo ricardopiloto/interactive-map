@@ -1,5 +1,11 @@
 import { expect, it } from "vitest";
-import { NODE_BOX, layoutRadialByTipo, layoutRing, minCenterDistance } from "./graphLayout";
+import {
+  NODE_BOX,
+  layoutRadialByRelation,
+  layoutRadialByTipo,
+  layoutRing,
+  minCenterDistance,
+} from "./graphLayout";
 
 function assertSeparated(ids: number[], box = NODE_BOX) {
   const frame = layoutRing(ids, box);
@@ -78,6 +84,43 @@ it("não sobrepõe caixas num elenco grande em nenhum anel", () => {
       const a = frame.nodes[i]!;
       const b = frame.nodes[j]!;
       expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(minCenterDistance() - 1e-6);
+    }
+  }
+});
+
+it("centraliza o selecionado e separa vizinhos diretos dos demais", () => {
+  const frame = layoutRadialByRelation([5, 1, 4, 3, 2], 1, [3, 2, 2]);
+  const center = frame.width / 2;
+  const distance = (id: number) => {
+    const node = frame.nodes.find((point) => point.id === id)!;
+    return Math.hypot(node.x - center, node.y - center);
+  };
+  expect(distance(1)).toBe(0);
+  expect(distance(2)).toBeCloseTo(distance(3));
+  expect(distance(2)).toBeLessThan(distance(4));
+  expect(distance(4)).toBeCloseTo(distance(5));
+  expect(frame.nodes).toHaveLength(5);
+  expect(layoutRadialByRelation([2, 3, 4, 5, 1], 1, [2, 3])).toEqual(frame);
+});
+
+it("acomoda grupos vazios e um elenco grande sem sobreposição", () => {
+  const cases = [
+    layoutRadialByRelation([1], 1, []),
+    layoutRadialByRelation([1, 2, 3], 1, []),
+    layoutRadialByRelation([1, 2, 3], 1, [2, 3]),
+    layoutRadialByRelation(
+      Array.from({ length: 51 }, (_, i) => i + 1),
+      1,
+      Array.from({ length: 25 }, (_, i) => i + 2),
+    ),
+  ];
+  for (const frame of cases) {
+    for (let i = 0; i < frame.nodes.length; i += 1) {
+      for (let j = i + 1; j < frame.nodes.length; j += 1) {
+        const a = frame.nodes[i]!;
+        const b = frame.nodes[j]!;
+        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(minCenterDistance() - 1e-6);
+      }
     }
   }
 });

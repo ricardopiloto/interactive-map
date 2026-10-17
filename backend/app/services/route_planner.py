@@ -380,6 +380,7 @@ def best_pure_candidate(
     horas_por_dia: float,
     ritmo: str = "normal",
     local_names: dict[int, str] | None = None,
+    locais_posicoes: list[tuple[int, float, float]] | None = None,
 ) -> Candidate | None:
     """Best continuous path using only `tipo`, or None if disconnected."""
     g_t = build_type_restricted_graph(parallels, tipo, ordenacao, preferencia_via)
@@ -400,6 +401,7 @@ def best_pure_candidate(
         horas_por_dia,
         ritmo=ritmo,
         local_names=local_names,
+        locais_posicoes=locais_posicoes,
     )
     if item.tipos != [tipo]:
         return None
@@ -497,6 +499,7 @@ def item_from_edges(
     horas_por_dia: float,
     ritmo: str = "normal",
     local_names: dict[int, str] | None = None,
+    locais_posicoes: list[tuple[int, float, float]] | None = None,
 ) -> RoutePlanItem:
     dist = 0.0
     tempo = 0.0
@@ -520,6 +523,7 @@ def item_from_edges(
         waypoints,
         by_id,
         local_names or {},
+        locais_posicoes or [],
         milhas_por_dia,
         settings.tolerancia_pernoite_pct,
         ritmo,
@@ -570,7 +574,9 @@ def plan_routes(
 
     effective_mph, zerar_custos = resolve_speed_and_zero_costs(modo_transporte, velocidade_media_mph)
 
-    local_names = {loc.id: loc.nome for loc in session.exec(select(Local)).all() if loc.id is not None}
+    locais = [loc for loc in session.exec(select(Local)).all() if loc.id is not None]
+    local_names = {loc.id: loc.nome for loc in locais}
+    locais_posicoes = [(loc.id, loc.x, loc.y) for loc in locais]
 
     g, waypoints, by_id, parallels = build_graph(
         session,
@@ -608,6 +614,7 @@ def plan_routes(
                     horas_por_dia,
                     ritmo=ritmo,
                     local_names=local_names,
+                    locais_posicoes=locais_posicoes,
                 )
                 share = preferred_miles_share(edge_attrs, pref)
                 candidates.append((item, share, sig))
@@ -628,6 +635,7 @@ def plan_routes(
             horas_por_dia,
             ritmo=ritmo,
             local_names=local_names,
+            locais_posicoes=locais_posicoes,
         )
         if pure is None:
             continue
