@@ -3,7 +3,17 @@ import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import type { Arco, Evento } from "@/api/timeline";
 import type { Sessao } from "@/api/sessoes";
+import { Link } from "@/lib/navigation";
 import { layoutArcs, elapsed } from "@/lib/timelineLayout";
+
+/** Vertical pitch between session rows (must fit compact cards on mobile). */
+const ROW_H = 112;
+/** Horizontal offset per branch column. */
+const COL_W = 64;
+/** Dot center within a row. */
+const ROW_MID = 45;
+/** Visible row height, leaving a small gap before the next card. */
+const ROW_INNER = ROW_H - 6;
 
 function formatElapsed(gap: { years: number; months: number } | null, t: TFunction<"linhaTempo">) {
   if (!gap) return null;
@@ -16,6 +26,14 @@ function formatElapsed(gap: { years: number; months: number } | null, t: TFuncti
 
 function pairKey(a: number, b: number) {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
+}
+
+function colX(column: number) {
+  return column * COL_W + 12;
+}
+
+function rowY(index: number) {
+  return index * ROW_H + ROW_MID;
 }
 
 /** The SVG spans fixed-height rows so each arc stays connected across branches. */
@@ -83,6 +101,8 @@ export function ArcTimeline({
     ...new Set(shown.map((r) => r.arcId).concat(shown.map((r) => r.sessao.arco_transicao_id))),
   ];
 
+  const totalHeight = shown.length * ROW_H;
+
   const arcLinks = keys
     .filter((id) => id !== null)
     .flatMap((id) => {
@@ -97,10 +117,10 @@ export function ArcTimeline({
           sequentialIndexSet.has(`${Math.min(before.i, i)}:${Math.max(before.i, i)}`)
         )
           return null;
-        const x1 = before.r.column * 64 + 12,
-          x2 = r.column * 64 + 12,
-          y1 = before.i * 96 + 45,
-          y2 = i * 96 + 45,
+        const x1 = colX(before.r.column),
+          x2 = colX(r.column),
+          y1 = rowY(before.i),
+          y2 = rowY(i),
           mid = (y1 + y2) / 2;
         const gap = elapsed(before.r.date, r.date);
         const arc = arcos.find((a) => a.id === id);
@@ -135,10 +155,10 @@ export function ArcTimeline({
     const newerArc = arcos.find((a) => a.id === p.newerArcId);
     const olderArc = arcos.find((a) => a.id === p.olderArcId);
     const id = `${uid}-seq-${idx}`;
-    const x1 = newer.column * 64 + 12;
-    const x2 = older.column * 64 + 12;
-    const y1 = p.newerRowIndex * 96 + 45;
-    const y2 = p.olderRowIndex * 96 + 45;
+    const x1 = colX(newer.column);
+    const x2 = colX(older.column);
+    const y1 = rowY(p.newerRowIndex);
+    const y2 = rowY(p.olderRowIndex);
     return (
       <linearGradient
         key={id}
@@ -158,10 +178,10 @@ export function ArcTimeline({
   const sequentialLinks = visibleSequential.map((p, idx) => {
     const newer = shown[p.newerRowIndex]!;
     const older = shown[p.olderRowIndex]!;
-    const x1 = newer.column * 64 + 12,
-      x2 = older.column * 64 + 12,
-      y1 = p.newerRowIndex * 96 + 45,
-      y2 = p.olderRowIndex * 96 + 45,
+    const x1 = colX(newer.column),
+      x2 = colX(older.column),
+      y1 = rowY(p.newerRowIndex),
+      y2 = rowY(p.olderRowIndex),
       mid = (y1 + y2) / 2;
     const gradId = `${uid}-seq-${idx}`;
     const straight = x1 === x2;
@@ -190,10 +210,10 @@ export function ArcTimeline({
     if (atIdx < 0 || fromIdx < 0) return [];
     const at = shown[atIdx]!;
     const from = shown[fromIdx]!;
-    const x1 = from.column * 64 + 12,
-      x2 = at.column * 64 + 12,
-      y1 = fromIdx * 96 + 45,
-      y2 = atIdx * 96 + 45,
+    const x1 = colX(from.column),
+      x2 = colX(at.column),
+      y1 = rowY(fromIdx),
+      y2 = rowY(atIdx),
       mid = (y1 + y2) / 2;
     if (x1 === x2) return [];
     const arc = arcos.find((a) => a.id === arcId);
@@ -221,8 +241,8 @@ export function ArcTimeline({
     if (!text) return null;
     // Midpoint of the dashed sequential stroke; rotate so the copy runs with the line
     // and sits just "above" it (left of a vertical connector).
-    const x = ((newer.column + older.column) / 2) * 64 + 12;
-    const y = ((p.newerRowIndex + p.olderRowIndex) / 2) * 96 + 45;
+    const x = ((newer.column + older.column) / 2) * COL_W + 12;
+    const y = ((p.newerRowIndex + p.olderRowIndex) / 2) * ROW_H + ROW_MID;
     return (
       <span
         key={`seq-label:${p.newerArcId}:${p.olderArcId}`}
@@ -241,13 +261,13 @@ export function ArcTimeline({
   });
 
   return (
-    <div className="relative mt-8" style={{ height: shown.length * 96 }}>
+    <div className="relative mt-8" style={{ height: totalHeight }}>
       <svg
         className="pointer-events-none absolute inset-0 overflow-visible"
         aria-hidden
         width="800"
-        height={shown.length * 96}
-        viewBox={`0 0 800 ${shown.length * 96}`}
+        height={totalHeight}
+        viewBox={`0 0 800 ${totalHeight}`}
       >
         <defs>{sequentialGradients}</defs>
         {arcLinks}
@@ -260,30 +280,39 @@ export function ArcTimeline({
         const gap = elapsed(r.previous, r.date);
         const gapText = formatElapsed(gap, t);
         return (
-          <div
+          <Link
             key={r.sessao.id}
+            to="/sessoes"
+            search={{ s: r.sessao.numero }}
             data-session-id={r.sessao.id}
             data-column={r.column}
-            className="absolute right-0 left-0 flex items-center"
-            style={{ top: i * 96, height: 90, paddingLeft: r.column * 64 }}
+            className="absolute right-0 left-0 flex items-center outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-seal/40"
+            style={{ top: i * ROW_H, height: ROW_INNER, paddingLeft: r.column * COL_W }}
+            aria-label={t("arcos.openSession", {
+              number: r.sessao.numero,
+              title: r.sessao.titulo,
+            })}
           >
             <span
-              className="relative z-10 mr-3 h-5 w-5 shrink-0 rounded-full border-4 border-background"
+              className="relative z-10 mr-2 h-4 w-4 shrink-0 rounded-full border-4 border-background sm:mr-3 sm:h-5 sm:w-5"
               style={{ backgroundColor: arc?.cor ?? "var(--muted-foreground)" }}
+              aria-hidden
             />
-            <article className="relative z-10 min-w-0 flex-1 rounded-2xl border bg-card p-4 shadow-float">
-              <div className="flex justify-between gap-2">
-                <strong>
+            <article className="relative z-10 min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card p-2.5 shadow-float sm:p-3">
+              <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
+                <strong className="min-w-0 text-sm leading-snug line-clamp-2 sm:text-base">
                   {r.sessao.numero}. {r.sessao.titulo}
                 </strong>
-                <small>{arc?.titulo ?? t("arcos.semArco")}</small>
+                <small className="shrink-0 truncate text-muted-foreground sm:max-w-[40%] sm:text-right">
+                  {arc?.titulo ?? t("arcos.semArco")}
+                </small>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
                 {r.date == null ? "—" : `${Math.floor(r.date / 12)}/${(r.date % 12) + 1}`}
                 {gapText ? ` · ${gapText}` : ""}
               </p>
             </article>
-          </div>
+          </Link>
         );
       })}
     </div>

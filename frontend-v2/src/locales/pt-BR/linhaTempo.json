@@ -53,6 +53,7 @@
     "elapsedSame": "No mesmo período",
     "betweenArcs": "{{elapsed}}",
     "betweenArcsAria": "Tempo decorrido entre arcos: {{elapsed}}",
+    "openSession": "Abrir sessão {{number}}: {{title}}",
     "new": "Novo arco",
     "edit": "Editar arco",
     "delete": "Excluir arco",

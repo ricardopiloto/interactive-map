@@ -1,9 +1,14 @@
 import { render, screen, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { expect, it, describe, beforeEach } from "vitest";
 import { ArcTimeline } from "./ArcTimeline";
 import i18n from "@/i18n";
 import type { Sessao } from "@/api/sessoes";
 import type { Evento, Arco } from "@/api/timeline";
+
+function renderTimeline(ui: React.ReactNode) {
+  return render(<MemoryRouter initialEntries={["/c/1/wfrp/linha-do-tempo"]}>{ui}</MemoryRouter>);
+}
 
 const s = (
   id: number,
@@ -52,7 +57,7 @@ describe("filtro recalcula colunas", () => {
     const eventos = [e(1, 1, 100), e(2, 2, 101), e(3, 3, 102)];
     const arcos = [a(1), a(2)];
 
-    const all = render(
+    const all = renderTimeline(
       <ArcTimeline sessoes={sessoes} eventos={eventos} arcos={arcos} filter="all" />,
     );
     expect(all.container.querySelector('[data-session-id="2"]')).toHaveAttribute(
@@ -62,7 +67,7 @@ describe("filtro recalcula colunas", () => {
     expect(all.container.querySelectorAll('[data-column="1"]').length).toBeGreaterThan(0);
     all.unmount();
 
-    const filtered = render(
+    const filtered = renderTimeline(
       <ArcTimeline sessoes={sessoes} eventos={eventos} arcos={arcos} filter="1" />,
     );
     expect(filtered.container.querySelector('[data-session-id="2"]')).toBeNull();
@@ -74,7 +79,7 @@ describe("filtro recalcula colunas", () => {
 });
 
 it("keeps elapsed labels between dated sessions separated by undated sessions", () => {
-  const { container } = render(
+  const { container } = renderTimeline(
     <ArcTimeline
       sessoes={[s(12, 4), s(13, 4), s(14, 4), s(15, 4), s(16, 4), s(17, 4)]}
       eventos={[e(12, 12, 2511, 7), e(13, 13, 2511, 8), e(17, 17, 2511, 8)]}
@@ -92,7 +97,7 @@ it("keeps elapsed labels between dated sessions separated by undated sessions", 
 
 describe("ligação sequencial com gradiente", () => {
   it("desenha traço reto tracejado com stroke url(#gradiente) na mesma coluna", () => {
-    const { container } = render(
+    const { container } = renderTimeline(
       <ArcTimeline
         sessoes={[s(1, 1), s(2, 2)]}
         eventos={[e(1, 1, 100), e(2, 2, 101)]}
@@ -126,7 +131,7 @@ describe("ligação sequencial com gradiente", () => {
       arcos: [a(1), a(2)],
       filter: "all",
     };
-    const { unmount } = render(<ArcTimeline {...props} />);
+    const { unmount } = renderTimeline(<ArcTimeline {...props} />);
     const labelPt = screen.getByLabelText(/tempo decorrido entre arcos/i);
     expect(labelPt).toBeVisible();
     expect(labelPt.closest("svg")).toBeNull();
@@ -135,7 +140,7 @@ describe("ligação sequencial com gradiente", () => {
     unmount();
 
     await i18n.changeLanguage("en");
-    render(<ArcTimeline {...props} />);
+    renderTimeline(<ArcTimeline {...props} />);
     const labelEn = screen.getByLabelText(/elapsed time between arcs/i);
     expect(labelEn).toBeVisible();
     expect(labelEn.textContent).toMatch(/1 month/);
@@ -145,7 +150,7 @@ describe("ligação sequencial com gradiente", () => {
 
 describe("curva automática de bifurcação", () => {
   it("desenha curva quando há overlap sem sessão de transição", () => {
-    const { container } = render(
+    const { container } = renderTimeline(
       <ArcTimeline
         sessoes={[s(1, 1), s(2, 2), s(3, 1)]}
         eventos={[e(1, 1, 100), e(2, 2, 101), e(3, 3, 102)]}
@@ -164,7 +169,7 @@ describe("curva automática de bifurcação", () => {
   it("dá precedência à transição explícita e não desenha curva automática duplicada", () => {
     // Arc1 continues 100–102; Arc2 @101 overlaps (would auto-branch); transition on S3.
     const transition = s(3, 1, 2);
-    const { container } = render(
+    const { container } = renderTimeline(
       <ArcTimeline
         sessoes={[s(1, 1), s(2, 2), transition]}
         eventos={[e(1, 1, 100), e(2, 2, 101), e(3, 3, 102)]}
@@ -179,7 +184,7 @@ describe("curva automática de bifurcação", () => {
   });
 
   it("ancora a curva no par mais próximo quando 3+ arcos se intercalam", () => {
-    const { container } = render(
+    const { container } = renderTimeline(
       <ArcTimeline
         sessoes={[s(1, 1), s(2, 1), s(3, 2), s(4, 2), s(5, 3)]}
         eventos={[e(1, 1, 100), e(2, 2, 110), e(3, 3, 101), e(4, 4, 105), e(5, 5, 103)]}
@@ -195,11 +200,25 @@ describe("curva automática de bifurcação", () => {
   });
 });
 
+it("liga cada card à sessão correspondente em /sessoes", () => {
+  const { container } = renderTimeline(
+    <ArcTimeline
+      sessoes={[s(7, 1)]}
+      eventos={[e(7, 7, 100)]}
+      arcos={[a(1)]}
+      filter="all"
+    />,
+  );
+  const link = container.querySelector('[data-session-id="7"]');
+  expect(link).toBeInstanceOf(HTMLAnchorElement);
+  expect(link).toHaveAttribute("href", expect.stringMatching(/\/sessoes\?s=7$/));
+});
+
 describe("sessão de transição", () => {
   it("continua a juntar as duas raias na sessão marcada", () => {
     // Overlap opens col 1 for Arc2; transition on Arc1's later session joins the rails.
     const transition = s(3, 1, 2);
-    const { container } = render(
+    const { container } = renderTimeline(
       <ArcTimeline
         sessoes={[s(1, 1), s(2, 2), transition]}
         eventos={[e(1, 1, 100), e(2, 2, 101), e(3, 3, 102)]}

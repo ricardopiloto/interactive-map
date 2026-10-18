@@ -38,6 +38,7 @@
     "placesVisited": "Lugares percorridos",
     "whoWasThere": "Quem estava lá",
     "sessionsTitle": "Sessões",
-    "arc": "Arco “{{arc}}”"
+    "arc": "Arco “{{arc}}”",
+    "backToList": "Voltar à lista"
   }
 }

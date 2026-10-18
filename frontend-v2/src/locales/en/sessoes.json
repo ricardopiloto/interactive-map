@@ -38,6 +38,7 @@
     "placesVisited": "Places visited",
     "whoWasThere": "Who was there",
     "sessionsTitle": "Sessions",
-    "arc": "Arc “{{arc}}”"
+    "arc": "Arc “{{arc}}”",
+    "backToList": "Back to list"
   }
 }

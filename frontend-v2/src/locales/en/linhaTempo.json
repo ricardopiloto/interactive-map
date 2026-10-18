@@ -53,6 +53,7 @@
     "elapsedSame": "In the same period",
     "betweenArcs": "{{elapsed}}",
     "betweenArcsAria": "Elapsed time between arcs: {{elapsed}}",
+    "openSession": "Open session {{number}}: {{title}}",
     "new": "New arc",
     "edit": "Edit arc",
     "delete": "Delete arc",

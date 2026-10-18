@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCampaignKey, type CampaignConfig } from "@/api/campaign";
@@ -129,7 +129,10 @@ export function Sessions() {
 
   const sessoes = data?.sessoes ?? [];
   const requested = Number(search["s"]);
-  const current = sessoes.find((sessao) => sessao.numero === requested) ?? sessoes[0] ?? null;
+  const matched = sessoes.find((sessao) => sessao.numero === requested) ?? null;
+  /** Mobile: list when no `?s=`; detail only when the param matches a session. Desktop keeps list+detail. */
+  const hasExplicitSession = matched != null;
+  const current = matched ?? sessoes[0] ?? null;
   const iaAtiva = Boolean(config?.modulos_ativos.includes("ia_arcos"));
   const arcTitle = current?.arco_id
     ? data?.arcos.find((arco) => arco.id === current.arco_id)?.titulo
@@ -243,7 +246,10 @@ export function Sessions() {
     <main className="scroll-ink mx-auto grid fixed inset-0 max-w-6xl gap-10 overflow-y-auto px-4 pt-24 pb-28 lg:grid-cols-[300px_1fr] lg:grid-rows-1 lg:overflow-hidden lg:pb-16">
       <nav
         aria-label={t("v2.archive")}
-        className="scroll-ink lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+        className={cn(
+          "scroll-ink lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1",
+          hasExplicitSession && "hidden lg:block",
+        )}
       >
         <p className="eyebrow">{t("v2.tableJournal")}</p>
         <h1 className="mt-1 font-display text-3xl font-medium">{t("v2.sessionsTitle")}</h1>
@@ -265,30 +271,34 @@ export function Sessions() {
             {enabled ? t("emptyGm") : t("empty")}
           </p>
         ) : (
-          <ol className="mt-6 flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-0 lg:overflow-visible">
-            {sessoes.map((sessao) => (
-              <li key={sessao.id} className="shrink-0">
+          <ol className="mt-6 flex flex-col gap-0">
+            {sessoes.map((sessao) => {
+              const selectedExplicit = hasExplicitSession && sessao.id === matched.id;
+              const selectedDesktopDefault = !hasExplicitSession && sessao.id === current?.id;
+              return (
+              <li key={sessao.id}>
                 <Link
                   to="/sessoes"
                   search={{ s: sessao.numero }}
                   className={cn(
-                    "flex items-baseline gap-4 rounded-xl border border-transparent p-3 transition-colors",
-                    sessao.id === current?.id
-                      ? "border-border bg-card shadow-float"
-                      : "hover:bg-accent",
+                    "flex items-baseline gap-4 rounded-xl border border-transparent p-3 transition-colors hover:bg-accent",
+                    selectedExplicit && "border-border bg-card shadow-float hover:bg-card",
+                    selectedDesktopDefault &&
+                      "lg:border-border lg:bg-card lg:shadow-float lg:hover:bg-card",
                   )}
-                  aria-current={sessao.id === current?.id ? "page" : undefined}
+                  aria-current={selectedExplicit ? "page" : undefined}
                 >
                   <span
                     className={cn(
-                      "font-display text-3xl tabular-nums",
-                      sessao.id === current?.id ? "text-seal" : "text-muted-foreground",
+                      "font-display text-2xl tabular-nums text-muted-foreground lg:text-3xl",
+                      selectedExplicit && "text-seal",
+                      selectedDesktopDefault && "lg:text-seal",
                     )}
                   >
                     {String(sessao.numero).padStart(2, "0")}
                   </span>
-                  <span>
-                    <span className="block font-medium whitespace-nowrap lg:whitespace-normal">
+                  <span className="min-w-0">
+                    <span className="block font-medium whitespace-normal">
                       {sessao.titulo}
                     </span>
                     {sessao.data_rotulo && (
@@ -305,16 +315,28 @@ export function Sessions() {
                 </Link>
                 {isDono && <InconsistencyAlerts alertas={sessao.alertas_inconsistencia ?? []} />}
               </li>
-            ))}
+              );
+            })}
           </ol>
         )}
       </nav>
 
       {current && (
         <article
-          className="scroll-ink max-w-2xl animate-in fade-in lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+          className={cn(
+            "scroll-ink max-w-2xl animate-in fade-in lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1",
+            !hasExplicitSession && "hidden lg:block",
+          )}
           key={current.id}
         >
+          <Link
+            to="/sessoes"
+            search={{}}
+            className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+          >
+            <ChevronLeft className="h-4 w-4" aria-hidden />
+            {t("v2.backToList")}
+          </Link>
           <div className="flex items-start justify-between gap-4">
             <p className="eyebrow">{meta}</p>
             {enabled && (

@@ -7,6 +7,21 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-10-17
+
+### Added
+
+- No modo Por arcos da Linha do Tempo, cada card de sessão passa a abrir a aba Sessões na sessão correspondente (`/sessoes?s={numero}`).
+
+### Changed
+
+- Em ecrãs estreitos, Sessões deixa de empilhar lista e descrição: sem `?s=` mostra só a lista; com `?s=` mostra só o detalhe, com atalho «Voltar à lista». No desktop, lista e painel continuam lado a lado.
+- Lista de Sessões no mobile deixa de ser um carrossel horizontal e passa a lista vertical.
+
+### Fixed
+
+- No modo Por arcos, cards longos no mobile sobrepunham-se por causa do passo fixo de linha demasiado baixo. Cards mais compactos, tipografia e truncamento no mobile, e passo vertical alargado (`ROW_H = 112`).
+
 ## [1.0.1] — 2026-10-17
 
 ### Fixed
