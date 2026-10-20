@@ -7,6 +7,25 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-20
+
+### Added
+
+- Notas de preparo em Sessões: campo de texto Markdown, sempre privado ao mestre, que vive ao lado do resumo e não é apagado quando o resumo é preenchido. Nunca é servido em contexto de jogador, mesmo com a sessão visível.
+- Ação «Preparar próxima sessão» no mestre: sugere o próximo número, abre o formulário com a sessão oculta aos jogadores (`visivel_para_todos=false`) e o foco nas notas de preparo. Não existe estado novo de rascunho: a sessão em preparo é uma sessão oculta.
+- Na Linha do Tempo, o mestre vê a indicação de que uma sessão oculta tem notas de preparo registadas.
+- Notas mecânicas em Personagens (PJ e NPC): campo Markdown livre, só para o mestre, no formulário de edição e no painel de leitura da Rede de Relações. Nunca aparece nas respostas públicas, independentemente de o personagem ser visível.
+- Aba **Ferramentas** (só para o mestre) com quatro geradores de apoio: nome de PNG, rumor ou gancho, clima e ambiente, e item ou recompensa. O conteúdo respeita o `sistema` da campanha (`wfrp4e`, `wod`) e tem conjunto genérico de reserva para qualquer outro valor, sinalizado com o selo «Conteúdo genérico». Disponível em pt-BR e en; o sorteio evita repetir o resultado imediatamente anterior.
+
+### Changed
+
+- A barra de navegação ganha um item condicional, visível quando a pessoa tem permissão de mestre (`canEdit`), mesmo com o toggle de Modo GM desligado. Confirmado no mobile, com seis abas na barra inferior sem overflow até 320 px em pt-BR e en.
+- O `sistema` da campanha passa a ser comparado sem distinguir maiúsculas e espaços nos geradores (`WFRP4e` e `wfrp4e` são o mesmo sistema).
+
+### Database
+
+- Duas migrações Alembic por campanha, sem alterar dados existentes: `010` adiciona `sessao.notas_preparo` e `011` adiciona `npc.notas_mecanicas`, ambas com valor padrão vazio. O caminho de bases legadas (`legacy_migrate`) acrescenta as mesmas colunas.
+
 ## [1.0.2] — 2026-10-17
 
 ### Added

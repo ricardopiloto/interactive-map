@@ -65,12 +65,14 @@ def seed_personagem(
     visivel: bool = True,
     tipo: PersonagemTipo = PersonagemTipo.pj,
     faccao: str | None = None,
+    notas_mecanicas: str = "",
 ) -> NPC:
     row = NPC(
         nome=nome,
         tipo=tipo,
         visivel_para_todos=visivel,
         descricao="",
+        notas_mecanicas=notas_mecanicas,
         faccao=faccao,
     )
     session.add(row)
@@ -88,6 +90,7 @@ def seed_sessao(
     visivel: bool = True,
     data_rotulo: str | None = None,
     resumo: str = "",
+    notas_preparo: str = "",
     local_ids: list[int] | None = None,
     personagem_ids: list[int] | None = None,
     arco_id: int | None = None,
@@ -98,6 +101,7 @@ def seed_sessao(
         titulo=titulo,
         data_rotulo=data_rotulo,
         resumo=resumo,
+        notas_preparo=notas_preparo,
         visivel_para_todos=visivel,
         arco_id=arco_id,
         arco_transicao_id=arco_transicao_id,

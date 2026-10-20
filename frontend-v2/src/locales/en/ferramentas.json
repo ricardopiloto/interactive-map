@@ -1,0 +1,31 @@
+{
+  "eyebrow": "GM support",
+  "title": "Tools",
+  "intro": "Quick rolls for improvising. Content follows the campaign's setting.",
+  "loading": "Loading…",
+  "gmOnly": "This area is only available to the campaign's game master.",
+  "empty": "Nothing rolled yet.",
+  "roll": "Roll",
+  "rollAgain": "Roll again",
+  "genericBadge": "Generic content",
+  "nome": {
+    "title": "NPC name",
+    "hint": "A name for whoever shows up unannounced."
+  },
+  "rumor": {
+    "title": "Rumor or hook",
+    "hint": "Something to plant in the tavern or the street."
+  },
+  "clima": {
+    "title": "Weather and ambience",
+    "hint": "A condition to set the scene."
+  },
+  "item": {
+    "title": "Item or loot",
+    "hint": "A generic find for the haul."
+  },
+  "errors": {
+    "generic": "Could not roll right now. Try again.",
+    "GERADOR_TIPO_DESCONHECIDO": "Unknown generator."
+  }
+}

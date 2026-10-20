@@ -29,6 +29,7 @@ def personagem_to_read(npc: NPC, *, for_player: bool = True) -> PersonagemRead:
         tipo=tipo,
         papel=npc.papel,
         descricao=npc.descricao,
+        notas_mecanicas="" if for_player else npc.notas_mecanicas,
         faccao=npc.faccao,
         status=npc.status,
         retrato_url=rewrite_media_url(npc.retrato_url),

@@ -33,6 +33,7 @@ class NPC(SQLModel, table=True):
     tipo: PersonagemTipo = Field(default=PersonagemTipo.npc, max_length=10)
     papel: Optional[str] = Field(default=None, max_length=200)
     descricao: str = Field(default="", max_length=10000)
+    notas_mecanicas: str = Field(default="", max_length=10000)
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = Field(default=NPCStatus.desconhecido)
     retrato_url: Optional[str] = Field(default=None, max_length=500)

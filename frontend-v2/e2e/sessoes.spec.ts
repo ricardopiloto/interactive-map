@@ -1,6 +1,54 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { applyAuth, loadSession, setLocale } from "./helpers";
 
+test("preparo fica privado e permanece depois do resumo", async ({ page }) => {
+  test.setTimeout(90_000);
+  const session = loadSession();
+  await applyAuth(page.context(), session);
+  await setLocale(page, "pt-BR");
+  const title = `Preparo ${Date.now()}`;
+  const notes = `Segredo ${Date.now()}`;
+  const base = `/api/c/${session.slug}`;
+
+  try {
+    await page.goto(`/c/${session.slug}/sessoes`);
+    await page.getByRole("button", { name: "Modo GM" }).click();
+    await page.getByRole("button", { name: "Preparar próxima sessão" }).click();
+    const dialog = page.getByRole("dialog");
+    const notesField = dialog.getByRole("textbox", { name: "Notas de preparo" });
+    await expect(notesField).toBeFocused();
+    await expect(dialog.getByRole("checkbox", { name: "Visível para todos" })).not.toBeChecked();
+    await dialog.getByRole("textbox", { name: "Título" }).fill(title);
+    await notesField.fill(notes);
+    await dialog.getByRole("button", { name: "Salvar" }).click();
+    await expect(dialog).toBeHidden();
+
+    await page.goto(`/c/${session.slug}/linha-do-tempo`);
+    await expect(page.getByText("Próximas sessões em preparo")).toBeVisible();
+    await expect(page.getByText("Com notas de preparo").last()).toBeVisible();
+
+    await page.goto(`/c/${session.slug}/sessoes`);
+    await page.getByRole("link", { name: new RegExp(title) }).click();
+    await page.getByRole("button", { name: "Editar sessão" }).click();
+    const editor = page.getByRole("dialog");
+    await editor.getByRole("textbox", { name: "Resumo" }).fill("Resumo depois do jogo");
+    await editor.getByRole("button", { name: "Salvar" }).click();
+    await expect(editor).toBeHidden();
+    await expect(page.getByText(notes)).toBeVisible();
+    await expect(page.getByText("Resumo depois do jogo")).toBeVisible();
+
+    await page.getByRole("button", { name: "Visualização" }).click();
+    await expect(page.getByText(notes)).toHaveCount(0);
+    await page.goto(`/c/${session.slug}/linha-do-tempo`);
+    await expect(page.getByText("Com notas de preparo")).toHaveCount(0);
+    const publicResponse = await page.request.get(`${base}/sessoes`);
+    expect(publicResponse.ok()).toBeTruthy();
+    expect(await publicResponse.text()).not.toContain(notes);
+  } finally {
+    await cleanup(page.request, session.slug, {}, title);
+  }
+});
+
 test("mestre cria sessão com associações e o módulo de IA desligado não sugere", async ({
   page,
 }) => {

@@ -84,6 +84,10 @@ def migrate_sqlite_legacy(engine: Engine) -> None:
                     "NOT NULL DEFAULT 1"
                 )
             )
+        if sessao_cols and "notas_preparo" not in sessao_cols:
+            conn.execute(
+                text("ALTER TABLE sessao ADD COLUMN notas_preparo VARCHAR(50000) NOT NULL DEFAULT ''")
+            )
 
         npc_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(npc)")).fetchall()}
         if npc_cols and "tipo" not in npc_cols:
@@ -98,6 +102,10 @@ def migrate_sqlite_legacy(engine: Engine) -> None:
                     "ALTER TABLE npc ADD COLUMN visivel_para_todos BOOLEAN "
                     "NOT NULL DEFAULT 1"
                 )
+            )
+        if npc_cols and "notas_mecanicas" not in npc_cols:
+            conn.execute(
+                text("ALTER TABLE npc ADD COLUMN notas_mecanicas VARCHAR(10000) NOT NULL DEFAULT ''")
             )
 
         vinculo_cols = {

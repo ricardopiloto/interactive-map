@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +22,12 @@ export interface SessaoDraft {
   titulo: string;
   data_rotulo: string;
   resumo: string;
+  notas_preparo: string;
   visivel_para_todos: boolean;
   local_ids: number[];
   personagem_ids: number[];
+  /** When true, focus the prep-notes field (prepare-next-session flow). */
+  focusNotasPreparo?: boolean;
 }
 
 function CheckList({
@@ -91,6 +95,16 @@ export function SessionEditor({
 }) {
   const { t } = useTranslation("sessoes");
   const { t: tc } = useTranslation("comum");
+  const notasPreparoRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!draft.focusNotasPreparo) return;
+    const node = notasPreparoRef.current;
+    if (!node) return;
+    node.focus();
+    const length = node.value.length;
+    node.setSelectionRange(length, length);
+  }, [draft.focusNotasPreparo]);
 
   function toggle(key: "local_ids" | "personagem_ids", id: number) {
     const current = draft[key];
@@ -101,7 +115,14 @@ export function SessionEditor({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent
+        className="max-h-[85vh] overflow-y-auto sm:max-w-lg"
+        onOpenAutoFocus={(event) => {
+          if (!draft.focusNotasPreparo) return;
+          event.preventDefault();
+          notasPreparoRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-medium">
             {draft.isNew ? t("new") : t("edit")}
@@ -142,6 +163,14 @@ export function SessionEditor({
             <Input
               value={draft.data_rotulo}
               onChange={(event) => onChange({ data_rotulo: event.target.value })}
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className={fieldLabel}>{t("fieldNotasPreparo")}</span>
+            <Textarea
+              ref={notasPreparoRef}
+              value={draft.notas_preparo}
+              onChange={(event) => onChange({ notas_preparo: event.target.value })}
             />
           </label>
           <label className="block space-y-1">

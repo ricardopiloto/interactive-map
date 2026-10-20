@@ -1,0 +1,31 @@
+{
+  "eyebrow": "Apoio ao mestre",
+  "title": "Ferramentas",
+  "intro": "Sorteios rápidos para improvisar. O conteúdo segue a ambientação da campanha.",
+  "loading": "Carregando…",
+  "gmOnly": "Esta área está disponível apenas para o mestre da campanha.",
+  "empty": "Nada sorteado ainda.",
+  "roll": "Sortear",
+  "rollAgain": "Sortear de novo",
+  "genericBadge": "Conteúdo genérico",
+  "nome": {
+    "title": "Nome de PNG",
+    "hint": "Um nome para quem aparecer sem aviso."
+  },
+  "rumor": {
+    "title": "Rumor ou gancho",
+    "hint": "Algo para plantar na taverna ou na rua."
+  },
+  "clima": {
+    "title": "Clima e ambiente",
+    "hint": "Uma condição para ambientar a cena."
+  },
+  "item": {
+    "title": "Item ou recompensa",
+    "hint": "Um achado genérico para o saque."
+  },
+  "errors": {
+    "generic": "Não foi possível sortear agora. Tente novamente.",
+    "GERADOR_TIPO_DESCONHECIDO": "Gerador desconhecido."
+  }
+}

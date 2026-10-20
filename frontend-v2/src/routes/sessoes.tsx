@@ -43,6 +43,7 @@ function payloadOf(draft: SessaoDraft): SessaoPayload {
     titulo: draft.titulo.trim(),
     data_rotulo: draft.data_rotulo.trim() || null,
     resumo: draft.resumo,
+    notas_preparo: draft.notas_preparo,
     visivel_para_todos: draft.visivel_para_todos,
     local_ids: draft.local_ids,
     personagem_ids: draft.personagem_ids,
@@ -57,6 +58,7 @@ function draftFrom(sessao: Sessao): SessaoDraft {
     titulo: sessao.titulo,
     data_rotulo: sessao.data_rotulo ?? "",
     resumo: sessao.resumo,
+    notas_preparo: sessao.notas_preparo ?? "",
     visivel_para_todos: sessao.visivel_para_todos !== false,
     local_ids: sessao.locais.map((local) => local.id),
     personagem_ids: sessao.personagens.map((personagem) => personagem.id),
@@ -146,21 +148,24 @@ export function Sessions() {
     return fallback;
   }
 
-  async function startCreate() {
+  async function startCreate(options?: { preparar?: boolean }) {
     setFormError(null);
     setSugestaoMsg(null);
     setBusy(true);
     try {
       const { numero } = await sessoesApi.proximoNumero(slug);
+      const preparar = Boolean(options?.preparar);
       setDraft({
         isNew: true,
         numero,
         titulo: "",
         data_rotulo: "",
         resumo: "",
-        visivel_para_todos: true,
+        notas_preparo: "",
+        visivel_para_todos: !preparar,
         local_ids: [],
         personagem_ids: [],
+        focusNotasPreparo: preparar,
       });
     } catch (reason) {
       setFormError(explain(reason, t("saveError")));
@@ -254,9 +259,19 @@ export function Sessions() {
         <p className="eyebrow">{t("v2.tableJournal")}</p>
         <h1 className="mt-1 font-display text-3xl font-medium">{t("v2.sessionsTitle")}</h1>
         {enabled && (
-          <Button type="button" className="mt-4" onClick={() => void startCreate()} disabled={busy}>
-            <Plus aria-hidden /> {t("new")}
-          </Button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button type="button" onClick={() => void startCreate()} disabled={busy}>
+              <Plus aria-hidden /> {t("new")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void startCreate({ preparar: true })}
+              disabled={busy}
+            >
+              {t("prepareNext")}
+            </Button>
+          </div>
         )}
         {loading ? (
           <p role="status" className="mt-6 text-sm text-muted-foreground">
@@ -276,45 +291,43 @@ export function Sessions() {
               const selectedExplicit = hasExplicitSession && sessao.id === matched.id;
               const selectedDesktopDefault = !hasExplicitSession && sessao.id === current?.id;
               return (
-              <li key={sessao.id}>
-                <Link
-                  to="/sessoes"
-                  search={{ s: sessao.numero }}
-                  className={cn(
-                    "flex items-baseline gap-4 rounded-xl border border-transparent p-3 transition-colors hover:bg-accent",
-                    selectedExplicit && "border-border bg-card shadow-float hover:bg-card",
-                    selectedDesktopDefault &&
-                      "lg:border-border lg:bg-card lg:shadow-float lg:hover:bg-card",
-                  )}
-                  aria-current={selectedExplicit ? "page" : undefined}
-                >
-                  <span
+                <li key={sessao.id}>
+                  <Link
+                    to="/sessoes"
+                    search={{ s: sessao.numero }}
                     className={cn(
-                      "font-display text-2xl tabular-nums text-muted-foreground lg:text-3xl",
-                      selectedExplicit && "text-seal",
-                      selectedDesktopDefault && "lg:text-seal",
+                      "flex items-baseline gap-4 rounded-xl border border-transparent p-3 transition-colors hover:bg-accent",
+                      selectedExplicit && "border-border bg-card shadow-float hover:bg-card",
+                      selectedDesktopDefault &&
+                        "lg:border-border lg:bg-card lg:shadow-float lg:hover:bg-card",
                     )}
+                    aria-current={selectedExplicit ? "page" : undefined}
                   >
-                    {String(sessao.numero).padStart(2, "0")}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-medium whitespace-normal">
-                      {sessao.titulo}
+                    <span
+                      className={cn(
+                        "font-display text-2xl tabular-nums text-muted-foreground lg:text-3xl",
+                        selectedExplicit && "text-seal",
+                        selectedDesktopDefault && "lg:text-seal",
+                      )}
+                    >
+                      {String(sessao.numero).padStart(2, "0")}
                     </span>
-                    {sessao.data_rotulo && (
-                      <span className="block font-mono text-[11px] text-muted-foreground">
-                        {sessao.data_rotulo}
-                      </span>
-                    )}
-                    {enabled && sessao.visivel_para_todos === false && (
-                      <span className={cn(badgeVariants({ variant: "secondary" }), "mt-1")}>
-                        {t("hiddenBadge")}
-                      </span>
-                    )}
-                  </span>
-                </Link>
-                {isDono && <InconsistencyAlerts alertas={sessao.alertas_inconsistencia ?? []} />}
-              </li>
+                    <span className="min-w-0">
+                      <span className="block font-medium whitespace-normal">{sessao.titulo}</span>
+                      {sessao.data_rotulo && (
+                        <span className="block font-mono text-[11px] text-muted-foreground">
+                          {sessao.data_rotulo}
+                        </span>
+                      )}
+                      {enabled && sessao.visivel_para_todos === false && (
+                        <span className={cn(badgeVariants({ variant: "secondary" }), "mt-1")}>
+                          {t("hiddenBadge")}
+                        </span>
+                      )}
+                    </span>
+                  </Link>
+                  {isDono && <InconsistencyAlerts alertas={sessao.alertas_inconsistencia ?? []} />}
+                </li>
               );
             })}
           </ol>
@@ -375,6 +388,14 @@ export function Sessions() {
             </p>
           )}
           <div className="my-8 h-px w-24 bg-seal" />
+          {enabled && current.notas_preparo?.trim() && (
+            <section className="mb-8">
+              <h3 className="eyebrow mb-2">{t("fieldNotasPreparo")}</h3>
+              <div className="font-display text-lg leading-[1.7] text-pretty text-muted-foreground">
+                <RichContent markdown={current.notas_preparo} />
+              </div>
+            </section>
+          )}
           {current.resumo && (
             <div className="drop-cap font-display text-xl leading-[1.7] text-pretty">
               <RichContent markdown={current.resumo} />

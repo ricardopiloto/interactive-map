@@ -16,6 +16,7 @@ it("mostra o retrato cadastrado e atualiza a prévia após upload", async () => 
     papel: "",
     faccao: "",
     descricao: "",
+    notas_mecanicas: "",
     status: "vivo",
     retrato_url: "/portraits/ada-old.jpg",
     visivel_para_todos: true,

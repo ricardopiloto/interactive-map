@@ -60,6 +60,7 @@ function emptyPersonagem(): PersonagemDraft {
     papel: "",
     faccao: "",
     descricao: "",
+    notas_mecanicas: "",
     status: "vivo",
     retrato_url: null,
     visivel_para_todos: true,
@@ -77,6 +78,7 @@ function personagemDraft(person: Personagem): PersonagemDraft {
     papel: person.papel ?? "",
     faccao: person.faccao ?? "",
     descricao: person.descricao,
+    notas_mecanicas: person.notas_mecanicas ?? "",
     status: person.status ?? "desconhecido",
     retrato_url: person.retrato_url,
     visivel_para_todos: person.visivel_para_todos !== false,
@@ -132,6 +134,7 @@ function personagemPayload(draft: PersonagemDraft, modules: string[]): Personage
     tipo: draft.tipo,
     papel: draft.papel.trim() || null,
     descricao: draft.descricao,
+    notas_mecanicas: draft.notas_mecanicas,
     faccao: draft.faccao.trim() || null,
     status: draft.status,
     retrato_url: draft.retrato_url,
@@ -626,6 +629,12 @@ function Profile({
         <div className="mt-4">
           <RichContent markdown={person.descricao} />
         </div>
+      )}
+      {isGm && Boolean(person.notas_mecanicas?.trim()) && (
+        <section className="mt-4" aria-label={t("personagemForm.notasMecanicas")}>
+          <h2 className="eyebrow mb-2">{t("personagemForm.notasMecanicas")}</h2>
+          <RichContent markdown={person.notas_mecanicas ?? ""} />
+        </section>
       )}
       {isGm && (
         <div className="mt-3 flex gap-2">

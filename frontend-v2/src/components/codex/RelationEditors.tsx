@@ -32,6 +32,7 @@ export interface PersonagemDraft {
   papel: string;
   faccao: string;
   descricao: string;
+  notas_mecanicas: string;
   status: PersonagemStatus;
   retrato_url: string | null;
   visivel_para_todos: boolean;
@@ -146,6 +147,13 @@ export function PersonagemEditor({
             <Textarea
               value={draft.descricao}
               onChange={(event) => onChange({ descricao: event.target.value })}
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className={fieldLabel}>{t("personagemForm.notasMecanicas")}</span>
+            <Textarea
+              value={draft.notas_mecanicas}
+              onChange={(event) => onChange({ notas_mecanicas: event.target.value })}
             />
           </label>
           <label className="block space-y-1">

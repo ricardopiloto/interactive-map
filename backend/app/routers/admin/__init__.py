@@ -6,6 +6,7 @@ from app.routers.admin import (
     descoberta,
     eventos,
     export,
+    geradores,
     grupo,
     itens,
     locais,
@@ -35,6 +36,7 @@ router.include_router(sessoes.router, tags=["admin-sessoes"])
 router.include_router(eventos.router, tags=["admin-eventos"])
 router.include_router(itens.router, tags=["admin-itens"])
 router.include_router(descoberta.router, tags=["admin-descoberta"])
+router.include_router(geradores.router, tags=["admin-geradores"])
 
 
 @router.get("/session")

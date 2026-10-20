@@ -202,12 +202,7 @@ describe("curva automática de bifurcação", () => {
 
 it("liga cada card à sessão correspondente em /sessoes", () => {
   const { container } = renderTimeline(
-    <ArcTimeline
-      sessoes={[s(7, 1)]}
-      eventos={[e(7, 7, 100)]}
-      arcos={[a(1)]}
-      filter="all"
-    />,
+    <ArcTimeline sessoes={[s(7, 1)]} eventos={[e(7, 7, 100)]} arcos={[a(1)]} filter="all" />,
   );
   const link = container.querySelector('[data-session-id="7"]');
   expect(link).toBeInstanceOf(HTMLAnchorElement);

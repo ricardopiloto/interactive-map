@@ -39,6 +39,7 @@ interface Row {
   titulo: string;
   data_rotulo: string | null;
   resumo: string;
+  notas_preparo: string;
   visivel_para_todos: boolean;
   local_ids: number[];
   personagem_ids: number[];
@@ -122,6 +123,7 @@ function view(store: Store, row: Row, hide: boolean) {
     ...(hide
       ? {}
       : {
+          notas_preparo: row.notas_preparo,
           visivel_para_todos: row.visivel_para_todos,
           alertas_inconsistencia: alertsFor(store, row),
         }),
@@ -181,6 +183,7 @@ function installApi(stores: Record<string, Store>, signedIn: boolean) {
           titulo: body.titulo,
           data_rotulo: body.data_rotulo,
           resumo: body.resumo,
+          notas_preparo: body.notas_preparo,
           visivel_para_todos: body.visivel_para_todos,
           local_ids: body.local_ids,
           personagem_ids: body.personagem_ids,
@@ -265,6 +268,7 @@ function row(patch: Partial<Row> & Pick<Row, "id" | "numero" | "titulo">): Row {
   return {
     data_rotulo: null,
     resumo: "",
+    notas_preparo: "",
     visivel_para_todos: true,
     local_ids: [],
     personagem_ids: [],
@@ -309,6 +313,32 @@ it("mostra o resumo em Markdown com chips e sem o micro-formato do template", as
   );
   expect(screen.queryByRole("button", { name: "Nova sessão" })).not.toBeInTheDocument();
   expect(screen.queryByText(/sessão oculta/)).not.toBeInTheDocument();
+});
+
+it("prepara a próxima sessão oculta com notas de preparo em foco", async () => {
+  const store = emptyStore({
+    rows: [row({ id: 1, numero: 3, titulo: "Já jogada" })],
+  });
+  renderSessions("/c/alpha/sessoes", { alpha: store }, true);
+
+  fireEvent.click(await screen.findByRole("button", { name: "Preparar próxima sessão" }));
+  const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getByRole("spinbutton", { name: "Número" })).toHaveValue(4);
+  expect(within(dialog).getByRole("checkbox", { name: "Visível para todos" })).not.toBeChecked();
+  const notas = within(dialog).getByRole("textbox", { name: "Notas de preparo" });
+  expect(notas).toHaveFocus();
+  fireEvent.change(within(dialog).getByRole("textbox", { name: "Título" }), {
+    target: { value: "Próxima" },
+  });
+  fireEvent.change(notas, { target: { value: "Cena do barão" } });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByRole("heading", { name: "Próxima" })).toBeVisible();
+  expect(screen.getByText("Oculta")).toBeVisible();
+  expect(screen.getByText("Cena do barão")).toBeVisible();
+  const created = store.rows.find((item) => item.titulo === "Próxima");
+  expect(created?.visivel_para_todos).toBe(false);
+  expect(created?.notas_preparo).toBe("Cena do barão");
 });
 
 it("cria, edita, oculta e exclui uma sessão, e não chama a sugestão com o módulo desligado", async () => {
