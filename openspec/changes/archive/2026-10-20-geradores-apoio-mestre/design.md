@@ -13,7 +13,6 @@ Ver `proposal.md` — Why. `Campanha.sistema` (`backend/app/models/campanha.py`)
 
 **Non-Goals:**
 - Não torna as tabelas editáveis por campanha (ver BKLG-047, follow-up futuro).
-- Não implementa o atalho de enviar o resultado pra `notas_preparo` (sinergia com a change `sessao-notas-preparo`, mas não uma dependência desta entrega).
 - Não introduz um conceito formal de "ambientação" distinto de `Campanha.sistema` — reaproveita o campo existente.
 
 ## Decisions
@@ -27,7 +26,13 @@ A rota dos geradores entra em `backend/app/routers/admin/` (ex. `geradores.py`),
 ### Item de navegação condicional em `Shell.tsx`, não uma rota sempre visível
 Hoje `lenses` em `frontend-v2/src/components/codex/Shell.tsx` é uma lista fixa de abas sempre visíveis (Mapa, Relações, Rota, Sessões, Cronologia) — nenhuma delas é condicional. A tela de geradores é a primeira a precisar de visibilidade condicional nesse nível de navegação; a decisão é renderizar um item extra só quando **`canEdit` for verdadeiro — nunca `enabled`**. O gate é a permissão de ser mestre (`canEdit`), não o toggle visual de "Modo GM" (`enabled`): usar `enabled` faria o item desaparecer do menu toda vez que o mestre desligasse o toggle de edição, o que não é a intenção — o mestre deve conseguir acessar os geradores independente do toggle estar ligado ou desligado.
 
+### Atalho «Enviar para preparo» acrescenta no cliente, sobre um `PATCH` parcial já existente
+O `PATCH /admin/sessoes/{id}` usa `model_dump(exclude_unset=True)`, então enviar só `notas_preparo` não toca nos demais campos nem nos vínculos. O frontend lê a sessão fresca (`GET /admin/sessoes/{id}`), acrescenta `- {rótulo}: {resultado}` ao fim e envia o `PATCH`. Alternativa considerada: endpoint dedicado de append no servidor. Descartada porque o ganho (atomicidade) não paga um endpoint e um contrato novos para um fluxo de um único mestre por vez. Destinos oferecidos: apenas sessões com `visivel_para_todos=false`, pelo mesmo critério da change `sessao-notas-preparo` de que sessão oculta equivale a sessão em preparo; sem nenhuma, o atalho não escreve e orienta o mestre a usar «Preparar próxima sessão».
+
 ## Risks / Trade-offs
+
+- **[Risco] Duas abas do mestre acrescentando ao mesmo tempo podem perder uma das notas** (leitura e escrita não são atômicas) → Aceito: o cenário é de um único mestre e a janela entre o `GET` e o `PATCH` é de milissegundos; o texto enviado nunca sobrescreve, só pode ser sobrescrito por um `PATCH` concorrente.
+- **[Risco] `notas_preparo` tem teto de 50000 caracteres** → o `PATCH` devolve erro de validação e o atalho mostra mensagem sem perder o resultado sorteado na tela.
 
 - **[Risco] Conteúdo insuficiente nas tabelas gera repetição perceptível em sessão curta** → Mitigação: exigir um mínimo de itens por tabela/ambientação na tarefa de redação de conteúdo (ver `tasks.md`), e sortear sem repetir o último resultado imediato (evita "o mesmo nome duas vezes seguidas").
 - **[Risco] Fallback genérico usado sem o mestre perceber que não é específico da ambientação** → Mitigação: fora de escopo bloquear por isso (geradores sempre retornam algo), mas vale um rótulo discreto "conteúdo genérico" quando o fallback for usado — registrar como melhoria desejável, não bloqueante.

@@ -11,7 +11,7 @@ Preparar uma sessão envolve ferramentas rápidas de improviso que o Campaign Co
 - Adiciona uma tela/painel novo, só visível ao mestre (Modo GM), com um acionador por gerador.
 - Conteúdo das quatro tabelas é redigido em pt-BR e en, como entregável de redação separado do trabalho de engenharia.
 - **Fora de escopo desta entrega** (ver BKLG-047 no backlog): tornar as tabelas editáveis pelo mestre por campanha. Esta entrega usa só tabelas fixas no código.
-- **Fora de escopo desta entrega**: o atalho de enviar o resultado sorteado direto pra `notas_preparo` de uma Sessão (change `sessao-notas-preparo`) — é uma sinergia desejável, mas não uma dependência; os dois itens funcionam de forma independente.
+- Atalho «Enviar para preparo» em cada resultado sorteado: o mestre escolhe uma sessão oculta (`visivel_para_todos=false`, em preparo) e o resultado é acrescentado ao fim de `notas_preparo` dela (change `sessao-notas-preparo`), como item de lista rotulado pelo gerador. Nunca sobrescreve o texto existente nem escreve numa sessão visível. Reaproveita o `PATCH /admin/sessoes/{id}` parcial já existente — sem endpoint novo. Os geradores continuam funcionando sem o atalho. (Incluído em 2026-10-20; a primeira versão deste change o deixava fora de escopo.)
 
 ## Capabilities
 

@@ -16,6 +16,7 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 - Na Linha do Tempo, o mestre vê a indicação de que uma sessão oculta tem notas de preparo registadas.
 - Notas mecânicas em Personagens (PJ e NPC): campo Markdown livre, só para o mestre, no formulário de edição e no painel de leitura da Rede de Relações. Nunca aparece nas respostas públicas, independentemente de o personagem ser visível.
 - Aba **Ferramentas** (só para o mestre) com quatro geradores de apoio: nome de PNG, rumor ou gancho, clima e ambiente, e item ou recompensa. O conteúdo respeita o `sistema` da campanha (`wfrp4e`, `wod`) e tem conjunto genérico de reserva para qualquer outro valor, sinalizado com o selo «Conteúdo genérico». Disponível em pt-BR e en; o sorteio evita repetir o resultado imediatamente anterior.
+- Atalho «Enviar para preparo» em cada resultado dos geradores: o mestre escolhe uma sessão oculta (em preparo) e o resultado é acrescentado ao fim das notas de preparo dela, como item de lista rotulado (`- Rumor: …`). Nunca sobrescreve o texto existente, nunca oferece sessões visíveis e recusa o envio se a sessão for revelada entretanto. Sem sessão em preparo, orienta para «Preparar próxima sessão».
 
 ### Changed
 

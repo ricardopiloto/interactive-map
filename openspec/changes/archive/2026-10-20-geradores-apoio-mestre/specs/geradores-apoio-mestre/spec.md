@@ -46,3 +46,26 @@ O sistema SHALL restringir o acesso aos quatro geradores ao mestre da campanha; 
 #### Scenario: Jogador não vê a tela de geradores
 - **WHEN** um jogador (sem permissão de mestre) navega pela campanha
 - **THEN** nenhum ponto de acesso aos geradores é exibido, e uma tentativa direta de acionar um gerador pela API é rejeitada
+
+### Requirement: Enviar resultado sorteado para as notas de preparo de uma sessão
+O sistema SHALL permitir ao mestre enviar o resultado de um gerador para as notas de preparo de uma sessão em preparo, acrescentando-o ao fim de `notas_preparo` sem alterar o texto já existente nem nenhum outro campo da sessão. As sessões oferecidas como destino SHALL ser apenas as ocultas aos jogadores (`visivel_para_todos=false`).
+
+#### Scenario: Resultado é acrescentado ao fim das notas
+- **WHEN** o mestre envia um resultado sorteado para uma sessão oculta que já tem notas de preparo
+- **THEN** o texto é acrescentado numa nova linha de lista, rotulada com o nome do gerador, e as notas anteriores permanecem intactas
+
+#### Scenario: Sessão oculta sem notas
+- **WHEN** o mestre envia um resultado para uma sessão oculta com `notas_preparo` vazio
+- **THEN** as notas passam a conter apenas o item enviado, sem linhas em branco iniciais
+
+#### Scenario: Não existe sessão em preparo
+- **WHEN** o mestre aciona o atalho e nenhuma sessão está oculta
+- **THEN** o sistema não escreve em nenhuma sessão e orienta o mestre a usar «Preparar próxima sessão» em Sessões
+
+#### Scenario: Sessões visíveis não são destino
+- **WHEN** o mestre abre a lista de destinos do atalho
+- **THEN** nenhuma sessão com `visivel_para_todos=true` é oferecida
+
+#### Scenario: Notas ficam sempre privadas
+- **WHEN** um resultado é acrescentado às notas de preparo de uma sessão
+- **THEN** o texto continua ausente de qualquer resposta servida em contexto de jogador

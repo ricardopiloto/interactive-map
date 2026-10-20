@@ -4,21 +4,38 @@ import { useCampaignKey } from "@/api/campaign";
 import { ApiError } from "@/api/client";
 import {
   GERADOR_TIPOS,
+  SessaoVisivelError,
   geradoresApi,
   type GeradorResultado,
   type GeradorTipo,
+  type SessaoEmPreparo,
 } from "@/api/geradores";
 import { useEditMode } from "@/auth/EditModeContext";
 import { badgeVariants } from "@/components/ui/badge";
+import { Link } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-type PanelState = { result?: GeradorResultado; error?: string; loading?: boolean };
+type SendState = {
+  status: "idle" | "loading" | "choosing" | "sending";
+  sessions?: SessaoEmPreparo[];
+  notice?: { kind: "ok" | "error" | "empty"; text: string };
+};
+type PanelState = {
+  result?: GeradorResultado;
+  error?: string;
+  loading?: boolean;
+  send?: SendState;
+};
 
 export function Tools() {
   const slug = useCampaignKey();
   const { t, i18n } = useTranslation("ferramentas");
   const { canEdit, ready } = useEditMode();
   const [panels, setPanels] = useState<Partial<Record<GeradorTipo, PanelState>>>({});
+
+  function patchSend(tipo: GeradorTipo, send: SendState) {
+    setPanels((p) => ({ ...p, [tipo]: { ...p[tipo], send } }));
+  }
 
   async function roll(tipo: GeradorTipo) {
     setPanels((p) => ({ ...p, [tipo]: { ...p[tipo], loading: true, error: undefined } }));
@@ -31,6 +48,39 @@ export function Tools() {
           ? t(`errors.${error.codigo}`)
           : t("errors.generic");
       setPanels((p) => ({ ...p, [tipo]: { ...p[tipo], loading: false, error: message } }));
+    }
+  }
+
+  async function openSend(tipo: GeradorTipo) {
+    patchSend(tipo, { status: "loading" });
+    try {
+      const sessions = await geradoresApi.sessoesEmPreparo(slug);
+      patchSend(
+        tipo,
+        sessions.length === 0
+          ? { status: "idle", notice: { kind: "empty", text: t("send.empty") } }
+          : { status: "choosing", sessions },
+      );
+    } catch {
+      patchSend(tipo, {
+        status: "idle",
+        notice: { kind: "error", text: t("send.errors.generic") },
+      });
+    }
+  }
+
+  async function send(tipo: GeradorTipo, sessao: SessaoEmPreparo, resultado: string) {
+    patchSend(tipo, { status: "sending" });
+    try {
+      await geradoresApi.enviarParaPreparo(slug, sessao.id, t(`${tipo}.noteLabel`), resultado);
+      patchSend(tipo, {
+        status: "idle",
+        notice: { kind: "ok", text: t("send.done", { numero: sessao.numero }) },
+      });
+    } catch (error) {
+      const text =
+        error instanceof SessaoVisivelError ? t("send.errors.visible") : t("send.errors.generic");
+      patchSend(tipo, { status: "idle", notice: { kind: "error", text } });
     }
   }
 
@@ -62,6 +112,7 @@ export function Tools() {
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {GERADOR_TIPOS.map((tipo) => {
           const panel = panels[tipo] ?? {};
+          const sendState = panel.send ?? { status: "idle" as const };
           return (
             <section
               key={tipo}
@@ -95,12 +146,67 @@ export function Tools() {
                 >
                   {panel.result ? t("rollAgain") : t("roll")}
                 </button>
+                {panel.result && (
+                  <button
+                    type="button"
+                    onClick={() => void openSend(tipo)}
+                    disabled={sendState.status === "loading" || sendState.status === "sending"}
+                    className="rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
+                  >
+                    {t("send.button")}
+                  </button>
+                )}
                 {panel.result?.fallback && (
                   <span className={cn(badgeVariants({ variant: "secondary" }))}>
                     {t("genericBadge")}
                   </span>
                 )}
               </div>
+              {panel.result && sendState.status === "choosing" && sendState.sessions && (
+                <div role="group" aria-label={t("send.pick")} className="mt-4">
+                  <p className="text-sm text-muted-foreground">{t("send.pick")}</p>
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {sendState.sessions.map((sessao) => (
+                      <li key={sessao.id}>
+                        <button
+                          type="button"
+                          onClick={() => void send(tipo, sessao, panel.result!.resultado)}
+                          className="w-full rounded-xl border border-transparent px-3 py-2 text-left text-sm transition-colors hover:border-border hover:bg-accent"
+                        >
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {String(sessao.numero).padStart(2, "0")}
+                          </span>{" "}
+                          {sessao.titulo}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {sendState.notice && (
+                <p
+                  role={sendState.notice.kind === "error" ? "alert" : "status"}
+                  className={cn(
+                    "mt-3 text-sm",
+                    sendState.notice.kind === "error"
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {sendState.notice.text}
+                  {sendState.notice.kind === "empty" && (
+                    <>
+                      {" "}
+                      <Link
+                        to="/sessoes"
+                        className="text-seal underline underline-offset-4 hover:text-foreground"
+                      >
+                        {t("send.goToSessions")}
+                      </Link>
+                    </>
+                  )}
+                </p>
+              )}
             </section>
           );
         })}

@@ -8,6 +8,7 @@ from app.cli import _create_campanha
 from app.services.auth_admin import assign_owner
 from app.services.geradores import FALLBACK_KEY, TIPOS, reset_cache, sortear
 from tests.conftest import TEST_GM_EMAIL, api
+from tests.helpers import seed_local, seed_personagem, seed_sessao
 
 
 def test_sortear_avoids_immediate_repeat() -> None:
@@ -68,3 +69,48 @@ def test_gerador_tipo_desconhecido(client: TestClient) -> None:
     response = client.post(api("/api/admin/geradores/magia"))
     assert response.status_code == 404
     assert response.json()["detail"]["erro"] == "GERADOR_TIPO_DESCONHECIDO"
+
+
+def test_patch_parcial_so_com_notas_preparo_preserva_o_resto(client: TestClient, db_session) -> None:
+    """Contract behind the «Enviar para preparo» shortcut: it PATCHes only `notas_preparo`."""
+    loc = seed_local(db_session, nome="Porto")
+    pers = seed_personagem(db_session, nome="Ada", visivel=True)
+    row = seed_sessao(
+        db_session,
+        numero=7,
+        titulo="A emboscada",
+        visivel=False,
+        data_rotulo="Nachgeheim",
+        resumo="resumo existente",
+        notas_preparo="Cena 1",
+        local_ids=[loc.id],  # type: ignore[list-item]
+        personagem_ids=[pers.id],  # type: ignore[list-item]
+    )
+
+    novas = "Cena 1\n- Rumor: um corvo sem sombra"
+    resp = client.patch(api(f"/api/admin/sessoes/{row.id}"), json={"notas_preparo": novas})
+    assert resp.status_code == 200, resp.text
+
+    body = client.get(api(f"/api/admin/sessoes/{row.id}")).json()
+    assert body["notas_preparo"] == novas
+    assert body["titulo"] == "A emboscada"
+    assert body["numero"] == 7
+    assert body["data_rotulo"] == "Nachgeheim"
+    assert body["resumo"] == "resumo existente"
+    assert body["visivel_para_todos"] is False
+    assert [x["id"] for x in body["locais"]] == [loc.id]
+    assert [x["id"] for x in body["personagens"]] == [pers.id]
+
+
+def test_notas_enviadas_pelo_atalho_nunca_chegam_ao_publico(client: TestClient, db_session) -> None:
+    visivel = seed_sessao(db_session, numero=1, titulo="Jogada", visivel=True)
+    resp = client.patch(
+        api(f"/api/admin/sessoes/{visivel.id}"),
+        json={"notas_preparo": "- Rumor: segredo do mestre"},
+    )
+    assert resp.status_code == 200
+
+    lista = client.get(api("/api/sessoes"))
+    assert lista.status_code == 200
+    assert "segredo do mestre" not in lista.text
+    assert all("notas_preparo" not in s for s in lista.json()["sessoes"])

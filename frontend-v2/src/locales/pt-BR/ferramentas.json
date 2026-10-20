@@ -10,22 +10,37 @@
   "genericBadge": "Conteúdo genérico",
   "nome": {
     "title": "Nome de PNG",
-    "hint": "Um nome para quem aparecer sem aviso."
+    "hint": "Um nome para quem aparecer sem aviso.",
+    "noteLabel": "Nome"
   },
   "rumor": {
     "title": "Rumor ou gancho",
-    "hint": "Algo para plantar na taverna ou na rua."
+    "hint": "Algo para plantar na taverna ou na rua.",
+    "noteLabel": "Rumor"
   },
   "clima": {
     "title": "Clima e ambiente",
-    "hint": "Uma condição para ambientar a cena."
+    "hint": "Uma condição para ambientar a cena.",
+    "noteLabel": "Clima"
   },
   "item": {
     "title": "Item ou recompensa",
-    "hint": "Um achado genérico para o saque."
+    "hint": "Um achado genérico para o saque.",
+    "noteLabel": "Item"
   },
   "errors": {
     "generic": "Não foi possível sortear agora. Tente novamente.",
     "GERADOR_TIPO_DESCONHECIDO": "Gerador desconhecido."
+  },
+  "send": {
+    "button": "Enviar para preparo",
+    "pick": "Enviar para as notas de preparo de:",
+    "done": "Acrescentado às notas de preparo da sessão {{numero}}.",
+    "empty": "Nenhuma sessão em preparo. Use «Preparar próxima sessão» em Sessões.",
+    "goToSessions": "Ir para Sessões",
+    "errors": {
+      "generic": "Não foi possível enviar agora. Tente novamente.",
+      "visible": "Essa sessão já está visível aos jogadores. Nada foi alterado."
+    }
   }
 }

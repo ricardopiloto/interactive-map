@@ -525,7 +525,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-042] Produto — NPCs/criaturas sem dados mecânicos (ficha/stat block)
 
-**Status:** Implementado — change [`personagem-notas-mecanicas`](../../openspec/changes/personagem-notas-mecanicas/) (campo `notas_mecanicas` GM-only em PJ/NPC; painel de leitura + filtragem pública).
+**Status:** Implementado — change [`personagem-notas-mecanicas`](../../openspec/changes/archive/2026-10-20-personagem-notas-mecanicas/) (campo `notas_mecanicas` GM-only em PJ/NPC; painel de leitura + filtragem pública).
 
 **Registrado em:** 2026-10-18.
 
@@ -559,7 +559,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-044] Produto — Linha do Tempo sem "agenda da próxima sessão" (cenas planejadas, ganchos, segredos a revelar)
 
-**Status:** Implementado em 2026-10-20 — [change `sessao-notas-preparo`](../../openspec/changes/sessao-notas-preparo/).
+**Status:** Implementado em 2026-10-20 — [change `sessao-notas-preparo`](../../openspec/changes/archive/2026-10-20-sessao-notas-preparo/).
 
 **Registrado em:** 2026-10-18.
 
@@ -585,7 +585,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-045] Produto — Sem geradores/tabelas de apoio (nomes, clima, rumores, itens aleatórios)
 
-**Status:** Decidido em 2026-10-18 — pronto pra `/openspec-propose`.
+**Status:** Implementado em 2026-10-20 — [change `geradores-apoio-mestre`](../../openspec/changes/archive/2026-10-20-geradores-apoio-mestre/) (aba Ferramentas GM-only, 4 geradores, tabelas fixas por ambientação `wfrp4e`/`wod` com fallback genérico, pt-BR/en). Inclui o atalho «Enviar para preparo» (resultado acrescentado às `notas_preparo` de uma sessão oculta — [BKLG-044]). Verificado no navegador (desktop e mobile) em campanhas WFRP e WoD.
 
 **Registrado em:** 2026-10-18.
 
@@ -596,7 +596,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 **Decisões fechadas em chat (2026-10-18, pós-revisão de PO e validação arquitetural):**
 - **Tabelas fixas (hardcoded) por agora — decisão confirmada como MVP.** Sem CRUD de tabela por campanha nesta entrega. Ver [BKLG-047] abaixo pro follow-up de tornar editável.
 - **Conteúdo por ambientação, não genérico.** As duas campanhas em produção são WFRP (fantasia) e WoD (vampiro moderno) — cada gerador precisa de ao menos duas variantes de conteúdo (uma por ambientação), não uma lista genérica única. Isso é esforço de **redação/conteúdo** em pt-BR (e en, se aplicável), não só de engenharia — tratar como entregável separado, com responsável próprio pela escrita das tabelas.
-- **Loop de valor:** considerar, já nesta entrega ou logo depois, um atalho pra enviar o resultado sorteado direto pras notas de preparo da próxima sessão ([BKLG-044]) — sinergia que evita o padrão "gerar → descartar".
+- **Loop de valor:** considerar, já nesta entrega ou logo depois, um atalho pra enviar o resultado sorteado direto pras notas de preparo da próxima sessão ([BKLG-044]) — sinergia que evita o padrão "gerar → descartar". **Feito em 2026-10-20:** botão «Enviar para preparo», destino escolhido entre as sessões ocultas, texto acrescentado ao fim.
 - **Validação de demanda:** ainda recomendado confirmar com o mestre usuário-teste antes de investir, mas não bloqueia o `/openspec-propose` — é a entrega de menor risco (sem dado GM-only, sem `campanha_id`) das três.
 
 **Escopo:** sem schema de campanha novo (tabelas hardcoded, com variante por ambientação) — lógica de sorteio + tela/painel novo em `frontend-v2`, com conteúdo em pt-BR/en organizado por ambientação. Vale considerar dividir em 1 openspec por gerador ou um openspec só com os quatro como tasks separadas — decisão de escopo pro momento do `/openspec-propose`.
