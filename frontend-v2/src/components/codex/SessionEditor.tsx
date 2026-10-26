@@ -178,16 +178,17 @@ export function SessionEditor({
               onChange={(event) => onChange({ notas_preparo: event.target.value })}
             />
           </label>
-          {iaAtiva && isDono && (
+          {iaAtiva && isDono && !draft.visivel_para_todos && (
             <div className="space-y-3">
               <div className="space-y-1">
                 <p className={fieldLabel}>{tc("iaAssistente.rascunho")}</p>
                 <IaAssistente
                   slug={slug}
-                  tipo="notas_preparo"
+                  tipo="rascunho_sessao"
                   alvoId={draft.id ?? null}
                   textoAtual={draft.notas_preparo}
                   campoPublico={false}
+                  aplicarDiretoSeVazio
                   onInserir={(texto) =>
                     onChange({
                       notas_preparo: [draft.notas_preparo, texto].filter(Boolean).join("\n\n"),

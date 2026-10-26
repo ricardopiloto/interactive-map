@@ -422,6 +422,7 @@
     "revisao": "Review suggestion",
     "inserir": "Append",
     "substituir": "Replace",
+    "copiar": "Copy",
     "descartar": "Discard",
     "falha": "Could not generate a suggestion. Please try again.",
     "vazio": "There is not enough context to suggest text yet.",

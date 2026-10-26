@@ -175,3 +175,34 @@ it("traduz o rótulo e a ajuda do toggle com chaves equivalentes", async () => {
   expect(i18n.t("painel.moduloIaArcos", { ns: "comum" })).toBe("AI assistant");
   expect(i18n.t("painel.moduloIaArcosAjuda", { ns: "comum" })).toContain("DeepSeek");
 });
+
+it("aplica direto ao campo vazio e revisa quando preenchido", async () => {
+  vi.spyOn(campanhasApi, "assistir").mockResolvedValue(resposta);
+  const { onSubstituir, rerender, props } = montar({
+    tipo: "rascunho_sessao",
+    textoAtual: "",
+    aplicarDiretoSeVazio: true,
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Sugerir com IA" }));
+  await waitFor(() => expect(onSubstituir).toHaveBeenCalledWith("Ideia nova"));
+  expect(screen.queryByText("Ideia nova")).toBeNull();
+  rerender(<IaAssistente {...props} textoAtual="Resumo existente" />);
+  await pedir();
+  expect(onSubstituir).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("button", { name: "Copiar" })).toBeTruthy();
+});
+
+it("copia a sugestão inteira sem alterar o campo", async () => {
+  vi.spyOn(campanhasApi, "assistir").mockResolvedValue(resposta);
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText },
+  });
+  const { onInserir, onSubstituir } = montar();
+  await pedir();
+  fireEvent.click(screen.getByRole("button", { name: "Copiar" }));
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith("Ideia nova"));
+  expect(onInserir).not.toHaveBeenCalled();
+  expect(onSubstituir).not.toHaveBeenCalled();
+});

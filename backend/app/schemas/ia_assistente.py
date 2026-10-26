@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 TipoAssistencia = Literal[
-    "notas_preparo", "fios_narrativos", "resumo_sessao", "descricao_personagem", "descricao_local"
+    "rascunho_sessao", "fios_narrativos", "resumo_sessao", "descricao_personagem", "descricao_local"
 ]
 
 

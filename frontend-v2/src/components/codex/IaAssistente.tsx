@@ -12,6 +12,7 @@ interface IaAssistenteProps {
   textoAtual: string;
   campoPublico: boolean;
   onInserir: (texto: string) => void;
+  aplicarDiretoSeVazio?: boolean;
   onSubstituir: (texto: string) => void;
 }
 
@@ -29,6 +30,7 @@ export function IaAssistente({
   campoPublico,
   onInserir,
   onSubstituir,
+  aplicarDiretoSeVazio = false,
 }: IaAssistenteProps) {
   const { t } = useTranslation("comum");
   const chave = `${slug}:${tipo}:${alvoId ?? "novo"}`;
@@ -61,7 +63,16 @@ export function IaAssistente({
         campo_publico: campoPublico,
       });
       if (atual.current.chave === chave && atual.current.geracao === geracao) {
-        setResultado({ chave, resposta });
+        if (
+          aplicarDiretoSeVazio &&
+          !textoAtual.trim() &&
+          resposta.estado === "sugestao" &&
+          resposta.texto != null
+        ) {
+          onSubstituir(resposta.texto);
+        } else {
+          setResultado({ chave, resposta });
+        }
       }
     } catch (error) {
       if (atual.current.chave === chave && atual.current.geracao === geracao) {
@@ -80,6 +91,31 @@ export function IaAssistente({
         atual.current.pendente = false;
         setCarregando(null);
       }
+    }
+  }
+
+  async function copiar(texto: string) {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(texto);
+        return;
+      } catch {
+        // Tenta o método disponível em contextos sem permissão de clipboard.
+      }
+    }
+    const area = document.createElement("textarea");
+    area.value = texto;
+    area.readOnly = true;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    try {
+      area.select();
+      document.execCommand?.("copy");
+    } catch {
+      // A cópia pode estar indisponível neste navegador.
+    } finally {
+      area.remove();
     }
   }
 
@@ -169,6 +205,14 @@ export function IaAssistente({
                   }}
                 >
                   {t("iaAssistente.substituir")}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void copiar(sugestao)}
+                >
+                  {t("iaAssistente.copiar")}
                 </Button>
                 <Button type="button" size="sm" variant="ghost" onClick={() => setResultado(null)}>
                   {t("iaAssistente.descartar")}

@@ -436,6 +436,8 @@ it("sugere associações só com o módulo ia_arcos e preserva a seleção atual
 
   fireEvent.click(await screen.findByRole("button", { name: "Nova sessão" }));
   const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
+  fireEvent.click(within(dialog).getByRole("checkbox", { name: "Visível para todos" }));
   expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(2);
   const suggest = within(dialog).getByRole("button", { name: "Sugerir locais e personagens" });
   expect(suggest).toBeDisabled();

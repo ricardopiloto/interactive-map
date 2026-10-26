@@ -8,7 +8,7 @@ Permite que o mestre dono de uma campanha com IA habilitada peça ajuda para esc
 
 ### Requirement: Assistência de IA em campos de texto livre do mestre
 
-Numa campanha com o módulo de IA ativo, o mestre dono SHALL poder acionar, por ação explícita, uma assistência de IA nos seguintes campos: notas de preparo da sessão, resumo da sessão, descrição de personagem (em todos os editores de personagem, inclusive o do mapa) e descrição de local. O assistente NUNCA SHALL preencher notas mecânicas: esse campo é do mestre. O sistema SHALL devolver um texto sugerido para o campo. O sistema NUNCA SHALL acionar a IA automaticamente, nem gravar a sugestão sem ação do mestre.
+Numa campanha com o módulo de IA ativo, o mestre dono SHALL poder acionar, por ação explícita, uma assistência de IA nos seguintes campos: rascunho da sessão (que preenche as Notas de Preparo), resumo da sessão (campo dedicado), descrição de personagem (em todos os editores de personagem, inclusive o do mapa) e descrição de local. O assistente NUNCA SHALL preencher notas mecânicas: esse campo é do mestre. O sistema SHALL devolver um texto sugerido para o campo. O sistema NUNCA SHALL acionar a IA automaticamente, nem gravar a sugestão sem ação do mestre.
 
 #### Scenario: Sugestão para um campo com a IA habilitada
 
@@ -118,7 +118,7 @@ Quando a sugestão foi gerada com conteúdo oculto e o campo de destino é visí
 
 #### Scenario: Campo exclusivo do mestre
 
-- **WHEN** a sugestão é para notas de preparo ou fios narrativos, que só o mestre vê
+- **WHEN** a sugestão é para fios narrativos, que só o mestre vê
 - **THEN** o sistema não exibe o aviso de conteúdo oculto
 
 #### Scenario: Registro oculto
@@ -142,8 +142,41 @@ O pedido SHALL aceitar a indicação de que o campo de destino é lido por jogad
 
 #### Scenario: Campo exclusivo do mestre
 
-- **WHEN** o pedido é para notas de preparo ou fios narrativos e indica campo público
+- **WHEN** o pedido é para fios narrativos e indica campo público
 - **THEN** o prompt trata o campo como só do mestre
+
+### Requirement: Rascunho e fios apenas em sessão não visível
+
+O sistema SHALL oferecer a assistência de rascunho da sessão e a de fios narrativos somente enquanto a sessão não estiver visível para jogadores. Com a sessão visível, essas duas ações NÃO SHALL estar disponíveis.
+
+#### Scenario: Sessão ainda oculta
+
+- **WHEN** o mestre dono edita uma sessão marcada como não visível para jogadores, com o módulo de IA ativo
+- **THEN** as ações de rascunho e de fios narrativos estão disponíveis
+
+#### Scenario: Sessão visível
+
+- **WHEN** o mestre dono edita ou marca como visível uma sessão
+- **THEN** as ações de rascunho e de fios narrativos não estão disponíveis
+
+### Requirement: Rascunho da sessão usa as Notas de Preparo como destino e como fonte
+
+O rascunho da sessão SHALL ser gerado com esta prioridade de fontes: a instrução do mestre, depois o texto já escrito nas Notas de Preparo, depois os resumos das sessões anteriores. O rascunho NUNCA SHALL ser escrito no Resumo. Quando as Notas de Preparo estiverem vazias, o sistema SHALL colocar o resultado diretamente no rascunho do formulário, sem gravar; quando já tiverem texto, o sistema SHALL apresentar o painel de revisão. Todo painel de revisão SHALL oferecer a ação de copiar a sugestão inteira.
+
+#### Scenario: Notas de Preparo vazias
+
+- **WHEN** o mestre pede o rascunho e as Notas de Preparo estão vazias
+- **THEN** o resultado preenche as Notas de Preparo no rascunho do formulário e nada é gravado até o mestre salvar
+
+#### Scenario: Notas de Preparo preenchidas
+
+- **WHEN** o mestre pede o rascunho e as Notas de Preparo já têm texto
+- **THEN** o resultado aparece no painel de revisão, com as ações de inserir, substituir, descartar e copiar
+
+#### Scenario: Copiar a sugestão
+
+- **WHEN** o mestre aciona Copiar no painel de revisão
+- **THEN** a sugestão inteira vai para a área de transferência, sem alterar o formulário
 
 ### Requirement: Revisão obrigatória antes de aplicar
 

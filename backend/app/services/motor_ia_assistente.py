@@ -20,6 +20,9 @@ from app.models.npc import NPC
 from app.models.sessao import Sessao
 from app.schemas.ia_assistente import AssistirRequest, AssistirResponse
 from app.services.ia_provider import (
+    IA_CREDENCIAL_AUSENTE,
+    IA_RESPOSTA_CORTADA,
+    IA_TIMEOUT,
     ItemContextoIa,
     completar,
     item_contexto_entidade,
@@ -31,16 +34,21 @@ logger = logging.getLogger(__name__)
 PROMPT_VERSAO = "1"
 PLACEHOLDER_MECANICA = "[Mecânica a definir pelo mestre]"
 MAX_REGISTRO_CHARS = 1500
-MAX_SAIDA_TOKENS = 4096
+MAX_SAIDA_TOKENS = 16000
+MENSAGENS_FALHA = {
+    IA_CREDENCIAL_AUSENTE: "IA indisponível: configure a chave do provedor",
+    IA_TIMEOUT: "A IA demorou demais, tente novamente",
+    IA_RESPOSTA_CORTADA: "A resposta foi cortada; tente com menos contexto",
+}
 MIN_REGISTROS = {
-    "notas_preparo": 2,
+    "rascunho_sessao": 2,
     "fios_narrativos": 2,
     "resumo_sessao": 1,
     "descricao_personagem": 1,
     "descricao_local": 1,
 }
 CAMPOS = {
-    "notas_preparo": ("notas_preparo", 50000),
+    "rascunho_sessao": ("notas_preparo", 50000),
     "fios_narrativos": ("notas_preparo", 50000),
     "resumo_sessao": ("resumo", 50000),
     "descricao_personagem": ("descricao", 10000),
@@ -73,14 +81,16 @@ PROMPT_BASE = "".join((
     'sem repetir; com instrução do mestre, siga-a dentro destas regras.\n',
 ))
 BLOCOS_TIPO = {
-    "notas_preparo": (
+    "rascunho_sessao": (
         "Crie notas diretas de trabalho do mestre: gancho vindo de eventos anteriores, "
         "nunca mensageiro anônimo ou contrato genérico; o que está em jogo e ameaça "
         "concreta; decisão central dos jogadores; cenas em ordem com objetivo, "
         "cenário sensorial de 3–5 linhas (cheiro, luz, som), opções sem trilho e "
         "conflito com custo. NPCs propostos têm motivação e segredo, sem bloco "
         "mecânico: " + PLACEHOLDER_MECANICA + ". Inclua consequências permanentes "
-        "e o que NÃO revelar sem investigação."
+        "e o que NÃO revelar sem investigação. "
+        "Prioridade das fontes: 1) instrução do mestre; 2) texto já escrito "
+        "nas Notas de Preparo; 3) resumos das sessões anteriores."
     ),
     "fios_narrativos": (
         "Liste 3 a 6 fios separados em Em aberto no histórico (com origem real: "
@@ -90,6 +100,7 @@ BLOCOS_TIPO = {
         "mecânico: " + PLACEHOLDER_MECANICA + "."
     ),
     "resumo_sessao": (
+        "Gere o Resumo a partir das Notas de Preparo e do contexto. "
         "Registre o que aconteceu e o que significou para quem viveu, no passado. "
         "Use só fatos nas notas de preparo, personagens, locais e arco do contexto; "
         "não invente eventos nem diálogos. Termine com o estado do grupo e fios abertos."
@@ -125,20 +136,26 @@ def _item(campanha_id: int, tipo: str, entidade, texto: str) -> ItemContextoIa:
 
 
 def _alvo(session: Session, pedido: AssistirRequest):
-    if pedido.tipo in ("notas_preparo", "fios_narrativos", "resumo_sessao"):
+    if pedido.tipo in ("rascunho_sessao", "fios_narrativos", "resumo_sessao"):
         classe = Sessao
     elif pedido.tipo == "descricao_personagem":
         classe = NPC
     else:
         classe = Local
     if pedido.alvo_id is None:
-        if pedido.tipo not in ("notas_preparo", "fios_narrativos"):
+        if pedido.tipo not in ("rascunho_sessao", "fios_narrativos"):
             raise_api_error("ALVO_OBRIGATORIO", status_code=422)
         return None
     alvo = session.get(classe, pedido.alvo_id)
     if alvo is None:
         raise_api_error("ALVO_NAO_ENCONTRADO", status_code=404)
     return alvo
+
+
+def _texto_sessao(sessao: Sessao) -> str:
+    texto = sessao.resumo or sessao.notas_preparo
+    titulo = f"Sessão {sessao.numero}: {sessao.titulo}"
+    return f"{titulo}; {texto}" if texto else titulo
 
 
 def coletar_registros(session: Session, campanha_id: int, pedido: AssistirRequest, alvo) -> list[ItemContextoIa]:
@@ -159,10 +176,14 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
     def arco_rows(ids):
         return [a for a in arcos if a.id in ids]
 
-    if pedido.tipo in ("notas_preparo", "fios_narrativos"):
-        add("sessao", sessoes, lambda s: f"Sessão {s.numero}: {s.titulo}; resumo: {s.resumo}")
+    if pedido.tipo in ("rascunho_sessao", "fios_narrativos"):
+        sessoes_contexto = (
+            [s for s in sessoes if s.id != getattr(alvo, "id", None)]
+            if pedido.tipo == "rascunho_sessao" else sessoes
+        )
+        add("sessao", sessoes_contexto, _texto_sessao)
         add("arco", arcos, lambda a: f"{a.titulo}: {a.resumo}")
-        if pedido.tipo == "notas_preparo":
+        if pedido.tipo == "rascunho_sessao":
             anteriores = [
                 s for s in sessoes
                 if s.id != getattr(alvo, "id", None) and s.notas_preparo
@@ -174,7 +195,7 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
         add("evento", eventos, lambda e: f"{e.titulo}: {e.descricao}")
         add("personagem", pessoas, lambda p: f"{p.nome}; papel: {p.papel}; facção: {p.faccao}; {p.descricao}")
         add("local", locais, lambda l: f"{l.nome}: {l.descricao}")
-        if pedido.tipo == "fios_narrativos":
+        if pedido.tipo in ("rascunho_sessao", "fios_narrativos"):
             add("faccao", [p for p in pessoas if p.faccao], lambda p: f"{p.faccao}; personagem: {p.nome}")
     elif pedido.tipo == "resumo_sessao":
         add("notas_preparo", [alvo], lambda s: f"Sessão {s.numero}: {s.notas_preparo}")
@@ -190,7 +211,7 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
         add("local", [l for l in locais if l.id in lid], lambda l: f"{l.nome}: {l.descricao}")
         add("arco", arco_rows({alvo.arco_id, alvo.arco_transicao_id}), lambda a: f"{a.titulo}: {a.resumo}")
         anteriores = [s for s in sessoes if s.numero < alvo.numero][:1]
-        add("sessao_anterior", anteriores, lambda s: f"Sessão {s.numero}: {s.resumo}")
+        add("sessao_anterior", anteriores, _texto_sessao)
     elif pedido.tipo == "descricao_personagem":
         add(
             "personagem_alvo", [alvo],
@@ -268,8 +289,8 @@ def assistir(
     campo, limite = CAMPOS[pedido.tipo]
     publico = (
         False
-        if pedido.tipo in ("notas_preparo", "fios_narrativos")
-        else pedido.campo_publico or bool(alvo.visivel_para_todos)
+        if pedido.tipo in ("rascunho_sessao", "fios_narrativos")
+        else pedido.campo_publico or bool(getattr(alvo, "visivel_para_todos", False))
     )
     system = renderizar_prompt(pedido.tipo, publico)
     registros = coletar_registros(session, campanha_id, pedido, alvo)
@@ -303,11 +324,14 @@ def assistir(
         client=client,
         incluir_ocultos=True,
         max_tokens=min(limite // 3, MAX_SAIDA_TOKENS),
+        timeout=settings.ia_assistente_timeout_seconds,
     )
     if not resultado.ok or not resultado.texto or not resultado.texto.strip():
         resposta = AssistirResponse(
             estado="falha",
-            mensagem="Não foi possível gerar a sugestão. Tente novamente.",
+            mensagem=MENSAGENS_FALHA.get(
+                resultado.codigo, "Não foi possível gerar a sugestão. Tente novamente."
+            ),
             usou_conteudo_oculto=oculto,
             limite_caracteres=limite,
             campo_destino=campo,
@@ -324,7 +348,8 @@ def assistir(
             campo_destino=campo,
         )
         codigo = resultado.codigo
-    logger.info(
+    log = logger.warning if resposta.estado == "falha" else logger.info
+    log(
         "ia_assistente campanha=%s tipo=%s tamanho=%s oculto=%s resultado=%s",
         campanha_id, pedido.tipo, tamanho, oculto, codigo,
     )

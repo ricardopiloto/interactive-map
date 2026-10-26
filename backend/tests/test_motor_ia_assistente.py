@@ -42,7 +42,7 @@ def test_prompts_fixos():
         assert not re.search(r"\{[^}]+\}", prompt)
         assert "idioma" in prompt and "caracteres" in prompt
         assert "---" not in prompt and "[[" not in prompt
-    for tipo in ("notas_preparo", "fios_narrativos", "descricao_personagem"):
+    for tipo in ("rascunho_sessao", "fios_narrativos", "descricao_personagem"):
         assert PLACEHOLDER_MECANICA in renderizar_prompt(tipo, True)
 
 
@@ -51,7 +51,7 @@ def test_payload_ocultos_e_texto_como_dados(db_session, monkeypatch, caplog):
     seed_sessao(db_session, numero=1, resumo="HISTORIA-SECRETA", visivel=False)
     seed_personagem(db_session, nome="PESSOA-SECRETA", visivel=False)
     visto = []
-    pedido = AssistirRequest(tipo="notas_preparo", texto_atual="TEXTO-ATUAL", instrucao="INSTRUCAO-MESTRE")
+    pedido = AssistirRequest(tipo="rascunho_sessao", texto_atual="TEXTO-ATUAL", instrucao="INSTRUCAO-MESTRE")
     resposta = assistir(db_session, _ctx(), pedido, client=_client(visto))
     assert resposta.estado == "sugestao" and resposta.usou_conteudo_oculto
     system, user = (m["content"] for m in visto[0]["messages"])
@@ -82,7 +82,7 @@ def test_rota_validacao_e_publico(client, db_session, monkeypatch):
     client.patch(f"/api/campanhas/{TEST_CAMPAIGN_SLUG}/modulos", json={"modulo": "ia_arcos", "ativo": True})
     pessoa = seed_personagem(db_session, nome="Visível")
     visto = []
-    monkeypatch.setattr("app.services.ia_provider._post", lambda payload, chave, http_client: (visto.append(payload) or httpx.Response(200, json={"choices": [{"message": {"content": "  Texto  "}}]})))
+    monkeypatch.setattr("app.services.ia_provider._post", lambda payload, chave, http_client, **kwargs: (visto.append(payload) or httpx.Response(200, json={"choices": [{"message": {"content": "  Texto  "}}]})))
     url = f"/api/c/{TEST_CAMPAIGN_SLUG}/admin/ia/assistir"
     assert client.post(url, json={"tipo": "notas_mecanicas"}).status_code == 422
     assert client.post(url, json={"tipo": "descricao_local"}).status_code == 422
@@ -107,7 +107,7 @@ def test_resposta_vazia_e_truncamento(db_session, monkeypatch):
     monkeypatch.setattr(settings, "deepseek_api_key", "teste")
     seed_sessao(db_session, numero=1, resumo="Primeira")
     seed_sessao(db_session, numero=2, resumo="Segunda")
-    pedido = AssistirRequest(tipo="notas_preparo")
+    pedido = AssistirRequest(tipo="rascunho_sessao")
     vazio = assistir(db_session, _ctx(), pedido, client=_client([], "   "))
     assert vazio.estado == "falha"
     grande = "Parágrafo inicial.\n\n" + "x" * 51000
@@ -132,7 +132,7 @@ def test_publico_no_servico(db_session, monkeypatch):
     assert "(true)" in visto[0]["messages"][0]["content"]
     visto.clear()
     seed_sessao(db_session, numero=1, resumo="Primeira")
-    assistir(db_session, _ctx(), AssistirRequest(tipo="notas_preparo", campo_publico=True, texto_atual="Texto"), client=_client(visto))
+    assistir(db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao", campo_publico=True, texto_atual="Texto"), client=_client(visto))
     assert "(false)" in visto[0]["messages"][0]["content"]
 
 
@@ -154,9 +154,9 @@ def test_rota_modulo_desligado_sem_provedor(client, db_session, monkeypatch):
     chamadas = []
     monkeypatch.setattr(
         "app.services.ia_provider._post",
-        lambda *args: chamadas.append(args),
+        lambda *args, **kwargs: chamadas.append(args),
     )
-    response = client.post(_rota(), json={"tipo": "notas_preparo"})
+    response = client.post(_rota(), json={"tipo": "rascunho_sessao"})
     assert response.status_code == 403
     assert response.json()["detail"]["erro"] == "IA_MODULO_DESABILITADO"
     assert not chamadas
@@ -176,8 +176,8 @@ def test_rota_jogador_negado_sem_provedor(client, db_session, control_session, m
     control_session.commit()
     login_as(client, email="jogador@teste.local", password="test-secret-ok")
     chamadas = []
-    monkeypatch.setattr("app.services.ia_provider._post", lambda *args: chamadas.append(args))
-    response = client.post(_rota(), json={"tipo": "notas_preparo"})
+    monkeypatch.setattr("app.services.ia_provider._post", lambda *args, **kwargs: chamadas.append(args))
+    response = client.post(_rota(), json={"tipo": "rascunho_sessao"})
     assert response.status_code == 403
     assert not chamadas
 
@@ -185,7 +185,7 @@ def test_rota_jogador_negado_sem_provedor(client, db_session, control_session, m
 def test_rota_validacoes_sem_provedor(client, db_session, monkeypatch):
     _ligar_ia(client)
     chamadas = []
-    monkeypatch.setattr("app.services.ia_provider._post", lambda *args: chamadas.append(args))
+    monkeypatch.setattr("app.services.ia_provider._post", lambda *args, **kwargs: chamadas.append(args))
     for payload, status in (
         ({"tipo": "notas_mecanicas"}, 422),
         ({"tipo": "descricao_personagem"}, 422),
@@ -198,10 +198,10 @@ def test_rota_validacoes_sem_provedor(client, db_session, monkeypatch):
 def test_rota_limite_decimo_primeiro_sem_provedor(client, db_session, monkeypatch):
     _ligar_ia(client)
     chamadas = []
-    monkeypatch.setattr("app.services.ia_provider._post", lambda *args: chamadas.append(args))
+    monkeypatch.setattr("app.services.ia_provider._post", lambda *args, **kwargs: chamadas.append(args))
     for _ in range(10):
-        assert client.post(_rota(), json={"tipo": "notas_preparo"}).status_code == 200
-    response = client.post(_rota(), json={"tipo": "notas_preparo"})
+        assert client.post(_rota(), json={"tipo": "rascunho_sessao"}).status_code == 200
+    response = client.post(_rota(), json={"tipo": "rascunho_sessao"})
     assert response.status_code == 429
     assert not chamadas
 
@@ -236,7 +236,7 @@ def test_oculto_cortado_pelo_orcamento(db_session, monkeypatch):
         seed_sessao(db_session, numero=n, resumo=f"PUBLICO-{n} " + "x" * 100)
     visto = []
     response = assistir(
-        db_session, _ctx(), AssistirRequest(tipo="notas_preparo"),
+        db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao"),
         client=_client(visto),
     )
     user = visto[0]["messages"][1]["content"]
@@ -253,7 +253,7 @@ def test_assistencia_envia_ocultos_mas_associacoes_nao(db_session, monkeypatch):
     seed_personagem(db_session, nome="PESSOA-OCULTA", visivel=False)
     assistente = []
     assistir(
-        db_session, _ctx(), AssistirRequest(tipo="notas_preparo", texto_atual="Rascunho"),
+        db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao", texto_atual="Rascunho"),
         client=_client(assistente),
     )
     associacoes = []
@@ -292,7 +292,7 @@ def test_dono_duas_campanhas_payload_isolado(db_session, monkeypatch):
         seed_sessao(db_session, numero=numero, resumo="SOMENTE-CAMPANHA-A")
     visto = []
     resposta = assistir(
-        db_session, _ctx(), AssistirRequest(tipo="notas_preparo"),
+        db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao"),
         client=_client(visto),
     )
     assert resposta.estado == "sugestao"
@@ -323,7 +323,86 @@ def test_dono_de_outra_campanha_negado_sem_provedor(client, control_session, mon
     assign_owner(control_session, "mesa-segunda", user.email)
     login_as(client, email=user.email, password="test-secret-ok")
     chamadas = []
-    monkeypatch.setattr("app.services.ia_provider._post", lambda *args: chamadas.append(args))
-    response = client.post(_rota(), json={"tipo": "notas_preparo"})
+    monkeypatch.setattr("app.services.ia_provider._post", lambda *args, **kwargs: chamadas.append(args))
+    response = client.post(_rota(), json={"tipo": "rascunho_sessao"})
     assert response.status_code == 403
     assert not chamadas
+
+
+def test_rascunho_destino_prioridade_e_sessao_sem_resumo(db_session, monkeypatch):
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    seed_sessao(db_session, numero=1, resumo="", notas_preparo="NOTAS-ANTERIORES")
+    seed_sessao(db_session, numero=2, resumo="Resumo anterior")
+    visto = []
+    resposta = assistir(
+        db_session, _ctx(),
+        AssistirRequest(tipo="rascunho_sessao", texto_atual="Notas atuais"),
+        client=_client(visto),
+    )
+    assert resposta.campo_destino == "notas_preparo"
+    assert resposta.limite_caracteres == 50000
+    assert "NOTAS-ANTERIORES" in visto[0]["messages"][1]["content"]
+    assert "instrução do mestre" in visto[0]["messages"][0]["content"]
+    assert "texto já escrito" in visto[0]["messages"][0]["content"]
+    assert visto[0]["max_tokens"] == 16000
+
+
+def test_fios_inclui_notas_quando_resumo_vazio(db_session, monkeypatch):
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    seed_sessao(db_session, numero=1, resumo="", notas_preparo="FIO-NAS-NOTAS")
+    seed_sessao(db_session, numero=2, resumo="Outra sessão")
+    visto = []
+    resposta = assistir(
+        db_session, _ctx(), AssistirRequest(tipo="fios_narrativos"),
+        client=_client(visto),
+    )
+    assert resposta.campo_destino == "notas_preparo"
+    assert "FIO-NAS-NOTAS" in visto[0]["messages"][1]["content"]
+
+
+def test_falha_avisa_sem_conteudo(db_session, monkeypatch, caplog):
+    monkeypatch.setattr(settings, "deepseek_api_key", None)
+    seed_sessao(db_session, numero=1, resumo="SEGREDO-NA-CAMPANHA")
+    seed_sessao(db_session, numero=2, resumo="Mais contexto")
+    with caplog.at_level("WARNING"):
+        resposta = assistir(db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao"))
+    assert resposta.estado == "falha"
+    assert resposta.mensagem == "IA indisponível: configure a chave do provedor"
+    assert "IA_CREDENCIAL_AUSENTE" in caplog.text
+    assert "SEGREDO-NA-CAMPANHA" not in caplog.text
+
+
+def test_assistente_usa_timeout_dedicado(db_session, monkeypatch):
+    from app.services.ia_provider import IaResultado
+
+    seed_sessao(db_session, numero=1, resumo="Primeira")
+    seed_sessao(db_session, numero=2, resumo="Segunda")
+    vistos = []
+
+    def completar_falso(**kwargs):
+        vistos.append(kwargs["timeout"])
+        return IaResultado(True, "ok", "", "Sugestão")
+
+    monkeypatch.setattr("app.services.motor_ia_assistente.completar", completar_falso)
+    monkeypatch.setattr(settings, "ia_assistente_timeout_seconds", 145.0)
+    resposta = assistir(db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao"))
+    assert resposta.estado == "sugestao"
+    assert vistos == [145.0]
+
+
+def test_resumo_usa_notas_e_campo_publico(db_session, monkeypatch):
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    sessao = seed_sessao(
+        db_session, numero=1, notas_preparo="RASCUNHO-DA-SESSAO", visivel=False,
+    )
+    visto = []
+    resposta = assistir(
+        db_session, _ctx(),
+        AssistirRequest(
+            tipo="resumo_sessao", alvo_id=sessao.id, campo_publico=True,
+        ),
+        client=_client(visto),
+    )
+    assert resposta.campo_destino == "resumo"
+    assert "(true)" in visto[0]["messages"][0]["content"]
+    assert "RASCUNHO-DA-SESSAO" in visto[0]["messages"][1]["content"]

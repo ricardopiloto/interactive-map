@@ -39,12 +39,12 @@
    *Dívida de nome:* `MODULO_IA = "ia_arcos"` passa a governar mais que arcos; adicionar comentário em `ia_provider.py`.
 
 2. **Uma rota genérica, não uma por campo.**
-   `POST /api/c/{slug}/admin/ia/assistir` com `{ tipo, texto_atual?, instrucao?, alvo_id?, campo_publico? }` (`campo_publico` informa se o campo será lido por jogadores; padrão `true`, o lado seguro; o servidor o combina com a visibilidade real do campo: `notas_preparo` e `fios_narrativos` forçam `false`; `resumo_sessao`, `descricao_personagem` e `descricao_local` usam `salvo OR cliente`, o mais restritivo vence, e sem `alvo_id` vale o valor do cliente. O cliente só consegue deixar o prompt mais cauteloso, nunca menos), `require_dono`, `@limiter.limit("10/minute")`. `tipo` é a **ação**; o campo de destino vem de uma tabela:
+   `POST /api/c/{slug}/admin/ia/assistir` com `{ tipo, texto_atual?, instrucao?, alvo_id?, campo_publico? }` (`campo_publico` informa se o campo será lido por jogadores; padrão `true`, o lado seguro; o servidor o combina com a visibilidade real do campo: `rascunho_sessao` e `fios_narrativos` forçam `false` (destino: Notas de Preparo, só do mestre); `resumo_sessao`, `descricao_personagem` e `descricao_local` usam `salvo OR cliente`, o mais restritivo vence, e sem `alvo_id` vale o valor do cliente. O cliente só consegue deixar o prompt mais cauteloso, nunca menos), `require_dono`, `@limiter.limit("10/minute")`. `tipo` é a **ação**; o campo de destino vem de uma tabela:
 
    | tipo | campo de destino | `alvo_id` |
    |---|---|---|
-   | `notas_preparo` | `Sessao.notas_preparo` | opcional (ausente em sessão nova) |
-   | `fios_narrativos` | `Sessao.notas_preparo` | opcional (ausente em sessão nova) |
+   | `rascunho_sessao` | `Sessao.notas_preparo` (rascunho da sessão ainda não jogada; só do mestre) | opcional (ausente em sessão nova) |
+   | `fios_narrativos` | `Sessao.notas_preparo` (até a lista de fios existir; ver change `fios-narrativos-lista`) | opcional (ausente em sessão nova) |
    | `resumo_sessao` | `Sessao.resumo` | obrigatório |
    | `descricao_personagem` | personagem/NPC `descricao` | obrigatório |
    | `descricao_local` | `Local.descricao` | obrigatório |
@@ -58,7 +58,7 @@
 
    | tipo | contexto além do texto atual |
    |---|---|
-   | `notas_preparo` | sessões recentes (resumo), arcos, notas de preparo anteriores, eventos recentes, personagens e locais (nome + papel/resumo curto) |
+   | `rascunho_sessao` | resumos das sessões anteriores, arcos, notas de preparo anteriores, eventos recentes, personagens e locais (nome + papel/resumo curto). Prioridade das fontes, que o prompt declara: 1) instrução do mestre, 2) texto já escrito nas Notas de Preparo, 3) resumos das sessões anteriores |
    | `fios_narrativos` | todas as sessões (resumo), arcos, eventos, personagens, locais e facções; foco em linhas abertas e segredos não revelados |
    | `resumo_sessao` | notas de preparo da própria sessão, personagens e locais ligados, arco da sessão, sessão anterior |
    | `descricao_personagem` | dados do personagem (nome, papel, facção, tipo), personagens da mesma facção, locais associados, arco; sem bloco mecânico |
@@ -83,9 +83,11 @@
 6. **UI: um componente reutilizável de assistência.**
    Botão "Sugerir com IA" ao lado do rótulo do campo, campo opcional de instrução curta, painel de revisão abaixo do campo (não sobrescreve o `textarea`) em **texto puro** (sem renderizar Markdown/imagens remotas), com **Inserir ao final**, **Substituir**, **Descartar**. Estados: loading (botão desabilitado), falha, vazio, 429, 403. O componente recebe `tipo`, `alvoId`, `textoAtual` e `campoPublico` (reativo ao rascunho); `limiteCaracteres` e o destino vêm da resposta. O painel é chaveado por `alvoId`: resposta tardia de outro registro é descartada, e o painel é descartado ao trocar de registro ou de aba do editor.
    O servidor reforça o `campoPublico` enviado com a visibilidade salva do alvo (Decisão 2); a UI continua avisando com base no rascunho.
-   `campoPublico`: `resumo_sessao` = `visivel_para_todos` da sessão; `descricao_personagem` e `descricao_local` = `visivel_para_todos` do registro (personagem ou local); `notas_preparo` e `fios_narrativos` = sempre só do mestre.
+   `campoPublico`: `resumo_sessao` = `visivel_para_todos` da sessão; `descricao_personagem` e `descricao_local` = `visivel_para_todos` do registro (personagem ou local); `rascunho_sessao` e `fios_narrativos` = sempre só do mestre (destino: Notas de Preparo).
    **Gate no frontend:** `iaAtiva` e `isDono` são lidos na rota e levados por prop até `SessionEditor`, `PersonagemEditor`, `NpcEditor` e `LocalEditor`. Rotas sem gate hoje (mapa) passam a ler `modulos_ativos`.
    **Layout:** botão e painel funcionam em tela estreita (mobile): o botão quebra para a linha seguinte ao rótulo e o painel ocupa a largura do campo.
+   **Rascunho e Fios só em sessão não visível (ajuste de 2026-10-25):** os botões "Rascunho" (`rascunho_sessao`) e "Fios narrativos" só existem quando a sessão ainda não está visível para jogadores (`!visivel_para_todos` do rascunho), além de `iaAtiva` e `isDono`. O Resumo tem seu próprio botão (`resumo_sessao`), que gera o texto público futuro a partir das Notas de Preparo.
+   **Rascunho preenche as Notas de Preparo vazias:** com as Notas de Preparo vazias, o resultado do Rascunho entra direto no rascunho do formulário (nada é gravado até o salvar normal); com texto nelas, aparece o painel de revisão como hoje. Todo painel de revisão ganha o botão **Copiar** (copia a sugestão inteira). O `textoAtual` do Rascunho são as Notas de Preparo. O Rascunho nunca escreve no Resumo.
    O botão de "sugerir associações" existente no `SessionEditor` permanece como está.
 
 7. **Prompt injection.**
@@ -115,14 +117,14 @@
    ```
 
    **Blocos por tipo:**
-   - `notas_preparo`: gancho de entrada que sai de eventos anteriores (nunca mensageiro anônimo ou contrato genérico); o que está em jogo e a ameaça concreta; a decisão central que os jogadores/PJ vão enfrentar; cenas em ordem, cada uma com objetivo, cenário (3–5 linhas sensoriais: cheiro, luz, som), desenvolvimento com opções e não trilho, e conflito com custo; NPCs propostos com motivação e o que escondem, sem bloco mecânico (marcador de placeholder); consequências permanentes; o que NÃO revelar se os jogadores não buscarem. Texto de trabalho do mestre, direto, sem floreio.
+   - `rascunho_sessao`: gancho de entrada que sai de eventos anteriores (nunca mensageiro anônimo ou contrato genérico); o que está em jogo e a ameaça concreta; a decisão central que os jogadores/PJ vão enfrentar; cenas em ordem, cada uma com objetivo, cenário (3–5 linhas sensoriais: cheiro, luz, som), desenvolvimento com opções e não trilho, e conflito com custo; NPCs propostos com motivação e o que escondem, sem bloco mecânico (marcador de placeholder); consequências permanentes; o que NÃO revelar se os jogadores não buscarem. Texto de trabalho do mestre, direto, sem floreio.
    - `fios_narrativos`: lista de 3 a 6 fios. Separar **"Em aberto no histórico"** (cada um com a origem real: sessão, evento ou personagem) de **"Ideias novas"** (propostas, marcadas como tal). Para cada fio: o que está em aberto, como pode avançar, o que muda se avançar. Priorizar segredos ainda não revelados e NPCs que ficaram sem desfecho.
-   - `resumo_sessao`: registrar o que aconteceu **e o que significou** para quem viveu; só fatos presentes nas notas de preparo, personagens, locais e arco do contexto; no passado; não inventar eventos nem diálogos; fechar com o estado em que o grupo ficou e os fios que seguem abertos.
+   - `resumo_sessao`: gera o texto do campo Resumo (dedicado, público quando a sessão ficar visível) a partir das Notas de Preparo (o rascunho) e do restante do contexto; registrar o que aconteceu **e o que significou** para quem viveu, sem revelar segredos; só fatos presentes nas notas de preparo, personagens, locais e arco do contexto; no passado; não inventar eventos nem diálogos; fechar com o estado em que o grupo ficou e os fios que seguem abertos.
    - `descricao_personagem`: aparência e comportamento observáveis, papel, motivação própria, relação com a facção, os locais e os personagens existentes, sem atributos nem bloco mecânico (marcador de placeholder onde caberia); um segredo só se o campo não for público e o contexto o sustentar.
    - `descricao_local`: cenário sensorial (3–5 linhas: cheiro, temperatura, luz, som), função narrativa do lugar, quem o frequenta (personagens existentes), perigos e ganchos; coerente com os locais vizinhos, sem inventar geografia que os contradiga. Pode usar Markdown (o campo é Markdown).
 
    **Prompt genérico, sem perfil de sistema:** o assistente não varia por sistema de RPG nem usa `Campanha.sistema`; o foco é a aventura e a sessão registradas (sessões, arcos, eventos, personagens, locais, facções) e a proposta de ganchos, cenas e NPCs a partir delas. Tom e estilo vêm do texto atual e do histórico da campanha, não de um perfil fixo.
-   **NPCs sem bloco mecânico:** quando o texto propõe ou descreve um NPC (em `notas_preparo`, `fios_narrativos` e `descricao_personagem`), o prompt manda NÃO inventar atributos, perícias, estatísticas, regras ou números de nenhum sistema e escrever no lugar o marcador `PLACEHOLDER_MECANICA` ("[Mecânica a definir pelo mestre]"). A parte mecânica fica a cargo do mestre, no campo de notas mecânicas, que o assistente não preenche.
+   **NPCs sem bloco mecânico:** quando o texto propõe ou descreve um NPC (em `rascunho_sessao`, `fios_narrativos` e `descricao_personagem`), o prompt manda NÃO inventar atributos, perícias, estatísticas, regras ou números de nenhum sistema e escrever no lugar o marcador `PLACEHOLDER_MECANICA` ("[Mecânica a definir pelo mestre]"). A parte mecânica fica a cargo do mestre, no campo de notas mecânicas, que o assistente não preenche.
    **O prompt não é garantia de segurança:** `campo_publico` e a regra 6 reduzem a chance de vazar um segredo, mas o modelo pode ignorá-las e o servidor não detecta vazamento no texto. O aviso da UI e a revisão do mestre antes de aplicar continuam sendo o controle real.
    **Implementação e testes:** o código define as constantes (`PROMPT_BASE`, `BLOCOS_TIPO`, `PLACEHOLDER_MECANICA`) e este design é a fonte do texto; os testes importam as constantes e checam palavras-chave estáveis, nunca o texto literal.
 
@@ -148,7 +150,7 @@ Deploy backend e frontend juntos. Sem migração de banco. Campanhas com `ia_arc
 Resolvidas nesta revisão (2026-10-25):
 
 - **Idioma da sugestão:** idioma predominante do texto atual e do conteúdo da campanha, pt-BR na dúvida; sem seletor nesta change.
-- **Fios narrativos:** ação do editor de sessão com destino em `notas_preparo`, incluindo sessão nova sem `alvo_id`; nível de campanha fora de escopo.
+- **Fios narrativos:** ação do editor de sessão, incluindo sessão nova sem `alvo_id`. Hoje o resultado vai para `notas_preparo`; a lista persistente e editável de fios em aberto será outra change (`fios-narrativos-lista`), que passa a receber esse resultado.
 - **Orçamento de contexto:** ~48k caracteres como constante em settings, incluindo `texto_atual` e `instrucao`; confirmar contra o `deepseek-chat` configurado na implantação e baixar se o timeout apertar.
 
 Abertas:

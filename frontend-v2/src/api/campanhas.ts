@@ -31,7 +31,7 @@ export interface CampanhaCriada {
 }
 
 export type TipoAssistencia =
-  | "notas_preparo"
+  | "rascunho_sessao"
   | "fios_narrativos"
   | "resumo_sessao"
   | "descricao_personagem"

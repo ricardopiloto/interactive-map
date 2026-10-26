@@ -422,6 +422,7 @@
     "revisao": "Revisar sugestão",
     "inserir": "Inserir ao final",
     "substituir": "Substituir",
+    "copiar": "Copiar",
     "descartar": "Descartar",
     "falha": "Não foi possível gerar a sugestão. Tente novamente.",
     "vazio": "Ainda não há contexto suficiente para sugerir um texto.",

@@ -11,7 +11,7 @@ O provedor de IA nesta fase é o **DeepSeek**, via `ia_provider`. O custo das ch
 ## What Changes
 
 - Novo assistente de IA em campos de texto livre do mestre, acionado por botão explícito, nunca automático. Primeira onda:
-  - **Notas de preparo** da sessão (rascunho) e **fios narrativos** (ganchos e linhas em aberto propostos a partir do que já aconteceu na campanha). Fios narrativos é uma ação do editor de sessão cujo resultado vai para as notas de preparo, inclusive em sessão nova ainda não salva.
+  - **Rascunho** de sessão ainda não visível (preenche as Notas de Preparo quando vazias; senão painel com Copiar; o Resumo tem botão próprio e é gerado a partir das Notas) e **fios narrativos**, ambos só em sessão não visível para jogadores (ganchos e linhas em aberto propostos a partir do que já aconteceu na campanha). Fios narrativos é uma ação do editor de sessão cujo resultado vai para as notas de preparo, inclusive em sessão nova ainda não salva.
   - **Resumo** de sessão.
   - **Descrição** de personagem (PJ e NPC), em todos os editores de personagem (lista de relações e mapa) — cobre o fluxo de criação de personagem.
   - **Descrição** de local.

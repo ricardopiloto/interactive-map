@@ -15,6 +15,7 @@ from app.services.ia_provider import (
     IA_CAMPANHAS_MISTURADAS,
     IA_CREDENCIAL_AUSENTE,
     IA_ERRO_PROVEDOR,
+    IA_RESPOSTA_CORTADA,
     IA_MODULO_DESABILITADO,
     IA_NAO_AUTORIZADO,
     IA_OK,
@@ -413,3 +414,40 @@ def test_helper_le_visibilidade_da_entidade() -> None:
     item = item_contexto_entidade(1, "sessao", sessao, "Segredo")
     assert item.visivel_para_todos is False
     assert montar_contexto(1, [item]) == []
+
+
+def test_resposta_cortada_tem_codigo_proprio(monkeypatch) -> None:
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+    resultado = completar(
+        ctx=_ctx(campanha), campanha_id=1,
+        modulos_ativos=campanha.modulos_ativos,
+        registros=(_item(1, 1, "texto"),), instrucao="instrução",
+        client=_client(lambda _request: httpx.Response(
+            200, json={"choices": [{"message": {"content": ""}, "finish_reason": "length"}]},
+        )),
+    )
+    assert resultado.codigo == IA_RESPOSTA_CORTADA
+
+
+def test_timeout_opcional_preserva_padrao(monkeypatch) -> None:
+    from app.services import ia_provider
+
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+    vistos = []
+
+    def post(_payload, _chave, _client, *, timeout=None):
+        vistos.append(timeout)
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    monkeypatch.setattr(ia_provider, "_post", post)
+    for timeout in (None, 120.0):
+        completar(
+            ctx=_ctx(campanha), campanha_id=1,
+            modulos_ativos=campanha.modulos_ativos,
+            registros=(_item(1, 1, "texto"),), instrucao="instrução",
+            timeout=timeout,
+        )
+    assert vistos == [None, 120.0]
+    assert Settings(_env_file=None).ia_assistente_timeout_seconds == 120.0
