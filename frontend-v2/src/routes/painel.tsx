@@ -186,19 +186,24 @@ export function PainelPage() {
                       {t("painel.toggleUnit")} ({unit})
                     </Button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id={`ia-${campaign.slug}`}
-                      checked={campaign.modulos_ativos.includes("ia_arcos")}
-                      onCheckedChange={(ativo) =>
-                        void run(() =>
-                          campanhasApi
-                            .patchModulo(campaign.slug, "ia_arcos", ativo)
-                            .then(() => undefined),
-                        )
-                      }
-                    />
-                    <Label htmlFor={`ia-${campaign.slug}`}>{t("painel.moduloIaArcos")}</Label>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id={`ia-${campaign.slug}`}
+                        checked={campaign.modulos_ativos.includes("ia_arcos")}
+                        onCheckedChange={(ativo) =>
+                          void run(() =>
+                            campanhasApi
+                              .patchModulo(campaign.slug, "ia_arcos", ativo)
+                              .then(() => undefined),
+                          )
+                        }
+                      />
+                      <Label htmlFor={`ia-${campaign.slug}`}>{t("painel.moduloIaArcos")}</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("painel.moduloIaArcosAjuda")}
+                    </p>
                   </div>
                   <label className="grid gap-1 text-sm">
                     {t("painel.cover")}

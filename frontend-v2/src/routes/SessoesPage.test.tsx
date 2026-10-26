@@ -348,6 +348,7 @@ it("cria, edita, oculta e exclui uma sessão, e não chama a sugestão com o mó
   fireEvent.click(await screen.findByRole("button", { name: "Nova sessão" }));
   const dialog = await screen.findByRole("dialog");
   expect(within(dialog).getByRole("spinbutton", { name: "Número" })).toHaveValue(1);
+  expect(within(dialog).queryByRole("button", { name: "Sugerir com IA" })).not.toBeInTheDocument();
   expect(
     within(dialog).queryByRole("button", { name: "Sugerir locais e personagens" }),
   ).not.toBeInTheDocument();
@@ -435,6 +436,7 @@ it("sugere associações só com o módulo ia_arcos e preserva a seleção atual
 
   fireEvent.click(await screen.findByRole("button", { name: "Nova sessão" }));
   const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(2);
   const suggest = within(dialog).getByRole("button", { name: "Sugerir locais e personagens" });
   expect(suggest).toBeDisabled();
   expect(

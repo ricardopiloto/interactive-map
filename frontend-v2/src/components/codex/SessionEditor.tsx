@@ -1,3 +1,4 @@
+import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,8 @@ function CheckList({
 
 export function SessionEditor({
   draft,
+  slug,
+  isDono,
   locais,
   personagens,
   iaAtiva,
@@ -81,6 +84,8 @@ export function SessionEditor({
   onCancel,
 }: {
   draft: SessaoDraft;
+  slug: string;
+  isDono: boolean;
   locais: CatalogoItem[];
   personagens: CatalogoItem[];
   iaAtiva: boolean;
@@ -173,6 +178,42 @@ export function SessionEditor({
               onChange={(event) => onChange({ notas_preparo: event.target.value })}
             />
           </label>
+          {iaAtiva && isDono && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className={fieldLabel}>{tc("iaAssistente.rascunho")}</p>
+                <IaAssistente
+                  slug={slug}
+                  tipo="notas_preparo"
+                  alvoId={draft.id ?? null}
+                  textoAtual={draft.notas_preparo}
+                  campoPublico={false}
+                  onInserir={(texto) =>
+                    onChange({
+                      notas_preparo: [draft.notas_preparo, texto].filter(Boolean).join("\n\n"),
+                    })
+                  }
+                  onSubstituir={(texto) => onChange({ notas_preparo: texto })}
+                />
+              </div>
+              <div className="space-y-1">
+                <p className={fieldLabel}>{tc("iaAssistente.fiosNarrativos")}</p>
+                <IaAssistente
+                  slug={slug}
+                  tipo="fios_narrativos"
+                  alvoId={draft.id ?? null}
+                  textoAtual={draft.notas_preparo}
+                  campoPublico={false}
+                  onInserir={(texto) =>
+                    onChange({
+                      notas_preparo: [draft.notas_preparo, texto].filter(Boolean).join("\n\n"),
+                    })
+                  }
+                  onSubstituir={(texto) => onChange({ notas_preparo: texto })}
+                />
+              </div>
+            </div>
+          )}
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("fieldResumo")}</span>
             <Textarea
@@ -180,6 +221,19 @@ export function SessionEditor({
               onChange={(event) => onChange({ resumo: event.target.value })}
             />
           </label>
+          {iaAtiva && isDono && draft.id != null && (
+            <IaAssistente
+              slug={slug}
+              tipo="resumo_sessao"
+              alvoId={draft.id}
+              textoAtual={draft.resumo}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ resumo: [draft.resumo, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ resumo: texto })}
+            />
+          )}
           {iaAtiva && (
             <div className="space-y-1">
               <Button

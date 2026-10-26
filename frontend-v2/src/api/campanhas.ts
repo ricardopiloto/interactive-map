@@ -30,7 +30,34 @@ export interface CampanhaCriada {
   visibilidade?: string;
 }
 
+export type TipoAssistencia =
+  | "notas_preparo"
+  | "fios_narrativos"
+  | "resumo_sessao"
+  | "descricao_personagem"
+  | "descricao_local";
+
+export interface AssistirRequest {
+  tipo: TipoAssistencia;
+  texto_atual: string;
+  instrucao: string;
+  alvo_id: number | null;
+  campo_publico: boolean;
+}
+
+export interface AssistirResponse {
+  estado: "sugestao" | "vazio" | "falha";
+  texto: string | null;
+  mensagem: string;
+  usou_conteudo_oculto: boolean;
+  truncado: boolean;
+  limite_caracteres: number;
+  campo_destino: string;
+}
+
 export const campanhasApi = {
+  assistir: (slug: string, body: AssistirRequest) =>
+    api.post<AssistirResponse>(campaignPath(slug, "admin/ia/assistir"), body),
   catalogo: () => api.get<{ campanhas: CatalogoItem[] }>("/api/campanhas/catalogo"),
   minhas: () => api.get<{ campanhas: PainelItem[] }>("/api/campanhas/minhas"),
   criar: (body: {

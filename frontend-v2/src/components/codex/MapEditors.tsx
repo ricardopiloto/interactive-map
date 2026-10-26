@@ -1,3 +1,4 @@
+import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,9 @@ function CheckList({
 
 export function LocalEditor({
   draft,
+  slug,
+  iaAtiva,
+  isDono,
   locais,
   npcs,
   arcos,
@@ -77,6 +81,9 @@ export function LocalEditor({
   onCancel,
 }: {
   draft: LocalDraft;
+  slug: string;
+  iaAtiva: boolean;
+  isDono: boolean;
   locais: Local[];
   npcs: Npc[];
   arcos: Arco[];
@@ -135,6 +142,19 @@ export function LocalEditor({
               onChange={(event) => onChange({ descricao: event.target.value })}
             />
           </label>
+          {iaAtiva && isDono && draft.id != null && (
+            <IaAssistente
+              slug={slug}
+              tipo="descricao_local"
+              alvoId={draft.id}
+              textoAtual={draft.descricao}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ descricao: [draft.descricao, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ descricao: texto })}
+            />
+          )}
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("localForm.sessaoLabel")}</span>
             <Input
@@ -282,6 +302,9 @@ export function LocalEditor({
 
 export function NpcEditor({
   draft,
+  slug,
+  iaAtiva,
+  isDono,
   locais,
   busy,
   onChange,
@@ -291,6 +314,9 @@ export function NpcEditor({
   onCancel,
 }: {
   draft: NpcDraft;
+  slug: string;
+  iaAtiva: boolean;
+  isDono: boolean;
   locais: Local[];
   busy: boolean;
   onChange: (patch: Partial<NpcDraft>) => void;
@@ -339,6 +365,19 @@ export function NpcEditor({
               onChange={(event) => onChange({ descricao: event.target.value })}
             />
           </label>
+          {iaAtiva && isDono && draft.id != null && (
+            <IaAssistente
+              slug={slug}
+              tipo="descricao_personagem"
+              alvoId={draft.id}
+              textoAtual={draft.descricao}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ descricao: [draft.descricao, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ descricao: texto })}
+            />
+          )}
           <label className="block space-y-1">
             <span className={fieldLabel}>{tc("form.faccaoOpcional")}</span>
             <Input

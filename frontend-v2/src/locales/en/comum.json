@@ -121,7 +121,8 @@
     "unitMi": "Miles (mi)",
     "unitKm": "Kilometres (km)",
     "toggleUnit": "Toggle mi/km",
-    "moduloIaArcos": "AI arc suggestions",
+    "moduloIaArcos": "AI assistant",
+    "moduloIaArcosAjuda": "The assistant may send hidden campaign content to DeepSeek.",
     "suggestedSystems": "Suggested systems (optional)",
     "cover": "Cover",
     "clearCover": "Remove cover",
@@ -411,5 +412,23 @@
       "save": "Save",
       "draft": "Draft"
     }
+  },
+  "iaAssistente": {
+    "rascunho": "Draft",
+    "fiosNarrativos": "Narrative threads",
+    "instrucao": "Optional instruction for AI",
+    "carregando": "Generating suggestion…",
+    "sugerir": "Suggest with AI",
+    "revisao": "Review suggestion",
+    "inserir": "Append",
+    "substituir": "Replace",
+    "descartar": "Discard",
+    "falha": "Could not generate a suggestion. Please try again.",
+    "vazio": "There is not enough context to suggest text yet.",
+    "limite": "Rate limit reached. Try again shortly.",
+    "acesso": "AI assistance is unavailable for this campaign or user.",
+    "oculto": "This suggestion used hidden content and may reveal it to players. Review before applying.",
+    "truncado": "The suggestion was shortened to fit the field limit.",
+    "limiteCampo": "The text exceeds this field’s limit."
   }
 }

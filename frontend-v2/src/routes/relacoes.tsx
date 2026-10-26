@@ -169,7 +169,7 @@ export function Relations() {
   const config = useOutletContext<CampaignConfig>();
   const { t } = useTranslation("relacoes");
   const { t: tc } = useTranslation("comum");
-  const { enabled, ready } = useEditMode();
+  const { enabled, ready, isDono } = useEditMode();
   const search = useSearch();
   const navigate = useNavigate();
   const bundle = useRelations(slug, ready ? enabled : null);
@@ -466,6 +466,9 @@ export function Relations() {
       {personagemDraftState && (
         <PersonagemEditor
           draft={personagemDraftState}
+          slug={slug}
+          iaAtiva={modules.includes("ia_arcos")}
+          isDono={isDono}
           modules={modules}
           busy={busy}
           onChange={(patch) =>

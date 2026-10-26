@@ -430,6 +430,8 @@ export function Sessions() {
       {draft && (
         <SessionEditor
           draft={draft}
+          slug={slug}
+          isDono={isDono}
           locais={data?.locais ?? []}
           personagens={data?.personagens ?? []}
           iaAtiva={iaAtiva}

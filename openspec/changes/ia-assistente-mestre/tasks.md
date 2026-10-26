@@ -21,17 +21,17 @@
 
 ## 3. Frontend — componente reutilizável
 
-- [ ] 3.1 Criar o componente de assistência em `frontend-v2/src/components/codex/` (botão, instrução opcional, painel de revisão em texto puro com Inserir ao final / Substituir / Descartar; estados loading com botão desabilitado, falha, vazio, 429, 403; aviso de conteúdo oculto quando `campoPublico`), com função de cliente em `src/api/campanhas.ts`; verificar com `npx vitest run` em testes de componente: as três ações, rascunho inalterado em falha, aviso condicional reativo ao `campoPublico`, resposta tardia de outro `alvoId` descartada, painel descartado ao trocar de registro.
-- [ ] 3.2 Respeitar o limite do campo: usar `limite_caracteres` da resposta, indicar `truncado`, bloquear/avisar "Inserir ao final" acima de `limite − len(texto_atual)`; verificar em teste.
-- [ ] 3.3 Layout responsivo: botão e painel funcionam em tela estreita (botão quebra para linha própria, painel na largura do campo); verificar visualmente em largura mobile e, se viável, teste de render.
+- [x] 3.1 Criar o componente de assistência em `frontend-v2/src/components/codex/` (botão, instrução opcional, painel de revisão em texto puro com Inserir ao final / Substituir / Descartar; estados loading com botão desabilitado, falha, vazio, 429, 403; aviso de conteúdo oculto quando `campoPublico`), com função de cliente em `src/api/campanhas.ts`; verificar com `npx vitest run` em testes de componente: as três ações, rascunho inalterado em falha, aviso condicional reativo ao `campoPublico`, resposta tardia de outro `alvoId` descartada, painel descartado ao trocar de registro.
+- [x] 3.2 Respeitar o limite do campo: usar `limite_caracteres` da resposta, indicar `truncado`, bloquear/avisar "Inserir ao final" acima de `limite − len(texto_atual)`; verificar em teste.
+- [x] 3.3 Layout responsivo: botão e painel funcionam em tela estreita (botão quebra para linha própria, painel na largura do campo); verificar visualmente em largura mobile e, se viável, teste de render.
 
 ## 4. Frontend — gate e integração nos formulários
 
-- [ ] 4.1 Levar `iaAtiva` e `isDono` por prop, lidos em cada rota (`sessoes.tsx`, `relacoes.tsx`, `index.tsx` do mapa, que passa a ler `modulos_ativos`), até `SessionEditor`, `PersonagemEditor`, `NpcEditor` e `LocalEditor`; o botão some inteiro com a IA desligada ou fora do perfil de mestre dono; verificar com teste de render condicional.
-- [ ] 4.2 `SessionEditor`: assistência em `notas_preparo` (rascunho e fios narrativos, `campoPublico=false`, funcionando em sessão nova sem `alvo_id`) e em `resumo` (`campoPublico = visivel_para_todos` do rascunho), mantendo o botão de associações; verificar com `SessoesPage.test.tsx` ajustado.
-- [ ] 4.3 `PersonagemEditor` (`RelationEditors.tsx`): `descricao` (`campoPublico = visivel_para_todos`); `notas_mecanicas` fica sem botão de IA, com seu placeholder de campo; verificar com `RelationEditors.test.tsx` ajustado.
-- [ ] 4.4 `NpcEditor` (`MapEditors.tsx`, usado em `routes/index.tsx`): `descricao` com `campoPublico` do rascunho; `LocalEditor`: `descricao` com `campoPublico = visivel_para_todos` do rascunho; não há teste de `MapEditors` hoje, então criar testes novos para os dois.
-- [ ] 4.5 Rótulo "Assistente de IA" e ajuda do toggle em `painel.tsx` e `locales/pt-BR|en/comum.json`, informando que pode enviar conteúdo oculto da campanha ao DeepSeek; copy do assistente em pt-BR e en; verificar troca de idioma e teste de paridade das chaves entre os dois idiomas.
+- [x] 4.1 Levar `iaAtiva` e `isDono` por prop, lidos em cada rota (`sessoes.tsx`, `relacoes.tsx`, `index.tsx` do mapa, que passa a ler `modulos_ativos`), até `SessionEditor`, `PersonagemEditor`, `NpcEditor` e `LocalEditor`; o botão some inteiro com a IA desligada ou fora do perfil de mestre dono; verificar com teste de render condicional.
+- [x] 4.2 `SessionEditor`: assistência em `notas_preparo` (rascunho e fios narrativos, `campoPublico=false`, funcionando em sessão nova sem `alvo_id`) e em `resumo` (`campoPublico = visivel_para_todos` do rascunho), mantendo o botão de associações; verificar com `SessoesPage.test.tsx` ajustado.
+- [x] 4.3 `PersonagemEditor` (`RelationEditors.tsx`): `descricao` (`campoPublico = visivel_para_todos`); `notas_mecanicas` fica sem botão de IA, com seu placeholder de campo; verificar com `RelationEditors.test.tsx` ajustado.
+- [x] 4.4 `NpcEditor` (`MapEditors.tsx`, usado em `routes/index.tsx`): `descricao` com `campoPublico` do rascunho; `LocalEditor`: `descricao` com `campoPublico = visivel_para_todos` do rascunho; não há teste de `MapEditors` hoje, então criar testes novos para os dois.
+- [x] 4.5 Rótulo "Assistente de IA" e ajuda do toggle em `painel.tsx` e `locales/pt-BR|en/comum.json`, informando que pode enviar conteúdo oculto da campanha ao DeepSeek; copy do assistente em pt-BR e en; verificar troca de idioma e teste de paridade das chaves entre os dois idiomas.
 
 ## 5. Verificação e documentação
 

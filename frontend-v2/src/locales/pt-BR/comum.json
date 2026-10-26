@@ -121,7 +121,8 @@
     "unitMi": "Milhas (mi)",
     "unitKm": "Quilómetros (km)",
     "toggleUnit": "Alternar mi/km",
-    "moduloIaArcos": "IA para sugerir arcos",
+    "moduloIaArcos": "Assistente de IA",
+    "moduloIaArcosAjuda": "O assistente pode enviar conteúdo oculto da campanha ao DeepSeek.",
     "suggestedSystems": "Sistemas sugeridos (opcional)",
     "cover": "Capa",
     "clearCover": "Remover capa",
@@ -411,5 +412,23 @@
       "save": "Salvar",
       "draft": "Rascunho"
     }
+  },
+  "iaAssistente": {
+    "rascunho": "Rascunho",
+    "fiosNarrativos": "Fios narrativos",
+    "instrucao": "Instrução opcional para a IA",
+    "carregando": "Gerando sugestão…",
+    "sugerir": "Sugerir com IA",
+    "revisao": "Revisar sugestão",
+    "inserir": "Inserir ao final",
+    "substituir": "Substituir",
+    "descartar": "Descartar",
+    "falha": "Não foi possível gerar a sugestão. Tente novamente.",
+    "vazio": "Ainda não há contexto suficiente para sugerir um texto.",
+    "limite": "Limite atingido. Tente em instantes.",
+    "acesso": "A assistência de IA não está disponível para esta campanha ou usuário.",
+    "oculto": "Esta sugestão usou conteúdo oculto e pode revelá-lo aos jogadores. Revise antes de aplicar.",
+    "truncado": "A sugestão foi reduzida para caber no limite do campo.",
+    "limiteCampo": "O texto excede o limite deste campo."
   }
 }

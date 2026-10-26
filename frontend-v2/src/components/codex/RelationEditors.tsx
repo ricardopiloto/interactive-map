@@ -1,3 +1,4 @@
+import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,9 @@ const STATUSES: PersonagemStatus[] = ["vivo", "morto", "desaparecido", "desconhe
 
 export function PersonagemEditor({
   draft,
+  slug,
+  iaAtiva,
+  isDono,
   modules,
   busy,
   onChange,
@@ -69,6 +73,9 @@ export function PersonagemEditor({
   onCancel,
 }: {
   draft: PersonagemDraft;
+  slug: string;
+  iaAtiva: boolean;
+  isDono: boolean;
   modules: string[];
   busy: boolean;
   onChange: (patch: Partial<PersonagemDraft>) => void;
@@ -149,10 +156,24 @@ export function PersonagemEditor({
               onChange={(event) => onChange({ descricao: event.target.value })}
             />
           </label>
+          {iaAtiva && isDono && draft.id != null && (
+            <IaAssistente
+              slug={slug}
+              tipo="descricao_personagem"
+              alvoId={draft.id}
+              textoAtual={draft.descricao}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ descricao: [draft.descricao, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ descricao: texto })}
+            />
+          )}
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("personagemForm.notasMecanicas")}</span>
             <Textarea
               value={draft.notas_mecanicas}
+              placeholder={t("personagemForm.notasMecanicas")}
               onChange={(event) => onChange({ notas_mecanicas: event.target.value })}
             />
           </label>
