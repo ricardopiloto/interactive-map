@@ -46,3 +46,4 @@ class PersonagemRead(BaseModel):
     visivel_para_todos: bool = True
     extensoes_mecanica: dict[str, Any] = Field(default_factory=dict)
     local_ids: list[int] = Field(default_factory=list)
+

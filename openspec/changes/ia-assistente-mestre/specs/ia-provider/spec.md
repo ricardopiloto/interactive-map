@@ -18,6 +18,10 @@ Conteúdo marcado como oculto (`visivel_para_todos=false`) — sessões, eventos
 - **WHEN** o mestre dono aciona uma assistência de escrita e a campanha contém um personagem oculto
 - **THEN** o conteúdo desse personagem oculto pode ser incluído nos dados enviados ao provedor, e nenhum conteúdo de outra campanha é incluído
 
+#### Scenario: Registro oculto é marcado quando enviado
+- **WHEN** a inclusão de conteúdo oculto está ligada e um registro oculto entra no contexto enviado ao provedor
+- **THEN** esse registro carrega a marca de oculto, e fora desse modo nenhum registro recebe a marca nem aparece oculto
+
 #### Scenario: Inclusão de oculto sem mestre dono é recusada
 - **WHEN** a inclusão de conteúdo oculto é solicitada numa chamada que não vem do mestre dono da campanha
 - **THEN** o sistema recusa a chamada sem contatar o provedor

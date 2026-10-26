@@ -78,7 +78,7 @@ def montar_contexto(
     *,
     incluir_ocultos: bool = False,
 ) -> list[dict[str, Any]]:
-    """Filter records from one campaign. Direct calls do not authorize hidden access."""
+    """Filter one campaign. Direct calls do not authorize hidden access; hidden rows get ``oculto`` only when included."""
     if any(item.campanha_id != campanha_id for item in registros):
         raise ValueError(IA_CAMPANHAS_MISTURADAS)
     return [
@@ -87,6 +87,7 @@ def montar_contexto(
             "tipo": item.tipo,
             "id": item.registro_id,
             "texto": item.texto,
+            **({"oculto": True} if incluir_ocultos and not is_visivel_para_jogador(item) else {}),
         }
         for item in registros
         if incluir_ocultos or is_visivel_para_jogador(item)

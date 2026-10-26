@@ -360,6 +360,9 @@ def test_ocultos_so_da_campanha_com_opcao_explicita(monkeypatch) -> None:
     assert [item["texto"] for item in json.loads(corpos[1]["messages"][1]["content"])] == ["público", "segredo"]
     assert montar_contexto(1, registros) == json.loads(corpos[0]["messages"][1]["content"])
     assert montar_contexto(1, registros, incluir_ocultos=True) == json.loads(corpos[1]["messages"][1]["content"])
+    assert all("oculto" not in item for item in montar_contexto(1, registros))
+    assert "oculto" not in montar_contexto(1, registros, incluir_ocultos=True)[0]
+    assert montar_contexto(1, registros, incluir_ocultos=True)[1]["oculto"] is True
 
     recusado = completar(
         ctx=_ctx(campanha), campanha_id=1, modulos_ativos=campanha.modulos_ativos,

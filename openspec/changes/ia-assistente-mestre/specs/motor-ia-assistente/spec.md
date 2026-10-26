@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Permite que o mestre dono de uma campanha com IA habilitada peça ajuda para escrever campos de texto livre (preparo de sessão, fios narrativos, resumo, descrição e notas mecânicas de personagem, descrição de local), recebendo sugestões coerentes com o conteúdo real da campanha e sempre sujeitas à revisão do mestre antes de qualquer gravação.
+Permite que o mestre dono de uma campanha com IA habilitada peça ajuda para escrever campos de texto livre (preparo de sessão, fios narrativos, resumo, descrição de personagem, descrição de local), recebendo sugestões coerentes com o conteúdo real da campanha e sempre sujeitas à revisão do mestre antes de qualquer gravação.
 
 ## ADDED Requirements
 
 ### Requirement: Assistência de IA em campos de texto livre do mestre
 
-Numa campanha com o módulo de IA ativo, o mestre dono SHALL poder acionar, por ação explícita, uma assistência de IA nos seguintes campos: notas de preparo da sessão, resumo da sessão, descrição de personagem (em todos os editores de personagem, inclusive o do mapa), notas mecânicas de personagem e descrição de local. O sistema SHALL devolver um texto sugerido para o campo. O sistema NUNCA SHALL acionar a IA automaticamente, nem gravar a sugestão sem ação do mestre.
+Numa campanha com o módulo de IA ativo, o mestre dono SHALL poder acionar, por ação explícita, uma assistência de IA nos seguintes campos: notas de preparo da sessão, resumo da sessão, descrição de personagem (em todos os editores de personagem, inclusive o do mapa) e descrição de local. O assistente NUNCA SHALL preencher notas mecânicas: esse campo é do mestre. O sistema SHALL devolver um texto sugerido para o campo. O sistema NUNCA SHALL acionar a IA automaticamente, nem gravar a sugestão sem ação do mestre.
 
 #### Scenario: Sugestão para um campo com a IA habilitada
 
@@ -61,17 +61,22 @@ O mestre dono SHALL poder pedir fios narrativos (ganchos e linhas em aberto) par
 
 ### Requirement: Contexto real da campanha em toda chamada
 
-Toda chamada de assistência SHALL enviar ao provedor, além do texto atual do campo e do pedido do mestre, o contexto da campanha relevante para aquele tipo de campo. O sistema NUNCA SHALL chamar o provedor apenas com o texto digitado no campo. O sistema SHALL informar ao provedor o sistema de RPG da campanha e SHALL instruí-lo a responder no idioma do texto atual e do conteúdo da campanha (pt-BR na dúvida). O texto atual e a instrução do mestre SHALL ser enviados como dados do contexto, nunca como instrução do sistema. O contexto de cada chamada SHALL respeitar um limite de tamanho, cortando de forma determinística (mais recente primeiro) e incluindo o texto atual e a instrução no cômputo.
+Toda chamada de assistência SHALL enviar ao provedor, além do texto atual do campo e do pedido do mestre, o contexto da campanha relevante para aquele tipo de campo. O sistema NUNCA SHALL chamar o provedor apenas com o texto digitado no campo. O prompt SHALL ser genérico, sem depender do sistema de RPG da campanha, e SHALL instruí-lo a responder no idioma do texto atual e do conteúdo da campanha (pt-BR na dúvida). O texto atual e a instrução do mestre SHALL ser enviados como dados do contexto, nunca como instrução do sistema. O contexto de cada chamada SHALL respeitar um limite de tamanho, cortando de forma determinística (mais recente primeiro) e incluindo o texto atual e a instrução no cômputo.
 
 #### Scenario: Descrição de personagem usa o universo existente
 
 - **WHEN** o mestre pede um rascunho de descrição para um personagem
 - **THEN** a chamada inclui o nome e dados do personagem e o contexto da campanha relevante, como facções, locais e personagens relacionados
 
-#### Scenario: Notas mecânicas respeitam o sistema da campanha
+#### Scenario: NPC proposto sem bloco mecânico
 
-- **WHEN** o mestre pede sugestão de notas mecânicas
-- **THEN** a chamada identifica o sistema de RPG da campanha e a sugestão é um texto livre, não uma ficha estruturada
+- **WHEN** a sugestão propõe ou descreve um NPC
+- **THEN** o texto não traz atributos, estatísticas nem regras de nenhum sistema e usa o marcador de placeholder "[Mecânica a definir pelo mestre]" onde a mecânica caberia
+
+#### Scenario: Notas mecânicas não são assistidas
+
+- **WHEN** o mestre edita o campo de notas mecânicas de um personagem
+- **THEN** nenhuma ação de assistência de IA é oferecida nesse campo e a rota recusa um pedido para ele
 
 #### Scenario: Campanha grande respeita o limite de contexto
 
@@ -113,13 +118,32 @@ Quando a sugestão foi gerada com conteúdo oculto e o campo de destino é visí
 
 #### Scenario: Campo exclusivo do mestre
 
-- **WHEN** a sugestão é para notas de preparo ou notas mecânicas, que só o mestre vê
+- **WHEN** a sugestão é para notas de preparo ou fios narrativos, que só o mestre vê
 - **THEN** o sistema não exibe o aviso de conteúdo oculto
 
 #### Scenario: Registro oculto
 
 - **WHEN** a sugestão é para a descrição de um personagem ou local cujo rascunho está marcado como oculto
 - **THEN** o sistema não exibe o aviso, e se o mestre marcar o registro como visível antes de aplicar, o aviso passa a aparecer
+
+### Requirement: Indicação de campo público orienta o prompt
+
+O pedido SHALL aceitar a indicação de que o campo de destino é lido por jogadores (padrão: sim). O sistema SHALL combinar essa indicação com a visibilidade real do campo, valendo a mais restritiva, e SHALL tratar como só do mestre os campos que jogadores nunca leem. A indicação orienta o modelo a não revelar segredos, mas NÃO SHALL ser tratada como garantia: o aviso e a revisão do mestre continuam obrigatórios.
+
+#### Scenario: Cliente indica campo não público mas o registro salvo é visível
+
+- **WHEN** o pedido para a descrição de um personagem salvo como visível indica que o campo não é público
+- **THEN** o prompt trata o campo como público
+
+#### Scenario: Indicação ausente
+
+- **WHEN** o pedido não informa se o campo é público
+- **THEN** o sistema assume que o campo é público
+
+#### Scenario: Campo exclusivo do mestre
+
+- **WHEN** o pedido é para notas de preparo ou fios narrativos e indica campo público
+- **THEN** o prompt trata o campo como só do mestre
 
 ### Requirement: Revisão obrigatória antes de aplicar
 

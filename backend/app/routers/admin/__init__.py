@@ -8,6 +8,7 @@ from app.routers.admin import (
     export,
     geradores,
     grupo,
+    ia,
     itens,
     locais,
     map_scale,
@@ -37,6 +38,7 @@ router.include_router(eventos.router, tags=["admin-eventos"])
 router.include_router(itens.router, tags=["admin-itens"])
 router.include_router(descoberta.router, tags=["admin-descoberta"])
 router.include_router(geradores.router, tags=["admin-geradores"])
+router.include_router(ia.router, tags=["admin-ia"])
 
 
 @router.get("/session")

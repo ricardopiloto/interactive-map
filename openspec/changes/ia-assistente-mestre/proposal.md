@@ -2,7 +2,7 @@
 
 ## Why
 
-O mestre escreve muito texto livre para preparar e registrar a campanha: notas de preparo da próxima sessão, resumo de sessão, descrição e notas mecânicas de personagens, descrição de locais. Hoje a IA só aparece em tarefas estruturadas (arcos, associações de sessão/evento). Pedir ajuda para escrever esses textos — rascunhar um NPC, propor ganchos para a próxima sessão — obriga o mestre a sair da ferramenta e colar contexto manualmente num chat genérico, que devolve algo desconectado da campanha.
+O mestre escreve muito texto livre para preparar e registrar a campanha: notas de preparo da próxima sessão, resumo de sessão, descrição de personagens, descrição de locais. Hoje a IA só aparece em tarefas estruturadas (arcos, associações de sessão/evento). Pedir ajuda para escrever esses textos — rascunhar um NPC, propor ganchos para a próxima sessão — obriga o mestre a sair da ferramenta e colar contexto manualmente num chat genérico, que devolve algo desconectado da campanha.
 
 O risco central é exatamente esse: IA sem contexto sugere ideias genéricas ou que contradizem NPCs, facções, arcos e segredos já existentes. A infraestrutura de chamada já existe (`ia-provider`); falta generalizá-la para "assistir um campo de texto" com contexto real da campanha, incluindo o conteúdo oculto que só o mestre vê.
 
@@ -14,8 +14,8 @@ O provedor de IA nesta fase é o **DeepSeek**, via `ia_provider`. O custo das ch
   - **Notas de preparo** da sessão (rascunho) e **fios narrativos** (ganchos e linhas em aberto propostos a partir do que já aconteceu na campanha). Fios narrativos é uma ação do editor de sessão cujo resultado vai para as notas de preparo, inclusive em sessão nova ainda não salva.
   - **Resumo** de sessão.
   - **Descrição** de personagem (PJ e NPC), em todos os editores de personagem (lista de relações e mapa) — cobre o fluxo de criação de personagem.
-  - **Notas mecânicas** de personagem, em texto livre e agnóstico de sistema.
   - **Descrição** de local.
+- O prompt é genérico, sem depender do sistema de RPG, e foca nos detalhes da aventura e da sessão cadastradas. NPCs propostos não trazem bloco mecânico: o assistente usa um marcador de placeholder e deixa as notas mecânicas a cargo do mestre.
 - Cada pedido monta contexto real da campanha conforme o campo (ver design). O mestre dono envia também conteúdo oculto (`visivel_para_todos=false`) da própria campanha, para que as sugestões sejam coerentes com os segredos.
 - A sugestão aparece num painel de revisão em texto puro. O mestre escolhe inserir, substituir ou descartar; nada é gravado sem o fluxo normal de salvar do formulário. Quando a sugestão usou conteúdo oculto e o campo de destino é visível para jogadores, o mestre vê um aviso antes de aplicar.
 - O gate continua sendo o toggle de IA que o mestre já usa no Painel (módulo `ia_arcos`), em modelo tudo-ou-nada: ligado, todas as ajudas de IA aparecem; desligado, nenhuma. O rótulo e o texto de ajuda do toggle passam a dizer que o assistente pode enviar conteúdo oculto da campanha ao DeepSeek.
