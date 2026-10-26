@@ -2,9 +2,9 @@
 
 ## 1. Backend — provedor e contexto
 
-- [ ] 1.1 Em `ia_provider.py`, adicionar a `completar`/`montar_contexto` o parâmetro só-keyword `incluir_ocultos` (padrão `False`) e um `max_tokens` opcional no payload; módulo, autorização do dono e isolamento continuam checados antes; `incluir_ocultos=True` sem dono autorizado falha com `IA_NAO_AUTORIZADO`; docstring de `montar_contexto` avisando que não autoriza sozinha; comentário de dívida de nome em `MODULO_IA`. Verificar em `backend/` com `uv run pytest tests/test_ia_provider.py -q` (padrão exclui ocultos; `True` só inclui ocultos da própria campanha; `True` sem dono é recusado sem chamar a rede).
-- [ ] 1.2 Criar helper único que monta `ItemContextoIa` lendo `visivel_para_todos` da entidade (nenhum chamador passa o booleano); verificar com teste de que um registro oculto nunca entra como visível.
-- [ ] 1.3 Confirmar que `motor_ia_arcos`, `motor_ia_sessao_associacoes` e `motor_ia_evento_associacoes` seguem sem ocultos (`montar_contexto` chamado sem a flag); verificar com `uv run pytest tests/test_motor_ia_arcos.py tests/test_motor_ia_sessao_associacoes.py tests/test_motor_ia_evento_associacoes.py -q` sem alterar seus testes.
+- [x] 1.1 Em `ia_provider.py`, adicionar a `completar`/`montar_contexto` o parâmetro só-keyword `incluir_ocultos` (padrão `False`) e um `max_tokens` opcional no payload; módulo, autorização do dono e isolamento continuam checados antes; `incluir_ocultos=True` sem dono autorizado falha com `IA_NAO_AUTORIZADO`; docstring de `montar_contexto` avisando que não autoriza sozinha; comentário de dívida de nome em `MODULO_IA`. Verificar em `backend/` com `uv run pytest tests/test_ia_provider.py -q` (padrão exclui ocultos; `True` só inclui ocultos da própria campanha; `True` sem dono é recusado sem chamar a rede).
+- [x] 1.2 Criar helper único que monta `ItemContextoIa` lendo `visivel_para_todos` da entidade (nenhum chamador passa o booleano); verificar com teste de que um registro oculto nunca entra como visível.
+- [x] 1.3 Confirmar que `motor_ia_arcos`, `motor_ia_sessao_associacoes` e `motor_ia_evento_associacoes` seguem sem ocultos (`montar_contexto` chamado sem a flag); verificar com `uv run pytest tests/test_motor_ia_arcos.py tests/test_motor_ia_sessao_associacoes.py tests/test_motor_ia_evento_associacoes.py -q` sem alterar seus testes.
 
 ## 2. Backend — serviço e rota de assistência
 
