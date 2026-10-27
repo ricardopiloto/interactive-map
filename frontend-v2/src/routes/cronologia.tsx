@@ -1,3 +1,4 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -312,6 +313,9 @@ export function Timeline() {
   const sessions = data?.sessoes ?? [];
   const events = data?.eventos ?? [];
   const arcs = data?.arcos ?? [];
+  const prepSessions = gm
+    ? sessions.filter((s) => s.visivel_para_todos === false && Boolean(s.notas_preparo?.trim()))
+    : [];
   const sorted = [...events].sort((a, b) => a.ano - b.ano || (a.mes ?? 0) - (b.mes ?? 0));
   const groups = new Map<string, Evento[]>();
   for (const e of sorted) {
@@ -357,6 +361,20 @@ export function Timeline() {
           </Button>
         ))}
       </nav>
+      {prepSessions.length > 0 && (
+        <aside className="mt-6 space-y-2 rounded-2xl border border-dashed border-border bg-card/60 p-4">
+          <p className="text-sm font-medium">{t("prepSessionsHeading")}</p>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            {prepSessions.map((s) => (
+              <li key={s.id}>
+                {t("sessionMeta", { numero: s.numero, titulo: s.titulo })}
+                <small className="ml-2">{t("prepNotesBadge")}</small>
+                <small className="ml-2">{t("hiddenBadge")}</small>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
       {error && (
         <p role="alert" className="mt-4 text-destructive">
           {error}
@@ -507,7 +525,13 @@ export function Timeline() {
           {sessions.length === 0 ? (
             <p className="mt-6">{t("arcos.emptyTitle")}</p>
           ) : (
-            <ArcTimeline sessoes={sessions} eventos={events} arcos={arcs} filter={filterArc} />
+            <ArcTimeline
+              sessoes={sessions}
+              eventos={events}
+              arcos={arcs}
+              filter={filterArc}
+              gm={gm}
+            />
           )}
         </section>
       )}
@@ -728,13 +752,11 @@ export function Timeline() {
                       onChange={(e) => patch({ rotulo_era: e.target.value || null })}
                     />
                   </label>
-                  <label>
-                    {t("fieldDescricao")}
-                    <Textarea
-                      value={editor.draft.descricao}
-                      onChange={(e) => patch({ descricao: e.target.value })}
-                    />
-                  </label>
+                  <MarkdownField
+                    label={t("fieldDescricao")}
+                    value={editor.draft.descricao}
+                    onValueChange={(texto) => patch({ descricao: texto })}
+                  />
                   {ia && (
                     <Button
                       variant="outline"
@@ -851,13 +873,11 @@ export function Timeline() {
                       onChange={(e) => patch({ nome: e.target.value })}
                     />
                   </label>
-                  <label>
-                    {t("item.fieldDescricao")}
-                    <Textarea
-                      value={editor.draft.descricao}
-                      onChange={(e) => patch({ descricao: e.target.value })}
-                    />
-                  </label>
+                  <MarkdownField
+                    label={t("item.fieldDescricao")}
+                    value={editor.draft.descricao}
+                    onValueChange={(texto) => patch({ descricao: texto })}
+                  />
                   <Checks
                     label={t("item.fieldSessoes")}
                     options={sessions.map((s) => ({ id: s.id, nome: `${s.numero}. ${s.titulo}` }))}

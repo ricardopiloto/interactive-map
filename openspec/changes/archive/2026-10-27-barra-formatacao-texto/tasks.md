@@ -1,0 +1,22 @@
+## 1. Funções de formatação
+
+- [x] 1.1 Módulo `frontend-v2/src/components/codex/markdown-format.ts` com funções puras `aplicar(acao, texto, inicio, fim)` para negrito, itálico, link (envolver ou inserir exemplo, alternando), título `## `, lista `- `, lista numerada `1. ` (reconhecendo qualquer prefixo `\d+\. ` ao desfazer) e citação `> ` (início de cada linha tocada, alternando) e o modelo do bloco de combate (linhas próprias, linha em branco antes e depois, título de exemplo ou primeira linha da seleção), devolvendo o novo texto, a nova seleção e a menor faixa do texto original que muda com o trecho que a substitui.
+- [x] 1.2 Testes de unidade das funções: cada ação com e sem seleção, alternância, seleção em várias linhas, cursor no meio de linha, bloco de combate no meio, no início e no fim do texto e com seleção como título; a faixa e o trecho devolvidos reproduzem o texto novo quando aplicados ao original.
+
+## 2. Componente
+
+- [x] 2.1 Constante compartilhada do marcador `[!combate]` usada pelo renderizador (`RichContent`) e pelo modelo; componente `MarkdownField` (rótulo + barra + `Textarea`) com props `label`, `labelClassName`, `value`, `onValueChange`, `combat` e as demais props do textarea, repassando a `ref` ao `textarea`; `<label htmlFor>` e `textarea id` (via `useId`) com a barra fora do `<label>` e `aria-controls`; barra com `role="toolbar"`, nome acessível, botões `type="button"` com ícone (lucide), nome acessível, dica com atalho e foco visível, desabilitados com o campo desabilitado; layout com quebra de linha sem rolagem horizontal até 320 px.
+- [x] 2.2 Aplicação da ação por um único caminho: o `onChange` do `textarea` é a única fonte de `onValueChange`; selecionar a faixa devolvida e usar `execCommand("insertText")`, com fallback exclusivo para `onValueChange` só se `execCommand` não existir, retornar `false` ou não alterar o valor; botões com `preventDefault()` em `onMouseDown`/`onPointerDown` e `textarea.focus()` antes de aplicar; manter o foco e restaurar a seleção no trecho editável; atalhos Ctrl/Cmd+B e Ctrl/Cmd+I no `onKeyDown` do campo.
+- [x] 2.3 Textos da barra (nomes, dicas, texto de exemplo, título e rótulos do modelo de combate) em `frontend-v2/src/locales/{pt-BR,en}/comum.json` com o mesmo conjunto de chaves e teste de paridade passando.
+- [x] 2.4 Testes de componente: cada botão aplica a ação e mantém foco e seleção, botão de combate só com `combat`, atalhos, botões desabilitados, ref repassada, o botão não envia o formulário, cada ação notifica `onValueChange` uma única vez (sem texto duplicado) tanto com `execCommand` simulado quanto sem ele, o campo é encontrado pelo rótulo (`getByLabelText`) e acionar o rótulo foca o `textarea`, acionar um botão mantém o foco e a seleção no campo, e o modelo inserido pelo botão de combate, renderizado com `RichContent` (`callouts`), vira bloco de combate (marcador compartilhado com o renderizador).
+
+## 3. Integração
+
+- [x] 3.1 Substituir o bloco `<label>` + `Textarea` por `MarkdownField label=…` (mantendo o texto e o estilo do rótulo atual) nos campos de texto rico: `SessionEditor.tsx` (Notas de Preparo com `combat` e a `notasPreparoRef` funcionando; Resumo), `MapEditors.tsx` (`LocalEditor`: descrição; `NpcEditor`: descrição), `RelationEditors.tsx` (`PersonagemEditor`: descrição e notas mecânicas) e `routes/cronologia.tsx` (descrição de evento e de item); fios, notas de vínculo e resumo de arco permanecem com `Textarea`.
+- [x] 3.2 Ajustar os testes existentes dos editores e das páginas que localizam esses campos (por rótulo ou papel) sem enfraquecer asserções, garantindo que o `textarea` continua encontrado pelo mesmo rótulo, e acrescentar, em `SessionEditor.test.tsx`, que a barra aparece em Notas de Preparo (com botão de combate) e em Resumo (sem), e que a barra não aparece em fios nem no resumo de arco.
+
+## 4. Verificação e registro
+
+- [x] 4.1 `npx vitest run`, `npx tsc --noEmit` e `npx eslint .` do `frontend-v2` passando.
+- [x] 4.2 Verificação manual: em Notas de Preparo, aplicar cada botão com e sem seleção e ver o resultado na leitura; inserir um bloco de combate pelo botão, preencher e conferir a cor própria na leitura; conferir Ctrl+B/Ctrl+I, Ctrl+Z após uma ação, Tab/Enter nos botões, a barra em 320 px e nos dois idiomas, e que Resumo e descrições não mostram o botão de combate; conferir que o resumo de arco continua sem barra.
+- [x] 4.3 Registrar em `CHANGELOG.md`, em Unreleased, a barra de formatação nos campos de texto rico, com o botão de bloco de combate nas Notas de Preparo.

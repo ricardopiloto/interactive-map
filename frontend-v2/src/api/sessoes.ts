@@ -28,6 +28,8 @@ export interface Sessao {
   titulo: string;
   data_rotulo: string | null;
   resumo: string;
+  /** GM-only; never present on public `GET /sessoes` payloads. */
+  notas_preparo?: string;
   locais: SessaoRefLocal[];
   personagens: SessaoRefPersonagem[];
   arco_id: number | null;
@@ -41,6 +43,7 @@ export interface SessaoPayload {
   titulo: string;
   data_rotulo: string | null;
   resumo: string;
+  notas_preparo: string;
   visivel_para_todos: boolean;
   local_ids: number[];
   personagem_ids: number[];

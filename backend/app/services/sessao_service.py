@@ -7,6 +7,7 @@ from sqlmodel import Session, col, select
 
 from app.errors import raise_api_error
 from app.models.arco import Arco
+from app.models.fio_narrativo import FioNarrativo
 from app.models.links import ItemSessaoLink, SessaoLocalLink, SessaoNpcLink
 from app.schemas.descoberta import AlertaInconsistencia
 from app.models.local import Local
@@ -96,6 +97,7 @@ def to_admin(
     return SessaoAdmin(
         **base.model_dump(),
         visivel_para_todos=bool(sessao.visivel_para_todos),
+        notas_preparo=sessao.notas_preparo or "",
         alertas_inconsistencia=list(alertas or []),
     )
 
@@ -203,6 +205,7 @@ def create_sessao(session: Session, payload: SessaoCreate) -> SessaoAdmin:
         titulo=payload.titulo.strip(),
         data_rotulo=(payload.data_rotulo.strip() if payload.data_rotulo else None) or None,
         resumo=payload.resumo or "",
+        notas_preparo=payload.notas_preparo or "",
         visivel_para_todos=payload.visivel_para_todos,
         arco_id=payload.arco_id,
         arco_transicao_id=payload.arco_transicao_id,
@@ -284,5 +287,10 @@ def delete_sessao(session: Session, sessao_id: int) -> None:
         select(ItemSessaoLink).where(ItemSessaoLink.sessao_id == sessao_id)
     ).all():
         session.delete(link)
+    for fio in session.exec(
+        select(FioNarrativo).where(FioNarrativo.sessao_origem_id == sessao_id)
+    ).all():
+        fio.sessao_origem_id = None
+        session.add(fio)
     session.delete(row)
     session.commit()

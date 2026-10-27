@@ -32,6 +32,7 @@ class SessaoPublic(BaseModel):
 
 class SessaoAdmin(SessaoPublic):
     visivel_para_todos: bool = True
+    notas_preparo: str = ""
     alertas_inconsistencia: list[AlertaInconsistencia] = Field(default_factory=list)
 
 
@@ -40,6 +41,7 @@ class SessaoCreate(BaseModel):
     titulo: str = Field(min_length=1, max_length=200)
     data_rotulo: Optional[str] = Field(default=None, max_length=100)
     resumo: str = Field(default="", max_length=50000)
+    notas_preparo: str = Field(default="", max_length=50000)
     visivel_para_todos: bool = True
     local_ids: list[int] = Field(default_factory=list)
     personagem_ids: list[int] = Field(default_factory=list)
@@ -52,6 +54,7 @@ class SessaoUpdate(BaseModel):
     titulo: Optional[str] = Field(default=None, min_length=1, max_length=200)
     data_rotulo: Optional[str] = Field(default=None, max_length=100)
     resumo: Optional[str] = Field(default=None, max_length=50000)
+    notas_preparo: Optional[str] = Field(default=None, max_length=50000)
     visivel_para_todos: Optional[bool] = None
     local_ids: Optional[list[int]] = None
     personagem_ids: Optional[list[int]] = None

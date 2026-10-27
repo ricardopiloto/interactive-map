@@ -23,6 +23,7 @@ export interface Personagem {
   tipo: PersonagemTipo;
   papel: string | null;
   descricao: string;
+  notas_mecanicas?: string;
   faccao: string | null;
   status: PersonagemStatus | null;
   retrato_url: string | null;
@@ -36,6 +37,7 @@ export interface PersonagemPayload {
   tipo: PersonagemTipo;
   papel: string | null;
   descricao: string;
+  notas_mecanicas: string;
   faccao: string | null;
   status: PersonagemStatus | null;
   retrato_url: string | null;

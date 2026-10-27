@@ -1,0 +1,46 @@
+{
+  "eyebrow": "GM support",
+  "title": "Tools",
+  "intro": "Quick rolls for improvising. Content follows the campaign's setting.",
+  "loading": "Loading…",
+  "gmOnly": "This area is only available to the campaign's game master.",
+  "empty": "Nothing rolled yet.",
+  "roll": "Roll",
+  "rollAgain": "Roll again",
+  "genericBadge": "Generic content",
+  "nome": {
+    "title": "NPC name",
+    "hint": "A name for whoever shows up unannounced.",
+    "noteLabel": "Name"
+  },
+  "rumor": {
+    "title": "Rumor or hook",
+    "hint": "Something to plant in the tavern or the street.",
+    "noteLabel": "Rumor"
+  },
+  "clima": {
+    "title": "Weather and ambience",
+    "hint": "A condition to set the scene.",
+    "noteLabel": "Weather"
+  },
+  "item": {
+    "title": "Item or loot",
+    "hint": "A generic find for the haul.",
+    "noteLabel": "Item"
+  },
+  "errors": {
+    "generic": "Could not roll right now. Try again.",
+    "GERADOR_TIPO_DESCONHECIDO": "Unknown generator."
+  },
+  "send": {
+    "button": "Send to prep",
+    "pick": "Send to the prep notes of:",
+    "done": "Added to session {{numero}} prep notes.",
+    "empty": "No session in preparation. Use \"Prepare next session\" in Sessions.",
+    "goToSessions": "Go to Sessions",
+    "errors": {
+      "generic": "Could not send right now. Try again.",
+      "visible": "That session is already visible to players. Nothing was changed."
+    }
+  }
+}

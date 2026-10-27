@@ -27,6 +27,7 @@ from app.campaign_db import (
 from app.models.arco import Arco
 from app.models.campanha import Campanha
 from app.models.grupo import GrupoPosicao
+from app.models.fio_narrativo import FioNarrativo
 from app.models.links import LocalConexaoLink, LocalNPCLink, SessaoLocalLink, SessaoNpcLink
 from app.models.local import Local
 from app.models.npc import NPC, NPCStatus, PersonagemTipo
@@ -119,6 +120,10 @@ def _validate_fks(content: dict[str, Any]) -> None:
         if link.get("local_id") not in local_ids or link.get("npc_id") not in npc_ids:
             raise PackageError(CONTEUDO_INVALIDO)
     sessao_ids = {r["id"] for r in content.get("sessoes") or [] if r.get("id") is not None}
+    for fio in content.get("fios") or []:
+        sid = fio.get("sessao_origem_id")
+        if sid is not None and sid not in sessao_ids:
+            raise PackageError(CONTEUDO_INVALIDO)
     for link in content.get("sessao_local") or []:
         if link.get("sessao_id") not in sessao_ids or link.get("local_id") not in local_ids:
             raise PackageError(CONTEUDO_INVALIDO)
@@ -307,6 +312,11 @@ def _insert_content(session: Session, content: dict[str, Any]) -> None:
     for row in content.get("sessoes") or []:
         session.add(Sessao(**{k: v for k, v in row.items() if k in Sessao.model_fields}))
     session.flush()
+    for row in content.get("fios") or []:
+        data = {k: v for k, v in row.items() if k in FioNarrativo.model_fields}
+        if isinstance(data.get("criado_em"), str):
+            data["criado_em"] = datetime.fromisoformat(data["criado_em"])
+        session.add(FioNarrativo(**data))
     for row in content.get("sessao_local") or []:
         session.add(SessaoLocalLink(sessao_id=row["sessao_id"], local_id=row["local_id"]))
     for row in content.get("sessao_npc") or []:

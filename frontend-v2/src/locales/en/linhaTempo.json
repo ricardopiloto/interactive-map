@@ -30,6 +30,8 @@
   "chipLocal": "Location",
   "chipPersonagem": "Character",
   "hiddenBadge": "Hidden",
+  "prepNotesBadge": "Has prep notes",
+  "prepSessionsHeading": "Upcoming sessions in prep",
   "yearLabel": "Year {{ano}}",
   "yearMonthLabel": "Year {{ano}}/{{mes}}",
   "sessionMeta": "Session {{numero}}: {{titulo}}",

@@ -42,11 +42,13 @@ export function ArcTimeline({
   eventos,
   arcos,
   filter,
+  gm = false,
 }: {
   sessoes: Sessao[];
   eventos: Evento[];
   arcos: Arco[];
   filter: string;
+  gm?: boolean;
 }) {
   const { t } = useTranslation("linhaTempo");
   const uid = useId();
@@ -302,6 +304,14 @@ export function ArcTimeline({
               <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
                 <strong className="min-w-0 text-sm leading-snug line-clamp-2 sm:text-base">
                   {r.sessao.numero}. {r.sessao.titulo}
+                  {gm && r.sessao.visivel_para_todos === false && (
+                    <small className="ml-2 text-muted-foreground">{t("hiddenBadge")}</small>
+                  )}
+                  {gm &&
+                    r.sessao.visivel_para_todos === false &&
+                    Boolean(r.sessao.notas_preparo?.trim()) && (
+                      <small className="ml-2 text-muted-foreground">{t("prepNotesBadge")}</small>
+                    )}
                 </strong>
                 <small className="shrink-0 truncate text-muted-foreground sm:max-w-[40%] sm:text-right">
                   {arc?.titulo ?? t("arcos.semArco")}

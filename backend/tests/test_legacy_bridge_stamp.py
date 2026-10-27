@@ -86,6 +86,7 @@ def test_legacy_bridge_stamp_and_new_skips_bridge(tmp_path, monkeypatch) -> None
         assert len(npcs) == n_npc
         assert {loc.id for loc in locs} == {1, 2}
         assert {n.id for n in npcs} == {1, 2}
+        assert all(n.notas_mecanicas == "" for n in npcs)
 
     eng = get_campaign_engine(uuid_key, camp.caminho)
     with eng.connect() as conn:

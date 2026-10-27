@@ -26,13 +26,19 @@ def test_sessao_tables_exist_after_schema(client) -> None:
 def test_sessao_numero_unique_enforced(client, db_session: Session) -> None:
     _ = client
     db_session.execute(
-        text("INSERT INTO sessao (numero, titulo, resumo, visivel_para_todos) VALUES (1, 'A', '', 1)")
+        text(
+            "INSERT INTO sessao (numero, titulo, resumo, notas_preparo, visivel_para_todos) "
+            "VALUES (1, 'A', '', '', 1)"
+        )
     )
     db_session.commit()
     raised = False
     try:
         db_session.execute(
-            text("INSERT INTO sessao (numero, titulo, resumo, visivel_para_todos) VALUES (1, 'B', '', 1)")
+            text(
+                "INSERT INTO sessao (numero, titulo, resumo, notas_preparo, visivel_para_todos) "
+                "VALUES (1, 'B', '', '', 1)"
+            )
         )
         db_session.commit()
     except Exception:

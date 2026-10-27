@@ -5,8 +5,11 @@ from app.routers.admin import (
     arcos,
     descoberta,
     eventos,
+    fios,
     export,
+    geradores,
     grupo,
+    ia,
     itens,
     locais,
     map_scale,
@@ -25,6 +28,7 @@ router.include_router(npcs.router, tags=["admin-npcs"])
 router.include_router(personagens.router, tags=["admin-personagens"])
 router.include_router(vinculos.router, tags=["admin-vinculos"])
 router.include_router(arcos.router, tags=["admin-arcos"])
+router.include_router(fios.router, tags=["admin-fios"])
 router.include_router(grupo.router, tags=["admin-grupo"])
 router.include_router(uploads.router, tags=["admin-uploads"])
 router.include_router(waypoints.router, tags=["admin-waypoints"])
@@ -35,6 +39,8 @@ router.include_router(sessoes.router, tags=["admin-sessoes"])
 router.include_router(eventos.router, tags=["admin-eventos"])
 router.include_router(itens.router, tags=["admin-itens"])
 router.include_router(descoberta.router, tags=["admin-descoberta"])
+router.include_router(geradores.router, tags=["admin-geradores"])
+router.include_router(ia.router, tags=["admin-ia"])
 
 
 @router.get("/session")

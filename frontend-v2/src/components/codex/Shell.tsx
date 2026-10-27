@@ -5,7 +5,7 @@ import {
   Route as RouteIcon,
   ScrollText,
   Hourglass,
-  Package,
+  Dices,
   PenLine,
   Sun,
   Moon,
@@ -20,13 +20,15 @@ import { campaignHref } from "@/lib/navigation";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
 
+// GM-only lens: gated on `canEdit` (real GM permission), never on the `enabled` edit toggle.
+const gmLens = { path: "ferramentas", label: "Ferramentas", icon: Dices } as const;
+
 const lenses = [
   { path: "mapa", label: "Mapa", icon: MapIcon },
   { path: "relacoes", label: "Relações", icon: Network },
   { path: "rota", label: "Rota", icon: RouteIcon },
   { path: "sessoes", label: "Sessões", icon: ScrollText },
   { path: "linha-do-tempo", label: "Cronologia", icon: Hourglass },
-  { path: "itens", label: "Itens", icon: Package },
 ] as const;
 
 export function TopBar({ campaign }: { campaign: CampaignConfig }) {
@@ -43,7 +45,7 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
   ];
 
   const nav = (mobile: boolean) =>
-    lenses.map(({ path, icon: Icon }) => {
+    (canEdit ? [...lenses, gmLens] : lenses).map(({ path, icon: Icon }) => {
       const to = `${base}/${path}`;
       const active = location.pathname === to;
       const labels = {
@@ -52,7 +54,7 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
         rota: "route",
         sessoes: "sessions",
         "linha-do-tempo": "timeline",
-        itens: "items",
+        ferramentas: "tools",
       } as const;
       return (
         <Link

@@ -2,7 +2,7 @@
 
 Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens** e **Modo GM** na mesma interface.
 
-**Versão:** 1.0.2 — [`CHANGELOG.md`](CHANGELOG.md)
+**Versão:** 1.1.0 — [`CHANGELOG.md`](CHANGELOG.md)
 **Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/1/wfrp` e `/c/2/wod`
 
 ---

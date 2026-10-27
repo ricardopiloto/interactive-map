@@ -8,6 +8,7 @@ import ptAdmin from "@/locales/pt-BR/admin.json";
 import ptSessoes from "@/locales/pt-BR/sessoes.json";
 import ptLinhaTempo from "@/locales/pt-BR/linhaTempo.json";
 import ptItens from "@/locales/pt-BR/itens.json";
+import ptFerramentas from "@/locales/pt-BR/ferramentas.json";
 import enComum from "@/locales/en/comum.json";
 import enMapa from "@/locales/en/mapa.json";
 import enRelacoes from "@/locales/en/relacoes.json";
@@ -15,6 +16,7 @@ import enAdmin from "@/locales/en/admin.json";
 import enSessoes from "@/locales/en/sessoes.json";
 import enLinhaTempo from "@/locales/en/linhaTempo.json";
 import enItens from "@/locales/en/itens.json";
+import enFerramentas from "@/locales/en/ferramentas.json";
 
 const detector = new LanguageDetector();
 detector.addDetector({
@@ -35,6 +37,7 @@ void i18n
         sessoes: ptSessoes,
         linhaTempo: ptLinhaTempo,
         itens: ptItens,
+        ferramentas: ptFerramentas,
       },
       en: {
         comum: enComum,
@@ -44,9 +47,10 @@ void i18n
         sessoes: enSessoes,
         linhaTempo: enLinhaTempo,
         itens: enItens,
+        ferramentas: enFerramentas,
       },
     },
-    ns: ["comum", "mapa", "relacoes", "admin", "sessoes", "linhaTempo", "itens"],
+    ns: ["comum", "mapa", "relacoes", "admin", "sessoes", "linhaTempo", "itens", "ferramentas"],
     defaultNS: "comum",
     supportedLngs: ["pt-BR", "en"],
     fallbackLng: "pt-BR",

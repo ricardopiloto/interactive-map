@@ -49,7 +49,8 @@ export function MapPage() {
   const { t } = useTranslation("mapa");
   const { t: tc } = useTranslation("comum");
   const { t: ta } = useTranslation("admin");
-  const { enabled: editing } = useEditMode();
+  const { enabled: editing, isDono } = useEditMode();
+  const iaAtiva = Boolean(config?.modulos_ativos.includes("ia_arcos"));
   const search = useSearch();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -143,6 +144,7 @@ export function MapPage() {
         faccao: npcDraft.faccao.trim() || null,
         status: npcDraft.status,
         retrato_url: npcDraft.retrato_url,
+        visivel_para_todos: npcDraft.visivel_para_todos,
       };
       const saved = npcDraft.isNew
         ? await mapApi.createNpc(slug, payload)
@@ -433,6 +435,9 @@ export function MapPage() {
       />
       {localDraft && placement === "none" && data && (
         <LocalEditor
+          slug={slug}
+          iaAtiva={iaAtiva}
+          isDono={isDono}
           draft={localDraft}
           locais={locais}
           npcs={npcs}
@@ -454,6 +459,9 @@ export function MapPage() {
       )}
       {npcDraft && (
         <NpcEditor
+          slug={slug}
+          iaAtiva={iaAtiva}
+          isDono={isDono}
           draft={npcDraft}
           locais={locais}
           busy={busy}

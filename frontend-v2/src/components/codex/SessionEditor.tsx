@@ -1,3 +1,8 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
+import { FiosReview } from "@/components/codex/FiosReview";
+import type { Sessao } from "@/api/sessoes";
+import { IaAssistente } from "@/components/codex/IaAssistente";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +26,12 @@ export interface SessaoDraft {
   titulo: string;
   data_rotulo: string;
   resumo: string;
+  notas_preparo: string;
   visivel_para_todos: boolean;
   local_ids: number[];
   personagem_ids: number[];
+  /** When true, focus the prep-notes field (prepare-next-session flow). */
+  focusNotasPreparo?: boolean;
 }
 
 function CheckList({
@@ -64,6 +72,10 @@ function CheckList({
 
 export function SessionEditor({
   draft,
+  slug,
+  sessoes,
+  onFiosAdded,
+  isDono,
   locais,
   personagens,
   iaAtiva,
@@ -77,6 +89,10 @@ export function SessionEditor({
   onCancel,
 }: {
   draft: SessaoDraft;
+  slug: string;
+  sessoes?: Pick<Sessao, "id" | "numero">[];
+  onFiosAdded?: () => void;
+  isDono: boolean;
   locais: CatalogoItem[];
   personagens: CatalogoItem[];
   iaAtiva: boolean;
@@ -91,6 +107,17 @@ export function SessionEditor({
 }) {
   const { t } = useTranslation("sessoes");
   const { t: tc } = useTranslation("comum");
+  const notasPreparoRef = useRef<HTMLTextAreaElement>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (!draft.focusNotasPreparo) return;
+    const node = notasPreparoRef.current;
+    if (!node) return;
+    node.focus();
+    const length = node.value.length;
+    node.setSelectionRange(length, length);
+  }, [draft.focusNotasPreparo]);
 
   function toggle(key: "local_ids" | "personagem_ids", id: number) {
     const current = draft[key];
@@ -101,7 +128,14 @@ export function SessionEditor({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent
+        className="max-h-[85vh] overflow-y-auto sm:max-w-lg"
+        onOpenAutoFocus={(event) => {
+          if (!draft.focusNotasPreparo) return;
+          event.preventDefault();
+          notasPreparoRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-medium">
             {draft.isNew ? t("new") : t("edit")}
@@ -144,13 +178,57 @@ export function SessionEditor({
               onChange={(event) => onChange({ data_rotulo: event.target.value })}
             />
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{t("fieldResumo")}</span>
-            <Textarea
-              value={draft.resumo}
-              onChange={(event) => onChange({ resumo: event.target.value })}
+          <MarkdownField
+            label={t("fieldNotasPreparo")}
+            labelClassName={fieldLabel}
+            combat
+            ref={notasPreparoRef}
+            value={draft.notas_preparo}
+            onValueChange={(texto) => onChange({ notas_preparo: texto })}
+          />
+          {iaAtiva && isDono && !draft.visivel_para_todos && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className={fieldLabel}>{tc("iaAssistente.rascunho")}</p>
+                <IaAssistente
+                  slug={slug}
+                  tipo="rascunho_sessao"
+                  alvoId={draft.id ?? null}
+                  textoAtual={draft.notas_preparo}
+                  campoPublico={false}
+                  aplicarDiretoSeVazio
+                  onInserir={(texto) =>
+                    onChange({
+                      notas_preparo: [draft.notas_preparo, texto].filter(Boolean).join("\n\n"),
+                    })
+                  }
+                  onSubstituir={(texto) => onChange({ notas_preparo: texto })}
+                />
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => setReviewOpen(true)}>
+                {tc("iaAssistente.fiosNarrativos")}
+              </Button>
+            </div>
+          )}
+          <MarkdownField
+            label={t("fieldResumo")}
+            labelClassName={fieldLabel}
+            value={draft.resumo}
+            onValueChange={(texto) => onChange({ resumo: texto })}
+          />
+          {iaAtiva && isDono && (
+            <IaAssistente
+              slug={slug}
+              tipo="resumo_sessao"
+              alvoId={draft.id ?? null}
+              textoAtual={draft.resumo}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ resumo: [draft.resumo, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ resumo: texto })}
             />
-          </label>
+          )}
           {iaAtiva && (
             <div className="space-y-1">
               <Button
@@ -200,6 +278,15 @@ export function SessionEditor({
           </DialogFooter>
         </form>
       </DialogContent>
+      {reviewOpen && (
+        <FiosReview
+          slug={slug}
+          sessaoId={draft.id ?? null}
+          sessoes={sessoes ?? []}
+          onClose={() => setReviewOpen(false)}
+          onAdded={() => onFiosAdded?.()}
+        />
+      )}
     </Dialog>
   );
 }

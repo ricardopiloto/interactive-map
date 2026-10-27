@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +23,11 @@ async def lifespan(_app: FastAPI):
     reconcile_campaign_deletions()
     yield
 
+
+assistant_logger = logging.getLogger("app")
+assistant_logger.setLevel(logging.INFO)
+if not assistant_logger.handlers:
+    assistant_logger.addHandler(logging.StreamHandler())
 
 app = FastAPI(
     title=settings.app_name,

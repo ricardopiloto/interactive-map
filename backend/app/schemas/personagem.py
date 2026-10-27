@@ -10,6 +10,7 @@ class PersonagemCreate(BaseModel):
     tipo: PersonagemTipo = PersonagemTipo.npc
     papel: Optional[str] = Field(default=None, max_length=200)
     descricao: str = Field(default="", max_length=10000)
+    notas_mecanicas: str = Field(default="", max_length=10000)
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = NPCStatus.desconhecido
     retrato_url: Optional[str] = Field(default=None, max_length=500)
@@ -22,6 +23,7 @@ class PersonagemUpdate(BaseModel):
     tipo: Optional[PersonagemTipo] = None
     papel: Optional[str] = Field(default=None, max_length=200)
     descricao: Optional[str] = Field(default=None, max_length=10000)
+    notas_mecanicas: Optional[str] = Field(default=None, max_length=10000)
     faccao: Optional[str] = Field(default=None, max_length=200)
     status: Optional[NPCStatus] = None
     retrato_url: Optional[str] = Field(default=None, max_length=500)
@@ -37,9 +39,11 @@ class PersonagemRead(BaseModel):
     tipo: PersonagemTipo
     papel: Optional[str]
     descricao: str
+    notas_mecanicas: str = ""
     faccao: Optional[str]
     status: Optional[NPCStatus]
     retrato_url: Optional[str]
     visivel_para_todos: bool = True
     extensoes_mecanica: dict[str, Any] = Field(default_factory=dict)
     local_ids: list[int] = Field(default_factory=list)
+

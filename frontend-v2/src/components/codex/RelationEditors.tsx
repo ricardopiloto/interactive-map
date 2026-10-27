@@ -1,3 +1,5 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
+import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,7 @@ export interface PersonagemDraft {
   papel: string;
   faccao: string;
   descricao: string;
+  notas_mecanicas: string;
   status: PersonagemStatus;
   retrato_url: string | null;
   visivel_para_todos: boolean;
@@ -60,6 +63,9 @@ const STATUSES: PersonagemStatus[] = ["vivo", "morto", "desaparecido", "desconhe
 
 export function PersonagemEditor({
   draft,
+  slug,
+  iaAtiva,
+  isDono,
   modules,
   busy,
   onChange,
@@ -68,6 +74,9 @@ export function PersonagemEditor({
   onCancel,
 }: {
   draft: PersonagemDraft;
+  slug: string;
+  iaAtiva: boolean;
+  isDono: boolean;
   modules: string[];
   busy: boolean;
   onChange: (patch: Partial<PersonagemDraft>) => void;
@@ -141,13 +150,32 @@ export function PersonagemEditor({
               ))}
             </select>
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{tc("form.descricao")}</span>
-            <Textarea
-              value={draft.descricao}
-              onChange={(event) => onChange({ descricao: event.target.value })}
+          <MarkdownField
+            label={tc("form.descricao")}
+            labelClassName={fieldLabel}
+            value={draft.descricao}
+            onValueChange={(texto) => onChange({ descricao: texto })}
+          />
+          {iaAtiva && isDono && (
+            <IaAssistente
+              slug={slug}
+              tipo="descricao_personagem"
+              alvoId={draft.id ?? null}
+              textoAtual={draft.descricao}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ descricao: [draft.descricao, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ descricao: texto })}
             />
-          </label>
+          )}
+          <MarkdownField
+            label={t("personagemForm.notasMecanicas")}
+            labelClassName={fieldLabel}
+            value={draft.notas_mecanicas}
+            placeholder={t("personagemForm.notasMecanicas")}
+            onValueChange={(texto) => onChange({ notas_mecanicas: texto })}
+          />
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("personagemForm.retrato")}</span>
             {draft.retrato_url && (

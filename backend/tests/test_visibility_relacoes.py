@@ -69,3 +69,40 @@ def test_public_relations_redact_unknown_direction_content(client_anon, db_sessi
     assert row["qualificador_ba"] == "Companheiro conhecido"
     assert "conhecido_ab" not in row
     assert "conhecido_ba" not in row
+
+
+def test_mechanical_notes_are_redacted_for_npcs_and_pjs(client_anon, client, db_session) -> None:
+    for tipo in (PersonagemTipo.npc, PersonagemTipo.pj):
+        note = f"private mechanics {tipo.value}"
+        person = seed_personagem(
+            db_session, nome=f"Visible {tipo.value}", tipo=tipo, notas_mecanicas=note
+        )
+        public_list = client_anon.get(api("/api/personagens"))
+        assert public_list.status_code == 200
+        listed = next(row for row in public_list.json() if row["id"] == person.id)
+        assert listed["notas_mecanicas"] == ""
+        assert note not in public_list.text
+
+        public_detail = client_anon.get(api(f"/api/personagens/{person.id}"))
+        assert public_detail.status_code == 200
+        assert public_detail.json()["notas_mecanicas"] == ""
+        assert note not in public_detail.text
+
+        admin_list = client.get(api("/api/admin/personagens"))
+        assert admin_list.status_code == 200
+        assert next(row for row in admin_list.json() if row["id"] == person.id)["notas_mecanicas"] == note
+
+
+def test_admin_can_create_and_update_mechanical_notes(client) -> None:
+    created = client.post(
+        api("/api/admin/personagens"),
+        json={"nome": "Mechanics", "tipo": "npc", "notas_mecanicas": "PV 12"},
+    )
+    assert created.status_code == 201
+    assert created.json()["notas_mecanicas"] == "PV 12"
+    person_id = created.json()["id"]
+    updated = client.put(
+        api(f"/api/admin/personagens/{person_id}"), json={"notas_mecanicas": "PV 9"}
+    )
+    assert updated.status_code == 200
+    assert updated.json()["notas_mecanicas"] == "PV 9"

@@ -9,11 +9,13 @@ import httpx
 from app.config import Settings, settings
 from app.deps.auth import MembroContext
 from app.models.campanha import Campanha
+from app.models.sessao import Sessao
 from app.models.usuario import Membro, Usuario
 from app.services.ia_provider import (
     IA_CAMPANHAS_MISTURADAS,
     IA_CREDENCIAL_AUSENTE,
     IA_ERRO_PROVEDOR,
+    IA_RESPOSTA_CORTADA,
     IA_MODULO_DESABILITADO,
     IA_NAO_AUTORIZADO,
     IA_OK,
@@ -21,6 +23,8 @@ from app.services.ia_provider import (
     MODULO_IA,
     ItemContextoIa,
     completar,
+    item_contexto_entidade,
+    montar_contexto,
     modulo_ia_ativo,
 )
 
@@ -334,3 +338,116 @@ def test_fluxo_completo_e_modulo_desabilitado(monkeypatch) -> None:
     )
     assert desligado.codigo == IA_MODULO_DESABILITADO
     assert desligado.ok is False
+
+
+def test_ocultos_so_da_campanha_com_opcao_explicita(monkeypatch) -> None:
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+    corpos: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        corpos.append(json.loads(request.content.decode()))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    registros = (_item(1, 1, "público"), _item(1, 2, "segredo", visivel=False))
+    for incluir_ocultos in (False, True):
+        resultado = completar(
+            ctx=_ctx(campanha), campanha_id=1, modulos_ativos=campanha.modulos_ativos,
+            registros=registros, instrucao="instrução", incluir_ocultos=incluir_ocultos,
+            client=_client(handler),
+        )
+        assert resultado.ok is True
+    assert [item["texto"] for item in json.loads(corpos[0]["messages"][1]["content"])] == ["público"]
+    assert [item["texto"] for item in json.loads(corpos[1]["messages"][1]["content"])] == ["público", "segredo"]
+    assert montar_contexto(1, registros) == json.loads(corpos[0]["messages"][1]["content"])
+    assert montar_contexto(1, registros, incluir_ocultos=True) == json.loads(corpos[1]["messages"][1]["content"])
+    assert all("oculto" not in item for item in montar_contexto(1, registros))
+    assert "oculto" not in montar_contexto(1, registros, incluir_ocultos=True)[0]
+    assert montar_contexto(1, registros, incluir_ocultos=True)[1]["oculto"] is True
+
+    recusado = completar(
+        ctx=_ctx(campanha), campanha_id=1, modulos_ativos=campanha.modulos_ativos,
+        registros=registros + (_item(2, 3, "outra campanha", visivel=False),),
+        instrucao="instrução", incluir_ocultos=True, client=_client(handler),
+    )
+    assert recusado.codigo == IA_CAMPANHAS_MISTURADAS
+    assert len(corpos) == 2
+
+
+def test_ocultos_sem_dono_recusados_sem_rede(monkeypatch) -> None:
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        raise AssertionError("rede não deveria ser chamada")
+
+    for ctx in (None, _ctx(campanha, papel="jogador"), _ctx(_campanha(2, ia=True))):
+        resultado = completar(
+            ctx=ctx, campanha_id=1, modulos_ativos=campanha.modulos_ativos,
+            registros=(_item(1, 1, "segredo", visivel=False),),
+            instrucao="instrução", incluir_ocultos=True, client=_client(handler),
+        )
+        assert resultado.codigo == IA_NAO_AUTORIZADO
+
+
+def test_max_tokens_opcional_no_payload(monkeypatch) -> None:
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+    corpos: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        corpos.append(json.loads(request.content.decode()))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    for options in ({}, {"max_tokens": 512}):
+        completar(
+            ctx=_ctx(campanha), campanha_id=1, modulos_ativos=campanha.modulos_ativos,
+            registros=(_item(1, 1, "público"),), instrucao="instrução",
+            client=_client(handler), **options,
+        )
+    assert "max_tokens" not in corpos[0]
+    assert corpos[1]["max_tokens"] == 512
+
+
+def test_helper_le_visibilidade_da_entidade() -> None:
+    sessao = Sessao(id=3, numero=1, titulo="Segredo", visivel_para_todos=False)
+    item = item_contexto_entidade(1, "sessao", sessao, "Segredo")
+    assert item.visivel_para_todos is False
+    assert montar_contexto(1, [item]) == []
+
+
+def test_resposta_cortada_tem_codigo_proprio(monkeypatch) -> None:
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+    resultado = completar(
+        ctx=_ctx(campanha), campanha_id=1,
+        modulos_ativos=campanha.modulos_ativos,
+        registros=(_item(1, 1, "texto"),), instrucao="instrução",
+        client=_client(lambda _request: httpx.Response(
+            200, json={"choices": [{"message": {"content": ""}, "finish_reason": "length"}]},
+        )),
+    )
+    assert resultado.codigo == IA_RESPOSTA_CORTADA
+
+
+def test_timeout_opcional_preserva_padrao(monkeypatch) -> None:
+    from app.services import ia_provider
+
+    _habilitar_chave(monkeypatch)
+    campanha = _campanha(1, ia=True)
+    vistos = []
+
+    def post(_payload, _chave, _client, *, timeout=None):
+        vistos.append(timeout)
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    monkeypatch.setattr(ia_provider, "_post", post)
+    for timeout in (None, 120.0):
+        completar(
+            ctx=_ctx(campanha), campanha_id=1,
+            modulos_ativos=campanha.modulos_ativos,
+            registros=(_item(1, 1, "texto"),), instrucao="instrução",
+            timeout=timeout,
+        )
+    assert vistos == [None, 120.0]
+    assert Settings(_env_file=None).ia_assistente_timeout_seconds == 120.0

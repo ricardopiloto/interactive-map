@@ -67,6 +67,8 @@ def _identity_migrator(
 # Older recognized revisions → migrator to next (chain until head)
 SCHEMA_MIGRATORS: dict[str, ContentMigrator] = {
     "000_pre": _identity_migrator,
+    "010_sessao_notas_preparo": _identity_migrator,
+    "011_personagem_notas_mecanicas": _identity_migrator,
 }
 
 

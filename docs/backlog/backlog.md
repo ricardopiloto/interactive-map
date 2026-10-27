@@ -502,17 +502,155 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ---
 
+## [BKLG-041] Produto/Arquitetura — Ponte futura com FoundryVTT (módulo ou exportação/importação)
+
+**Status:** Detalhado em 2026-10-18 — pronto pra `/openspec-propose` como decisão arquitetural (ADR), sem código.
+
+**Registrado em:** 2026-10-18, numa conversa sobre os gaps do Campaign Codex como ferramenta de game-prep.
+
+**Contexto:** o usuário confirmou que, no futuro, tudo que o Campaign Codex produzir precisa ser enviável pro FoundryVTT, via módulo ou por exportação/importação. O FoundryVTT modela `Actor`/`Item` com schema específico por sistema de jogo (ex.: `wfrp4e`, `vtm5e`) — bem diferente do modelo hoje narrativo e agnóstico de sistema do Campaign Codex (NPC = retrato + status + facção + papel, sem ficha/stat block).
+
+**Decisão provisória (confirmada em chat, 2026-10-18):** não tentar resolver "mecânica de sistema + ponte Foundry" ao mesmo tempo. Evitar, por ora, desenhar qualquer schema de ficha/stat block pra NPC — se adicionarmos mecânica genérica agora, corremos o risco dela não bater com o schema que o Foundry espera por sistema, e refazer o trabalho quando a ponte for desenhada de verdade. Features de game-prep novas devem priorizar as que são **system-agnostic** (não dependem de stat block), como [BKLG-042]/[BKLG-043]/[BKLG-044] abaixo.
+
+**Escopo confirmado em chat (2026-10-18): apenas decisão documentada (ADR), sem implementação.** O `openspec propose` deste item não cria endpoint, módulo nem exportador — produz um documento de arquitetura que formaliza a direção, pra servir de guia pros itens que dependem dele ([BKLG-042], [BKLG-043]) e pra não comprometer nenhum schema de ficha antes da hora.
+
+**Perguntas que o ADR precisa responder:**
+- Módulo Foundry ao vivo (lê a API do Campaign Codex e cria/atualiza `JournalEntry`/`Actor`/`Scene` em tempo real) vs. exportação/importação pontual (gera um pacote/compendium que o mestre importa manualmente)? Trade-off: módulo ao vivo exige manter uma integração contínua com a API do Foundry (que muda por versão); exportação pontual é mais simples de manter mas não sincroniza depois do import.
+- Qual sistema de jogo suportar primeiro — WFRP4e e/ou vtm5e, já que são as duas campanhas em produção (ver [`docs/runbook-corte-campaign-codex.md`](../runbook-corte-campaign-codex.md))?
+- Como mapear as entidades hoje sem mecânica (`NPC`, `Local`) pra `Actor`/`JournalEntry` vazios de regra, que o mestre completaria dentro do próprio Foundry — ou seja, o Campaign Codex exporta a casca narrativa, nunca a ficha.
+
+**Relacionado:** [BKLG-013] (módulos por sistema, "Depois") e [BKLG-029] (sistema de RPG agnóstico) tocam a mesma tensão de modelagem por sistema.
+
+---
+
+## [BKLG-042] Produto — NPCs/criaturas sem dados mecânicos (ficha/stat block)
+
+**Status:** Implementado — change [`personagem-notas-mecanicas`](../../openspec/changes/archive/2026-10-20-personagem-notas-mecanicas/) (campo `notas_mecanicas` GM-only em PJ/NPC; painel de leitura + filtragem pública).
+
+**Registrado em:** 2026-10-18.
+
+**Gap:** hoje um `NPC` ([`backend/app/models/npc.py`](../../backend/app/models/npc.py)) é retrato + status + facção + papel narrativo — não existe ficha, perícias, iniciativa ou qualquer dado mecânico. Um mestre preparando sessão pensa em "esse NPC luta como quê"; o Campaign Codex não responde essa pergunta.
+
+**Decisão confirmada em chat (2026-10-18): campo livre de notas mecânicas, não stat block estruturado.** Mantém o agnosticismo de sistema (não compromete com WFRP4e nem vtm5e) e não briga com a decisão do [BKLG-041] — é texto, não schema de ficha.
+
+**Achado de código relevante pra essa decisão:** o `NPC` já tem um campo `extensoes_mecanica: dict[str, Any]` (JSON) — mas esse campo pertence a um mecanismo diferente e mais restrito: é gated por `Campanha.modulos_ativos` e validado por [`backend/app/services/mecanica.py`](../../backend/app/services/mecanica.py) (`sanitize_extensoes`/`filter_extensoes`), que hoje só reconhece o módulo `fadiga` — uma chave desconhecida é rejeitada (`MODULO_MECANICA_DESCONHECIDO`). Ou seja, não serve pra "nota livre" sem fricção: cada campanha precisaria ativar um módulo novo pra isso funcionar, o que não é o espírito de um campo sempre disponível. **Recomendação:** criar um campo novo e separado (`notas_mecanicas: str`, Markdown, `max_length` similar a `descricao`), fora do mecanismo de módulos — não reaproveitar `extensoes_mecanica`.
+
+**Visibilidade:** sempre GM-only, nunca exposto a jogadores, independente de `visivel_para_todos` (que controla a visibilidade do NPC inteiro, não de um campo específico). O `NPC` hoje usa um único schema `PersonagemRead` pra admin e público, filtrando por parâmetro (`personagem_to_read(npc, for_player=...)` em [`backend/app/routers/public/personagens.py`](../../backend/app/routers/public/personagens.py)) — mesmo padrão que já filtra `local_ids` condicionalmente. `notas_mecanicas` entraria no `PersonagemRead`, mas seria forçado a `None` quando `for_player=True`, do mesmo jeito.
+
+**Escopo (corrigido pela validação arquitetural de 2026-10-18 — produção roda só `frontend-v2`, `frontend/` e `frontend-next/` não são deployados):** campo novo + migração Alembic (`backend/alembic_campaign/versions/`) + textarea no formulário de edição em [`frontend-v2/src/components/codex/RelationEditors.tsx`](../../frontend-v2/src/components/codex/RelationEditors.tsx) + exibição no painel de leitura em [`frontend-v2/src/routes/relacoes.tsx`](../../frontend-v2/src/routes/relacoes.tsx) (ver decisão abaixo). Sem endpoint novo — reaproveita o CRUD de `NPC` que já existe.
+
+**Decisões fechadas em chat (2026-10-18, pós-revisão de PO e validação arquitetural):**
+- **Vale pros dois tipos, PJ e NPC.** O campo entra no `Personagem` unificado (`tipo: pj|npc`), não só em `npc` — mestre pode anotar mecânica secreta tanto de NPC quanto de PJ.
+- **Precisa aparecer também no painel de leitura rápida, não só na edição.** `frontend-v2/src/routes/relacoes.tsx:589-614` já tem o precedente exato: esse painel usa um gate `isGm` (ex.: `{isGm && person.visivel_para_todos === false && (...)}` logo depois da linha de `fadiga`) pra mostrar informação só-mestre. `notas_mecanicas` entra no mesmo padrão — mesmo componente, mesmo gate, sem padrão novo.
+- **Critério de aceite obrigatório:** teste automatizado provando que `notas_mecanicas` nunca é serializado quando `for_player=True` (seguir o padrão de `backend/tests/test_visibility_relacoes.py`), e teste equivalente garantindo que o painel de leitura não renderiza o campo quando `isGm` é falso.
+- **Fora de escopo por ora:** indicação visual de "quais NPCs já têm nota preenchida" na lista/grafo — fica como melhoria futura, não bloqueia esta entrega.
+
+---
+
+## [BKLG-043] Produto — Sem apoio a encontro/combate (lista de encontros, loot, PNGs genéricos)
+
+**Status:** Gap identificado, sem TR. Mesma dependência de [BKLG-041]/[BKLG-042] — combate pressupõe stat block. Não detalhado em 2026-10-18 (fora do escopo pedido pelo usuário nessa rodada).
+
+**Registrado em:** 2026-10-18.
+
+**Gap:** não há lista de encontros planejados, tabela de loot, nem geração de PNGs genéricos — ferramentas clássicas de prep de combate que faltam totalmente hoje.
+
+---
+
+## [BKLG-044] Produto — Linha do Tempo sem "agenda da próxima sessão" (cenas planejadas, ganchos, segredos a revelar)
+
+**Status:** Implementado em 2026-10-20 — [change `sessao-notas-preparo`](../../openspec/changes/archive/2026-10-20-sessao-notas-preparo/).
+
+**Registrado em:** 2026-10-18.
+
+**Gap:** a Linha do Tempo (BKLG-039, [`specs`](../../specs/)) só registra o que **já aconteceu** — cronológica, por arcos, por descoberta. Não existe um espaço de preparação voltado pra **próxima** sessão: lista de cenas previstas, ganchos a puxar, segredos a revelar. É puramente narrativo (texto/Markdown, sem mecânica), então não depende da decisão de [BKLG-041].
+
+**Decisão confirmada em chat (2026-10-18): campo Markdown único, não lista estruturada.** Espelha exatamente o campo `resumo` que já existe em `Sessao` ([`backend/app/models/sessao.py`](../../backend/app/models/sessao.py)) — mas pro **antes** da sessão em vez do depois. Sem entidade nova, sem distinguir cena/gancho/segredo como campos separados; o mestre escreve como quiser num textarea Markdown.
+
+**Shape confirmado por precedente de código:** `Sessao` já separa schema público (`SessaoPublic`) de schema admin (`SessaoAdmin(SessaoPublic)`, em [`backend/app/schemas/sessao.py`](../../backend/app/schemas/sessao.py)) — `SessaoAdmin` hoje adiciona `visivel_para_todos` e `alertas_inconsistencia` por cima do público. `notas_preparo: str` (novo campo em `Sessao`, Markdown, `max_length=50000` igual a `resumo`) entra em `SessaoAdmin` e **nunca** em `SessaoPublic` — ou seja, sempre GM-only por construção do schema, não por um toggle de visibilidade por registro. Não depende de `visivel_para_todos`.
+
+**Related, mas não é a mesma coisa:** [BKLG-012] ("Missões, fios abertos e relógios do mestre", roadmap "Próximo") propõe uma entidade nova de missão/relógio de progresso — mais estruturada e com estado próprio. Este item (BKLG-044) é mais simples: uma lista de prep de sessão (cenas/ganchos/segredos), sem virar entidade de "missão" com ciclo de vida. Pode ser um primeiro passo mais barato antes — ou em vez — de BKLG-012, dependendo do apetite do mestre.
+
+**Escopo:** campo novo em `Sessao` + migração Alembic + schema (`SessaoCreate`/`SessaoUpdate`/`SessaoAdmin`) + textarea no form de edição de sessão em [`frontend-v2/src/components/codex/SessionEditor.tsx`](../../frontend-v2/src/components/codex/SessionEditor.tsx) + indicação na Linha do Tempo (ver decisão abaixo). Sem endpoint novo — reaproveita o CRUD de `Sessao` que já existe, incluindo `GET /sessoes/proximo-numero` (`backend/app/routers/admin/sessoes.py:41`).
+
+**Decisões fechadas em chat (2026-10-18, pós-revisão de PO e validação arquitetural):**
+- **Resolvido o gap estrutural ("próxima sessão" não existe como registro ainda) sem criar estado novo.** O mestre simplesmente cria a próxima `Sessao` mais cedo — reserva o `numero` (via `proximo-numero`), escreve `notas_preparo`, deixa `resumo` vazio. Não precisa de um campo "rascunho/planejada" novo.
+- **Reaproveitar `visivel_para_todos` (já existente em `Sessao`) como o controle de "ainda não pronta para jogadores", em vez de qualquer estado novo — ideia do usuário, confirmada como a solução mais simples.** O mestre cria a sessão com `visivel_para_todos=False` enquanto está só em preparo (jogadores não veem a sessão listada); quando ela é jogada e o mestre preenche o `resumo`, ele muda pra `True` pra revelar. Isso é zero trabalho de schema — o campo já existe, já é opcional em `SessaoCreate`/`SessaoUpdate`, só precisa que a UI deixe desmarcado por padrão no fluxo de "criar próxima sessão". **`notas_preparo` continua sempre GM-only por construção do schema (`SessaoAdmin`, nunca `SessaoPublic`), independente do valor de `visivel_para_todos`** — os dois mecanismos resolvem problemas diferentes: um esconde a sessão inteira dos jogadores, o outro esconde a nota de preparo até de um jogador que visse a sessão.
+- **Ponto de entrada na Linha do Tempo confirmado como requisito**, não só o form de edição — pelo menos um indicador de "a próxima sessão (oculta) tem notas de preparo".
+- **Oportunidade de plano-vs-realizado mantida:** `notas_preparo` não é apagado quando `resumo` é preenchido — os dois ficam lado a lado pra retrospectiva do mestre.
+- **Critério de aceite obrigatório:** teste automatizado provando que `notas_preparo` nunca aparece em `SessaoPublic`, e teste de borda pro conflito de `numero` duplicado ao pré-criar a próxima sessão (ver validação fullstack).
+- **Sinergia com [BKLG-045]:** um rumor/gancho sorteado lá poderia ir com um clique pra este campo — vale sequenciar os dois juntos em vez de tratá-los como 100% independentes.
+
+---
+
+## [BKLG-045] Produto — Sem geradores/tabelas de apoio (nomes, clima, rumores, itens aleatórios)
+
+**Status:** Implementado em 2026-10-20 — [change `geradores-apoio-mestre`](../../openspec/changes/archive/2026-10-20-geradores-apoio-mestre/) (aba Ferramentas GM-only, 4 geradores, tabelas fixas por ambientação `wfrp4e`/`wod` com fallback genérico, pt-BR/en). Inclui o atalho «Enviar para preparo» (resultado acrescentado às `notas_preparo` de uma sessão oculta — [BKLG-044]). Verificado no navegador (desktop e mobile) em campanhas WFRP e WoD.
+
+**Registrado em:** 2026-10-18.
+
+**Gap:** ferramentas clássicas de prep — gerador de nomes, clima, rumor, item aleatório — não existem na aplicação hoje. System-agnostic (não depende de [BKLG-041]).
+
+**Confirmado em chat (2026-10-18): os quatro geradores entram, nenhum descartado** — nomes de PNGs, rumores/ganchos, clima/ambiente, itens/loot aleatório.
+
+**Decisões fechadas em chat (2026-10-18, pós-revisão de PO e validação arquitetural):**
+- **Tabelas fixas (hardcoded) por agora — decisão confirmada como MVP.** Sem CRUD de tabela por campanha nesta entrega. Ver [BKLG-047] abaixo pro follow-up de tornar editável.
+- **Conteúdo por ambientação, não genérico.** As duas campanhas em produção são WFRP (fantasia) e WoD (vampiro moderno) — cada gerador precisa de ao menos duas variantes de conteúdo (uma por ambientação), não uma lista genérica única. Isso é esforço de **redação/conteúdo** em pt-BR (e en, se aplicável), não só de engenharia — tratar como entregável separado, com responsável próprio pela escrita das tabelas.
+- **Loop de valor:** considerar, já nesta entrega ou logo depois, um atalho pra enviar o resultado sorteado direto pras notas de preparo da próxima sessão ([BKLG-044]) — sinergia que evita o padrão "gerar → descartar". **Feito em 2026-10-20:** botão «Enviar para preparo», destino escolhido entre as sessões ocultas, texto acrescentado ao fim.
+- **Validação de demanda:** ainda recomendado confirmar com o mestre usuário-teste antes de investir, mas não bloqueia o `/openspec-propose` — é a entrega de menor risco (sem dado GM-only, sem `campanha_id`) das três.
+
+**Escopo:** sem schema de campanha novo (tabelas hardcoded, com variante por ambientação) — lógica de sorteio + tela/painel novo em `frontend-v2`, com conteúdo em pt-BR/en organizado por ambientação. Vale considerar dividir em 1 openspec por gerador ou um openspec só com os quatro como tasks separadas — decisão de escopo pro momento do `/openspec-propose`.
+
+---
+
+## [BKLG-047] Produto — Tornar as tabelas dos geradores (BKLG-045) editáveis por campanha
+
+**Status:** Ideia registrada, sem TR. Follow-up explícito do [BKLG-045] — não bloqueia a entrega inicial dele.
+
+**Registrado em:** 2026-10-18, ao decidir que o BKLG-045 entrega com tabelas fixas (hardcoded) por agora.
+
+**Pedido:** depois que os geradores de nomes/rumores/clima/loot estiverem no ar com tabelas fixas por ambientação, dar ao mestre a opção de editar/adicionar itens nas tabelas da própria campanha — por exemplo, acrescentar nomes de NPCs recorrentes ou rumores específicos da trama em andamento, em vez de ficar só com o conteúdo genérico da ambientação.
+
+**Por que não entra junto com o BKLG-045:** é escopo maior — exige entidade de tabela por campanha (provavelmente dentro do banco per-campanha, `backend/app/campaign_db.py`), CRUD novo, UI de edição de lista. O BKLG-045 já entrega valor sozinho com tabelas fixas; este item só se justifica se houver demanda real depois de ver o uso do BKLG-045.
+
+**Próximo passo:** aguardar o BKLG-045 estar em produção e ter sinal de uso antes de especificar.
+
+---
+
+## [BKLG-046] Produto — Assistência de IA em todos os campos de texto livre do mestre (notas/decisões)
+
+**Status:** Em implementação na change [`ia-assistente-mestre`](../../openspec/changes/ia-assistente-mestre/proposal.md) (decisão de 2026-10-25: custo por conta do produto, DeepSeek por ora, gate tudo-ou-nada por campanha com envio de conteúdo oculto aceito). Fios narrativos persistentes (lista do mestre, proposta item a item pela IA, uso no Rascunho) estão implementados na change [`fios-narrativos-lista`](../../openspec/changes/fios-narrativos-lista/proposal.md), em verificação manual. **Não entra em [BKLG-042]/[BKLG-044]/[BKLG-045]** — é uma feature própria, transversal (cada um desses três só adiciona o campo de texto puro; o botão de IA nesse campo é este item, separado).
+
+**Registrado em:** 2026-10-18, na mesma conversa que detalhou BKLG-041/042/044/045.
+
+**Pedido:** todo campo onde o mestre precisa escrever notas/decisões/texto livre (notas de preparo da próxima sessão — [BKLG-044] —, notas mecânicas de NPC — [BKLG-042] —, resumo de sessão, descrição de Local/NPC etc.) deveria ter a opção do mestre acionar IA pra ajudar a escrever — ex.: pedir mais ganchos/fios narrativos a partir do que já está registrado.
+
+**Risco central, levantado pelo usuário:** se o mestre usa a IA pra sugerir ganchos/fios narrativos sem contexto da campanha, a IA tende a sugerir algo genérico ou destoante do que já existe (NPCs, facções, arcos, locais, sessões anteriores). Qualquer campo de IA assistiva precisa **sempre** montar e enviar contexto real da campanha antes de chamar o provedor — não é uma chamada de IA "em branco" a partir só do texto que o mestre já digitou naquele campo.
+
+**Achado de código relevante — já existe boa parte da infraestrutura pra isso:**
+- [`backend/app/services/ia_provider.py`](../../backend/app/services/ia_provider.py): cliente DeepSeek compartilhado, com `ItemContextoIa` (registro de campanha com `tipo`/`texto`/`visivel_para_todos`) e `montar_contexto()`, que já filtra por visibilidade (`is_visivel_para_jogador`) e recusa misturar campanhas (`IA_CAMPANHAS_MISTURADAS`) antes de mandar pro provedor. Já tem os códigos de erro padronizados (`IA_MODULO_DESABILITADO`, `IA_NAO_AUTORIZADO`, `IA_CREDENCIAL_AUSENTE`, `IA_TIMEOUT`, `IA_ERRO_PROVEDOR`).
+- Já existem três "motores" de IA ponta a ponta usando esse provedor — [`motor_ia_arcos.py`](../../backend/app/services/motor_ia_arcos.py) (BKLG-039), [`motor_ia_sessao_associacoes.py`](../../backend/app/services/motor_ia_sessao_associacoes.py) e [`motor_ia_evento_associacoes.py`](../../backend/app/services/motor_ia_evento_associacoes.py) — cada um gated por um módulo próprio em `Campanha.modulos_ativos` (ex.: `MODULO_IA = "ia_arcos"`), autorização restrita ao dono da campanha (`require_dono`), e nunca grava nada sem revisão do mestre (ver padrão descrito em [BKLG-040]).
+- **O que falta não é a infraestrutura de chamada — é generalizar o padrão "motor" pra qualquer campo de texto livre**, e, principalmente, decidir **qual contexto montar pra cada tipo de campo**. Pra sugestão de ganchos/fios narrativos, por exemplo, o contexto correto provavelmente precisa incluir NPCs, Locais, Facções, Arcos e sessões anteriores visíveis — não só o texto que já está no campo sendo editado, ao contrário do padrão atual dos motores (que trabalham sobre um único resumo de sessão/evento).
+
+**Por que é maior que parece:** isso não é "um botão de IA por campo" — é decidir, campo a campo, qual subconjunto da campanha vira contexto (todos os campos vão precisar do mesmo contexto de ganchos? ou cada um pede um recorte diferente?), além das mesmas perguntas de custo/privacidade já em aberto no [BKLG-015] (que bloqueia qualquer feature de IA nova até ser decidido) e do gancho de módulo por campanha já desenhado no TR do BKLG-039.
+
+**Depende de:** [BKLG-015] (a decisão de 2026-10-25 liberou a primeira versão; cota, monetização e rate limit por usuário seguem em aberto lá), infraestrutura [`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md) (`ia_provider.py`), e indiretamente de [BKLG-042]/[BKLG-044]/[BKLG-045] existirem como campos de texto antes de ganharem o botão de IA.
+
+**Próximo passo:** discovery (BP/DR via `po-virtual`) antes de qualquer TR — fechar quais campos entram na primeira onda, qual contexto cada um precisa, e resolver o bloqueio do BKLG-015 primeiro.
+
+---
+
 ## Roadmap de mercado — "Próximo" (precisa de TR antes do `/speckit-specify`)
 
 - **[BKLG-010] Sincronização ao vivo.** Hoje o jogador só vê mudanças ao recarregar. SSE (mais simples de operar atrás do Caddy atual) ou polling curto — decidir custo de servidor por campanha simultânea antes de comprometer a spec.
 - **[BKLG-011] Múltiplos mapas aninhados.** Região → cidade → prédio, cada nível com seus próprios pinos e zoom. Mexe em `Local`, no digitalizador de rotas e na navegação do Mapa — o tipo de mudança que merece um desenho de dados revisado antes de virar tarefa.
-- **[BKLG-012] Missões, fios abertos e relógios do mestre.** Entidade sem precedente no schema atual (diferente da Sessão, que reusa o padrão de NPC). Vale um brainstorm curto (BP) antes da TR, pra não desenhar às cegas.
+- **[BKLG-012] Missões, fios abertos e relógios do mestre.** Entidade sem precedente no schema atual (diferente da Sessão, que reusa o padrão de NPC). Vale um brainstorm curto (BP) antes da TR, pra não desenhar às cegas. Atualização de 2026-10-26: o fio mínimo (título, descrição, estado aberto/resolvido, origem manual/IA, sessão de origem, ordem) foi implementado na change [`fios-narrativos-lista`](../../openspec/changes/fios-narrativos-lista/proposal.md), só para o mestre dono; permanecem em aberto missões, relógios de progresso e vínculos de fios com personagens/locais.
 
 ## Roadmap de mercado — "Depois" (só com sinal real de demanda)
 
 - **[BKLG-013] Módulos por sistema além da fadiga** (ex.: dívidas de sangue em WoD como qualificador de vínculo, ou política de facção). O motor (spec 077) já suporta; falta um mestre pedindo de verdade.
 - **[BKLG-014] PWA / offline no celular** — só se a experiência em mesa presencial sem sinal virar reclamação recorrente.
-- **[BKLG-015] IA/MCP somente leitura sobre a campanha** — decisão de custo/privacidade antes de qualquer código; ver a skill `eber-saltbock` como precedente de caso de uso real. Quando houver código, a chamada ao provedor passa por `app/services/ia_provider.py` ([`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md)), não por um cliente próprio.
+- **[BKLG-015] IA/MCP somente leitura sobre a campanha** — nota de 2026-10-25: a assistência do mestre ([BKLG-046]) foi liberada com custo por conta do produto e DeepSeek por ora; revisitar cota, monetização e rate limit por usuário. Decisão de custo/privacidade antes de qualquer código; ver a skill `eber-saltbock` como precedente de caso de uso real. Quando houver código, a chamada ao provedor passa por `app/services/ia_provider.py` ([`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md)), não por um cliente próprio.
 
 ## Como seguir
 

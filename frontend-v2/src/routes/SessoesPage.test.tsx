@@ -39,6 +39,7 @@ interface Row {
   titulo: string;
   data_rotulo: string | null;
   resumo: string;
+  notas_preparo: string;
   visivel_para_todos: boolean;
   local_ids: number[];
   personagem_ids: number[];
@@ -47,6 +48,16 @@ interface Row {
 
 interface Store {
   rows: Row[];
+  fios?: {
+    id: number;
+    titulo: string;
+    descricao: string;
+    estado: "aberto" | "resolvido";
+    origem: "manual" | "ia";
+    sessao_origem_id: number | null;
+    ordem: number;
+    criado_em: string;
+  }[];
   locais: Place[];
   personagens: Person[];
   arcos: { id: number; titulo: string }[];
@@ -122,6 +133,7 @@ function view(store: Store, row: Row, hide: boolean) {
     ...(hide
       ? {}
       : {
+          notas_preparo: row.notas_preparo,
           visivel_para_todos: row.visivel_para_todos,
           alertas_inconsistencia: alertsFor(store, row),
         }),
@@ -150,6 +162,40 @@ function installApi(stores: Record<string, Store>, signedIn: boolean) {
       if (!slug) return new Response("{}", { status: 404 });
       const store = stores[decodeURIComponent(slug)];
       if (!store) return new Response("{}", { status: 404 });
+      if (url.includes("/admin/fios") && method === "GET") {
+        const params = new URL(url, "http://localhost").searchParams;
+        return respond(
+          (store.fios ?? []).filter(
+            (fio) =>
+              (!params.has("sessao_origem_id") ||
+                fio.sessao_origem_id === Number(params.get("sessao_origem_id"))) &&
+              (!params.has("estado") || fio.estado === params.get("estado")),
+          ),
+        );
+      }
+      if (url.endsWith("/admin/fios") && method === "POST") {
+        const body = JSON.parse(String(init?.body));
+        const fio = {
+          ...body,
+          id: (store.fios?.length ?? 0) + 1,
+          estado: "aberto",
+          ordem: store.fios?.length ?? 0,
+          criado_em: "2026-01-01",
+        };
+        store.fios = [...(store.fios ?? []), fio];
+        return respond(fio, 201);
+      }
+      const fioPath = url.match(/\/admin\/fios\/(\d+)$/);
+      if (fioPath && method === "PATCH") {
+        const fio = store.fios?.find((item) => item.id === Number(fioPath[1]));
+        if (!fio) return respond({}, 404);
+        Object.assign(fio, JSON.parse(String(init?.body)));
+        return respond(fio);
+      }
+      if (fioPath && method === "DELETE") {
+        store.fios = (store.fios ?? []).filter((item) => item.id !== Number(fioPath[1]));
+        return new Response(null, { status: 204 });
+      }
       if (url.endsWith("/admin/session")) return respond({ papel: store.papel });
       if (url.endsWith("/config")) return respond(config(decodeURIComponent(slug), store.modules));
       if (url.endsWith("/admin/sessoes/proximo-numero")) {
@@ -181,6 +227,7 @@ function installApi(stores: Record<string, Store>, signedIn: boolean) {
           titulo: body.titulo,
           data_rotulo: body.data_rotulo,
           resumo: body.resumo,
+          notas_preparo: body.notas_preparo,
           visivel_para_todos: body.visivel_para_todos,
           local_ids: body.local_ids,
           personagem_ids: body.personagem_ids,
@@ -265,6 +312,7 @@ function row(patch: Partial<Row> & Pick<Row, "id" | "numero" | "titulo">): Row {
   return {
     data_rotulo: null,
     resumo: "",
+    notas_preparo: "",
     visivel_para_todos: true,
     local_ids: [],
     personagem_ids: [],
@@ -311,6 +359,32 @@ it("mostra o resumo em Markdown com chips e sem o micro-formato do template", as
   expect(screen.queryByText(/sessão oculta/)).not.toBeInTheDocument();
 });
 
+it("prepara a próxima sessão oculta com notas de preparo em foco", async () => {
+  const store = emptyStore({
+    rows: [row({ id: 1, numero: 3, titulo: "Já jogada" })],
+  });
+  renderSessions("/c/alpha/sessoes", { alpha: store }, true);
+
+  fireEvent.click(await screen.findByRole("button", { name: "Preparar próxima sessão" }));
+  const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getByRole("spinbutton", { name: "Número" })).toHaveValue(4);
+  expect(within(dialog).getByRole("checkbox", { name: "Visível para todos" })).not.toBeChecked();
+  const notas = within(dialog).getByRole("textbox", { name: "Notas de preparo" });
+  expect(notas).toHaveFocus();
+  fireEvent.change(within(dialog).getByRole("textbox", { name: "Título" }), {
+    target: { value: "Próxima" },
+  });
+  fireEvent.change(notas, { target: { value: "Cena do barão" } });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByRole("heading", { name: "Próxima" })).toBeVisible();
+  expect(screen.getByText("Oculta")).toBeVisible();
+  expect(screen.getByText("Cena do barão")).toBeVisible();
+  const created = store.rows.find((item) => item.titulo === "Próxima");
+  expect(created?.visivel_para_todos).toBe(false);
+  expect(created?.notas_preparo).toBe("Cena do barão");
+});
+
 it("cria, edita, oculta e exclui uma sessão, e não chama a sugestão com o módulo desligado", async () => {
   const store = emptyStore();
   renderSessions("/c/alpha/sessoes", { alpha: store }, true);
@@ -318,6 +392,7 @@ it("cria, edita, oculta e exclui uma sessão, e não chama a sugestão com o mó
   fireEvent.click(await screen.findByRole("button", { name: "Nova sessão" }));
   const dialog = await screen.findByRole("dialog");
   expect(within(dialog).getByRole("spinbutton", { name: "Número" })).toHaveValue(1);
+  expect(within(dialog).queryByRole("button", { name: "Sugerir com IA" })).not.toBeInTheDocument();
   expect(
     within(dialog).queryByRole("button", { name: "Sugerir locais e personagens" }),
   ).not.toBeInTheDocument();
@@ -405,6 +480,10 @@ it("sugere associações só com o módulo ia_arcos e preserva a seleção atual
 
   fireEvent.click(await screen.findByRole("button", { name: "Nova sessão" }));
   const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(1);
+  fireEvent.click(within(dialog).getByRole("checkbox", { name: "Visível para todos" }));
+  expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(2);
+  expect(within(dialog).getByRole("button", { name: "Fios narrativos" })).toBeVisible();
   const suggest = within(dialog).getByRole("button", { name: "Sugerir locais e personagens" });
   expect(suggest).toBeDisabled();
   expect(
@@ -440,4 +519,127 @@ it("não reaproveita sessões ao trocar de campanha", async () => {
   fireEvent.click(screen.getByRole("link", { name: "Trocar campanha" }));
   expect(await screen.findByRole("heading", { name: "Sessão Beta" })).toBeVisible();
   expect(screen.queryByText("Sessão Alpha")).not.toBeInTheDocument();
+});
+
+it("mostra e permite adicionar fios somente ao dono", async () => {
+  const owner = emptyStore({
+    fios: [
+      {
+        id: 1,
+        titulo: "Segredo",
+        descricao: "Pista",
+        estado: "aberto",
+        origem: "manual",
+        sessao_origem_id: null,
+        ordem: 0,
+        criado_em: "2026-01-01",
+      },
+    ],
+  });
+  const first = renderSessions("/c/alpha/sessoes", { alpha: owner }, true);
+  expect(await screen.findByRole("heading", { name: "Fios em aberto" })).toBeVisible();
+  expect(await screen.findByText("Segredo")).toBeVisible();
+  fireEvent.change(screen.getByRole("textbox", { name: "Título" }), { target: { value: "Outro" } });
+  fireEvent.click(screen.getByRole("button", { name: "Adicionar fio" }));
+  expect(await screen.findByText("Outro")).toBeVisible();
+  first.unmount();
+  renderSessions("/c/alpha/sessoes", { alpha: emptyStore({ papel: "membro" }) }, true);
+  expect(await screen.findByRole("button", { name: "Nova sessão" })).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
+});
+
+it("separa a leitura do dono e esconde os fios ao desligar o Modo GM", async () => {
+  const owner = emptyStore({
+    rows: [
+      row({
+        id: 1,
+        numero: 1,
+        titulo: "A partida",
+        resumo: "Texto público",
+        notas_preparo: "Plano secreto",
+      }),
+    ],
+    fios: [
+      {
+        id: 7,
+        titulo: "Pista secreta",
+        descricao: "Descrição privada",
+        estado: "aberto",
+        origem: "manual",
+        sessao_origem_id: 1,
+        ordem: 0,
+        criado_em: "2026-01-01",
+      },
+    ],
+  });
+  renderSessions("/c/alpha/sessoes?s=1", { alpha: owner }, true);
+  const notes = await screen.findByRole("region", { name: "Notas de preparo" });
+  const threads = screen.getByRole("region", { name: "Fios Narrativos" });
+  const summary = screen.getByRole("region", { name: "Resumo" });
+  expect(notes.compareDocumentPosition(threads) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(threads.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(await within(threads).findByText("Pista secreta")).toBeVisible();
+  expect(within(summary).getByText("Texto público")).toBeVisible();
+  expect(within(summary).queryByText("Plano secreto")).not.toBeInTheDocument();
+  expect(within(summary).queryByText("Pista secreta")).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Fios em aberto" })).toBeVisible();
+  fireEvent.click(
+    within(screen.getByRole("region", { name: "Fios em aberto" })).getByRole("button", {
+      name: "Resolver",
+    }),
+  );
+  expect(await within(threads).findByText("Resolvido")).toBeVisible();
+  fireEvent.click(
+    within(screen.getByRole("region", { name: "Fios em aberto" })).getByRole("button", {
+      name: "Remover",
+    }),
+  );
+  fireEvent.click(
+    within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Remover" }),
+  );
+  await waitFor(() => expect(within(threads).queryByText("Pista secreta")).not.toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Visualização" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("region", { name: "Notas de preparo" })).not.toBeInTheDocument(),
+  );
+  expect(screen.queryByRole("region", { name: "Fios Narrativos" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
+  expect(screen.queryByText("Plano secreto")).not.toBeInTheDocument();
+  expect(screen.queryByText("Pista secreta")).not.toBeInTheDocument();
+  expect(screen.getByText("Texto público")).toBeVisible();
+});
+
+it("mostra apenas o resumo ao visitante", async () => {
+  renderSessions("/c/alpha/sessoes?s=1", {
+    alpha: emptyStore({
+      rows: [
+        row({
+          id: 1,
+          numero: 1,
+          titulo: "A partida",
+          resumo: "Texto público",
+          notas_preparo: "Plano secreto",
+        }),
+      ],
+      fios: [
+        {
+          id: 7,
+          titulo: "Pista secreta",
+          descricao: "Descrição privada",
+          estado: "aberto",
+          origem: "manual",
+          sessao_origem_id: 1,
+          ordem: 0,
+          criado_em: "2026-01-01",
+        },
+      ],
+    }),
+  });
+  expect(await screen.findByText("Texto público")).toBeVisible();
+  expect(screen.queryByText("Plano secreto")).not.toBeInTheDocument();
+  expect(screen.queryByText("Pista secreta")).not.toBeInTheDocument();
+  expect(screen.queryByText("Fios Narrativos")).not.toBeInTheDocument();
+  expect(screen.queryByText("Só para o mestre")).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Resumo" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
 });

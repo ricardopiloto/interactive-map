@@ -1,3 +1,5 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
+import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -65,6 +67,9 @@ function CheckList({
 
 export function LocalEditor({
   draft,
+  slug,
+  iaAtiva,
+  isDono,
   locais,
   npcs,
   arcos,
@@ -77,6 +82,9 @@ export function LocalEditor({
   onCancel,
 }: {
   draft: LocalDraft;
+  slug: string;
+  iaAtiva: boolean;
+  isDono: boolean;
   locais: Local[];
   npcs: Npc[];
   arcos: Arco[];
@@ -125,16 +133,26 @@ export function LocalEditor({
             />
             {nomeError && <span className="text-xs text-destructive">{nomeError}</span>}
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>
-              {tc("form.descricao")} {t("localForm.descMarkdown")}
-            </span>
-            <Textarea
-              value={draft.descricao}
-              placeholder={t("localForm.descPlaceholder")}
-              onChange={(event) => onChange({ descricao: event.target.value })}
+          <MarkdownField
+            label={`${tc("form.descricao")} ${t("localForm.descMarkdown")}`}
+            labelClassName={fieldLabel}
+            value={draft.descricao}
+            placeholder={t("localForm.descPlaceholder")}
+            onValueChange={(texto) => onChange({ descricao: texto })}
+          />
+          {iaAtiva && isDono && (
+            <IaAssistente
+              slug={slug}
+              tipo="descricao_local"
+              alvoId={draft.id ?? null}
+              textoAtual={draft.descricao}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ descricao: [draft.descricao, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ descricao: texto })}
             />
-          </label>
+          )}
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("localForm.sessaoLabel")}</span>
             <Input
@@ -282,6 +300,9 @@ export function LocalEditor({
 
 export function NpcEditor({
   draft,
+  slug,
+  iaAtiva,
+  isDono,
   locais,
   busy,
   onChange,
@@ -291,6 +312,9 @@ export function NpcEditor({
   onCancel,
 }: {
   draft: NpcDraft;
+  slug: string;
+  iaAtiva: boolean;
+  isDono: boolean;
   locais: Local[];
   busy: boolean;
   onChange: (patch: Partial<NpcDraft>) => void;
@@ -332,13 +356,25 @@ export function NpcEditor({
               onChange={(event) => onChange({ papel: event.target.value })}
             />
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{tc("form.descricao")}</span>
-            <Textarea
-              value={draft.descricao}
-              onChange={(event) => onChange({ descricao: event.target.value })}
+          <MarkdownField
+            label={tc("form.descricao")}
+            labelClassName={fieldLabel}
+            value={draft.descricao}
+            onValueChange={(texto) => onChange({ descricao: texto })}
+          />
+          {iaAtiva && isDono && (
+            <IaAssistente
+              slug={slug}
+              tipo="descricao_personagem"
+              alvoId={draft.id ?? null}
+              textoAtual={draft.descricao}
+              campoPublico={draft.visivel_para_todos}
+              onInserir={(texto) =>
+                onChange({ descricao: [draft.descricao, texto].filter(Boolean).join("\n\n") })
+              }
+              onSubstituir={(texto) => onChange({ descricao: texto })}
             />
-          </label>
+          )}
           <label className="block space-y-1">
             <span className={fieldLabel}>{tc("form.faccaoOpcional")}</span>
             <Input

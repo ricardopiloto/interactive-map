@@ -33,6 +33,7 @@ export interface NpcDraft {
   status: NpcStatus;
   retrato_url: string | null;
   localIds: number[];
+  visivel_para_todos: boolean;
   isNew: boolean;
 }
 
@@ -88,6 +89,7 @@ export function emptyNpcDraft(localId?: number): NpcDraft {
     status: "desconhecido",
     retrato_url: null,
     localIds: localId == null ? [] : [localId],
+    visivel_para_todos: true,
     isNew: true,
   };
 }
@@ -102,6 +104,7 @@ export function npcToDraft(npc: Npc): NpcDraft {
     status: npc.status ?? "desconhecido",
     retrato_url: npc.retrato_url,
     localIds: npc.local_ids,
+    visivel_para_todos: npc.visivel_para_todos !== false,
     isNew: false,
   };
 }

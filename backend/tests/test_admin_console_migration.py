@@ -30,3 +30,14 @@ def test_campaign_migration_006_upgrade_downgrade(data_root):
     assert "campaign_state" in inspect(engine).get_table_names()
     command.downgrade(config, "005_evento_mes")
     command.upgrade(config, "head")
+
+
+def test_campaign_migration_011_mechanical_notes_upgrade_downgrade(data_root):
+    with Session(get_control_engine()) as session:
+        campaign = session.exec(select(Campanha).where(Campanha.slug == TEST_CAMPAIGN_SLUG)).one()
+        engine = get_campaign_engine(campaign.caminho.split("/")[-1], campaign.caminho)
+    config = _alembic_config("campaign", str(engine.url))
+    command.downgrade(config, "010_sessao_notas_preparo")
+    assert "notas_mecanicas" not in {c["name"] for c in inspect(engine).get_columns("npc")}
+    command.upgrade(config, "head")
+    assert "notas_mecanicas" in {c["name"] for c in inspect(engine).get_columns("npc")}
