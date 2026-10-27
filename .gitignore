@@ -12,6 +12,7 @@ backend/.pytest_cache/
 .pytest_cache/
 backend/data/*.db
 backend/data/*.db-*
+backend/data/campanhas-bkp
 backend/data/campanhas/
 backend/data/_uploads_placeholder/
 backend/uploads/**/*

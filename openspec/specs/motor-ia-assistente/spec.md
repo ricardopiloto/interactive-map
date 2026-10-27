@@ -61,7 +61,7 @@ O mestre dono SHALL poder pedir fios narrativos (ganchos e linhas em aberto) par
 
 ### Requirement: Contexto real da campanha em toda chamada
 
-Toda chamada de assistência SHALL enviar ao provedor, além do texto atual do campo e do pedido do mestre, o contexto da campanha relevante para aquele tipo de campo. O sistema NUNCA SHALL chamar o provedor apenas com o texto digitado no campo. O prompt SHALL ser genérico, sem depender do sistema de RPG da campanha, e SHALL instruí-lo a responder no idioma do texto atual e do conteúdo da campanha (pt-BR na dúvida). O texto atual e a instrução do mestre SHALL ser enviados como dados do contexto, nunca como instrução do sistema. O contexto de cada chamada SHALL respeitar um limite de tamanho, cortando de forma determinística (mais recente primeiro) e incluindo o texto atual e a instrução no cômputo.
+Toda chamada de assistência SHALL enviar ao provedor, além do texto atual do campo e do pedido do mestre, o contexto da campanha relevante para aquele tipo de campo. O sistema NUNCA SHALL chamar o provedor apenas com o texto digitado no campo. O prompt SHALL ser genérico, sem depender do sistema de RPG da campanha, e SHALL instruí-lo a responder no idioma do texto atual e do conteúdo da campanha (pt-BR na dúvida). O texto atual e a instrução do mestre SHALL ser enviados como dados do contexto, nunca como instrução do sistema. O contexto da campanha SHALL ser composto, nesta ordem de prioridade, por: o texto atual e a instrução do mestre; os fios em aberto (no rascunho de sessão); as sessões e os arcos mais recentes, completos; um catálogo compacto com o nome (e papel ou facção, quando houver) de personagens, locais, itens, arcos e sessões; e os trechos mais relevantes ao pedido recuperados do índice da campanha. O contexto de cada chamada SHALL respeitar um limite de tamanho, cortando de forma determinística (menos prioritário e menos relevante primeiro) e incluindo o texto atual e a instrução no cômputo. Quando o índice da campanha estiver indisponível, o contexto SHALL ser montado pela leitura completa da campanha, com o mesmo limite.
 
 #### Scenario: Descrição de personagem usa o universo existente
 
@@ -81,7 +81,22 @@ Toda chamada de assistência SHALL enviar ao provedor, além do texto atual do c
 #### Scenario: Campanha grande respeita o limite de contexto
 
 - **WHEN** a campanha tem mais conteúdo do que cabe no limite de contexto da chamada
-- **THEN** o sistema corta registros do mais antigo para o mais recente até caber, mantendo o texto atual e a instrução, e o conteúdo enviado não excede o limite
+- **THEN** o contexto enviado traz os itens de maior prioridade e os trechos mais relevantes ao pedido, sem exceder o limite, e mantém o texto atual e a instrução
+
+#### Scenario: Sessão antiga relevante ao pedido
+
+- **WHEN** a campanha tem centenas de sessões e o pedido cita um personagem que só aparece numa sessão antiga
+- **THEN** os trechos dessa sessão antiga fazem parte do contexto, mesmo sem estar entre as sessões recentes
+
+#### Scenario: Contexto não depende do tamanho do histórico
+
+- **WHEN** a campanha cresce com novas sessões
+- **THEN** o tamanho do contexto enviado continua dentro do limite e o conteúdo recente e o catálogo de nomes continuam presentes
+
+#### Scenario: Índice indisponível
+
+- **WHEN** o índice da campanha está indisponível ou a consulta a ele falha
+- **THEN** o contexto é montado pela leitura completa da campanha com o limite de tamanho, e a sugestão é gerada normalmente
 
 #### Scenario: Conteúdo da campanha com instruções embutidas
 
@@ -285,3 +300,17 @@ O prompt do Resumo SHALL instruir a IA a não copiar blocos de combate das Notas
 
 - **WHEN** o mestre pede o Resumo ou o rascunho de uma sessão cujas próprias notas têm blocos de combate
 - **THEN** as notas da sessão alvo são enviadas inteiras, e a instrução do prompt orienta a IA sobre como tratá-las
+
+### Requirement: Resumo não lista fios abertos
+
+O Resumo gerado pela IA SHALL contar o que aconteceu na sessão e o estado do grupo, e o prompt do Resumo NÃO SHALL instruir a IA a listar fios abertos nem pendências. Os fios narrativos permanecem no bloco de Fios Narrativos da sessão e na lista de fios, e não fazem parte do contexto do Resumo.
+
+#### Scenario: Prompt do Resumo sem fios abertos
+
+- **WHEN** o prompt do Resumo é montado
+- **THEN** ele não contém a instrução de terminar com fios abertos e mantém a instrução de usar só fatos do contexto
+
+#### Scenario: Resumo não inventa fios
+
+- **WHEN** o mestre pede o Resumo de uma sessão
+- **THEN** o contexto enviado não inclui fios narrativos e o prompt não pede a lista de fios abertos

@@ -381,6 +381,10 @@ def import_campaign_from_zip(
             session.expunge(row)
             assign_owner(session, slug, owner_email)
 
+        from app.services.indice_ia import reconstruir
+        with Session(camp_engine) as index_session:
+            reconstruir(index_session)
+            index_session.commit()
         reconcile_bytes_usados(slug)
         with Session(control) as session:
             refreshed = session.exec(select(Campanha).where(Campanha.slug == slug)).first()

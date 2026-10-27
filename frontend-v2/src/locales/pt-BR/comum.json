@@ -123,6 +123,24 @@
     "toggleUnit": "Alternar mi/km",
     "moduloIaArcos": "Assistente de IA",
     "moduloIaArcosAjuda": "O assistente pode enviar conteúdo oculto da campanha ao DeepSeek.",
+    "indice": {
+      "title": "Índice da campanha",
+      "loading": "Carregando índice…",
+      "status": "Estado",
+      "states": {
+        "ausente": "Ainda não criado",
+        "ok": "Em dia",
+        "desatualizado": "Desatualizado",
+        "indisponivel": "Indisponível"
+      },
+      "counts": "{{registros}} registros · {{trechos}} trechos",
+      "updated": "Última atualização",
+      "never": "Nunca",
+      "reindex": "Reindexar",
+      "reindexing": "Reindexando…",
+      "success": "Índice atualizado com sucesso.",
+      "error": "Não foi possível atualizar o índice"
+    },
     "suggestedSystems": "Sistemas sugeridos (opcional)",
     "cover": "Capa",
     "clearCover": "Remover capa",

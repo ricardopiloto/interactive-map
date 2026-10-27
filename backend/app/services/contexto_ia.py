@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import replace
+from sqlalchemy import func
 from sqlmodel import Session, select
 from app.config import settings
 from app.models.arco import Arco
@@ -15,6 +16,22 @@ from app.models.sessao import Sessao
 from app.schemas.ia_assistente import AssistirRequest
 from app.services.ia_provider import ItemContextoIa, item_contexto_entidade, montar_contexto
 MAX_REGISTRO_CHARS = 1500
+
+
+def contar_registros_contaveis(session: Session, pedido: AssistirRequest, alvo) -> int:
+    """Count campaign records that can satisfy the assistant's minimum context."""
+    if pedido.tipo != "rascunho_sessao" and alvo is not None:
+        return 1
+    if pedido.tipo in ("descricao_personagem", "descricao_local"):
+        classes = (NPC, Local, Arco)
+    else:
+        classes = (Sessao, Arco, Evento, NPC, Local)
+    total = sum(session.exec(select(func.count()).select_from(cls)).one() for cls in classes)
+    if pedido.tipo == "rascunho_sessao":
+        total += session.exec(
+            select(func.count()).select_from(FioNarrativo).where(FioNarrativo.estado == "aberto")
+        ).one()
+    return total
 
 def _item(campanha_id: int, tipo: str, entidade, texto: str) -> ItemContextoIa:
     return item_contexto_entidade(campanha_id, tipo, entidade, texto[:MAX_REGISTRO_CHARS])
@@ -175,9 +192,63 @@ def _orcamento(system: str, registros: list[ItemContextoIa], campanha_id: int) -
             corte = max(1, len(fixos[i].texto) // 10)
             fixos[i] = replace(fixos[i], texto=fixos[i].texto[corte:])
     finais = list(fixos)
+    tamanho = _tamanho(system, finais, campanha_id)
     for registro in outros:
-        if _tamanho(system, finais + [registro], campanha_id) <= teto:
+        # json.dumps uses a comma and a space between adjacent entries.
+        item = montar_contexto(campanha_id, [registro], incluir_ocultos=True)
+        acrescimo = len(json.dumps(item[0], ensure_ascii=False)) + 2 * int(bool(finais))
+        if tamanho + acrescimo <= teto:
             finais.append(registro)
+            tamanho += acrescimo
     return finais
 
 
+
+
+def compor_contexto(session: Session, campanha_id: int, pedido: AssistirRequest, alvo) -> tuple[list[ItemContextoIa], int]:
+    """Prioritized bounded context; callers retain coletar_registros as fallback."""
+    from app.models.item import Item
+    from app.services.indice_ia import consultar, estado, reconstruir
+
+    status = estado(session)["estado"]
+    if status in ("ausente", "desatualizado"):
+        reconstruir(session)
+    elif status == "indisponivel":
+        raise RuntimeError("indice_ia indisponivel")
+
+    recentes_s = list(session.exec(select(Sessao).order_by(Sessao.id.desc()).limit(settings.ia_indice_sessoes_recentes + 1)).all())
+    recentes_a = list(session.exec(select(Arco).order_by(Arco.id.desc()).limit(settings.ia_indice_arcos_recentes + 1)).all())
+    recentes_s = [s for s in recentes_s if s.id != getattr(alvo, "id", None) or not isinstance(alvo, Sessao)][:settings.ia_indice_sessoes_recentes]
+    recentes_a = recentes_a[:settings.ia_indice_arcos_recentes]
+    registros: list[ItemContextoIa] = []
+    if pedido.tipo == "rascunho_sessao":
+        fios = session.exec(select(FioNarrativo).where(FioNarrativo.estado == "aberto").order_by(FioNarrativo.ordem)).all()
+        registros.extend(ItemContextoIa(campanha_id, "fio_em_aberto", f.id or 0, f"{f.titulo}: {f.descricao}", False) for f in fios)
+    registros.extend(_item(campanha_id, "sessao", s, _texto_sessao(s)) for s in recentes_s)
+    registros.extend(_item(campanha_id, "arco", a, f"{a.titulo}: {a.resumo}") for a in recentes_a)
+    if alvo is not None:
+        tipo = "personagem_alvo" if isinstance(alvo, NPC) else "local_alvo" if isinstance(alvo, Local) else "notas_preparo"
+        texto = getattr(alvo, "descricao", None) or getattr(alvo, "notas_preparo", "")
+        registros.insert(0, _item(campanha_id, tipo, alvo, f"{getattr(alvo, 'nome', getattr(alvo, 'titulo', ''))}: {texto}"))
+
+    catalogos = {True: [], False: []}
+    for cls, label in ((NPC, "personagem"), (Local, "local"), (Item, "item"), (Arco, "arco"), (Sessao, "sessao")):
+        for row in session.exec(select(cls).order_by(cls.id.desc())).all():
+            nome = f"Sessão {row.numero}: {row.titulo}" if isinstance(row, Sessao) else getattr(row, "nome", None) or row.titulo
+            if isinstance(row, NPC):
+                nome += "; " + "; ".join(filter(None, (row.papel, row.faccao)))
+            catalogos[bool(row.visivel_para_todos)].append(f"{label}: {nome}")
+    restante = settings.ia_indice_catalogo_max_chars
+    for visivel, tipo in ((True, "catalogo"), (False, "catalogo_oculto")):
+        linhas = []
+        for linha in catalogos[visivel]:
+            if len(linha) + 1 > restante:
+                break
+            linhas.append(linha)
+            restante -= len(linha) + 1
+        if linhas:
+            registros.append(ItemContextoIa(campanha_id, tipo, 0, "\n".join(linhas), visivel))
+    trechos = consultar(session, campanha_id, pedido.texto_atual, pedido.instrucao, alvo)
+    recentes_ids = {("sessao", s.id) for s in recentes_s} | {("arco", a.id) for a in recentes_a}
+    registros.extend(t for tipo, t in trechos if (tipo, t.registro_id) not in recentes_ids)
+    return registros, len(trechos)

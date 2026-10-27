@@ -77,7 +77,7 @@ export function FiosReview({
           descricao: item.descricao.trim(),
           origem: "ia" as const,
           sessao_origem_id:
-            sessoes.find((sessao) => sessao.numero === item.sessao_numero)?.id ?? null,
+            sessaoId ?? sessoes.find((sessao) => sessao.numero === item.sessao_numero)?.id ?? null,
         })),
       );
       onAdded();

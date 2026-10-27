@@ -9,7 +9,8 @@ from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, event, text, update
+from sqlalchemy import create_engine, event, text, update, inspect
+import logging
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, select
 
@@ -24,15 +25,20 @@ _campaign_engines: dict[str, Engine] = {}
 _last_campanha: Campanha | None = None
 
 
-def _track_campaign_writes(session: Session, _flush_context: object, _instances: object) -> None:
-    """Update the operational singleton in the same transaction as content writes."""
+def _is_campaign_session(session: Session) -> bool:
+    """Only the per-campaign SQLite under DATA_DIR receives index writes."""
     bind = session.get_bind()
     database = bind.url.database
     if not database:
-        return
+        return False
     path = Path(database).resolve()
     campaign_root = (data_dir() / "campanhas").resolve()
-    if path.parent.parent != campaign_root or path.name != "campanha.db":
+    return path.parent.parent == campaign_root and path.name == "campanha.db"
+
+
+def _track_campaign_writes(session: Session, _flush_context: object, _instances: object) -> None:
+    """Update the operational singleton in the same transaction as content writes."""
+    if not _is_campaign_session(session):
         return
     changed = [*session.new, *session.dirty, *session.deleted]
     if not any(getattr(obj, "__tablename__", None) != "campaign_state" for obj in changed):
@@ -46,6 +52,38 @@ def _track_campaign_writes(session: Session, _flush_context: object, _instances:
         # Older databases are migrated to head before a campaign Session is yielded.
         raise
 
+
+def _index_campaign_writes(session: Session, _flush_context: object) -> None:
+    if not _is_campaign_session(session):
+        return
+    from app.services.indice_ia import TIPOS, _tabelas, indexar_registro, remover_registro
+    conn = session.connection()
+    if not _tabelas(conn):
+        return
+    row = conn.execute(text("SELECT estado FROM indice_ia_estado WHERE id=1")).first()
+    if row and row[0] == "indisponivel":
+        return
+    for obj in [*session.new, *session.dirty, *session.deleted]:
+        if type(obj) not in TIPOS or obj.id is None:
+            continue
+        tipo, campos = TIPOS[type(obj)]
+        if obj in session.dirty and not any(inspect(obj).attrs[c].history.has_changes() for c in campos):
+            continue
+        try:
+            if obj in session.deleted:
+                remover_registro(conn, tipo, obj.id)
+            else:
+                indexar_registro(conn, obj)
+        except Exception as exc:
+            logging.getLogger(__name__).warning("indice_ia atualizar tipo=%s id=%s erro=%s", tipo, obj.id, exc)
+            try:
+                conn.execute(text("INSERT OR REPLACE INTO indice_ia_estado (id,estado,atualizado_em,versao_indice) VALUES (1,'desatualizado',NULL,1)"))
+            except Exception:
+                logging.getLogger(__name__).exception("indice_ia marcar desatualizado")
+            break
+
+
+event.listen(Session, "after_flush", _index_campaign_writes)
 
 event.listen(Session, "before_flush", _track_campaign_writes)
 
