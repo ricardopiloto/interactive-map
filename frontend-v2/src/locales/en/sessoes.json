@@ -87,6 +87,9 @@
     "emptyThreads": "No threads created in this session.",
     "emptySummary": "No summary.",
     "threadsError": "Could not load this session’s threads.",
+    "threadsSaveError": "Could not save the thread’s status. Try again.",
+    "resolveThread": "Resolve thread: {{titulo}}",
+    "reopenThread": "Reopen thread: {{titulo}}",
     "loadingThreads": "Loading threads…",
     "allThreads": "View all open threads"
   },
