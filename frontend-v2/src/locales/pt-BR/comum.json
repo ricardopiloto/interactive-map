@@ -431,5 +431,6 @@
     "oculto": "Esta sugestão usou conteúdo oculto e pode revelá-lo aos jogadores. Revise antes de aplicar.",
     "truncado": "A sugestão foi reduzida para caber no limite do campo.",
     "limiteCampo": "O texto excede o limite deste campo."
-  }
+  },
+  "combat": "Combate"
 }

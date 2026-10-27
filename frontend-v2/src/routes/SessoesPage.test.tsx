@@ -162,7 +162,17 @@ function installApi(stores: Record<string, Store>, signedIn: boolean) {
       if (!slug) return new Response("{}", { status: 404 });
       const store = stores[decodeURIComponent(slug)];
       if (!store) return new Response("{}", { status: 404 });
-      if (url.endsWith("/admin/fios") && method === "GET") return respond(store.fios ?? []);
+      if (url.includes("/admin/fios") && method === "GET") {
+        const params = new URL(url, "http://localhost").searchParams;
+        return respond(
+          (store.fios ?? []).filter(
+            (fio) =>
+              (!params.has("sessao_origem_id") ||
+                fio.sessao_origem_id === Number(params.get("sessao_origem_id"))) &&
+              (!params.has("estado") || fio.estado === params.get("estado")),
+          ),
+        );
+      }
       if (url.endsWith("/admin/fios") && method === "POST") {
         const body = JSON.parse(String(init?.body));
         const fio = {
@@ -174,6 +184,17 @@ function installApi(stores: Record<string, Store>, signedIn: boolean) {
         };
         store.fios = [...(store.fios ?? []), fio];
         return respond(fio, 201);
+      }
+      const fioPath = url.match(/\/admin\/fios\/(\d+)$/);
+      if (fioPath && method === "PATCH") {
+        const fio = store.fios?.find((item) => item.id === Number(fioPath[1]));
+        if (!fio) return respond({}, 404);
+        Object.assign(fio, JSON.parse(String(init?.body)));
+        return respond(fio);
+      }
+      if (fioPath && method === "DELETE") {
+        store.fios = (store.fios ?? []).filter((item) => item.id !== Number(fioPath[1]));
+        return new Response(null, { status: 204 });
       }
       if (url.endsWith("/admin/session")) return respond({ papel: store.papel });
       if (url.endsWith("/config")) return respond(config(decodeURIComponent(slug), store.modules));
@@ -524,5 +545,101 @@ it("mostra e permite adicionar fios somente ao dono", async () => {
   first.unmount();
   renderSessions("/c/alpha/sessoes", { alpha: emptyStore({ papel: "membro" }) }, true);
   expect(await screen.findByRole("button", { name: "Nova sessão" })).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
+});
+
+it("separa a leitura do dono e esconde os fios ao desligar o Modo GM", async () => {
+  const owner = emptyStore({
+    rows: [
+      row({
+        id: 1,
+        numero: 1,
+        titulo: "A partida",
+        resumo: "Texto público",
+        notas_preparo: "Plano secreto",
+      }),
+    ],
+    fios: [
+      {
+        id: 7,
+        titulo: "Pista secreta",
+        descricao: "Descrição privada",
+        estado: "aberto",
+        origem: "manual",
+        sessao_origem_id: 1,
+        ordem: 0,
+        criado_em: "2026-01-01",
+      },
+    ],
+  });
+  renderSessions("/c/alpha/sessoes?s=1", { alpha: owner }, true);
+  const notes = await screen.findByRole("region", { name: "Notas de preparo" });
+  const threads = screen.getByRole("region", { name: "Fios Narrativos" });
+  const summary = screen.getByRole("region", { name: "Resumo" });
+  expect(notes.compareDocumentPosition(threads) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(threads.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(await within(threads).findByText("Pista secreta")).toBeVisible();
+  expect(within(summary).getByText("Texto público")).toBeVisible();
+  expect(within(summary).queryByText("Plano secreto")).not.toBeInTheDocument();
+  expect(within(summary).queryByText("Pista secreta")).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Fios em aberto" })).toBeVisible();
+  fireEvent.click(
+    within(screen.getByRole("region", { name: "Fios em aberto" })).getByRole("button", {
+      name: "Resolver",
+    }),
+  );
+  expect(await within(threads).findByText("Resolvido")).toBeVisible();
+  fireEvent.click(
+    within(screen.getByRole("region", { name: "Fios em aberto" })).getByRole("button", {
+      name: "Remover",
+    }),
+  );
+  fireEvent.click(
+    within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Remover" }),
+  );
+  await waitFor(() => expect(within(threads).queryByText("Pista secreta")).not.toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Visualização" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("region", { name: "Notas de preparo" })).not.toBeInTheDocument(),
+  );
+  expect(screen.queryByRole("region", { name: "Fios Narrativos" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
+  expect(screen.queryByText("Plano secreto")).not.toBeInTheDocument();
+  expect(screen.queryByText("Pista secreta")).not.toBeInTheDocument();
+  expect(screen.getByText("Texto público")).toBeVisible();
+});
+
+it("mostra apenas o resumo ao visitante", async () => {
+  renderSessions("/c/alpha/sessoes?s=1", {
+    alpha: emptyStore({
+      rows: [
+        row({
+          id: 1,
+          numero: 1,
+          titulo: "A partida",
+          resumo: "Texto público",
+          notas_preparo: "Plano secreto",
+        }),
+      ],
+      fios: [
+        {
+          id: 7,
+          titulo: "Pista secreta",
+          descricao: "Descrição privada",
+          estado: "aberto",
+          origem: "manual",
+          sessao_origem_id: 1,
+          ordem: 0,
+          criado_em: "2026-01-01",
+        },
+      ],
+    }),
+  });
+  expect(await screen.findByText("Texto público")).toBeVisible();
+  expect(screen.queryByText("Plano secreto")).not.toBeInTheDocument();
+  expect(screen.queryByText("Pista secreta")).not.toBeInTheDocument();
+  expect(screen.queryByText("Fios Narrativos")).not.toBeInTheDocument();
+  expect(screen.queryByText("Só para o mestre")).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Resumo" })).not.toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
 });

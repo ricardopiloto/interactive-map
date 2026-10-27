@@ -77,5 +77,17 @@
     "addSelected": "Adicionar selecionados",
     "saving": "Salvando…",
     "batchError": "Não foi possível adicionar os fios. Tente novamente."
+  },
+  "readBlocks": {
+    "collapse": "Recolher {{block}}",
+    "expand": "Expandir {{block}}",
+    "private": "Só para o mestre",
+    "threads": "Fios Narrativos",
+    "emptyNotes": "Nenhuma nota de preparo.",
+    "emptyThreads": "Nenhum fio criado nesta sessão.",
+    "emptySummary": "Nenhum resumo.",
+    "threadsError": "Não foi possível carregar os fios desta sessão.",
+    "loadingThreads": "Carregando fios…",
+    "allThreads": "Ver todos os fios em aberto"
   }
 }

@@ -1,6 +1,7 @@
 """Coleta e orçamento de contexto compartilhados pelos motores de escrita."""
 from __future__ import annotations
 import json
+import re
 from dataclasses import replace
 from sqlmodel import Session, select
 from app.config import settings
@@ -19,8 +20,23 @@ def _item(campanha_id: int, tipo: str, entidade, texto: str) -> ItemContextoIa:
     return item_contexto_entidade(campanha_id, tipo, entidade, texto[:MAX_REGISTRO_CHARS])
 
 
+def _sem_blocos_combate(notas: str) -> str:
+    linhas = notas.splitlines(keepends=True)
+    resultado = []
+    em_combate = False
+    for linha in linhas:
+        if re.match(r"^\s*>\s*\[!combate\](?:\s|$)", linha, re.IGNORECASE):
+            em_combate = True
+            continue
+        if em_combate and re.match(r"^\s*>", linha):
+            continue
+        em_combate = False
+        resultado.append(linha)
+    return "".join(resultado).strip()
+
+
 def _texto_sessao(sessao: Sessao) -> str:
-    texto = sessao.resumo or sessao.notas_preparo
+    texto = sessao.resumo or _sem_blocos_combate(sessao.notas_preparo or "")
     titulo = f"Sessão {sessao.numero}: {sessao.titulo}"
     return f"{titulo}; {texto}" if texto else titulo
 
@@ -57,7 +73,7 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
             ]
             add(
                 "notas_preparo_anterior", anteriores,
-                lambda s: f"Sessão {s.numero}: {s.notas_preparo}",
+                lambda s: f"Sessão {s.numero}: {_sem_blocos_combate(s.notas_preparo)}",
             )
         add("evento", eventos, lambda e: f"{e.titulo}: {e.descricao}")
         add("personagem", pessoas, lambda p: f"{p.nome}; papel: {p.papel}; facção: {p.faccao}; {p.descricao}")

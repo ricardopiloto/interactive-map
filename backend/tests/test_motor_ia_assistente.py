@@ -10,6 +10,7 @@ from app.deps.auth import MembroContext
 from app.models.usuario import Membro, Usuario
 from app.schemas.ia_assistente import AssistirRequest
 from app.services.ia_provider import MODULO_IA
+from app.services.contexto_ia import _sem_blocos_combate, _texto_sessao
 from app.services.motor_ia_assistente import BLOCOS_TIPO, PLACEHOLDER_MECANICA, PROMPT_BASE, assistir, renderizar_prompt
 from app.services.rate_limit import limiter
 from tests.conftest import TEST_CAMPAIGN_SLUG
@@ -44,6 +45,36 @@ def test_prompts_fixos():
         assert "---" not in prompt and "[[" not in prompt
     for tipo in ("rascunho_sessao", "descricao_personagem"):
         assert PLACEHOLDER_MECANICA in renderizar_prompt(tipo, True)
+
+
+def test_prompts_combate():
+    rascunho = renderizar_prompt("rascunho_sessao", False)
+    for trecho in (
+        "> [!combate] Emboscada na ponte", "> - **Inimigos:**", "> - **Ambiente:**",
+        "> - **Tática ou gatilho:**", "> - **Desfecho:**", "apenas onde a cena pedir conflito",
+        "até 3", "Não invente estatísticas nem termos mecânicos", PLACEHOLDER_MECANICA,
+        "instrução do mestre prevalece", "sem combates", "sintaxe > [!combate] é permitida",
+    ):
+        assert trecho in rascunho
+    assert "Não copie blocos de combate" in renderizar_prompt("resumo_sessao", False)
+
+
+def test_contexto_remove_combate_apenas_de_notas_anteriores(db_session):
+    notas = (
+        "Antes\n> [!COMBATE] Ponte\n> - **Inimigos:** bandidos\n"
+        "> - **Desfecho:** fuga\nDepois\n> citação comum"
+    )
+    anterior = seed_sessao(db_session, numero=1, resumo="", notas_preparo=notas)
+    alvo = seed_sessao(db_session, numero=2, resumo="", notas_preparo=notas)
+    assert _sem_blocos_combate(notas) == "Antes\nDepois\n> citação comum"
+    assert "[!COMBATE]" not in _texto_sessao(anterior)
+    from app.services.contexto_ia import coletar_registros
+    registros = coletar_registros(db_session, 1, AssistirRequest(tipo="rascunho_sessao"), alvo)
+    anteriores = [r.texto for r in registros if r.tipo in ("sessao", "notas_preparo_anterior")]
+    assert anteriores and all("[!COMBATE]" not in texto for texto in anteriores)
+    assert all("Antes" in texto and "Depois" in texto for texto in anteriores)
+    resumo = coletar_registros(db_session, 1, AssistirRequest(tipo="resumo_sessao"), alvo)
+    assert any(r.tipo == "notas_preparo" and "[!COMBATE]" in r.texto for r in resumo)
 
 
 def test_payload_ocultos_e_texto_como_dados(db_session, monkeypatch, caplog):

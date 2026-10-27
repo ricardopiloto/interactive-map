@@ -431,5 +431,6 @@
     "oculto": "This suggestion used hidden content and may reveal it to players. Review before applying.",
     "truncado": "The suggestion was shortened to fit the field limit.",
     "limiteCampo": "The text exceeds this field’s limit."
-  }
+  },
+  "combat": "Combat"
 }

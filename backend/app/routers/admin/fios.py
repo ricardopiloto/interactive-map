@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
@@ -45,10 +45,14 @@ def propor_fios_admin(request: Request, payload: ProporFiosRequest,
 
 @router.get("/fios", response_model=list[FioRead])
 @limiter.limit("30/minute")
-def list_fios(request: Request, estado: EstadoFio | None = None, session: Session = Depends(get_session)):
+def list_fios(request: Request, estado: EstadoFio | None = None,
+              sessao_origem_id: int | None = Query(default=None, gt=0),
+              session: Session = Depends(get_session)):
     query = select(FioNarrativo)
     if estado is not None:
         query = query.where(FioNarrativo.estado == estado)
+    if sessao_origem_id is not None:
+        query = query.where(FioNarrativo.sessao_origem_id == sessao_origem_id)
     return session.exec(query.order_by(FioNarrativo.ordem, FioNarrativo.id)).all()
 
 

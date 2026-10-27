@@ -32,8 +32,12 @@ export interface PropostaFios {
 }
 const path = (slug: string, suffix = "") => campaignPath(slug, `admin/fios${suffix}`);
 export const fiosApi = {
-  list: (slug: string, estado?: EstadoFio) =>
-    api.get<Fio[]>(path(slug, estado ? `?estado=${estado}` : "")),
+  list: (slug: string, estado?: EstadoFio, sessao_origem_id?: number) => {
+    const params = new URLSearchParams();
+    if (estado) params.set("estado", estado);
+    if (sessao_origem_id !== undefined) params.set("sessao_origem_id", String(sessao_origem_id));
+    return api.get<Fio[]>(path(slug, params.size ? `?${params}` : ""));
+  },
   create: (slug: string, body: FioCreate) => api.post<Fio>(path(slug), body),
   createBatch: (slug: string, fios: FioCreate[]) => api.post<Fio[]>(path(slug, "/lote"), { fios }),
   update: (

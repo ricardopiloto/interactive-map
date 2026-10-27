@@ -84,6 +84,23 @@ def test_crud_lote_ordem_e_validacao(client, db_session):
     assert client.delete(f"{base}/{aid}").status_code == 204
 
 
+def test_list_filter_by_session_and_state(client):
+    first_id = client.post(api("/api/admin/sessoes"), json={"numero": 1, "titulo": "Primeira"}).json()["id"]
+    second_id = client.post(api("/api/admin/sessoes"), json={"numero": 2, "titulo": "Segunda"}).json()["id"]
+    base = api("/api/admin/fios")
+    ids = [client.post(base, json=body).json()["id"] for body in (
+        {"titulo": "A", "sessao_origem_id": first_id},
+        {"titulo": "B", "sessao_origem_id": second_id},
+        {"titulo": "C", "sessao_origem_id": first_id},
+        {"titulo": "D"},
+    )]
+    assert client.patch(f"{base}/{ids[2]}", json={"estado": "resolvido"}).json()["estado"] == "resolvido"
+    assert [row["id"] for row in client.get(base).json()] == ids
+    assert [row["id"] for row in client.get(base, params={"sessao_origem_id": first_id}).json()] == [ids[0], ids[2]]
+    assert [row["id"] for row in client.get(base, params={"sessao_origem_id": first_id, "estado": "resolvido"}).json()] == [ids[2]]
+    assert client.get(base, params={"sessao_origem_id": 0}).status_code == 422
+
+
 def test_private_and_campaign_isolation(client, client_anon, db_session):
     base = api("/api/admin/fios")
     client.post(base, json={"titulo": "Segredo"})
@@ -158,5 +175,7 @@ def test_fios_requires_owner_for_player_and_other_owner(client, client_anon, dat
     for email in ("player-fios@teste.local", "other-fios@teste.local"):
         client_anon.cookies.clear()
         login_as(client_anon, email=email, password="test-secret-ok")
-        assert client_anon.get(path).status_code == 403
+        assert client_anon.get(path, params={"sessao_origem_id": 1}).status_code == 403
         assert client_anon.post(path, json={"titulo": "Negado"}).status_code == 403
+    client_anon.cookies.clear()
+    assert client_anon.get(path, params={"sessao_origem_id": 1}).status_code == 401

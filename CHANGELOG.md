@@ -9,10 +9,13 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ### Added
 
+- Blocos de combate com cor própria nas Notas de Preparo e propostas de combate no rascunho de sessão da IA.
+- Leitura de sessão com blocos separados e recolhíveis de Notas de Preparo, Fios Narrativos e Resumo para o mestre em Modo GM.
 - Assistente de IA para o mestre nos campos de texto livre (rascunho de sessão, resumo, fios narrativos, descrições), por campanha, só para o mestre dono e com revisão antes de salvar. Nada é gravado sem aceitação.
 
 ### Changed
 
+- A lista de fios da página de Sessões passa a exigir o Modo GM ligado para o mestre dono.
 - **Atenção:** campanhas com o toggle de IA ligado passam a enviar conteúdo oculto (inclusive de entidades não visíveis aos jogadores) ao provedor DeepSeek nas assistências de escrita. A flag `usou_conteudo_oculto` na resposta indica quando isso ocorreu.
 
 ## [1.1.0] — 2026-10-20

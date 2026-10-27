@@ -75,30 +75,41 @@ def test_local_npc_lists_unchanged(client: TestClient, db_session) -> None:
 
 def test_public_list_never_includes_notas_preparo(client: TestClient, db_session) -> None:
     """GM-only prep notes must not leak into the public Sessao schema."""
-    seed_sessao(
+    visible = seed_sessao(
         db_session,
         numero=1,
         titulo="Visível com preparo",
         visivel=True,
         notas_preparo="Segredo do mestre",
     )
-    seed_sessao(
+    hidden = seed_sessao(
         db_session,
         numero=2,
         titulo="Oculta com preparo",
         visivel=False,
         notas_preparo="Ainda não jogada",
     )
+    from app.models.fio_narrativo import FioNarrativo
+    db_session.add_all([
+        FioNarrativo(titulo="Fio privado visível", descricao="Descrição privada", sessao_origem_id=visible.id),
+        FioNarrativo(titulo="Fio privado oculto", descricao="Outro segredo", sessao_origem_id=hidden.id),
+    ])
+    db_session.commit()
 
     resp = client.get(api("/api/sessoes"))
     assert resp.status_code == 200
     sessoes = resp.json()["sessoes"]
     assert [s["titulo"] for s in sessoes] == ["Visível com preparo"]
     assert all("notas_preparo" not in s for s in sessoes)
+    assert all("fio" not in key.lower() for s in sessoes for key in s)
+    assert all(private not in resp.text for private in ("Segredo do mestre", "Ainda não jogada", "Fio privado", "Descrição privada", "Outro segredo"))
 
     detail = client.get(api(f"/api/sessoes/{sessoes[0]['id']}"))
     assert detail.status_code == 200
     assert "notas_preparo" not in detail.json()
+    assert all("fio" not in key.lower() for key in detail.json())
+    assert all(private not in detail.text for private in ("Segredo do mestre", "Fio privado", "Descrição privada"))
+    assert client.get(api(f"/api/sessoes/{hidden.id}")).status_code == 404
 
 
 def test_filling_resumo_preserves_notas_preparo(client: TestClient, db_session) -> None:

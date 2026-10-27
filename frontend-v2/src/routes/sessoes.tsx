@@ -13,8 +13,8 @@ import {
 } from "@/api/sessoes";
 import { useEditMode } from "@/auth/EditModeContext";
 import { FiosList } from "@/components/codex/FiosList";
+import { SessionReadBlocks } from "@/components/codex/SessionReadBlocks";
 import { SessionEditor, type SessaoDraft } from "@/components/codex/SessionEditor";
-import { RichContent } from "@/components/codex/RichContent";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -254,7 +254,7 @@ export function Sessions() {
       <nav
         aria-label={t("v2.archive")}
         className={cn(
-          "scroll-ink lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1",
+          "scroll-ink min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1",
           hasExplicitSession && "hidden lg:block",
         )}
       >
@@ -334,13 +334,19 @@ export function Sessions() {
             })}
           </ol>
         )}
-        {isDono && <FiosList key={`${slug}:${fiosRevision}`} slug={slug} />}
+        {enabled && isDono && (
+          <FiosList
+            slug={slug}
+            revision={fiosRevision}
+            onChange={() => setFiosRevision((value) => value + 1)}
+          />
+        )}
       </nav>
 
       {current && (
         <article
           className={cn(
-            "scroll-ink max-w-2xl animate-in fade-in lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1",
+            "scroll-ink min-w-0 max-w-2xl animate-in fade-in lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1",
             !hasExplicitSession && "hidden lg:block",
           )}
           key={current.id}
@@ -391,19 +397,25 @@ export function Sessions() {
             </p>
           )}
           <div className="my-8 h-px w-24 bg-seal" />
-          {enabled && current.notas_preparo?.trim() && (
-            <section className="mb-8">
-              <h3 className="eyebrow mb-2">{t("fieldNotasPreparo")}</h3>
-              <div className="font-display text-lg leading-[1.7] text-pretty text-muted-foreground">
-                <RichContent markdown={current.notas_preparo} />
-              </div>
-            </section>
-          )}
-          {current.resumo && (
-            <div className="drop-cap font-display text-xl leading-[1.7] text-pretty">
-              <RichContent markdown={current.resumo} />
-            </div>
-          )}
+          <SessionReadBlocks
+            sessao={current}
+            slug={slug}
+            enabled={enabled}
+            isDono={isDono}
+            fiosRevision={fiosRevision}
+            onShowThreads={() => {
+              navigate({ search: {}, replace: true });
+              requestAnimationFrame(() => {
+                const target = document.getElementById("fios-em-aberto");
+                history.replaceState(null, "", "#fios-em-aberto");
+                target?.scrollIntoView({
+                  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                    ? "instant"
+                    : "smooth",
+                });
+              });
+            }}
+          />
           <footer className="mt-12 grid gap-6 border-t border-border pt-6 sm:grid-cols-2">
             <div>
               <h3 className="eyebrow mb-2">{t("v2.placesVisited")}</h3>

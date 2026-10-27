@@ -15,7 +15,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export function FiosList({ slug }: { slug: string }) {
+export function FiosList({
+  slug,
+  onChange,
+  revision,
+}: {
+  slug: string;
+  onChange?: () => void;
+  revision?: number;
+}) {
   const { t } = useTranslation("sessoes");
   const [rows, setRows] = useState<Fio[]>([]);
   const [draft, setDraft] = useState({ titulo: "", descricao: "" });
@@ -32,13 +40,14 @@ export function FiosList({ slug }: { slug: string }) {
   }, [slug, t]);
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, revision]);
   async function run(action: () => Promise<unknown>) {
     setBusy(true);
     setError(null);
     try {
       await action();
       load();
+      onChange?.();
     } catch {
       setError(t("fios.saveError"));
     } finally {
@@ -65,7 +74,11 @@ export function FiosList({ slug }: { slug: string }) {
     void run(() => fiosApi.reorder(slug, ids));
   }
   return (
-    <section aria-label={t("fios.heading")} className="mt-8 space-y-4 border-t border-border pt-6">
+    <section
+      id="fios-em-aberto"
+      aria-label={t("fios.heading")}
+      className="mt-8 space-y-4 border-t border-border pt-6"
+    >
       <h2 className="font-display text-2xl">{t("fios.heading")}</h2>
       {error && (
         <p role="alert" className="text-destructive">

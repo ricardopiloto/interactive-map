@@ -1,10 +1,10 @@
-# Spec Delta
+# sessao-leitura-blocos Specification
 
 ## Purpose
 
 Faz a leitura de uma sessão distinguir, para o mestre, o material privado de preparo (Notas de Preparo e Fios Narrativos) do texto público (Resumo), mantendo para jogadores apenas o Resumo, sem vazar nada do material privado.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Blocos separados na leitura da sessão para o mestre
 
@@ -122,3 +122,27 @@ Os rótulos, selos, mensagens de vazio e de erro e o link dos blocos SHALL exist
 
 - **WHEN** a leitura da sessão é aberta num celular
 - **THEN** os blocos aparecem empilhados e legíveis, sem rolagem horizontal
+
+### Requirement: Blocos recolhíveis
+
+Em Modo GM, cada bloco da leitura de sessão (Notas de Preparo, Fios Narrativos e Resumo) SHALL poder ser recolhido e expandido pelo mestre, a partir do cabeçalho do bloco, que SHALL ser um botão com `aria-expanded` e operável por teclado. Todos os blocos SHALL iniciar expandidos, o selo "Só para o mestre" SHALL continuar visível com o bloco recolhido, e o estado SHALL ser local à tela (sem persistência no servidor). Fora do Modo GM, a leitura SHALL permanecer sem cabeçalho nem controle de recolher.
+
+#### Scenario: Recolher um bloco
+
+- **WHEN** o mestre em Modo GM aciona o cabeçalho de um bloco expandido
+- **THEN** o conteúdo do bloco some, o cabeçalho e o selo permanecem e `aria-expanded` passa a `false`
+
+#### Scenario: Expandir um bloco
+
+- **WHEN** o mestre aciona o cabeçalho de um bloco recolhido
+- **THEN** o conteúdo reaparece e `aria-expanded` passa a `true`
+
+#### Scenario: Estado inicial
+
+- **WHEN** o mestre abre ou troca de sessão em Modo GM
+- **THEN** os três blocos aparecem expandidos
+
+#### Scenario: Sem Modo GM
+
+- **WHEN** um jogador, visitante ou o mestre com Modo GM desligado lê a sessão
+- **THEN** não há controle de recolher nem cabeçalho de bloco
