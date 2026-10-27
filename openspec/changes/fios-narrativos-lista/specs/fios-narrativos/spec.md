@@ -42,7 +42,7 @@ O mestre dono SHALL poder adicionar um fio manualmente, editar título e descri�
 #### Scenario: Sessão de origem removida
 
 - **WHEN** uma sessão que originou um fio é removida
-- **THEN** o fio permanece na lista sem sessão de origem
+- **THEN** o fio permanece na lista, e o sistema limpa explicitamente a referência, que passa a ficar sem sessão de origem
 
 ### Requirement: IA propõe fios a partir de todas as sessões
 
@@ -75,12 +75,17 @@ Com o módulo de IA ativo, o mestre dono SHALL poder pedir à IA que proponha fi
 
 ### Requirement: Revisão item a item antes de entrar na lista
 
-A proposta da IA SHALL ser apresentada como itens individuais, cada um com título e descrição editáveis. O mestre SHALL poder aceitar ou descartar cada item; somente os aceitos SHALL entrar na lista, com origem IA e, quando a IA indicar, a sessão de origem.
+A proposta da IA SHALL ser apresentada como itens individuais, cada um com título e descrição editáveis. O mestre SHALL poder aceitar ou descartar cada item; somente os aceitos SHALL entrar na lista, com origem IA e, quando a IA indicar, a sessão de origem. Os itens aceitos SHALL ser gravados de forma atômica: ou entram todos, ou nenhum.
 
 #### Scenario: Aceitar parte da proposta
 
 - **WHEN** a IA propõe cinco fios e o mestre aceita dois, editando o título de um
 - **THEN** apenas esses dois entram na lista, o editado com o título corrigido
+
+#### Scenario: Falha ao gravar os aceitos
+
+- **WHEN** a gravação dos itens aceitos falha
+- **THEN** nenhum deles entra na lista e o mestre vê uma mensagem clara, podendo tentar de novo
 
 #### Scenario: Descartar tudo
 
@@ -122,7 +127,17 @@ Os fios narrativos SHALL fazer parte do pacote de exportação e importação da
 #### Scenario: Exportar e importar
 
 - **WHEN** a campanha é exportada e importada
-- **THEN** os fios voltam com título, descrição, estado, origem e ordem, e continuam só do mestre
+- **THEN** os fios voltam com título, descrição, estado, origem, ordem e sessão de origem, e continuam só do mestre
+
+#### Scenario: Pacote de versão anterior
+
+- **WHEN** o mestre importa um pacote exportado antes da existência dos fios
+- **THEN** a importação é aceita e a campanha fica com a lista de fios vazia
+
+#### Scenario: Sessão de origem fora do pacote
+
+- **WHEN** um fio do pacote aponta para uma sessão que não está no pacote
+- **THEN** o pacote é recusado com erro explícito, sem importação parcial
 
 ### Requirement: Textos em pt-BR e en
 
