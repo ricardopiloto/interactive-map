@@ -7,18 +7,26 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-10-27
+
 ### Added
 
-- Barra de formatação Markdown nos campos de texto rico, com botão de bloco de combate nas Notas de Preparo.
-
-- Blocos de combate com cor própria nas Notas de Preparo e propostas de combate no rascunho de sessão da IA.
-- Leitura de sessão com blocos separados e recolhíveis de Notas de Preparo, Fios Narrativos e Resumo para o mestre em Modo GM.
-- Assistente de IA para o mestre nos campos de texto livre (rascunho de sessão, resumo, fios narrativos, descrições), por campanha, só para o mestre dono e com revisão antes de salvar. Nada é gravado sem aceitação.
+- Assistente de IA para o mestre nos campos de texto livre (rascunho de sessão, resumo, descrições de personagem e de local), por campanha, só para o mestre dono e com revisão antes de salvar. Nada é gravado sem aceitação. O botão de IA também aparece ao criar um registro novo.
+- Fios Narrativos: lista persistente e editável dos fios em aberto da campanha, só para o mestre dono. Cada fio tem título, descrição, estado (em aberto ou resolvido), origem (manual ou IA), sessão de origem opcional e posição, com criar, editar, reordenar, resolver, reabrir e remover. A IA pode propor fios a partir de todas as sessões, arcos, eventos, personagens e locais, com revisão item a item e gravação atômica dos aceitos. Os fios em aberto alimentam o rascunho de sessão da IA e entram na exportação, na importação e no backup da campanha.
+- Leitura de sessão com blocos separados e recolhíveis de Notas de Preparo, Fios Narrativos e Resumo para o mestre em Modo GM, com moldura, cor e selo «Só para o mestre» nos blocos privados. O bloco de Fios mostra os fios criados na sessão e leva à lista completa. Jogadores, visitantes e o Modo GM desligado continuam vendo apenas o Resumo.
+- `GET /admin/fios` aceita o filtro opcional `sessao_origem_id`, combinável com `estado`.
+- Blocos de combate nas Notas de Preparo: callout `> [!combate] Título` com lista de Inimigos, Ambiente, Tática ou gatilho e Desfecho, exibido com cor própria, ícone e título na leitura da sessão. O rascunho de sessão da IA passa a propor combates nesse formato, sem estatísticas de regra, e o Resumo gerado não copia combates planejados como fatos ocorridos.
+- Barra de formatação Markdown nos campos de texto rico (Notas de Preparo e Resumo da sessão; descrições de local, personagem, evento e item; notas mecânicas): negrito, itálico, título, listas, citação e link, com atalhos Ctrl/Cmd+B e Ctrl/Cmd+I, acessível por teclado e disponível em pt-BR e en. Nas Notas de Preparo, um botão insere o modelo do bloco de combate.
 
 ### Changed
 
-- A lista de fios da página de Sessões passa a exigir o Modo GM ligado para o mestre dono.
+- A lista «Fios em aberto» da página de Sessões passa a exigir o Modo GM ligado para o mestre dono.
+- O contexto enviado à IA omite os blocos de combate das notas de preparo de outras sessões, para que um combate planejado não seja lido como acontecimento.
 - **Atenção:** campanhas com o toggle de IA ligado passam a enviar conteúdo oculto (inclusive de entidades não visíveis aos jogadores) ao provedor DeepSeek nas assistências de escrita. A flag `usou_conteudo_oculto` na resposta indica quando isso ocorreu.
+
+### Database
+
+- Uma migração Alembic por campanha, sem alterar dados existentes: `012` cria a tabela `fio_narrativo`. Pacotes de exportação anteriores aos fios continuam sendo importados, com a lista de fios vazia.
 
 ## [1.1.0] — 2026-10-20
 
