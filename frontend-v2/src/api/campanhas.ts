@@ -31,11 +31,7 @@ export interface CampanhaCriada {
 }
 
 export type TipoAssistencia =
-  | "rascunho_sessao"
-  | "fios_narrativos"
-  | "resumo_sessao"
-  | "descricao_personagem"
-  | "descricao_local";
+  "rascunho_sessao" | "resumo_sessao" | "descricao_personagem" | "descricao_local";
 
 export interface AssistirRequest {
   tipo: TipoAssistencia;

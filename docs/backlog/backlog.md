@@ -619,7 +619,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-046] Produto — Assistência de IA em todos os campos de texto livre do mestre (notas/decisões)
 
-**Status:** Em implementação na change [`ia-assistente-mestre`](../../openspec/changes/ia-assistente-mestre/proposal.md) (decisão de 2026-10-25: custo por conta do produto, DeepSeek por ora, gate tudo-ou-nada por campanha com envio de conteúdo oculto aceito). Fios narrativos persistentes seguem na change [`fios-narrativos-lista`](../../openspec/changes/fios-narrativos-lista/proposal.md). **Não entra em [BKLG-042]/[BKLG-044]/[BKLG-045]** — é uma feature própria, transversal (cada um desses três só adiciona o campo de texto puro; o botão de IA nesse campo é este item, separado).
+**Status:** Em implementação na change [`ia-assistente-mestre`](../../openspec/changes/ia-assistente-mestre/proposal.md) (decisão de 2026-10-25: custo por conta do produto, DeepSeek por ora, gate tudo-ou-nada por campanha com envio de conteúdo oculto aceito). Fios narrativos persistentes (lista do mestre, proposta item a item pela IA, uso no Rascunho) estão implementados na change [`fios-narrativos-lista`](../../openspec/changes/fios-narrativos-lista/proposal.md), em verificação manual. **Não entra em [BKLG-042]/[BKLG-044]/[BKLG-045]** — é uma feature própria, transversal (cada um desses três só adiciona o campo de texto puro; o botão de IA nesse campo é este item, separado).
 
 **Registrado em:** 2026-10-18, na mesma conversa que detalhou BKLG-041/042/044/045.
 
@@ -644,7 +644,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 - **[BKLG-010] Sincronização ao vivo.** Hoje o jogador só vê mudanças ao recarregar. SSE (mais simples de operar atrás do Caddy atual) ou polling curto — decidir custo de servidor por campanha simultânea antes de comprometer a spec.
 - **[BKLG-011] Múltiplos mapas aninhados.** Região → cidade → prédio, cada nível com seus próprios pinos e zoom. Mexe em `Local`, no digitalizador de rotas e na navegação do Mapa — o tipo de mudança que merece um desenho de dados revisado antes de virar tarefa.
-- **[BKLG-012] Missões, fios abertos e relógios do mestre.** Entidade sem precedente no schema atual (diferente da Sessão, que reusa o padrão de NPC). Vale um brainstorm curto (BP) antes da TR, pra não desenhar às cegas.
+- **[BKLG-012] Missões, fios abertos e relógios do mestre.** Entidade sem precedente no schema atual (diferente da Sessão, que reusa o padrão de NPC). Vale um brainstorm curto (BP) antes da TR, pra não desenhar às cegas. Atualização de 2026-10-26: o fio mínimo (título, descrição, estado aberto/resolvido, origem manual/IA, sessão de origem, ordem) foi implementado na change [`fios-narrativos-lista`](../../openspec/changes/fios-narrativos-lista/proposal.md), só para o mestre dono; permanecem em aberto missões, relógios de progresso e vínculos de fios com personagens/locais.
 
 ## Roadmap de mercado — "Depois" (só com sinal real de demanda)
 

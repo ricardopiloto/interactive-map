@@ -48,6 +48,16 @@ interface Row {
 
 interface Store {
   rows: Row[];
+  fios?: {
+    id: number;
+    titulo: string;
+    descricao: string;
+    estado: "aberto" | "resolvido";
+    origem: "manual" | "ia";
+    sessao_origem_id: number | null;
+    ordem: number;
+    criado_em: string;
+  }[];
   locais: Place[];
   personagens: Person[];
   arcos: { id: number; titulo: string }[];
@@ -152,6 +162,19 @@ function installApi(stores: Record<string, Store>, signedIn: boolean) {
       if (!slug) return new Response("{}", { status: 404 });
       const store = stores[decodeURIComponent(slug)];
       if (!store) return new Response("{}", { status: 404 });
+      if (url.endsWith("/admin/fios") && method === "GET") return respond(store.fios ?? []);
+      if (url.endsWith("/admin/fios") && method === "POST") {
+        const body = JSON.parse(String(init?.body));
+        const fio = {
+          ...body,
+          id: (store.fios?.length ?? 0) + 1,
+          estado: "aberto",
+          ordem: store.fios?.length ?? 0,
+          criado_em: "2026-01-01",
+        };
+        store.fios = [...(store.fios ?? []), fio];
+        return respond(fio, 201);
+      }
       if (url.endsWith("/admin/session")) return respond({ papel: store.papel });
       if (url.endsWith("/config")) return respond(config(decodeURIComponent(slug), store.modules));
       if (url.endsWith("/admin/sessoes/proximo-numero")) {
@@ -438,7 +461,8 @@ it("sugere associações só com o módulo ia_arcos e preserva a seleção atual
   const dialog = await screen.findByRole("dialog");
   expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(1);
   fireEvent.click(within(dialog).getByRole("checkbox", { name: "Visível para todos" }));
-  expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(3);
+  expect(within(dialog).getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(2);
+  expect(within(dialog).getByRole("button", { name: "Fios narrativos" })).toBeVisible();
   const suggest = within(dialog).getByRole("button", { name: "Sugerir locais e personagens" });
   expect(suggest).toBeDisabled();
   expect(
@@ -474,4 +498,31 @@ it("não reaproveita sessões ao trocar de campanha", async () => {
   fireEvent.click(screen.getByRole("link", { name: "Trocar campanha" }));
   expect(await screen.findByRole("heading", { name: "Sessão Beta" })).toBeVisible();
   expect(screen.queryByText("Sessão Alpha")).not.toBeInTheDocument();
+});
+
+it("mostra e permite adicionar fios somente ao dono", async () => {
+  const owner = emptyStore({
+    fios: [
+      {
+        id: 1,
+        titulo: "Segredo",
+        descricao: "Pista",
+        estado: "aberto",
+        origem: "manual",
+        sessao_origem_id: null,
+        ordem: 0,
+        criado_em: "2026-01-01",
+      },
+    ],
+  });
+  const first = renderSessions("/c/alpha/sessoes", { alpha: owner }, true);
+  expect(await screen.findByRole("heading", { name: "Fios em aberto" })).toBeVisible();
+  expect(await screen.findByText("Segredo")).toBeVisible();
+  fireEvent.change(screen.getByRole("textbox", { name: "Título" }), { target: { value: "Outro" } });
+  fireEvent.click(screen.getByRole("button", { name: "Adicionar fio" }));
+  expect(await screen.findByText("Outro")).toBeVisible();
+  first.unmount();
+  renderSessions("/c/alpha/sessoes", { alpha: emptyStore({ papel: "membro" }) }, true);
+  expect(await screen.findByRole("button", { name: "Nova sessão" })).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
 });

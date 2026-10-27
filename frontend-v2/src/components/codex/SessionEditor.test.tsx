@@ -45,7 +45,7 @@ function montar(visivel_para_todos: boolean, iaAtiva = true, isDono = true) {
 it("mostra Rascunho e Fios apenas com sessão oculta", () => {
   const view = montar(false);
   expect(screen.getByText("Rascunho")).toBeTruthy();
-  expect(screen.getByText("Fios narrativos")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Fios narrativos" })).toBeTruthy();
   view.unmount();
   montar(true);
   expect(screen.queryByText("Rascunho")).toBeNull();
@@ -67,4 +67,29 @@ it("oferece IA no resumo de sessão nova apenas para dono com módulo ativo", ()
   nonOwner.unmount();
   montar(true, false);
   expect(screen.queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
+});
+
+it("não oferece proposta de fios sem dono ou módulo", () => {
+  const nonOwner = montar(false, true, false);
+  expect(screen.queryByRole("button", { name: "Fios narrativos" })).toBeNull();
+  nonOwner.unmount();
+  montar(false, false);
+  expect(screen.queryByRole("button", { name: "Fios narrativos" })).toBeNull();
+});
+
+it("abre revisão de fios pelo botão sem alterar notas de preparo", async () => {
+  const { fiosApi } = await import("@/api/fios");
+  vi.spyOn(fiosApi, "propose").mockResolvedValue({
+    estado: "vazio",
+    fios: [],
+    sessoes_omitidas: 0,
+    usou_conteudo_oculto: false,
+  });
+  const { onChange } = montar(false);
+  fireEvent.click(screen.getByRole("button", { name: "Fios narrativos" }));
+  expect(await screen.findByRole("heading", { name: "Revisar fios narrativos" })).toBeVisible();
+  expect(fiosApi.propose).toHaveBeenCalledWith("campanha", null);
+  expect(onChange).not.toHaveBeenCalledWith(
+    expect.objectContaining({ notas_preparo: expect.anything() }),
+  );
 });

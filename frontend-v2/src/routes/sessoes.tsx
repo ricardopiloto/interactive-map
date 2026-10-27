@@ -12,6 +12,7 @@ import {
   type SessaoPayload,
 } from "@/api/sessoes";
 import { useEditMode } from "@/auth/EditModeContext";
+import { FiosList } from "@/components/codex/FiosList";
 import { SessionEditor, type SessaoDraft } from "@/components/codex/SessionEditor";
 import { RichContent } from "@/components/codex/RichContent";
 import {
@@ -122,6 +123,7 @@ export function Sessions() {
   const navigate = useNavigate();
   const asGm = ready ? enabled : null;
   const { data, error, loading, reload } = useSessoes(slug, asGm);
+  const [fiosRevision, setFiosRevision] = useState(0);
   const [draft, setDraft] = useState<SessaoDraft | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -332,6 +334,7 @@ export function Sessions() {
             })}
           </ol>
         )}
+        {isDono && <FiosList key={`${slug}:${fiosRevision}`} slug={slug} />}
       </nav>
 
       {current && (
@@ -430,6 +433,8 @@ export function Sessions() {
       {draft && (
         <SessionEditor
           draft={draft}
+          sessoes={sessoes}
+          onFiosAdded={() => setFiosRevision((revision) => revision + 1)}
           slug={slug}
           isDono={isDono}
           locais={data?.locais ?? []}

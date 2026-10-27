@@ -16,18 +16,18 @@
 - [x] 2.4 Saneamento da saída: descartar itens vazios, limitar tamanhos e quantidade, mapear `sessao_numero` para sessão existente, remover duplicados dos já existentes por título normalizado; estados `propostas|vazio|falha`; testes de JSON inválido, resposta vazia e duplicados.
 - [x] 2.5 Rota `POST /admin/fios/propor` (`require_dono`, `10/minute`, módulo `ia_arcos`, `incluir_ocultos=True`, timeout de 120 s); 403 explícito para módulo desligado/não dono; mensagens distintas para chave ausente, tempo esgotado e erro do provedor; log só de contagens; nada gravado; testes de rota (módulo desligado, jogador, 429, falha do provedor, payload enviado com cliente HTTP simulado).
 - [x] 2.6 Em `motor_ia_assistente`, o tipo `rascunho_sessao` recebe os fios com `estado=aberto` como registros de contexto (resolvidos não entram como pendência), respeitando a prioridade instrução > texto já nas Notas de Preparo > fios em aberto > resumos anteriores; verificar com teste do payload enviado.
-- [ ] 2.7 Remover o tipo `fios_narrativos` de `/ia/assistir` (rota, `Literal` do schema, testes e copy); verificar que o tipo é recusado pela validação e que os demais tipos seguem funcionando.
+- [x] 2.7 Remover o tipo `fios_narrativos` de `/ia/assistir` (rota, `Literal` do schema, testes e copy); verificar que o tipo é recusado pela validação e que os demais tipos seguem funcionando.
 
 ## 3. Frontend — lista e revisão
 
-- [ ] 3.1 Cliente de API (`src/api/`) para fios (CRUD, lote, reordenar, propor) e tipos; testes do cliente no padrão de `timeline.itens.test.ts`.
-- [ ] 3.2 Seção "Fios em aberto" em `routes/sessoes.tsx`, só para o mestre dono: listar (abertos primeiro), adicionar, editar inline, reordenar, resolver/reabrir, remover com confirmação; layout mobile em cartões; verificar com `SessoesPage.test.tsx` ajustado.
-- [ ] 3.3 Diálogo de revisão de propostas: itens com título e descrição editáveis, aceitar/descartar por item, "Adicionar selecionados" gravando com `POST /fios/lote` (tudo ou nada); aviso de `sessoes_omitidas`; estados loading, falha, vazio, 429 e 403; nada gravado antes da aceitação; testes de componente, incluindo falha do lote sem alterar a lista.
-- [ ] 3.4 Ligar o botão "Fios narrativos" do `SessionEditor` (continua só em sessão não visível, com `iaAtiva` e `isDono`) ao novo diálogo, removendo o destino em `notas_preparo` e o uso do tipo `fios_narrativos`; testes de render condicional.
-- [ ] 3.5 Copy pt-BR e en com o mesmo conjunto de chaves e teste de paridade.
+- [x] 3.1 Cliente de API (`src/api/`) para fios (CRUD, lote, reordenar, propor) e tipos; testes do cliente no padrão de `timeline.itens.test.ts`.
+- [x] 3.2 Seção "Fios em aberto" em `routes/sessoes.tsx`, só para o mestre dono: listar (abertos primeiro), adicionar, editar inline, reordenar, resolver/reabrir, remover com confirmação; layout mobile em cartões; verificar com `SessoesPage.test.tsx` ajustado.
+- [x] 3.3 Diálogo de revisão de propostas: itens com título e descrição editáveis, aceitar/descartar por item, "Adicionar selecionados" gravando com `POST /fios/lote` (tudo ou nada); aviso de `sessoes_omitidas`; estados loading, falha, vazio, 429 e 403; nada gravado antes da aceitação; testes de componente, incluindo falha do lote sem alterar a lista.
+- [x] 3.4 Ligar o botão "Fios narrativos" do `SessionEditor` (continua só em sessão não visível, com `iaAtiva` e `isDono`) ao novo diálogo, removendo o destino em `notas_preparo` e o uso do tipo `fios_narrativos`; testes de render condicional.
+- [x] 3.5 Copy pt-BR e en com o mesmo conjunto de chaves e teste de paridade.
 
 ## 4. Verificação e documentação
 
-- [ ] 4.1 `uv run pytest` completo do backend e `npx vitest run`, `npx tsc --noEmit` e `npx eslint .` do `frontend-v2` passando.
-- [ ] 4.2 Verificação manual com módulo ligado e `deepseek-chat`: propor fios numa campanha com sessões sem resumo, aceitar parte, editar, resolver, reabrir, remover; apagar uma sessão de origem e conferir que o fio permanece; gerar Rascunho e conferir que usa os fios em aberto; exportar e importar a campanha e conferir que os fios voltam; conferir mobile. Reverter dados de teste.
-- [ ] 4.3 Atualizar `docs/backlog/backlog.md`: BKLG-046 aponta para esta change, BKLG-012 registra que o fio mínimo foi implementado e o que permanece (missões, relógios).
+- [x] 4.1 `uv run pytest` completo do backend e `npx vitest run`, `npx tsc --noEmit` e `npx eslint .` do `frontend-v2` passando.
+- [x] 4.2 Verificação manual com módulo ligado e `deepseek-chat`: propor fios numa campanha com sessões sem resumo, aceitar parte, editar, resolver, reabrir, remover; apagar uma sessão de origem e conferir que o fio permanece; gerar Rascunho e conferir que usa os fios em aberto; exportar e importar a campanha e conferir que os fios voltam; conferir mobile. Reverter dados de teste.
+- [x] 4.3 Atualizar `docs/backlog/backlog.md`: BKLG-046 aponta para esta change, BKLG-012 registra que o fio mínimo foi implementado e o que permanece (missões, relógios).

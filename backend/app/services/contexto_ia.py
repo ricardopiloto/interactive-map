@@ -43,7 +43,7 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
     def arco_rows(ids):
         return [a for a in arcos if a.id in ids]
 
-    if pedido.tipo in ("rascunho_sessao", "fios_narrativos"):
+    if pedido.tipo == "rascunho_sessao":
         sessoes_contexto = (
             [s for s in sessoes if s.id != getattr(alvo, "id", None)]
             if pedido.tipo == "rascunho_sessao" else sessoes
@@ -62,7 +62,7 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
         add("evento", eventos, lambda e: f"{e.titulo}: {e.descricao}")
         add("personagem", pessoas, lambda p: f"{p.nome}; papel: {p.papel}; facção: {p.faccao}; {p.descricao}")
         add("local", locais, lambda l: f"{l.nome}: {l.descricao}")
-        if pedido.tipo in ("rascunho_sessao", "fios_narrativos"):
+        if pedido.tipo == "rascunho_sessao":
             add("faccao", [p for p in pessoas if p.faccao], lambda p: f"{p.faccao}; personagem: {p.nome}")
     elif pedido.tipo == "resumo_sessao":
         if alvo is None:
@@ -128,9 +128,9 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
 
 def coletar_fios(session: Session, campanha_id: int, sessao_id: int | None = None) -> tuple[list[ItemContextoIa], list[Sessao]]:
     sessoes = list(session.exec(select(Sessao).order_by(Sessao.numero)).all())
-    registros = coletar_registros(session, campanha_id, AssistirRequest(tipo="fios_narrativos"), None)
+    registros = coletar_registros(session, campanha_id, AssistirRequest(tipo="rascunho_sessao"), None)
     # Replace the session slice with numeric order and optionally exclude the draft.
-    registros = [r for r in registros if r.tipo != "sessao"]
+    registros = [r for r in registros if r.tipo not in ("sessao", "notas_preparo_anterior")]
     sessoes_contexto = [s for s in sessoes if s.id != sessao_id]
     sessoes_items = [_item(campanha_id, "sessao", s, _texto_sessao(s)) for s in sessoes_contexto]
     fios = list(session.exec(select(FioNarrativo).order_by(FioNarrativo.ordem)).all())

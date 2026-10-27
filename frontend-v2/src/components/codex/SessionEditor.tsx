@@ -1,5 +1,7 @@
+import { FiosReview } from "@/components/codex/FiosReview";
+import type { Sessao } from "@/api/sessoes";
 import { IaAssistente } from "@/components/codex/IaAssistente";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +72,8 @@ function CheckList({
 export function SessionEditor({
   draft,
   slug,
+  sessoes,
+  onFiosAdded,
   isDono,
   locais,
   personagens,
@@ -85,6 +89,8 @@ export function SessionEditor({
 }: {
   draft: SessaoDraft;
   slug: string;
+  sessoes?: Pick<Sessao, "id" | "numero">[];
+  onFiosAdded?: () => void;
   isDono: boolean;
   locais: CatalogoItem[];
   personagens: CatalogoItem[];
@@ -101,6 +107,7 @@ export function SessionEditor({
   const { t } = useTranslation("sessoes");
   const { t: tc } = useTranslation("comum");
   const notasPreparoRef = useRef<HTMLTextAreaElement>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   useEffect(() => {
     if (!draft.focusNotasPreparo) return;
@@ -197,22 +204,9 @@ export function SessionEditor({
                   onSubstituir={(texto) => onChange({ notas_preparo: texto })}
                 />
               </div>
-              <div className="space-y-1">
-                <p className={fieldLabel}>{tc("iaAssistente.fiosNarrativos")}</p>
-                <IaAssistente
-                  slug={slug}
-                  tipo="fios_narrativos"
-                  alvoId={draft.id ?? null}
-                  textoAtual={draft.notas_preparo}
-                  campoPublico={false}
-                  onInserir={(texto) =>
-                    onChange({
-                      notas_preparo: [draft.notas_preparo, texto].filter(Boolean).join("\n\n"),
-                    })
-                  }
-                  onSubstituir={(texto) => onChange({ notas_preparo: texto })}
-                />
-              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => setReviewOpen(true)}>
+                {tc("iaAssistente.fiosNarrativos")}
+              </Button>
             </div>
           )}
           <label className="block space-y-1">
@@ -284,6 +278,15 @@ export function SessionEditor({
           </DialogFooter>
         </form>
       </DialogContent>
+      {reviewOpen && (
+        <FiosReview
+          slug={slug}
+          sessaoId={draft.id ?? null}
+          sessoes={sessoes ?? []}
+          onClose={() => setReviewOpen(false)}
+          onAdded={() => onFiosAdded?.()}
+        />
+      )}
     </Dialog>
   );
 }

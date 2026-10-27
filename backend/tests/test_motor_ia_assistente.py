@@ -42,7 +42,7 @@ def test_prompts_fixos():
         assert not re.search(r"\{[^}]+\}", prompt)
         assert "idioma" in prompt and "caracteres" in prompt
         assert "---" not in prompt and "[[" not in prompt
-    for tipo in ("rascunho_sessao", "fios_narrativos", "descricao_personagem"):
+    for tipo in ("rascunho_sessao", "descricao_personagem"):
         assert PLACEHOLDER_MECANICA in renderizar_prompt(tipo, True)
 
 
@@ -67,14 +67,14 @@ def test_orcamento_preserva_recente(db_session, monkeypatch):
     for n in range(1, 9):
         seed_sessao(db_session, numero=n, resumo=f"SESSAO-{n} " + "x" * 1200)
     visto = []
-    assistir(db_session, _ctx(), AssistirRequest(tipo="fios_narrativos", texto_atual="y" * 500), client=_client(visto))
+    assistir(db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao", texto_atual="y" * 500), client=_client(visto))
     system, user = (m["content"] for m in visto[0]["messages"])
     assert len(system) + len(user) <= 5000
     assert "SESSAO-8" in user and "SESSAO-1" not in user
 
 
 def test_vazio(db_session):
-    assert assistir(db_session, _ctx(), AssistirRequest(tipo="fios_narrativos")).estado == "vazio"
+    assert assistir(db_session, _ctx(), AssistirRequest(tipo="rascunho_sessao")).estado == "vazio"
 
 
 def test_rota_validacao_e_publico(client, db_session, monkeypatch):
@@ -85,6 +85,7 @@ def test_rota_validacao_e_publico(client, db_session, monkeypatch):
     monkeypatch.setattr("app.services.ia_provider._post", lambda payload, chave, http_client, **kwargs: (visto.append(payload) or httpx.Response(200, json={"choices": [{"message": {"content": "  Texto  "}}]})))
     url = f"/api/c/{TEST_CAMPAIGN_SLUG}/admin/ia/assistir"
     assert client.post(url, json={"tipo": "notas_mecanicas"}).status_code == 422
+    assert client.post(url, json={"tipo": "fios_narrativos"}).status_code == 422
     sem_alvo = client.post(url, json={"tipo": "descricao_local"})
     assert sem_alvo.status_code == 200 and sem_alvo.json()["estado"] == "sugestao"
     assert client.post(url, json={"tipo": "descricao_local", "alvo_id": 999999}).status_code == 404
@@ -96,7 +97,7 @@ def test_rota_validacao_e_publico(client, db_session, monkeypatch):
 
 
 @pytest.mark.parametrize("tipo", tuple(BLOCOS_TIPO))
-def test_cinco_tipos_sem_alvo_id(db_session, monkeypatch, tipo):
+def test_tipos_sem_alvo_id(db_session, monkeypatch, tipo):
     monkeypatch.setattr(settings, "deepseek_api_key", "teste")
     seed_sessao(db_session, numero=1, resumo="História anterior")
     seed_personagem(db_session, nome="Pessoa do cenário")
@@ -370,19 +371,6 @@ def test_rascunho_destino_prioridade_e_sessao_sem_resumo(db_session, monkeypatch
     assert "instrução do mestre" in visto[0]["messages"][0]["content"]
     assert "texto já escrito" in visto[0]["messages"][0]["content"]
     assert visto[0]["max_tokens"] == 16000
-
-
-def test_fios_inclui_notas_quando_resumo_vazio(db_session, monkeypatch):
-    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
-    seed_sessao(db_session, numero=1, resumo="", notas_preparo="FIO-NAS-NOTAS")
-    seed_sessao(db_session, numero=2, resumo="Outra sessão")
-    visto = []
-    resposta = assistir(
-        db_session, _ctx(), AssistirRequest(tipo="fios_narrativos"),
-        client=_client(visto),
-    )
-    assert resposta.campo_destino == "notas_preparo"
-    assert "FIO-NAS-NOTAS" in visto[0]["messages"][1]["content"]
 
 
 def test_falha_avisa_sem_conteudo(db_session, monkeypatch, caplog):

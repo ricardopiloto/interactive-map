@@ -43,14 +43,12 @@ MENSAGENS_FALHA = {
 }
 MIN_REGISTROS = {
     "rascunho_sessao": 2,
-    "fios_narrativos": 2,
     "resumo_sessao": 1,
     "descricao_personagem": 1,
     "descricao_local": 1,
 }
 CAMPOS = {
     "rascunho_sessao": ("notas_preparo", 50000),
-    "fios_narrativos": ("notas_preparo", 50000),
     "resumo_sessao": ("resumo", 50000),
     "descricao_personagem": ("descricao", 10000),
     "descricao_local": ("descricao", 10000),
@@ -93,13 +91,6 @@ BLOCOS_TIPO = {
         "Prioridade das fontes: 1) instrução do mestre; 2) texto já escrito "
         "nas Notas de Preparo; 3) fios em aberto; 4) resumos das sessões anteriores."
     ),
-    "fios_narrativos": (
-        "Liste 3 a 6 fios separados em Em aberto no histórico (com origem real: "
-        "sessão, evento ou personagem) e Ideias novas (marcadas como propostas). "
-        "Para cada fio, diga o que está aberto, como avança e o que muda. "
-        "Priorize segredos não revelados e NPCs sem desfecho. NPCs sem bloco "
-        "mecânico: " + PLACEHOLDER_MECANICA + "."
-    ),
     "resumo_sessao": (
         "Gere o Resumo a partir das Notas de Preparo e do contexto. "
         "Registre o que aconteceu e o que significou para quem viveu, no passado. "
@@ -133,7 +124,7 @@ def renderizar_prompt(tipo: str, campo_publico: bool) -> str:
 
 
 def _alvo(session: Session, pedido: AssistirRequest):
-    if pedido.tipo in ("rascunho_sessao", "fios_narrativos", "resumo_sessao"):
+    if pedido.tipo in ("rascunho_sessao", "resumo_sessao"):
         classe = Sessao
     elif pedido.tipo == "descricao_personagem":
         classe = NPC
@@ -168,7 +159,7 @@ def assistir(
     campo, limite = CAMPOS[pedido.tipo]
     publico = (
         False
-        if pedido.tipo in ("rascunho_sessao", "fios_narrativos")
+        if pedido.tipo == "rascunho_sessao"
         else pedido.campo_publico or bool(getattr(alvo, "visivel_para_todos", False))
     )
     system = renderizar_prompt(pedido.tipo, publico)
