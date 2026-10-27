@@ -619,7 +619,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 ## [BKLG-046] Produto — Assistência de IA em todos os campos de texto livre do mestre (notas/decisões)
 
-**Status:** Ideia registrada, sem TR. **Não entra em [BKLG-042]/[BKLG-044]/[BKLG-045]** — é uma feature própria, transversal, que vem depois (cada um desses três só adiciona o campo de texto puro; o botão de IA nesse campo é este item, separado).
+**Status:** Em implementação na change [`ia-assistente-mestre`](../../openspec/changes/ia-assistente-mestre/proposal.md) (decisão de 2026-10-25: custo por conta do produto, DeepSeek por ora, gate tudo-ou-nada por campanha com envio de conteúdo oculto aceito). Fios narrativos persistentes seguem na change [`fios-narrativos-lista`](../../openspec/changes/fios-narrativos-lista/proposal.md). **Não entra em [BKLG-042]/[BKLG-044]/[BKLG-045]** — é uma feature própria, transversal (cada um desses três só adiciona o campo de texto puro; o botão de IA nesse campo é este item, separado).
 
 **Registrado em:** 2026-10-18, na mesma conversa que detalhou BKLG-041/042/044/045.
 
@@ -634,7 +634,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 **Por que é maior que parece:** isso não é "um botão de IA por campo" — é decidir, campo a campo, qual subconjunto da campanha vira contexto (todos os campos vão precisar do mesmo contexto de ganchos? ou cada um pede um recorte diferente?), além das mesmas perguntas de custo/privacidade já em aberto no [BKLG-015] (que bloqueia qualquer feature de IA nova até ser decidido) e do gancho de módulo por campanha já desenhado no TR do BKLG-039.
 
-**Depende de:** [BKLG-015] (decisão de custo/privacidade de IA, ainda em aberto — bloqueia este item), infraestrutura [`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md) (`ia_provider.py`), e indiretamente de [BKLG-042]/[BKLG-044]/[BKLG-045] existirem como campos de texto antes de ganharem o botão de IA.
+**Depende de:** [BKLG-015] (a decisão de 2026-10-25 liberou a primeira versão; cota, monetização e rate limit por usuário seguem em aberto lá), infraestrutura [`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md) (`ia_provider.py`), e indiretamente de [BKLG-042]/[BKLG-044]/[BKLG-045] existirem como campos de texto antes de ganharem o botão de IA.
 
 **Próximo passo:** discovery (BP/DR via `po-virtual`) antes de qualquer TR — fechar quais campos entram na primeira onda, qual contexto cada um precisa, e resolver o bloqueio do BKLG-015 primeiro.
 
@@ -650,7 +650,7 @@ O pedido ("deve ser enviado diretamente") sugere a segunda opção, mas isso é 
 
 - **[BKLG-013] Módulos por sistema além da fadiga** (ex.: dívidas de sangue em WoD como qualificador de vínculo, ou política de facção). O motor (spec 077) já suporta; falta um mestre pedindo de verdade.
 - **[BKLG-014] PWA / offline no celular** — só se a experiência em mesa presencial sem sinal virar reclamação recorrente.
-- **[BKLG-015] IA/MCP somente leitura sobre a campanha** — decisão de custo/privacidade antes de qualquer código; ver a skill `eber-saltbock` como precedente de caso de uso real. Quando houver código, a chamada ao provedor passa por `app/services/ia_provider.py` ([`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md)), não por um cliente próprio.
+- **[BKLG-015] IA/MCP somente leitura sobre a campanha** — nota de 2026-10-25: a assistência do mestre ([BKLG-046]) foi liberada com custo por conta do produto e DeepSeek por ora; revisitar cota, monetização e rate limit por usuário. Decisão de custo/privacidade antes de qualquer código; ver a skill `eber-saltbock` como precedente de caso de uso real. Quando houver código, a chamada ao provedor passa por `app/services/ia_provider.py` ([`backend-ia-deepseek`](../../openspec/changes/backend-ia-deepseek/proposal.md)), não por um cliente próprio.
 
 ## Como seguir
 

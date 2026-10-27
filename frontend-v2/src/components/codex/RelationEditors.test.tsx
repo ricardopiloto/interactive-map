@@ -53,7 +53,7 @@ it("mostra o retrato cadastrado e atualiza a prévia após upload", async () => 
   expect(document.querySelector('img[src="/portraits/ada-new.jpg"]')).not.toBeNull();
 });
 
-it("oferece IA apenas na descrição de personagem salvo para dono com módulo ativo", async () => {
+it("oferece IA na descrição de personagem novo e salvo apenas para dono com módulo ativo", async () => {
   await i18n.changeLanguage("pt-BR");
   const draft: PersonagemDraft = {
     id: 2,
@@ -89,10 +89,10 @@ it("oferece IA apenas na descrição de personagem salvo para dono com módulo a
   expect(screen.queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
   view.rerender(renderEditor(true, false));
   expect(screen.queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
-  view.rerender(
-    renderEditor(true, true, { ...draft, id: undefined } as unknown as PersonagemDraft),
-  );
-  expect(screen.queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
+  const newDraft = { ...draft, isNew: true };
+  delete newDraft.id;
+  view.rerender(renderEditor(true, true, newDraft));
+  expect(screen.getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(1);
   view.rerender(renderEditor(true, true));
   expect(screen.getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(1);
 });

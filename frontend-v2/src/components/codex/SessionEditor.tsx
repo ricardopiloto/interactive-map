@@ -222,11 +222,11 @@ export function SessionEditor({
               onChange={(event) => onChange({ resumo: event.target.value })}
             />
           </label>
-          {iaAtiva && isDono && draft.id != null && (
+          {iaAtiva && isDono && (
             <IaAssistente
               slug={slug}
               tipo="resumo_sessao"
-              alvoId={draft.id}
+              alvoId={draft.id ?? null}
               textoAtual={draft.resumo}
               campoPublico={draft.visivel_para_todos}
               onInserir={(texto) =>

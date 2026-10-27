@@ -143,8 +143,6 @@ def _alvo(session: Session, pedido: AssistirRequest):
     else:
         classe = Local
     if pedido.alvo_id is None:
-        if pedido.tipo not in ("rascunho_sessao", "fios_narrativos"):
-            raise_api_error("ALVO_OBRIGATORIO", status_code=422)
         return None
     alvo = session.get(classe, pedido.alvo_id)
     if alvo is None:
@@ -198,6 +196,13 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
         if pedido.tipo in ("rascunho_sessao", "fios_narrativos"):
             add("faccao", [p for p in pessoas if p.faccao], lambda p: f"{p.faccao}; personagem: {p.nome}")
     elif pedido.tipo == "resumo_sessao":
+        if alvo is None:
+            add("sessao_anterior", sessoes, _texto_sessao)
+            add("arco", arcos, lambda a: f"{a.titulo}: {a.resumo}")
+            add("evento", eventos, lambda e: f"{e.titulo}: {e.descricao}")
+            add("personagem", pessoas, lambda p: f"{p.nome}: {p.descricao}")
+            add("local", locais, lambda l: f"{l.nome}: {l.descricao}")
+            return sorted(registros, key=lambda r: -r.registro_id)
         add("notas_preparo", [alvo], lambda s: f"Sessão {s.numero}: {s.notas_preparo}")
         locais_ligados = session.exec(
             select(SessaoLocalLink).where(SessaoLocalLink.sessao_id == alvo.id)
@@ -213,6 +218,11 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
         anteriores = [s for s in sessoes if s.numero < alvo.numero][:1]
         add("sessao_anterior", anteriores, _texto_sessao)
     elif pedido.tipo == "descricao_personagem":
+        if alvo is None:
+            add("personagem", pessoas, lambda p: f"{p.nome}: {p.descricao}")
+            add("local", locais, lambda l: f"{l.nome}: {l.descricao}")
+            add("arco", arcos, lambda a: f"{a.titulo}: {a.resumo}")
+            return sorted(registros, key=lambda r: -r.registro_id)
         add(
             "personagem_alvo", [alvo],
             lambda p: (
@@ -228,6 +238,11 @@ def coletar_registros(session: Session, campanha_id: int, pedido: AssistirReques
         add("local", list(alvo.locais), lambda l: f"{l.nome}: {l.descricao}")
         add("arco", arco_rows({l.arco_id for l in alvo.locais}), lambda a: f"{a.titulo}: {a.resumo}")
     else:
+        if alvo is None:
+            add("local", locais, lambda l: f"{l.nome}: {l.descricao}")
+            add("personagem", pessoas, lambda p: f"{p.nome}: {p.descricao}")
+            add("arco", arcos, lambda a: f"{a.titulo}: {a.resumo}")
+            return sorted(registros, key=lambda r: -r.registro_id)
         add("local_alvo", [alvo], lambda l: f"{l.nome}: {l.descricao}")
         add("personagem", list(alvo.npcs), lambda p: f"{p.nome}: {p.descricao}")
         add("arco", arco_rows({alvo.arco_id}), lambda a: f"{a.titulo}: {a.resumo}")

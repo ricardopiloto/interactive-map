@@ -156,11 +156,11 @@ export function PersonagemEditor({
               onChange={(event) => onChange({ descricao: event.target.value })}
             />
           </label>
-          {iaAtiva && isDono && draft.id != null && (
+          {iaAtiva && isDono && (
             <IaAssistente
               slug={slug}
               tipo="descricao_personagem"
-              alvoId={draft.id}
+              alvoId={draft.id ?? null}
               textoAtual={draft.descricao}
               campoPublico={draft.visivel_para_todos}
               onInserir={(texto) =>

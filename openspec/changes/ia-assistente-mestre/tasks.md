@@ -17,7 +17,7 @@
 - [x] 2.6 Teste do payload realmente enviado (client HTTP mockado): com personagem e sessão ocultos, o contexto da assistência os inclui e o dos motores existentes não; teste de isolamento com dono de duas campanhas (`alvo_id` da campanha B no slug de A não é encontrado e nenhum dado de B sai).
 - [x] 2.7 Log apenas de contagens (campanha, tipo, tamanho total da chamada (o mesmo do orçamento), flag de oculto, código de resultado); verificar com teste que nenhum texto da campanha ou da sugestão aparece nos logs capturados.
 - [x] 2.8 Teste de que `notas_preparo` e `notas_mecanicas` (campos que o assistente não preenche, mas que o mestre edita) não aparecem nos serializers de `routers/public/`.
-- [ ] 2.9 Validar o timeout efetivo (`deepseek_timeout_seconds`) para respostas longas; se não bastar, definir valor dedicado a esta rota e documentar.
+- [x] 2.9 Validar o timeout efetivo (`deepseek_timeout_seconds`) para respostas longas; se não bastar, definir valor dedicado a esta rota e documentar.
 
 ## 3. Frontend — componente reutilizável
 
@@ -35,10 +35,10 @@
 
 ## 5. Verificação e documentação
 
-- [ ] 5.1 `uv run pytest` do backend, `npx vitest run`, `npx eslint .` e type-check (`npx tsc --noEmit`) do `frontend-v2` passando. Sem e2e novo, a menos que a revisão aponte fluxo completo afetado.
-- [ ] 5.2 Verificação manual com módulo ligado numa campanha de teste: acionar cada tipo, inclusive criar personagem pelo mapa e fios em sessão nova, revisar o painel, aplicar, salvar e conferir via API admin que só o salvo foi persistido; medir latência/timeout com campanha grande; confirmar `usou_conteudo_oculto` na resposta da API (sem inspecionar conteúdo em log). Reverter dados de teste criados.
-- [ ] 5.3 Atualizar `docs/backlog/backlog.md`: BKLG-046 com status e link da change, dependência do BKLG-015 e a decisão de 2026-10-25 (custo por conta do produto, DeepSeek por ora, gate tudo-ou-nada com envio de oculto aceito); nota no BKLG-015 para revisitar cota, monetização e rate limit por usuário.
-- [ ] 5.4 Nota de release: campanhas com o toggle de IA ligado passam a enviar conteúdo oculto ao DeepSeek nas assistências de escrita.
+- [x] 5.1 `uv run pytest` do backend, `npx vitest run`, `npx eslint .` e type-check (`npx tsc --noEmit`) do `frontend-v2` passando. Sem e2e novo, a menos que a revisão aponte fluxo completo afetado.
+- [x] 5.2 Verificação manual com módulo ligado numa campanha de teste: acionar cada tipo, inclusive criar personagem pelo mapa e fios em sessão nova, revisar o painel, aplicar, salvar e conferir via API admin que só o salvo foi persistido; medir latência/timeout com campanha grande; confirmar `usou_conteudo_oculto` na resposta da API (sem inspecionar conteúdo em log). Reverter dados de teste criados.
+- [x] 5.3 Atualizar `docs/backlog/backlog.md`: BKLG-046 com status e link da change, dependência do BKLG-015 e a decisão de 2026-10-25 (custo por conta do produto, DeepSeek por ora, gate tudo-ou-nada com envio de oculto aceito); nota no BKLG-015 para revisitar cota, monetização e rate limit por usuário.
+- [x] 5.4 Nota de release: campanhas com o toggle de IA ligado passam a enviar conteúdo oculto ao DeepSeek nas assistências de escrita.
 
 ## 6. Ajustes pós-teste (2026-10-25)
 

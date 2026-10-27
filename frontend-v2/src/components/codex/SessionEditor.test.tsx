@@ -19,16 +19,16 @@ const draft: SessaoDraft = {
   personagem_ids: [],
 };
 
-function montar(visivel_para_todos: boolean) {
+function montar(visivel_para_todos: boolean, iaAtiva = true, isDono = true) {
   const onChange = vi.fn();
   const view = render(
     <SessionEditor
       draft={{ ...draft, visivel_para_todos }}
       slug="campanha"
-      isDono
+      isDono={isDono}
       locais={[]}
       personagens={[]}
-      iaAtiva
+      iaAtiva={iaAtiva}
       busy={false}
       suggesting={false}
       sugestaoMsg={null}
@@ -56,4 +56,15 @@ it("gate reage à visibilidade no formulário", () => {
   const { onChange } = montar(false);
   fireEvent.click(screen.getByRole("checkbox", { name: /visível/i }));
   expect(onChange).toHaveBeenCalledWith({ visivel_para_todos: true });
+});
+
+it("oferece IA no resumo de sessão nova apenas para dono com módulo ativo", () => {
+  const view = montar(true);
+  expect(screen.getAllByRole("button", { name: "Sugerir com IA" })).toHaveLength(1);
+  view.unmount();
+  const nonOwner = montar(true, true, false);
+  expect(screen.queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
+  nonOwner.unmount();
+  montar(true, false);
+  expect(screen.queryByRole("button", { name: "Sugerir com IA" })).toBeNull();
 });

@@ -90,13 +90,13 @@ for (const [name, Component] of [
   ["NPC", Npc],
   ["local", Local],
 ] as const) {
-  it(`${name}: IA só para dono com módulo ativo e registro salvo; callback só altera rascunho`, () => {
+  it(`${name}: IA só para dono com módulo ativo, inclusive registro novo; callback só altera rascunho`, () => {
     const view = render(<Component iaAtiva={false} isDono />);
     expect(screen.queryByRole("button", { name: "IA" })).toBeNull();
     view.rerender(<Component iaAtiva isDono={false} />);
     expect(screen.queryByRole("button", { name: "IA" })).toBeNull();
     view.rerender(<Component key="new" iaAtiva isDono novo />);
-    expect(screen.queryByRole("button", { name: "IA" })).toBeNull();
+    expect(screen.getByRole("button", { name: "IA" })).toBeTruthy();
     view.rerender(<Component key="saved" iaAtiva isDono />);
     fireEvent.click(screen.getByRole("button", { name: "IA" }));
     expect(screen.getByText("Sugestão", { selector: "output" })).toBeTruthy();

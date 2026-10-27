@@ -85,13 +85,30 @@ def test_rota_validacao_e_publico(client, db_session, monkeypatch):
     monkeypatch.setattr("app.services.ia_provider._post", lambda payload, chave, http_client, **kwargs: (visto.append(payload) or httpx.Response(200, json={"choices": [{"message": {"content": "  Texto  "}}]})))
     url = f"/api/c/{TEST_CAMPAIGN_SLUG}/admin/ia/assistir"
     assert client.post(url, json={"tipo": "notas_mecanicas"}).status_code == 422
-    assert client.post(url, json={"tipo": "descricao_local"}).status_code == 422
+    sem_alvo = client.post(url, json={"tipo": "descricao_local"})
+    assert sem_alvo.status_code == 200 and sem_alvo.json()["estado"] == "sugestao"
     assert client.post(url, json={"tipo": "descricao_local", "alvo_id": 999999}).status_code == 404
     r = client.post(url, json={"tipo": "descricao_personagem", "alvo_id": pessoa.id, "campo_publico": False})
     assert r.status_code == 200, r.text
     assert r.json()["texto"] == "Texto"
     assert "(true)" in visto[-1]["messages"][0]["content"]
     assert db_session.get(type(pessoa), pessoa.id).descricao == ""
+
+
+@pytest.mark.parametrize("tipo", tuple(BLOCOS_TIPO))
+def test_cinco_tipos_sem_alvo_id(db_session, monkeypatch, tipo):
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    seed_sessao(db_session, numero=1, resumo="História anterior")
+    seed_personagem(db_session, nome="Pessoa do cenário")
+    chamadas = []
+    response = assistir(
+        db_session,
+        _ctx(),
+        AssistirRequest(tipo=tipo, texto_atual="Texto inicial"),
+        client=_client(chamadas),
+    )
+    assert response.estado == "sugestao"
+    assert chamadas
 
 
 def test_publico_nao_serializa_notas(client, db_session):
@@ -188,11 +205,19 @@ def test_rota_validacoes_sem_provedor(client, db_session, monkeypatch):
     monkeypatch.setattr("app.services.ia_provider._post", lambda *args, **kwargs: chamadas.append(args))
     for payload, status in (
         ({"tipo": "notas_mecanicas"}, 422),
-        ({"tipo": "descricao_personagem"}, 422),
         ({"tipo": "descricao_local", "alvo_id": 999999}, 404),
     ):
         assert client.post(_rota(), json=payload).status_code == status
     assert not chamadas
+    monkeypatch.setattr(
+        "app.services.ia_provider._post",
+        lambda *args, **kwargs: (
+            chamadas.append(args)
+            or httpx.Response(200, json={"choices": [{"message": {"content": "Texto"}}]})
+        ),
+    )
+    assert client.post(_rota(), json={"tipo": "descricao_personagem", "texto_atual": "Rascunho"}).status_code == 200
+    assert len(chamadas) == 1
 
 
 def test_rota_limite_decimo_primeiro_sem_provedor(client, db_session, monkeypatch):

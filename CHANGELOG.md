@@ -7,6 +7,14 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Added
+
+- Assistente de IA para o mestre nos campos de texto livre (rascunho de sessão, resumo, fios narrativos, descrições), por campanha, só para o mestre dono e com revisão antes de salvar. Nada é gravado sem aceitação.
+
+### Changed
+
+- **Atenção:** campanhas com o toggle de IA ligado passam a enviar conteúdo oculto (inclusive de entidades não visíveis aos jogadores) ao provedor DeepSeek nas assistências de escrita. A flag `usou_conteudo_oculto` na resposta indica quando isso ocorreu.
+
 ## [1.1.0] — 2026-10-20
 
 ### Added
