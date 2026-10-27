@@ -1,3 +1,4 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -751,13 +752,11 @@ export function Timeline() {
                       onChange={(e) => patch({ rotulo_era: e.target.value || null })}
                     />
                   </label>
-                  <label>
-                    {t("fieldDescricao")}
-                    <Textarea
-                      value={editor.draft.descricao}
-                      onChange={(e) => patch({ descricao: e.target.value })}
-                    />
-                  </label>
+                  <MarkdownField
+                    label={t("fieldDescricao")}
+                    value={editor.draft.descricao}
+                    onValueChange={(texto) => patch({ descricao: texto })}
+                  />
                   {ia && (
                     <Button
                       variant="outline"
@@ -874,13 +873,11 @@ export function Timeline() {
                       onChange={(e) => patch({ nome: e.target.value })}
                     />
                   </label>
-                  <label>
-                    {t("item.fieldDescricao")}
-                    <Textarea
-                      value={editor.draft.descricao}
-                      onChange={(e) => patch({ descricao: e.target.value })}
-                    />
-                  </label>
+                  <MarkdownField
+                    label={t("item.fieldDescricao")}
+                    value={editor.draft.descricao}
+                    onValueChange={(texto) => patch({ descricao: texto })}
+                  />
                   <Checks
                     label={t("item.fieldSessoes")}
                     options={sessions.map((s) => ({ id: s.id, nome: `${s.numero}. ${s.titulo}` }))}

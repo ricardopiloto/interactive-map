@@ -1,3 +1,4 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
 import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -132,16 +133,13 @@ export function LocalEditor({
             />
             {nomeError && <span className="text-xs text-destructive">{nomeError}</span>}
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>
-              {tc("form.descricao")} {t("localForm.descMarkdown")}
-            </span>
-            <Textarea
-              value={draft.descricao}
-              placeholder={t("localForm.descPlaceholder")}
-              onChange={(event) => onChange({ descricao: event.target.value })}
-            />
-          </label>
+          <MarkdownField
+            label={`${tc("form.descricao")} ${t("localForm.descMarkdown")}`}
+            labelClassName={fieldLabel}
+            value={draft.descricao}
+            placeholder={t("localForm.descPlaceholder")}
+            onValueChange={(texto) => onChange({ descricao: texto })}
+          />
           {iaAtiva && isDono && (
             <IaAssistente
               slug={slug}
@@ -358,13 +356,12 @@ export function NpcEditor({
               onChange={(event) => onChange({ papel: event.target.value })}
             />
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{tc("form.descricao")}</span>
-            <Textarea
-              value={draft.descricao}
-              onChange={(event) => onChange({ descricao: event.target.value })}
-            />
-          </label>
+          <MarkdownField
+            label={tc("form.descricao")}
+            labelClassName={fieldLabel}
+            value={draft.descricao}
+            onValueChange={(texto) => onChange({ descricao: texto })}
+          />
           {iaAtiva && isDono && (
             <IaAssistente
               slug={slug}

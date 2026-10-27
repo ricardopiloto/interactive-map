@@ -1,3 +1,4 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
 import { FiosReview } from "@/components/codex/FiosReview";
 import type { Sessao } from "@/api/sessoes";
 import { IaAssistente } from "@/components/codex/IaAssistente";
@@ -177,14 +178,14 @@ export function SessionEditor({
               onChange={(event) => onChange({ data_rotulo: event.target.value })}
             />
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{t("fieldNotasPreparo")}</span>
-            <Textarea
-              ref={notasPreparoRef}
-              value={draft.notas_preparo}
-              onChange={(event) => onChange({ notas_preparo: event.target.value })}
-            />
-          </label>
+          <MarkdownField
+            label={t("fieldNotasPreparo")}
+            labelClassName={fieldLabel}
+            combat
+            ref={notasPreparoRef}
+            value={draft.notas_preparo}
+            onValueChange={(texto) => onChange({ notas_preparo: texto })}
+          />
           {iaAtiva && isDono && !draft.visivel_para_todos && (
             <div className="space-y-3">
               <div className="space-y-1">
@@ -209,13 +210,12 @@ export function SessionEditor({
               </Button>
             </div>
           )}
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{t("fieldResumo")}</span>
-            <Textarea
-              value={draft.resumo}
-              onChange={(event) => onChange({ resumo: event.target.value })}
-            />
-          </label>
+          <MarkdownField
+            label={t("fieldResumo")}
+            labelClassName={fieldLabel}
+            value={draft.resumo}
+            onValueChange={(texto) => onChange({ resumo: texto })}
+          />
           {iaAtiva && isDono && (
             <IaAssistente
               slug={slug}

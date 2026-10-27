@@ -432,5 +432,25 @@
     "truncado": "The suggestion was shortened to fit the field limit.",
     "limiteCampo": "The text exceeds this field’s limit."
   },
-  "combat": "Combat"
+  "combat": "Combat",
+  "markdown": {
+    "toolbar": "Text formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "heading": "Heading",
+    "list": "Bulleted list",
+    "ordered": "Numbered list",
+    "quote": "Quote",
+    "link": "Link",
+    "combat": "Combat block",
+    "boldShortcut": "Ctrl/Cmd+B",
+    "italicShortcut": "Ctrl/Cmd+I",
+    "exampleText": "text",
+    "exampleLink": "https://",
+    "combatTitle": "Combat title",
+    "enemies": "Enemies",
+    "environment": "Environment",
+    "tactics": "Tactics or trigger",
+    "outcome": "Outcome"
+  }
 }

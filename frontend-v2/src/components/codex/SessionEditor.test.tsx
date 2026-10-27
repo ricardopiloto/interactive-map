@@ -93,3 +93,18 @@ it("abre revisão de fios pelo botão sem alterar notas de preparo", async () =>
     expect.objectContaining({ notas_preparo: expect.anything() }),
   );
 });
+
+it("mostra barras apenas em Notas de preparo e Resumo, com combate só nas notas", () => {
+  montar(false);
+  const notas = screen.getByLabelText("Notas de preparo");
+  const resumo = screen.getByLabelText("Resumo");
+  expect(notas.tagName).toBe("TEXTAREA");
+  expect(resumo.tagName).toBe("TEXTAREA");
+  const bars = screen.getAllByRole("toolbar", { name: "Formatação de texto" });
+  expect(bars).toHaveLength(2);
+  expect(bars[0]).toContainElement(screen.getByRole("button", { name: "Bloco de combate" }));
+  expect(bars[1]!.querySelector('[aria-label="Bloco de combate"]')).toBeNull();
+  expect(
+    screen.getByRole("button", { name: "Fios narrativos" }).closest('[role="toolbar"]'),
+  ).toBeNull();
+});

@@ -9,6 +9,8 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ### Added
 
+- Barra de formatação Markdown nos campos de texto rico, com botão de bloco de combate nas Notas de Preparo.
+
 - Blocos de combate com cor própria nas Notas de Preparo e propostas de combate no rascunho de sessão da IA.
 - Leitura de sessão com blocos separados e recolhíveis de Notas de Preparo, Fios Narrativos e Resumo para o mestre em Modo GM.
 - Assistente de IA para o mestre nos campos de texto livre (rascunho de sessão, resumo, fios narrativos, descrições), por campanha, só para o mestre dono e com revisão antes de salvar. Nada é gravado sem aceitação.

@@ -1,3 +1,4 @@
+import { COMBAT_MARKER } from "./markdown-format";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import { Link } from "react-router-dom";
@@ -31,10 +32,13 @@ export function RichContent({
         : null;
     const contents = paragraph ? Children.toArray(paragraph.props.children) : [];
     const opening = contents.find((node) => typeof node === "string" && node.trim()) ?? contents[0];
-    const match = typeof opening === "string" && /^\[!combate\](?:[ \t]+([^\n]*))?/i.exec(opening);
+    const match =
+      typeof opening === "string" && opening.toLowerCase().startsWith(COMBAT_MARKER)
+        ? new RegExp(`^.{${COMBAT_MARKER.length}}(?:[ \t]+([^\n]*))?`, "i").exec(opening)
+        : null;
     if (!match) return <blockquote>{children}</blockquote>;
     const title = match[1]?.trim() || t("combat");
-    const remainder = opening.slice(match[0].length);
+    const remainder = typeof opening === "string" ? opening.slice(match[0].length) : "";
     return (
       <div className="min-w-0 rounded-lg border border-combat/50 border-l-4 border-l-combat bg-combat/10 p-3 break-words [overflow-wrap:anywhere]">
         <div className="flex min-w-0 items-start gap-2 font-semibold text-combat">

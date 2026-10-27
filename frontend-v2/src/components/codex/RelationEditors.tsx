@@ -1,3 +1,4 @@
+import { MarkdownField } from "@/components/codex/MarkdownField";
 import { IaAssistente } from "@/components/codex/IaAssistente";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -149,13 +150,12 @@ export function PersonagemEditor({
               ))}
             </select>
           </label>
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{tc("form.descricao")}</span>
-            <Textarea
-              value={draft.descricao}
-              onChange={(event) => onChange({ descricao: event.target.value })}
-            />
-          </label>
+          <MarkdownField
+            label={tc("form.descricao")}
+            labelClassName={fieldLabel}
+            value={draft.descricao}
+            onValueChange={(texto) => onChange({ descricao: texto })}
+          />
           {iaAtiva && isDono && (
             <IaAssistente
               slug={slug}
@@ -169,14 +169,13 @@ export function PersonagemEditor({
               onSubstituir={(texto) => onChange({ descricao: texto })}
             />
           )}
-          <label className="block space-y-1">
-            <span className={fieldLabel}>{t("personagemForm.notasMecanicas")}</span>
-            <Textarea
-              value={draft.notas_mecanicas}
-              placeholder={t("personagemForm.notasMecanicas")}
-              onChange={(event) => onChange({ notas_mecanicas: event.target.value })}
-            />
-          </label>
+          <MarkdownField
+            label={t("personagemForm.notasMecanicas")}
+            labelClassName={fieldLabel}
+            value={draft.notas_mecanicas}
+            placeholder={t("personagemForm.notasMecanicas")}
+            onValueChange={(texto) => onChange({ notas_mecanicas: texto })}
+          />
           <label className="block space-y-1">
             <span className={fieldLabel}>{t("personagemForm.retrato")}</span>
             {draft.retrato_url && (

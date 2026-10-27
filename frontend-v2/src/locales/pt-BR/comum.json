@@ -432,5 +432,25 @@
     "truncado": "A sugestão foi reduzida para caber no limite do campo.",
     "limiteCampo": "O texto excede o limite deste campo."
   },
-  "combat": "Combate"
+  "combat": "Combate",
+  "markdown": {
+    "toolbar": "Formatação de texto",
+    "bold": "Negrito",
+    "italic": "Itálico",
+    "heading": "Título",
+    "list": "Lista com marcadores",
+    "ordered": "Lista numerada",
+    "quote": "Citação",
+    "link": "Link",
+    "combat": "Bloco de combate",
+    "boldShortcut": "Ctrl/Cmd+B",
+    "italicShortcut": "Ctrl/Cmd+I",
+    "exampleText": "texto",
+    "exampleLink": "https://",
+    "combatTitle": "Título do combate",
+    "enemies": "Inimigos",
+    "environment": "Ambiente",
+    "tactics": "Tática ou gatilho",
+    "outcome": "Desfecho"
+  }
 }
