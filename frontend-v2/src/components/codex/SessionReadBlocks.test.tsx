@@ -1,9 +1,28 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import type { ReactElement } from "react";
+import {
+  fireEvent,
+  render as testingRender,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import type { Sessao } from "@/api/sessoes";
 import { fiosApi, type Fio } from "@/api/fios";
 import i18n from "@/i18n";
 import { SessionReadBlocks } from "./SessionReadBlocks";
+
+const render = (ui: ReactElement) => {
+  const result = testingRender(
+    <MemoryRouter initialEntries={["/c/1/mesa/sessoes"]}>{ui}</MemoryRouter>,
+  );
+  return {
+    ...result,
+    rerender: (next: ReactElement) =>
+      result.rerender(<MemoryRouter initialEntries={["/c/1/mesa/sessoes"]}>{next}</MemoryRouter>),
+  };
+};
 
 const sessao: Sessao = {
   id: 1,
@@ -57,7 +76,7 @@ it("mostra os blocos privados na ordem, fios da sessão e resumo isolado", async
   expect(within(sections[2]!).getByText("Resumo público")).toBeVisible();
   expect(screen.getByRole("link", { name: "Ver todos os fios em aberto" })).toHaveAttribute(
     "href",
-    "#fios-em-aberto",
+    "/c/1/mesa/fios",
   );
 });
 
@@ -173,4 +192,19 @@ it("ativa combate somente nas Notas de Preparo", () => {
   expect(within(notes!).queryByText(/\[!combate\]/)).not.toBeInTheDocument();
   expect(within(summary!).getByText(/\[!combate\] Ponte/)).toBeVisible();
   expect(summary!.querySelector("blockquote")).not.toBeNull();
+});
+
+it("consulta novamente os fios ao montar depois de mudanças na página Fios", async () => {
+  const list = vi
+    .spyOn(fiosApi, "list")
+    .mockResolvedValueOnce([fio(1, 1, "aberto")])
+    .mockResolvedValueOnce([fio(1, 1, "resolvido")]);
+  const first = render(
+    <SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />,
+  );
+  expect(await screen.findByText("Fio 1")).toBeVisible();
+  first.unmount();
+  render(<SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />);
+  expect(await screen.findByText("Resolvido")).toBeVisible();
+  expect(list).toHaveBeenCalledTimes(2);
 });

@@ -89,5 +89,12 @@
     "threadsError": "Could not load this session’s threads.",
     "loadingThreads": "Loading threads…",
     "allThreads": "View all open threads"
+  },
+  "fiosPage": {
+    "title": "Threads",
+    "intro": "Track the campaign’s narrative threads.",
+    "loading": "Loading permission…",
+    "gmOnly": "This page is only for the campaign owner.",
+    "gmModeRequired": "Turn on GM Mode to view narrative threads."
   }
 }

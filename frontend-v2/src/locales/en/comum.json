@@ -429,7 +429,8 @@
       "campaignName": "Campaign name",
       "save": "Save",
       "draft": "Draft"
-    }
+    },
+    "threads": "Threads"
   },
   "iaAssistente": {
     "rascunho": "Draft",

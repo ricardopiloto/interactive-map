@@ -6,6 +6,7 @@ import {
   ScrollText,
   Hourglass,
   Dices,
+  GitBranch,
   PenLine,
   Sun,
   Moon,
@@ -21,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
 
 // GM-only lens: gated on `canEdit` (real GM permission), never on the `enabled` edit toggle.
+const fiosLens = { path: "fios", label: "Fios", icon: GitBranch } as const;
 const gmLens = { path: "ferramentas", label: "Ferramentas", icon: Dices } as const;
 
 const lenses = [
@@ -36,7 +38,7 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
   const location = useLocation();
   const { theme, setTheme } = useCodex();
   const { user, logout } = useAuth();
-  const { canEdit, enabled, setEnabled } = useEditMode();
+  const { canEdit, isDono, enabled, setEnabled } = useEditMode();
   const base = campaignHref(campaign.id, campaign.slug);
   const themes: { value: ThemePref; icon: typeof Sun; label: string }[] = [
     { value: "claro", icon: Sun, label: t("v2.themeLight") },
@@ -45,36 +47,43 @@ export function TopBar({ campaign }: { campaign: CampaignConfig }) {
   ];
 
   const nav = (mobile: boolean) =>
-    (canEdit ? [...lenses, gmLens] : lenses).map(({ path, icon: Icon }) => {
-      const to = `${base}/${path}`;
-      const active = location.pathname === to;
-      const labels = {
-        mapa: "map",
-        relacoes: "relations",
-        rota: "route",
-        sessoes: "sessions",
-        "linha-do-tempo": "timeline",
-        ferramentas: "tools",
-      } as const;
-      return (
-        <Link
-          key={path}
-          to={to}
-          aria-current={active ? "page" : undefined}
-          className={cn(
-            mobile
-              ? "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-medium"
-              : "flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
-            active
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-foreground",
-          )}
-        >
-          <Icon className="h-4 w-4" aria-hidden />
-          {t(`v2.${labels[path]}`)}
-        </Link>
-      );
-    });
+    [...lenses, ...(canEdit ? [gmLens] : []), ...(isDono && enabled ? [fiosLens] : [])].map(
+      ({ path, icon: Icon }) => {
+        const to = `${base}/${path}`;
+        const active = location.pathname === to;
+        const labels = {
+          mapa: "map",
+          relacoes: "relations",
+          rota: "route",
+          sessoes: "sessions",
+          "linha-do-tempo": "timeline",
+          ferramentas: "tools",
+          fios: "threads",
+        } as const;
+        return (
+          <Link
+            key={path}
+            to={to}
+            aria-current={active ? "page" : undefined}
+            aria-label={!mobile ? t(`v2.${labels[path]}`) : undefined}
+            title={!mobile ? t(`v2.${labels[path]}`) : undefined}
+            className={cn(
+              mobile
+                ? "flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-medium"
+                : "flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors xl:px-3.5",
+              active
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+            <span className={mobile ? "max-w-full truncate px-0.5" : "hidden xl:inline"}>
+              {t(`v2.${labels[path]}`)}
+            </span>
+          </Link>
+        );
+      },
+    );
 
   return (
     <>

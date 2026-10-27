@@ -23,6 +23,7 @@ const CAMPAIGN_SUBROUTES = [
   "/cronologia",
   "/linha-do-tempo",
   "/itens",
+  "/fios",
 ];
 
 /** Prefix of the campaign currently in the URL, keeping `/c/{id}/{slug}` when that is the path. */

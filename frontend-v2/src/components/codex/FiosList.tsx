@@ -74,12 +74,7 @@ export function FiosList({
     void run(() => fiosApi.reorder(slug, ids));
   }
   return (
-    <section
-      id="fios-em-aberto"
-      aria-label={t("fios.heading")}
-      className="mt-8 space-y-4 border-t border-border pt-6"
-    >
-      <h2 className="font-display text-2xl">{t("fios.heading")}</h2>
+    <section aria-label={t("fios.heading")} className="mt-8 space-y-4">
       {error && (
         <p role="alert" className="text-destructive">
           {error}
@@ -125,116 +120,118 @@ export function FiosList({
       {sorted.length === 0 && <p>{t("fios.empty")}</p>}
       <ol className="space-y-3">
         {sorted.map((fio) => (
-          <li key={fio.id} className="rounded-xl border border-border bg-card p-3">
-            {editing === fio.id ? (
-              <form
-                className="space-y-2"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  if (!edit.titulo.trim()) return;
-                  void run(async () => {
-                    await fiosApi.update(slug, fio.id, {
-                      titulo: edit.titulo.trim(),
-                      descricao: edit.descricao,
-                    });
-                    setEditing(null);
-                  });
-                }}
-              >
-                <label className="block space-y-1">
-                  <span>{t("fios.title")}</span>
-                  <Input
-                    required
-                    maxLength={200}
-                    value={edit.titulo}
-                    onChange={(event) => setEdit({ ...edit, titulo: event.target.value })}
-                  />
-                </label>
-                <label className="block space-y-1">
-                  <span>{t("fios.description")}</span>
-                  <Textarea
-                    maxLength={5000}
-                    value={edit.descricao}
-                    onChange={(event) => setEdit({ ...edit, descricao: event.target.value })}
-                  />
-                </label>
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={busy}>
-                    {t("fios.save")}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setEditing(null)}>
-                    {t("fios.close")}
-                  </Button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <p
-                  className={
-                    fio.estado === "resolvido"
-                      ? "text-muted-foreground line-through"
-                      : "font-medium"
-                  }
+          <li key={fio.id}>
+            <details className="rounded-2xl border border-border bg-card p-4">
+              <summary className="flex cursor-pointer items-center justify-between gap-3 font-medium">
+                <span
+                  className={fio.estado === "resolvido" ? "text-muted-foreground line-through" : ""}
                 >
                   {fio.titulo}
-                </p>
-                <p className="whitespace-pre-wrap text-sm">{fio.descricao}</p>
-                <p className="text-xs text-muted-foreground">{t(`fios.${fio.estado}`)}</p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => {
-                      setEditing(fio.id);
-                      setEdit({ titulo: fio.titulo, descricao: fio.descricao });
+                </span>
+                <span className="text-xs text-muted-foreground">{t(`fios.${fio.estado}`)}</span>
+              </summary>
+              <div className="mt-4 border-t border-border pt-4">
+                {editing === fio.id ? (
+                  <form
+                    className="space-y-2"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      if (!edit.titulo.trim()) return;
+                      void run(async () => {
+                        await fiosApi.update(slug, fio.id, {
+                          titulo: edit.titulo.trim(),
+                          descricao: edit.descricao,
+                        });
+                        setEditing(null);
+                      });
                     }}
                   >
-                    {t("fios.edit")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() =>
-                      void run(() =>
-                        fiosApi.update(slug, fio.id, {
-                          estado: fio.estado === "aberto" ? "resolvido" : "aberto",
-                        }),
-                      )
-                    }
-                  >
-                    {t(fio.estado === "aberto" ? "fios.resolve" : "fios.reopen")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    aria-label={`${t("fios.moveUp")}: ${fio.titulo}`}
-                    onClick={() => move(fio, -1)}
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    aria-label={`${t("fios.moveDown")}: ${fio.titulo}`}
-                    onClick={() => move(fio, 1)}
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => setDeleting(fio.id)}
-                  >
-                    {t("fios.remove")}
-                  </Button>
-                </div>
-              </>
-            )}
+                    <label className="block space-y-1">
+                      <span>{t("fios.title")}</span>
+                      <Input
+                        required
+                        maxLength={200}
+                        value={edit.titulo}
+                        onChange={(event) => setEdit({ ...edit, titulo: event.target.value })}
+                      />
+                    </label>
+                    <label className="block space-y-1">
+                      <span>{t("fios.description")}</span>
+                      <Textarea
+                        maxLength={5000}
+                        value={edit.descricao}
+                        onChange={(event) => setEdit({ ...edit, descricao: event.target.value })}
+                      />
+                    </label>
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={busy}>
+                        {t("fios.save")}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+                        {t("fios.close")}
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <p className="whitespace-pre-wrap text-sm">{fio.descricao}</p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => {
+                          setEditing(fio.id);
+                          setEdit({ titulo: fio.titulo, descricao: fio.descricao });
+                        }}
+                      >
+                        {t("fios.edit")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() =>
+                          void run(() =>
+                            fiosApi.update(slug, fio.id, {
+                              estado: fio.estado === "aberto" ? "resolvido" : "aberto",
+                            }),
+                          )
+                        }
+                      >
+                        {t(fio.estado === "aberto" ? "fios.resolve" : "fios.reopen")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        aria-label={`${t("fios.moveUp")}: ${fio.titulo}`}
+                        onClick={() => move(fio, -1)}
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        aria-label={`${t("fios.moveDown")}: ${fio.titulo}`}
+                        onClick={() => move(fio, 1)}
+                      >
+                        ↓
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => setDeleting(fio.id)}
+                      >
+                        {t("fios.remove")}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </details>
           </li>
         ))}
       </ol>

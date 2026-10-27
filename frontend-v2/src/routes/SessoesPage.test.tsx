@@ -521,33 +521,6 @@ it("não reaproveita sessões ao trocar de campanha", async () => {
   expect(screen.queryByText("Sessão Alpha")).not.toBeInTheDocument();
 });
 
-it("mostra e permite adicionar fios somente ao dono", async () => {
-  const owner = emptyStore({
-    fios: [
-      {
-        id: 1,
-        titulo: "Segredo",
-        descricao: "Pista",
-        estado: "aberto",
-        origem: "manual",
-        sessao_origem_id: null,
-        ordem: 0,
-        criado_em: "2026-01-01",
-      },
-    ],
-  });
-  const first = renderSessions("/c/alpha/sessoes", { alpha: owner }, true);
-  expect(await screen.findByRole("heading", { name: "Fios em aberto" })).toBeVisible();
-  expect(await screen.findByText("Segredo")).toBeVisible();
-  fireEvent.change(screen.getByRole("textbox", { name: "Título" }), { target: { value: "Outro" } });
-  fireEvent.click(screen.getByRole("button", { name: "Adicionar fio" }));
-  expect(await screen.findByText("Outro")).toBeVisible();
-  first.unmount();
-  renderSessions("/c/alpha/sessoes", { alpha: emptyStore({ papel: "membro" }) }, true);
-  expect(await screen.findByRole("button", { name: "Nova sessão" })).toBeVisible();
-  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
-});
-
 it("separa a leitura do dono e esconde os fios ao desligar o Modo GM", async () => {
   const owner = emptyStore({
     rows: [
@@ -582,22 +555,7 @@ it("separa a leitura do dono e esconde os fios ao desligar o Modo GM", async () 
   expect(within(summary).getByText("Texto público")).toBeVisible();
   expect(within(summary).queryByText("Plano secreto")).not.toBeInTheDocument();
   expect(within(summary).queryByText("Pista secreta")).not.toBeInTheDocument();
-  expect(screen.getByRole("heading", { name: "Fios em aberto" })).toBeVisible();
-  fireEvent.click(
-    within(screen.getByRole("region", { name: "Fios em aberto" })).getByRole("button", {
-      name: "Resolver",
-    }),
-  );
-  expect(await within(threads).findByText("Resolvido")).toBeVisible();
-  fireEvent.click(
-    within(screen.getByRole("region", { name: "Fios em aberto" })).getByRole("button", {
-      name: "Remover",
-    }),
-  );
-  fireEvent.click(
-    within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Remover" }),
-  );
-  await waitFor(() => expect(within(threads).queryByText("Pista secreta")).not.toBeInTheDocument());
+  expect(screen.queryByRole("heading", { name: "Fios em aberto" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Visualização" }));
   await waitFor(() =>
     expect(screen.queryByRole("region", { name: "Notas de preparo" })).not.toBeInTheDocument(),

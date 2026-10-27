@@ -1,10 +1,10 @@
-# Spec Delta
+# pagina-fios-narrativos Specification
 
 ## Purpose
 
 Dá aos fios narrativos da campanha uma página própria, com espaço e leitura confortável, em vez de uma lista espremida dentro da página de Sessões.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Página dedicada de fios narrativos
 
@@ -53,6 +53,18 @@ O item «Fios» SHALL aparecer na navegação da campanha (barra superior e barr
 
 - **WHEN** a página é aberta por `/c/{id}/{slug}/fios` ou pela forma compatível só com o slug
 - **THEN** a mesma página abre, e a navegação corrige para a forma canônica como nas demais páginas da campanha
+
+### Requirement: Barra de navegação superior sem sobreposição
+
+A barra de navegação superior da campanha SHALL permanecer legível e sem sobreposição com a identidade da campanha e com os controles à direita (idioma, tema, Modo GM, sair) em qualquer largura em que ela é exibida, inclusive quando o mestre dono vê todos os itens, incluindo «Ferramentas» e «Fios». Quando a largura não comportar os rótulos, a barra SHALL mostrar só os ícones, mantendo o nome acessível (rótulo para leitores de tela e dica ao passar o cursor), e SHALL voltar a mostrar os rótulos quando houver espaço.
+
+#### Scenario: Largura intermediária com todos os itens
+- **WHEN** o mestre dono, com o Modo GM ligado, vê a barra superior numa largura em que os rótulos dos oito itens não cabem
+- **THEN** a barra mostra só os ícones, sem sobrepor a identidade da campanha nem os controles à direita, e cada item mantém seu nome acessível
+
+#### Scenario: Largura ampla
+- **WHEN** a largura comporta os rótulos
+- **THEN** a barra mostra ícone e rótulo em cada item, sem sobreposição
 
 ### Requirement: Textos da página de fios em pt-BR e en
 

@@ -11,11 +11,14 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 - Índice de busca da campanha para a IA (SQLite FTS5, no banco de cada campanha): o contexto das assistências de escrita passa a ser composto por fios em aberto, sessões e arcos recentes, um catálogo compacto de nomes e os trechos mais relevantes ao pedido, em vez de ler a campanha inteira. O contexto deixa de crescer com o histórico, e o limite de tamanho continua valendo. O índice é mantido automaticamente a cada gravação e criado na primeira chamada de IA de campanhas existentes.
 - Painel da campanha: seção «Índice da campanha» (com IA ativa) com o estado, as quantidades, a última atualização e a ação Reindexar, só para o mestre dono.
+- Página «Fios» da campanha (`/c/{id}/{slug}/fios`), só para o mestre dono com o Modo GM ligado: a lista de fios narrativos ganha largura total, com cada fio como cartão expansível (título e estado à vista; descrição e ações ao expandir) e um item «Fios» na navegação.
 
 ### Changed
 
 - Fios Narrativos: fios aceitos na proposta da IA a partir do editor de uma sessão já salva passam a ter essa sessão como sessão de origem, e aparecem no bloco «Fios Narrativos» dela. Fios já existentes não mudam.
 - Resumo da sessão pela IA: o prompt deixa de pedir a seção de fios abertos ao final; o Resumo conta o que aconteceu e o estado do grupo.
+- A lista de fios narrativos deixa de aparecer na página de Sessões; o link do bloco «Fios Narrativos» da leitura da sessão leva à página «Fios».
+- Linha do Tempo, modo «Por arcos»: arcos sem nenhuma sessão datada são posicionados pela sessão datada mais próxima por número, e arcos com a mesma data cujas sessões não se intercalam passam a ser tratados como sequência (sem bifurcação), ligados por traço tracejado, inclusive o arco sem data. Nenhuma data é inventada.
 
 ### Database
 

@@ -3,6 +3,7 @@ import { ChevronDown, LockKeyhole } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { fiosApi, type Fio } from "@/api/fios";
 import type { Sessao } from "@/api/sessoes";
+import { Link } from "@/lib/navigation";
 import { RichContent } from "./RichContent";
 
 export function SessionReadBlocks({
@@ -11,14 +12,12 @@ export function SessionReadBlocks({
   enabled,
   isDono,
   fiosRevision,
-  onShowThreads,
 }: {
   sessao: Sessao;
   slug: string;
   enabled: boolean;
   isDono: boolean;
   fiosRevision: number;
-  onShowThreads?: () => void;
 }) {
   const { t } = useTranslation("sessoes");
   const notesId = useId();
@@ -146,28 +145,9 @@ export function SessionReadBlocks({
                 {t("readBlocks.loadingThreads")}
               </p>
             )}
-            <a
-              href="#fios-em-aberto"
-              className="mt-4 inline-block text-sm text-seal underline"
-              onClick={(event) => {
-                const target = document.getElementById("fios-em-aberto");
-                if (target) {
-                  event.preventDefault();
-                  if (target.getClientRects().length === 0) {
-                    onShowThreads?.();
-                    return;
-                  }
-                  history.replaceState(null, "", "#fios-em-aberto");
-                  target.scrollIntoView({
-                    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                      ? "instant"
-                      : "smooth",
-                  });
-                }
-              }}
-            >
+            <Link to="/fios" className="mt-4 inline-block text-sm text-seal underline">
               {t("readBlocks.allThreads")}
-            </a>
+            </Link>
           </div>
         </section>
       )}

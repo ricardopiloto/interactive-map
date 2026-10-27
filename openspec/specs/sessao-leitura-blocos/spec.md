@@ -32,7 +32,7 @@ Na leitura de uma sessão, o mestre com o Modo GM ligado SHALL ver três blocos 
 
 ### Requirement: Fios da sessão no bloco de Fios Narrativos
 
-O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sessão em leitura, com os abertos antes dos resolvidos e o estado de cada um distinguível. O bloco SHALL ser somente leitura e SHALL oferecer um link para a lista completa de fios em aberto da página de Sessões. Fios de outras sessões e fios sem sessão de origem NÃO SHALL aparecer nesse bloco. Uma falha ao carregar os fios SHALL mostrar um aviso dentro do bloco, sem impedir a leitura do restante da sessão.
+O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sessão em leitura, com os abertos antes dos resolvidos e o estado de cada um distinguível. O bloco SHALL ser somente leitura e SHALL oferecer um link para a página «Fios» da campanha, com a lista completa. Fios de outras sessões e fios sem sessão de origem NÃO SHALL aparecer nesse bloco. Uma falha ao carregar os fios SHALL mostrar um aviso dentro do bloco, sem impedir a leitura do restante da sessão.
 
 #### Scenario: Só os fios da sessão
 
@@ -47,7 +47,7 @@ O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sess
 #### Scenario: Ir para a lista completa
 
 - **WHEN** o mestre dono ativa o link do bloco de Fios Narrativos
-- **THEN** a página leva à seção "Fios em aberto" com a lista completa da campanha
+- **THEN** abre a página «Fios» da campanha, com a lista completa
 
 #### Scenario: Troca de sessão
 
@@ -61,15 +61,19 @@ O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sess
 
 ### Requirement: Bloco de fios e lista completa sincronizados
 
-O bloco de Fios Narrativos da sessão e a lista completa "Fios em aberto" da página SHALL refletir o mesmo estado: após criar, editar, resolver, reabrir, remover ou reordenar um fio, ou aceitar fios propostos pela IA, o bloco SHALL se atualizar sem exigir que o mestre troque de sessão ou recarregue a página.
+O bloco de Fios Narrativos da sessão e a página «Fios» SHALL refletir o mesmo estado dos fios: após criar, editar, resolver, reabrir, remover ou reordenar um fio na página «Fios», o bloco SHALL mostrar o estado atualizado quando a sessão é aberta ou reaberta, e, após aceitar fios propostos pela IA no editor da sessão, o bloco SHALL se atualizar sem exigir que o mestre troque de sessão ou recarregue a página.
 
 #### Scenario: Resolver um fio na lista completa
-- **WHEN** o mestre dono resolve, na lista "Fios em aberto", um fio que pertence à sessão em leitura
-- **THEN** o bloco de Fios Narrativos da sessão passa a mostrá-lo como resolvido
+- **WHEN** o mestre dono resolve, na página «Fios», um fio que pertence a uma sessão e depois abre a leitura dessa sessão
+- **THEN** o bloco de Fios Narrativos da sessão mostra o fio como resolvido
 
 #### Scenario: Remover um fio na lista completa
-- **WHEN** o mestre dono remove, na lista "Fios em aberto", um fio que pertence à sessão em leitura
-- **THEN** o fio desaparece do bloco de Fios Narrativos da sessão
+- **WHEN** o mestre dono remove, na página «Fios», um fio que pertence a uma sessão e depois abre a leitura dessa sessão
+- **THEN** o fio não aparece no bloco de Fios Narrativos da sessão
+
+#### Scenario: Aceitar fios propostos pela IA
+- **WHEN** o mestre dono aceita fios propostos pela IA no editor de uma sessão
+- **THEN** o bloco de Fios Narrativos da sessão passa a mostrá-los sem recarregar a página
 
 ### Requirement: Resumo e leitura pública sem material privado
 

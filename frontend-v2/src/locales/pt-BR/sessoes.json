@@ -89,5 +89,12 @@
     "threadsError": "Não foi possível carregar os fios desta sessão.",
     "loadingThreads": "Carregando fios…",
     "allThreads": "Ver todos os fios em aberto"
+  },
+  "fiosPage": {
+    "title": "Fios",
+    "intro": "Acompanhe os fios narrativos da campanha.",
+    "loading": "A carregar permissão…",
+    "gmOnly": "Esta página é só para o mestre dono da campanha.",
+    "gmModeRequired": "Ligue o Modo GM para ver os fios narrativos."
   }
 }
