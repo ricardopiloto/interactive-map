@@ -32,7 +32,7 @@ Na leitura de uma sessão, o mestre com o Modo GM ligado SHALL ver três blocos 
 
 ### Requirement: Fios da sessão no bloco de Fios Narrativos
 
-O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sessão em leitura, com os abertos antes dos resolvidos e o estado de cada um distinguível. O bloco SHALL ser somente leitura e SHALL oferecer um link para a lista completa de fios em aberto da página de Sessões. Fios de outras sessões e fios sem sessão de origem NÃO SHALL aparecer nesse bloco. Uma falha ao carregar os fios SHALL mostrar um aviso dentro do bloco, sem impedir a leitura do restante da sessão.
+O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sessão em leitura, com os abertos antes dos resolvidos e o estado de cada um distinguível. O mestre dono SHALL poder, no próprio bloco, marcar um fio da sessão como resolvido e reabrir um fio resolvido, sem sair da leitura da sessão; a mudança SHALL ser gravada ao acionar a ação e o bloco SHALL refletir o novo estado imediatamente, reordenando os fios (abertos antes dos resolvidos). As demais edições (título, descrição, ordem e remoção) NÃO SHALL ser oferecidas no bloco. O bloco SHALL oferecer um link para a página «Fios» da campanha, com a lista completa. Fios de outras sessões e fios sem sessão de origem NÃO SHALL aparecer nesse bloco. Uma falha ao carregar os fios SHALL mostrar um aviso dentro do bloco, sem impedir a leitura do restante da sessão, e uma falha ao gravar a mudança de estado SHALL mostrar um aviso dentro do bloco, mantendo o fio no estado anterior.
 
 #### Scenario: Só os fios da sessão
 
@@ -44,10 +44,25 @@ O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sess
 - **WHEN** a sessão tem um fio resolvido e um fio em aberto
 - **THEN** o fio em aberto aparece antes, e o resolvido aparece com o estado distinguível
 
+#### Scenario: Resolver um fio no bloco
+
+- **WHEN** o mestre dono aciona «Resolver» num fio em aberto do bloco
+- **THEN** o fio passa a resolvido, desce para depois dos abertos, e o estado fica gravado, sem sair da leitura da sessão
+
+#### Scenario: Reabrir um fio no bloco
+
+- **WHEN** o mestre dono aciona «Reabrir» num fio resolvido do bloco
+- **THEN** o fio volta a em aberto e sobe para junto dos abertos, com o estado gravado
+
+#### Scenario: Falha ao gravar o estado
+
+- **WHEN** a gravação da mudança de estado falha
+- **THEN** o bloco mostra um aviso de erro e o fio permanece no estado anterior
+
 #### Scenario: Ir para a lista completa
 
 - **WHEN** o mestre dono ativa o link do bloco de Fios Narrativos
-- **THEN** a página leva à seção "Fios em aberto" com a lista completa da campanha
+- **THEN** abre a página «Fios» da campanha, com a lista completa
 
 #### Scenario: Troca de sessão
 
@@ -61,15 +76,19 @@ O bloco de Fios Narrativos SHALL listar os fios cuja sessão de origem é a sess
 
 ### Requirement: Bloco de fios e lista completa sincronizados
 
-O bloco de Fios Narrativos da sessão e a lista completa "Fios em aberto" da página SHALL refletir o mesmo estado: após criar, editar, resolver, reabrir, remover ou reordenar um fio, ou aceitar fios propostos pela IA, o bloco SHALL se atualizar sem exigir que o mestre troque de sessão ou recarregue a página.
+O bloco de Fios Narrativos da sessão e a página «Fios» SHALL refletir o mesmo estado dos fios: após criar, editar, resolver, reabrir, remover ou reordenar um fio na página «Fios», o bloco SHALL mostrar o estado atualizado quando a sessão é aberta ou reaberta, e, após aceitar fios propostos pela IA no editor da sessão, o bloco SHALL se atualizar sem exigir que o mestre troque de sessão ou recarregue a página.
 
 #### Scenario: Resolver um fio na lista completa
-- **WHEN** o mestre dono resolve, na lista "Fios em aberto", um fio que pertence à sessão em leitura
-- **THEN** o bloco de Fios Narrativos da sessão passa a mostrá-lo como resolvido
+- **WHEN** o mestre dono resolve, na página «Fios», um fio que pertence a uma sessão e depois abre a leitura dessa sessão
+- **THEN** o bloco de Fios Narrativos da sessão mostra o fio como resolvido
 
 #### Scenario: Remover um fio na lista completa
-- **WHEN** o mestre dono remove, na lista "Fios em aberto", um fio que pertence à sessão em leitura
-- **THEN** o fio desaparece do bloco de Fios Narrativos da sessão
+- **WHEN** o mestre dono remove, na página «Fios», um fio que pertence a uma sessão e depois abre a leitura dessa sessão
+- **THEN** o fio não aparece no bloco de Fios Narrativos da sessão
+
+#### Scenario: Aceitar fios propostos pela IA
+- **WHEN** o mestre dono aceita fios propostos pela IA no editor de uma sessão
+- **THEN** o bloco de Fios Narrativos da sessão passa a mostrá-los sem recarregar a página
 
 ### Requirement: Resumo e leitura pública sem material privado
 

@@ -35,7 +35,45 @@ def _client(visto, texto="Sugestão pronta"):
     return httpx.Client(transport=httpx.MockTransport(handler))
 
 
-def test_prompts_fixos():
+def test_sem_alvo_conta_registros_reais(db_session, monkeypatch):
+    from app.models.local import Local
+    from app.services.contexto_ia import contar_registros_contaveis
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    pedido = AssistirRequest(tipo="descricao_local")
+    assert contar_registros_contaveis(db_session, pedido, None) == 0
+    assert assistir(db_session, _ctx(), pedido, client=_client([])).estado == "vazio"
+    db_session.add(Local(nome="Ponte", x=0.5, y=0.5))
+    db_session.commit()
+    assert contar_registros_contaveis(db_session, pedido, None) == 1
+    assert assistir(db_session, _ctx(), pedido, client=_client([])).estado == "sugestao"
+
+
+def test_recuo_indisponivel_e_consulta_falhando(db_session, monkeypatch):
+    from sqlalchemy import text
+    from app.models.local import Local
+    from app.services.indice_ia import reconstruir
+    from app.services import indice_ia
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    db_session.add(Local(nome="Ponte", descricao="Segredo da ponte", x=0.5, y=0.5, visivel_para_todos=False))
+    db_session.commit()
+    reconstruir(db_session)
+    db_session.commit()
+    pedido = AssistirRequest(tipo="descricao_local", instrucao="ponte")
+    db_session.connection().execute(text("UPDATE indice_ia_estado SET estado='indisponivel' WHERE id=1"))
+    visto = []
+    resposta = assistir(db_session, _ctx(), pedido, client=_client(visto))
+    assert resposta.estado == "sugestao" and resposta.usou_conteudo_oculto
+    db_session.rollback()
+    monkeypatch.setattr(indice_ia, "consultar", lambda *args: (_ for _ in ()).throw(RuntimeError("falha")))
+    visto.clear()
+    resposta = assistir(db_session, _ctx(), pedido, client=_client(visto))
+    assert resposta.estado == "sugestao" and resposta.usou_conteudo_oculto
+
+
+def test_prompts_fixos(db_session):
+    from app.models.fio_narrativo import FioNarrativo
+    from app.services.contexto_ia import compor_contexto
+
     assert "oculto" in PROMPT_BASE
     for tipo, bloco in BLOCOS_TIPO.items():
         prompt = renderizar_prompt(tipo, True)
@@ -45,6 +83,18 @@ def test_prompts_fixos():
         assert "---" not in prompt and "[[" not in prompt
     for tipo in ("rascunho_sessao", "descricao_personagem"):
         assert PLACEHOLDER_MECANICA in renderizar_prompt(tipo, True)
+    resumo_prompt = renderizar_prompt("resumo_sessao", False)
+    assert "fios abertos" not in resumo_prompt
+    assert "Não copie blocos de combate" in resumo_prompt
+
+    alvo = seed_sessao(db_session, numero=1, notas_preparo="Notas da sessão")
+    db_session.add(FioNarrativo(titulo="FIO-SENTINELA", descricao="Pendência", estado="aberto"))
+    db_session.commit()
+    registros, _ = compor_contexto(
+        db_session, 1, AssistirRequest(tipo="resumo_sessao", alvo_id=alvo.id), alvo,
+    )
+    assert all(not registro.tipo.startswith("fio") for registro in registros)
+    assert all("FIO-SENTINELA" not in registro.texto for registro in registros)
 
 
 def test_prompts_combate():

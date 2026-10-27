@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { campanhasApi, type PainelItem } from "@/api/campanhas";
+import { indiceIaApi, type EstadoIndiceIa } from "@/api/indiceIa";
 import { CampaignCard } from "@/components/site/CampaignCard";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,107 @@ import { Switch } from "@/components/ui/switch";
 import { useApiErrorMessage } from "@/lib/apiError";
 import { formatBytes } from "@/lib/formatBytes";
 import { campaignHref } from "@/lib/navigation";
+
+function IndiceCampanha({ slug }: { slug: string }) {
+  const { t, i18n } = useTranslation("comum");
+  const explain = useApiErrorMessage();
+  const [indice, setIndice] = useState<EstadoIndiceIa | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [reindexing, setReindexing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void indiceIaApi
+      .estado(slug)
+      .then(
+        (result) => {
+          if (active) setIndice(result);
+        },
+        (reason) => {
+          if (active) setError(explain(reason));
+        },
+      )
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [slug, explain]);
+
+  async function reindexar() {
+    setError(null);
+    setSuccess(false);
+    setReindexing(true);
+    try {
+      setIndice(await indiceIaApi.reindexar(slug));
+      setSuccess(true);
+    } catch (reason) {
+      setError(explain(reason));
+    } finally {
+      setReindexing(false);
+    }
+  }
+
+  return (
+    <section
+      className="min-w-0 space-y-2 rounded-lg border p-3"
+      aria-label={t("painel.indice.title")}
+    >
+      <h3 className="font-medium">{t("painel.indice.title")}</h3>
+      {loading ? (
+        <p role="status">{t("painel.indice.loading")}</p>
+      ) : (
+        indice && (
+          <div className="space-y-1 text-sm">
+            <p>
+              {t("painel.indice.status")}: {t(`painel.indice.states.${indice.estado}`)}
+            </p>
+            <p>
+              {t("painel.indice.counts", { registros: indice.registros, trechos: indice.trechos })}
+            </p>
+            <p className="break-words">
+              {t("painel.indice.updated")}:{" "}
+              {indice.atualizado_em
+                ? new Intl.DateTimeFormat(i18n.language, {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  }).format(
+                    new Date(
+                      `${indice.atualizado_em}${/Z|[+-]\d\d:\d\d$/.test(indice.atualizado_em) ? "" : "Z"}`,
+                    ),
+                  )
+                : t("painel.indice.never")}
+            </p>
+          </div>
+        )
+      )}
+      <Button
+        variant="outline"
+        size="sm"
+        type="button"
+        disabled={loading || reindexing}
+        onClick={() => void reindexar()}
+        className="max-w-full whitespace-normal"
+      >
+        {reindexing && <Loader2 className="animate-spin" aria-hidden />}
+        {reindexing ? t("painel.indice.reindexing") : t("painel.indice.reindex")}
+      </Button>
+      {success && (
+        <p role="status" className="text-sm">
+          {t("painel.indice.success")}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="break-words text-sm text-destructive">
+          {t("painel.indice.error")}: {error}
+        </p>
+      )}
+    </section>
+  );
+}
 
 export function PainelPage() {
   const { t } = useTranslation("comum");
@@ -205,6 +307,9 @@ export function PainelPage() {
                       {t("painel.moduloIaArcosAjuda")}
                     </p>
                   </div>
+                  {campaign.modulos_ativos.includes("ia_arcos") && (
+                    <IndiceCampanha slug={campaign.slug} />
+                  )}
                   <label className="grid gap-1 text-sm">
                     {t("painel.cover")}
                     <input

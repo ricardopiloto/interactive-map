@@ -12,7 +12,6 @@ import {
   type SessaoPayload,
 } from "@/api/sessoes";
 import { useEditMode } from "@/auth/EditModeContext";
-import { FiosList } from "@/components/codex/FiosList";
 import { SessionReadBlocks } from "@/components/codex/SessionReadBlocks";
 import { SessionEditor, type SessaoDraft } from "@/components/codex/SessionEditor";
 import {
@@ -334,13 +333,6 @@ export function Sessions() {
             })}
           </ol>
         )}
-        {enabled && isDono && (
-          <FiosList
-            slug={slug}
-            revision={fiosRevision}
-            onChange={() => setFiosRevision((value) => value + 1)}
-          />
-        )}
       </nav>
 
       {current && (
@@ -403,18 +395,6 @@ export function Sessions() {
             enabled={enabled}
             isDono={isDono}
             fiosRevision={fiosRevision}
-            onShowThreads={() => {
-              navigate({ search: {}, replace: true });
-              requestAnimationFrame(() => {
-                const target = document.getElementById("fios-em-aberto");
-                history.replaceState(null, "", "#fios-em-aberto");
-                target?.scrollIntoView({
-                  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                    ? "instant"
-                    : "smooth",
-                });
-              });
-            }}
           />
           <footer className="mt-12 grid gap-6 border-t border-border pt-6 sm:grid-cols-2">
             <div>

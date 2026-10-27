@@ -123,6 +123,24 @@
     "toggleUnit": "Toggle mi/km",
     "moduloIaArcos": "AI assistant",
     "moduloIaArcosAjuda": "The assistant may send hidden campaign content to DeepSeek.",
+    "indice": {
+      "title": "Campaign index",
+      "loading": "Loading index…",
+      "status": "Status",
+      "states": {
+        "ausente": "Not created yet",
+        "ok": "Up to date",
+        "desatualizado": "Out of date",
+        "indisponivel": "Unavailable"
+      },
+      "counts": "{{registros}} records · {{trechos}} excerpts",
+      "updated": "Last updated",
+      "never": "Never",
+      "reindex": "Reindex",
+      "reindexing": "Reindexing…",
+      "success": "Index updated successfully.",
+      "error": "Could not update the index"
+    },
     "suggestedSystems": "Suggested systems (optional)",
     "cover": "Cover",
     "clearCover": "Remove cover",
@@ -411,7 +429,8 @@
       "campaignName": "Campaign name",
       "save": "Save",
       "draft": "Draft"
-    }
+    },
+    "threads": "Threads"
   },
   "iaAssistente": {
     "rascunho": "Draft",

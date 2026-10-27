@@ -6,6 +6,7 @@ import { RoutePage } from "@/routes/rota";
 import { Sessions } from "@/routes/sessoes";
 import { Timeline } from "@/routes/cronologia";
 import { Items } from "@/routes/itens";
+import { Fios } from "@/routes/fios";
 import { Tools } from "@/routes/ferramentas";
 
 function campaignChildren() {
@@ -20,6 +21,7 @@ function campaignChildren() {
       <Route path="linha-do-tempo" element={<Timeline />} />
       <Route path="itens" element={<Items />} />
       <Route path="ferramentas" element={<Tools />} />
+      <Route path="fios" element={<Fios />} />
     </>
   );
 }

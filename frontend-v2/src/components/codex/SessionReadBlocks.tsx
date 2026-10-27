@@ -3,6 +3,7 @@ import { ChevronDown, LockKeyhole } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { fiosApi, type Fio } from "@/api/fios";
 import type { Sessao } from "@/api/sessoes";
+import { Link } from "@/lib/navigation";
 import { RichContent } from "./RichContent";
 
 export function SessionReadBlocks({
@@ -11,14 +12,12 @@ export function SessionReadBlocks({
   enabled,
   isDono,
   fiosRevision,
-  onShowThreads,
 }: {
   sessao: Sessao;
   slug: string;
   enabled: boolean;
   isDono: boolean;
   fiosRevision: number;
-  onShowThreads?: () => void;
 }) {
   const { t } = useTranslation("sessoes");
   const notesId = useId();
@@ -55,7 +54,36 @@ export function SessionReadBlocks({
     </button>
   );
   const [result, setResult] = useState<{ key: string; rows: Fio[]; error: boolean } | null>(null);
+  const [saving, setSaving] = useState<{ key: string; ids: Set<number> } | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const key = `${slug}:${sessao.id}:${fiosRevision}`;
+  const updateThread = async (fio: Fio) => {
+    if (saving?.key === key && saving.ids.has(fio.id)) return;
+    setSaving((prev) => ({
+      key,
+      ids: new Set([...(prev?.key === key ? prev.ids : []), fio.id]),
+    }));
+    setSaveError(null);
+    try {
+      const updated = await fiosApi.update(slug, fio.id, {
+        estado: fio.estado === "aberto" ? "resolvido" : "aberto",
+      });
+      setResult((prev) =>
+        prev?.key === key
+          ? { ...prev, rows: prev.rows.map((row) => (row.id === fio.id ? updated : row)) }
+          : prev,
+      );
+    } catch {
+      setSaveError(key);
+    } finally {
+      setSaving((prev) => {
+        if (prev?.key !== key) return prev;
+        const ids = new Set(prev.ids);
+        ids.delete(fio.id);
+        return { key, ids };
+      });
+    }
+  };
   useEffect(() => {
     if (!enabled || !isDono) return;
     let active = true;
@@ -117,6 +145,11 @@ export function SessionReadBlocks({
             {badge}
           </div>
           <div id={threadsId} hidden={!expanded.threads}>
+            {saveError === key && (
+              <p role="alert" className="mb-3 text-sm text-destructive">
+                {t("readBlocks.threadsSaveError")}
+              </p>
+            )}
             {error ? (
               <p role="alert" className="text-sm text-destructive">
                 {t("readBlocks.threadsError")}
@@ -136,6 +169,21 @@ export function SessionReadBlocks({
                     </p>
                     <p className="whitespace-pre-wrap text-sm">{fio.descricao}</p>
                     <p className="text-xs text-muted-foreground">{t(`fios.${fio.estado}`)}</p>
+                    <button
+                      type="button"
+                      className="mt-2 inline-flex min-h-11 max-w-full items-center rounded-md border border-seal/40 px-3 text-sm text-seal break-words [overflow-wrap:anywhere] disabled:opacity-50"
+                      aria-label={t(
+                        fio.estado === "aberto"
+                          ? "readBlocks.resolveThread"
+                          : "readBlocks.reopenThread",
+                        { titulo: fio.titulo },
+                      )}
+                      aria-busy={saving?.key === key && saving.ids.has(fio.id)}
+                      disabled={saving?.key === key && saving.ids.has(fio.id)}
+                      onClick={() => void updateThread(fio)}
+                    >
+                      {t(fio.estado === "aberto" ? "fios.resolve" : "fios.reopen")}
+                    </button>
                   </li>
                 ))}
               </ol>
@@ -146,28 +194,9 @@ export function SessionReadBlocks({
                 {t("readBlocks.loadingThreads")}
               </p>
             )}
-            <a
-              href="#fios-em-aberto"
-              className="mt-4 inline-block text-sm text-seal underline"
-              onClick={(event) => {
-                const target = document.getElementById("fios-em-aberto");
-                if (target) {
-                  event.preventDefault();
-                  if (target.getClientRects().length === 0) {
-                    onShowThreads?.();
-                    return;
-                  }
-                  history.replaceState(null, "", "#fios-em-aberto");
-                  target.scrollIntoView({
-                    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                      ? "instant"
-                      : "smooth",
-                  });
-                }
-              }}
-            >
+            <Link to="/fios" className="mt-4 inline-block text-sm text-seal underline">
               {t("readBlocks.allThreads")}
-            </a>
+            </Link>
           </div>
         </section>
       )}

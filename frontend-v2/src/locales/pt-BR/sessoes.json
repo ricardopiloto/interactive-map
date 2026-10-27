@@ -87,7 +87,17 @@
     "emptyThreads": "Nenhum fio criado nesta sessão.",
     "emptySummary": "Nenhum resumo.",
     "threadsError": "Não foi possível carregar os fios desta sessão.",
+    "threadsSaveError": "Não foi possível gravar o estado do fio. Tente novamente.",
+    "resolveThread": "Resolver fio: {{titulo}}",
+    "reopenThread": "Reabrir fio: {{titulo}}",
     "loadingThreads": "Carregando fios…",
     "allThreads": "Ver todos os fios em aberto"
+  },
+  "fiosPage": {
+    "title": "Fios",
+    "intro": "Acompanhe os fios narrativos da campanha.",
+    "loading": "A carregar permissão…",
+    "gmOnly": "Esta página é só para o mestre dono da campanha.",
+    "gmModeRequired": "Ligue o Modo GM para ver os fios narrativos."
   }
 }

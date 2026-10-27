@@ -275,6 +275,10 @@ def import_legacy_instance(
         ensure_campaign_schema(engine, fresh=False)
         _ensure_content_tables(engine)
         _persist_media_urls(engine, slug)
+        from app.services.indice_ia import reconstruir
+        with Session(engine) as index_session:
+            reconstruir(index_session)
+            index_session.commit()
 
         with Session(get_control_engine()) as session:
             camp = session.exec(select(Campanha).where(Campanha.slug == slug)).one()

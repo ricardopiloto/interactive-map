@@ -13,13 +13,14 @@ from app.config import settings
 from app.deps.auth import MembroContext
 from app.errors import raise_api_error
 from app.models.arco import Arco
+from app.models.evento import Evento
 from app.models.fio_narrativo import FioNarrativo
 from app.models.links import LocalConexaoLink, SessaoLocalLink, SessaoNpcLink
 from app.models.local import Local
 from app.models.npc import NPC
 from app.models.sessao import Sessao
 from app.schemas.ia_assistente import AssistirRequest, AssistirResponse
-from app.services.contexto_ia import coletar_registros, _orcamento, _tamanho
+from app.services.contexto_ia import contar_registros_contaveis, coletar_registros, compor_contexto, _orcamento, _tamanho
 from app.services.ia_provider import (
     IA_CREDENCIAL_AUSENTE,
     IA_RESPOSTA_CORTADA,
@@ -107,7 +108,7 @@ BLOCOS_TIPO = {
         "Registre o que aconteceu e o que significou para quem viveu, no passado. "
         "Use só fatos nas notas de preparo, personagens, locais e arco do contexto; "
         "não invente eventos nem diálogos. Não copie blocos de combate das Notas de "
-        "Preparo como fatos ocorridos; são apenas planos. Termine com o estado do grupo e fios abertos."
+        "Preparo como fatos ocorridos; são apenas planos. Termine com o estado do grupo."
     ),
     "descricao_personagem": (
         "Descreva aparência e comportamento observáveis, papel, motivação, relação "
@@ -175,12 +176,19 @@ def assistir(
         else pedido.campo_publico or bool(getattr(alvo, "visivel_para_todos", False))
     )
     system = renderizar_prompt(pedido.tipo, publico)
-    registros = coletar_registros(session, campanha_id, pedido, alvo)
-    if pedido.tipo == "rascunho_sessao":
-        fios = session.exec(select(FioNarrativo).where(FioNarrativo.estado == "aberto").order_by(FioNarrativo.ordem)).all()
-        registros = [ItemContextoIa(campanha_id, "fio_em_aberto", f.id or 0,
-            f"{f.titulo}: {f.descricao}", False) for f in fios] + registros
-    contexto_insuficiente = len(registros) < MIN_REGISTROS[pedido.tipo]
+    try:
+        registros, trechos = compor_contexto(session, campanha_id, pedido, alvo)
+        origem = "indice"
+    except Exception as exc:
+        logger.warning("ia_assistente recuo campanha=%s erro=%s", campanha_id, exc)
+        registros, trechos = coletar_registros(session, campanha_id, pedido, alvo), 0
+        origem = "recuo"
+        if pedido.tipo == "rascunho_sessao":
+            fios = session.exec(select(FioNarrativo).where(FioNarrativo.estado == "aberto").order_by(FioNarrativo.ordem)).all()
+            registros = [ItemContextoIa(campanha_id, "fio_em_aberto", f.id or 0,
+                f"{f.titulo}: {f.descricao}", False) for f in fios] + registros
+    registros_contaveis = contar_registros_contaveis(session, pedido, alvo)
+    contexto_insuficiente = registros_contaveis < MIN_REGISTROS[pedido.tipo]
     descricao_com_texto = pedido.tipo.startswith("descricao_") and pedido.texto_atual.strip()
     if contexto_insuficiente and not descricao_com_texto:
         resposta = AssistirResponse(
@@ -236,7 +244,7 @@ def assistir(
         codigo = resultado.codigo
     log = logger.warning if resposta.estado == "falha" else logger.info
     log(
-        "ia_assistente campanha=%s tipo=%s tamanho=%s oculto=%s resultado=%s",
-        campanha_id, pedido.tipo, tamanho, oculto, codigo,
+        "ia_assistente campanha=%s tipo=%s tamanho=%s oculto=%s resultado=%s origem=%s trechos=%s",
+        campanha_id, pedido.tipo, tamanho, oculto, codigo, origem, trechos,
     )
     return resposta

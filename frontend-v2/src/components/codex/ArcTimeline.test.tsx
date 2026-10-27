@@ -96,6 +96,38 @@ it("keeps elapsed labels between dated sessions separated by undated sessions", 
 });
 
 describe("ligação sequencial com gradiente", () => {
+  it("liga o arco WFRP sem data nas duas pontas sem rótulo de tempo", () => {
+    const sessoes = [
+      s(17, 4),
+      ...[18, 19, 20, 21].map((n) => s(n, 5)),
+      ...[22, 23, 24].map((n) => s(n, 6)),
+      ...[25, 26, 27, 28].map((n) => s(n, 7)),
+    ];
+    const eventos = [e(17, 17, 2511, 8), ...[18, 19, 21, 25, 26, 28].map((n) => e(n, n, 2511, 10))];
+    const { container } = renderTimeline(
+      <ArcTimeline
+        sessoes={sessoes}
+        eventos={eventos}
+        arcos={[a(4), a(5), a(6), a(7)]}
+        filter="all"
+      />,
+    );
+    expect(container.querySelectorAll('[data-link="sequential"]')).toHaveLength(3);
+    expect(container.querySelectorAll("[data-sequential-label]")).toHaveLength(1);
+    for (const n of [22, 23, 24])
+      expect(container.querySelector(`[data-session-id="${n}"]`)).toHaveTextContent("—");
+  });
+  it("prefers an explicit transition over a sequential link for the same arcs", () => {
+    const { container } = renderTimeline(
+      <ArcTimeline
+        sessoes={[s(1, 1, 2), s(2, 2)]}
+        eventos={[e(1, 1, 100), e(2, 2, 101)]}
+        arcos={[a(1), a(2)]}
+        filter="all"
+      />,
+    );
+    expect(container.querySelectorAll('[data-link="sequential"]')).toHaveLength(0);
+  });
   it("desenha traço reto tracejado com stroke url(#gradiente) na mesma coluna", () => {
     const { container } = renderTimeline(
       <ArcTimeline

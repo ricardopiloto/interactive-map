@@ -44,7 +44,7 @@ interface Row {
 let rows: Row[] = [];
 let patches: { id: number; body: Record<string, unknown> }[] = [];
 
-function installApi(role: "gm" | "player") {
+function installApi(role: "gm" | "editor" | "player" | "visitor") {
   const calls: string[] = [];
   vi.stubGlobal(
     "fetch",
@@ -56,11 +56,12 @@ function installApi(role: "gm" | "player") {
           headers: { "Content-Type": "application/json" },
         });
       if (url === "/api/auth/me") {
-        return role === "gm"
+        return role === "gm" || role === "editor"
           ? respond({ id: 1, email: "gm@teste.local", is_admin: false })
           : new Response("{}", { status: 401 });
       }
-      if (url.endsWith("/admin/session")) return respond({ papel: "dono" });
+      if (url.endsWith("/admin/session"))
+        return respond({ papel: role === "gm" ? "dono" : "membro" });
       const roll = url.match(/\/admin\/geradores\/(\w+)\?lang=([\w-]+)$/);
       if (roll && (init?.method ?? "GET").toUpperCase() === "POST") {
         calls.push(`${roll[1]}:${roll[2]}`);
@@ -88,7 +89,7 @@ function installApi(role: "gm" | "player") {
   return calls;
 }
 
-function renderTools(role: "gm" | "player", gmToggle: boolean) {
+function renderTools(role: "gm" | "editor" | "player" | "visitor", gmToggle: boolean) {
   const calls = installApi(role);
   if (gmToggle) sessionStorage.setItem("codex.editMode.alpha", "1");
   function Frame() {
@@ -223,4 +224,46 @@ it("recusa o envio se a sessão foi revelada depois de a lista ser carregada", a
     "já está visível aos jogadores",
   );
   expect(patches).toEqual([]);
+});
+
+it.each([
+  ["gm", true, true],
+  ["gm", false, false],
+  ["editor", true, false],
+  ["player", false, false],
+  ["visitor", false, false],
+] as const)("mostra Fios só ao dono com Modo GM: %s, toggle %s", async (role, toggle, visible) => {
+  renderTools(role, toggle);
+  if (role === "gm" || role === "editor")
+    await screen.findByRole("heading", { name: "Ferramentas" });
+  else await screen.findByRole("alert");
+  if (visible)
+    await waitFor(() => expect(screen.getAllByRole("link", { name: "Fios" })).toHaveLength(2));
+  const navs = screen.getAllByRole("navigation", { name: "Vistas da campanha" });
+  for (const nav of navs) {
+    if (visible) {
+      expect(within(nav).getAllByRole("link")).toHaveLength(7);
+      expect(within(nav).getByRole("link", { name: "Fios" })).toHaveAttribute(
+        "href",
+        "/c/1/alpha/fios",
+      );
+    } else expect(within(nav).queryByRole("link", { name: "Fios" })).not.toBeInTheDocument();
+  }
+});
+
+it("mantém os nomes acessíveis na barra superior compacta do dono", async () => {
+  renderTools("gm", true);
+  await screen.findByRole("heading", { name: "Ferramentas" });
+
+  const topNav = screen.getAllByRole("navigation", { name: "Vistas da campanha" })[0]!;
+  const labels = ["Mapa", "Relações", "Rota", "Sessões", "Cronologia", "Ferramentas", "Fios"];
+  const links = within(topNav).getAllByRole("link");
+  expect(links).toHaveLength(7);
+  for (const [index, link] of links.entries()) {
+    expect(link).toHaveAttribute("aria-label", labels[index]);
+    expect(link).toHaveAttribute("title", labels[index]);
+    expect(link.querySelector("span")).toHaveClass("hidden", "xl:inline");
+    expect(link).toHaveClass("px-3", "xl:px-3.5");
+  }
+  expect(screen.getByRole("button", { name: "Sair" })).toBeVisible();
 });

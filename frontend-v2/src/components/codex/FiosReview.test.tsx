@@ -14,6 +14,7 @@ it("revisa itens e só grava os selecionados após aceitação, mapeando a sess�
     fios: [
       { titulo: "Primeiro", descricao: "Um", sessao_numero: 4 },
       { titulo: "Segundo", descricao: "Dois" },
+      { titulo: "Terceiro", descricao: "Três" },
     ],
     sessoes_omitidas: 1,
     usou_conteudo_oculto: true,
@@ -41,9 +42,38 @@ it("revisa itens e só grava os selecionados após aceitação, mapeando a sess�
   await waitFor(() =>
     expect(batch).toHaveBeenCalledWith("alpha", [
       { titulo: "Editado", descricao: "Um", origem: "ia", sessao_origem_id: 7 },
+      { titulo: "Terceiro", descricao: "Três", origem: "ia", sessao_origem_id: null },
     ]),
   );
   expect(added).toHaveBeenCalled();
+});
+it("usa a sessão salva do editor para todos os fios aceitos", async () => {
+  vi.spyOn(fiosApi, "propose").mockResolvedValue({
+    estado: "propostas",
+    fios: [
+      { titulo: "Citado", descricao: "Um", sessao_numero: 4 },
+      { titulo: "Sem sessão", descricao: "Dois" },
+    ],
+    sessoes_omitidas: 0,
+    usou_conteudo_oculto: false,
+  });
+  const batch = vi.spyOn(fiosApi, "createBatch").mockResolvedValue([]);
+  render(
+    <FiosReview
+      slug="alpha"
+      sessaoId={28}
+      sessoes={[{ id: 7, numero: 4 }]}
+      onClose={vi.fn()}
+      onAdded={vi.fn()}
+    />,
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "Adicionar selecionados" }));
+  await waitFor(() =>
+    expect(batch).toHaveBeenCalledWith("alpha", [
+      { titulo: "Citado", descricao: "Um", origem: "ia", sessao_origem_id: 28 },
+      { titulo: "Sem sessão", descricao: "Dois", origem: "ia", sessao_origem_id: 28 },
+    ]),
+  );
 });
 it("falha no lote preserva os itens para nova tentativa", async () => {
   vi.spyOn(fiosApi, "propose").mockResolvedValue({

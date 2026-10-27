@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     )
     ia_assistente_contexto_max_chars: int = Field(default=48000, ge=2000)
     ia_assistente_timeout_seconds: float = Field(default=120.0, gt=0)
+    ia_indice_trechos_max: int = Field(default=20, ge=1)
+    ia_indice_catalogo_max_chars: int = Field(default=6000, ge=0)
+    ia_indice_sessoes_recentes: int = Field(default=3, ge=0)
+    ia_indice_arcos_recentes: int = Field(default=3, ge=0)
 
     @field_validator("deepseek_api_key", mode="before")
     @classmethod

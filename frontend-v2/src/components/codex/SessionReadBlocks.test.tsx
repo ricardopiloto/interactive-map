@@ -1,9 +1,28 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import type { ReactElement } from "react";
+import {
+  fireEvent,
+  render as testingRender,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import type { Sessao } from "@/api/sessoes";
 import { fiosApi, type Fio } from "@/api/fios";
 import i18n from "@/i18n";
 import { SessionReadBlocks } from "./SessionReadBlocks";
+
+const render = (ui: ReactElement) => {
+  const result = testingRender(
+    <MemoryRouter initialEntries={["/c/1/mesa/sessoes"]}>{ui}</MemoryRouter>,
+  );
+  return {
+    ...result,
+    rerender: (next: ReactElement) =>
+      result.rerender(<MemoryRouter initialEntries={["/c/1/mesa/sessoes"]}>{next}</MemoryRouter>),
+  };
+};
 
 const sessao: Sessao = {
   id: 1,
@@ -57,7 +76,7 @@ it("mostra os blocos privados na ordem, fios da sessão e resumo isolado", async
   expect(within(sections[2]!).getByText("Resumo público")).toBeVisible();
   expect(screen.getByRole("link", { name: "Ver todos os fios em aberto" })).toHaveAttribute(
     "href",
-    "#fios-em-aberto",
+    "/c/1/mesa/fios",
   );
 });
 
@@ -69,13 +88,106 @@ it("não busca fios fora do modo GM do dono", () => {
   expect(screen.queryByText("Nota secreta")).not.toBeInTheDocument();
   expect(screen.queryByText("Só para o mestre")).not.toBeInTheDocument();
   expect(screen.queryByText("Fios Narrativos")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /Resolver fio|Reabrir fio/ }),
+  ).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /Recolher|Expandir/ })).not.toBeInTheDocument();
   rerender(
     <SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono={false} fiosRevision={0} />,
   );
   expect(screen.getByText("Nota secreta")).toBeVisible();
   expect(screen.queryByText("Fios Narrativos")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /Resolver fio|Reabrir fio/ }),
+  ).not.toBeInTheDocument();
   expect(list).not.toHaveBeenCalled();
+});
+
+it("resolve e reabre um fio, reordenando a lista pela resposta do PATCH", async () => {
+  vi.spyOn(fiosApi, "list").mockResolvedValue([fio(1, 1, "aberto"), fio(2, 1, "aberto")]);
+  const update = vi
+    .spyOn(fiosApi, "update")
+    .mockImplementation(async (_slug, id, body) => fio(id, 1, body.estado!));
+  render(<SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />);
+  fireEvent.click(await screen.findByRole("button", { name: "Resolver fio: Fio 1" }));
+  await waitFor(() => expect(update).toHaveBeenCalledWith("mesa", 1, { estado: "resolvido" }));
+  expect(await screen.findByRole("button", { name: "Reabrir fio: Fio 1" })).toBeVisible();
+  expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+    expect.stringContaining("Fio 2"),
+    expect.stringContaining("Fio 1"),
+  ]);
+  fireEvent.click(screen.getByRole("button", { name: "Reabrir fio: Fio 1" }));
+  await waitFor(() => expect(update).toHaveBeenCalledWith("mesa", 1, { estado: "aberto" }));
+  expect(await screen.findByRole("button", { name: "Resolver fio: Fio 1" })).toBeVisible();
+  expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+    expect.stringContaining("Fio 1"),
+    expect.stringContaining("Fio 2"),
+  ]);
+});
+
+it("mantém a lista e o estado anterior quando o PATCH falha", async () => {
+  vi.spyOn(fiosApi, "list").mockResolvedValue([fio(1, 1, "aberto")]);
+  vi.spyOn(fiosApi, "update").mockRejectedValue(new Error("429"));
+  render(<SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />);
+  fireEvent.click(await screen.findByRole("button", { name: "Resolver fio: Fio 1" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível gravar o estado");
+  expect(screen.getByRole("listitem")).toHaveTextContent("Fio 1");
+  expect(screen.getByRole("listitem")).toHaveTextContent("Em aberto");
+  expect(screen.getByRole("button", { name: "Resolver fio: Fio 1" })).toBeEnabled();
+});
+
+it("desabilita só o fio em gravação e permite resolver dois fios em sequência", async () => {
+  let finish!: (row: Fio) => void;
+  vi.spyOn(fiosApi, "list").mockResolvedValue([fio(1, 1, "aberto"), fio(2, 1, "aberto")]);
+  const update = vi
+    .spyOn(fiosApi, "update")
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    )
+    .mockResolvedValueOnce(fio(2, 1, "resolvido"));
+  render(<SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />);
+  const first = await screen.findByRole("button", { name: "Resolver fio: Fio 1" });
+  fireEvent.click(first);
+  expect(first).toBeDisabled();
+  expect(first).toHaveAttribute("aria-busy", "true");
+  const second = screen.getByRole("button", { name: "Resolver fio: Fio 2" });
+  expect(second).toBeEnabled();
+  finish(fio(1, 1, "resolvido"));
+  expect(await screen.findByRole("button", { name: "Reabrir fio: Fio 1" })).toBeVisible();
+  fireEvent.click(second);
+  expect(await screen.findByRole("button", { name: "Reabrir fio: Fio 2" })).toBeVisible();
+  expect(update).toHaveBeenCalledTimes(2);
+});
+
+it("ignora resposta tardia do PATCH após trocar de sessão", async () => {
+  let finish!: (row: Fio) => void;
+  vi.spyOn(fiosApi, "list")
+    .mockResolvedValueOnce([fio(1, 1, "aberto")])
+    .mockResolvedValueOnce([fio(1, 2, "aberto")]);
+  vi.spyOn(fiosApi, "update").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const { rerender } = render(
+    <SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />,
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "Resolver fio: Fio 1" }));
+  rerender(
+    <SessionReadBlocks sessao={{ ...sessao, id: 2 }} slug="mesa" enabled isDono fiosRevision={0} />,
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Resolver fio: Fio 1" })).toBeEnabled(),
+  );
+  finish(fio(1, 1, "resolvido"));
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Resolver fio: Fio 1" })).toBeEnabled(),
+  );
+  expect(screen.queryByRole("button", { name: "Reabrir fio: Fio 1" })).not.toBeInTheDocument();
 });
 
 it("inicia expandido e recolhe ou expande cada bloco independentemente", async () => {
@@ -173,4 +285,19 @@ it("ativa combate somente nas Notas de Preparo", () => {
   expect(within(notes!).queryByText(/\[!combate\]/)).not.toBeInTheDocument();
   expect(within(summary!).getByText(/\[!combate\] Ponte/)).toBeVisible();
   expect(summary!.querySelector("blockquote")).not.toBeNull();
+});
+
+it("consulta novamente os fios ao montar depois de mudanças na página Fios", async () => {
+  const list = vi
+    .spyOn(fiosApi, "list")
+    .mockResolvedValueOnce([fio(1, 1, "aberto")])
+    .mockResolvedValueOnce([fio(1, 1, "resolvido")]);
+  const first = render(
+    <SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />,
+  );
+  expect(await screen.findByText("Fio 1")).toBeVisible();
+  first.unmount();
+  render(<SessionReadBlocks sessao={sessao} slug="mesa" enabled isDono fiosRevision={0} />);
+  expect(await screen.findByText("Resolvido")).toBeVisible();
+  expect(list).toHaveBeenCalledTimes(2);
 });
