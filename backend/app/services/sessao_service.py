@@ -7,6 +7,7 @@ from sqlmodel import Session, col, select
 
 from app.errors import raise_api_error
 from app.models.arco import Arco
+from app.models.fio_narrativo import FioNarrativo
 from app.models.links import ItemSessaoLink, SessaoLocalLink, SessaoNpcLink
 from app.schemas.descoberta import AlertaInconsistencia
 from app.models.local import Local
@@ -286,5 +287,10 @@ def delete_sessao(session: Session, sessao_id: int) -> None:
         select(ItemSessaoLink).where(ItemSessaoLink.sessao_id == sessao_id)
     ).all():
         session.delete(link)
+    for fio in session.exec(
+        select(FioNarrativo).where(FioNarrativo.sessao_origem_id == sessao_id)
+    ).all():
+        fio.sessao_origem_id = None
+        session.add(fio)
     session.delete(row)
     session.commit()

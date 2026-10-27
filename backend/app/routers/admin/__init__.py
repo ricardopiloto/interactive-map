@@ -5,6 +5,7 @@ from app.routers.admin import (
     arcos,
     descoberta,
     eventos,
+    fios,
     export,
     geradores,
     grupo,
@@ -27,6 +28,7 @@ router.include_router(npcs.router, tags=["admin-npcs"])
 router.include_router(personagens.router, tags=["admin-personagens"])
 router.include_router(vinculos.router, tags=["admin-vinculos"])
 router.include_router(arcos.router, tags=["admin-arcos"])
+router.include_router(fios.router, tags=["admin-fios"])
 router.include_router(grupo.router, tags=["admin-grupo"])
 router.include_router(uploads.router, tags=["admin-uploads"])
 router.include_router(waypoints.router, tags=["admin-waypoints"])

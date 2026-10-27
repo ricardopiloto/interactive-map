@@ -431,3 +431,22 @@ def test_resumo_usa_notas_e_campo_publico(db_session, monkeypatch):
     assert resposta.campo_destino == "resumo"
     assert "(true)" in visto[0]["messages"][0]["content"]
     assert "RASCUNHO-DA-SESSAO" in visto[0]["messages"][1]["content"]
+
+
+def test_rascunho_recebe_apenas_fios_abertos(db_session, monkeypatch):
+    from app.models.fio_narrativo import FioNarrativo
+
+    monkeypatch.setattr(settings, "deepseek_api_key", "teste")
+    seed_sessao(db_session, numero=1, resumo="Resumo anterior")
+    db_session.add(FioNarrativo(titulo="FIO-ABERTO", descricao="Pendência", estado="aberto"))
+    db_session.add(FioNarrativo(titulo="FIO-RESOLVIDO", descricao="Fim", estado="resolvido"))
+    db_session.commit()
+    visto = []
+    resposta = assistir(db_session, _ctx(), AssistirRequest(
+        tipo="rascunho_sessao", texto_atual="Notas atuais", instrucao="Direção do mestre",
+    ), client=_client(visto))
+    assert resposta.estado == "sugestao"
+    registros = json.loads(visto[0]["messages"][1]["content"])
+    assert any(r["tipo"] == "fio_em_aberto" and "FIO-ABERTO" in r["texto"] for r in registros)
+    assert all("FIO-RESOLVIDO" not in r["texto"] for r in registros)
+    assert "fios em aberto" in visto[0]["messages"][0]["content"]
