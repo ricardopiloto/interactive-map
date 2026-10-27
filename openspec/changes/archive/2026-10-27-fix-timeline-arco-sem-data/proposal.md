@@ -14,6 +14,8 @@ Esse comportamento é hoje documentado e intencional na spec (não é um bug de 
 - O comportamento para sessões que não pertencem a nenhum arco **não muda**: continuam no fim da lista, ordenadas por número, sem data inventada.
 - O modo "Chronological" (que não usa `layoutArcs`) e o modo "By discovery" não são afetados.
 
+- **Extensão (descoberta na verificação com dados reais):** na campanha WFRP, os arcos «O Hospício e o Porco» (18–21) e «O Legado de Andrei Solacruz» (25–28) têm eventos todos no mesmo mês (2511/10). Como a data só tem ano e mês, o layout os trata como simultâneos: abre uma bifurcação (coluna extra) e liga a sessão 21 direto à 28, e o arco do meio (22–24, sem datas) não se liga a ninguém. Esta change passa a cobrir também isso: (a) dois arcos com a **mesma data** cujas faixas de número de sessão **não se intercalam** passam a ser **sequenciais** (mesma coluna, ligação tracejada entre as sessões que se encaram), em vez de bifurcação; (b) um arco **sem nenhuma sessão datada** passa a ser ligado, como arco sequencial, ao arco vizinho anterior e ao seguinte na ordenação visível, sem exibir data nem tempo decorrido. Isso **relaxa** a regra atual «duas sessões de arcos diferentes com a mesma data ocupam colunas diferentes» para o caso de faixas de sessão separadas; arcos que se intercalam em número de sessão continuam em colunas diferentes.
+
 ## Capabilities
 
 ### New Capabilities
@@ -22,11 +24,11 @@ Esse comportamento é hoje documentado e intencional na spec (não é um bug de 
 
 ### Modified Capabilities
 
-- `linha-tempo-por-arcos`: a regra de posicionamento de um arco sem nenhuma sessão datada muda de "fim da lista, por número de sessão" para "posição herdada da sessão datada mais próxima por número de sessão, entre arcos", com a mesma exclusão de colunas/tempo decorrido já aplicada à data herdada dentro de um arco.
+- `linha-tempo-por-arcos`: (a regra de colunas/bifurcação e a de ligação sequencial também mudam, ver Extensão) a regra de posicionamento de um arco sem nenhuma sessão datada muda de "fim da lista, por número de sessão" para "posição herdada da sessão datada mais próxima por número de sessão, entre arcos", com a mesma exclusão de colunas/tempo decorrido já aplicada à data herdada dentro de um arco.
 
 ## Impact
 
 - `frontend-v2/src/lib/timelineLayout.ts`: função `layoutArcs`, cálculo do `arcAnchor`.
 - `frontend-v2/src/lib/timelineLayout.test.ts`: um teste existente ("keeps undated sessions with their dated arc above older arcs and leaves unanchored rows last") documenta o comportamento antigo para este exato cenário e precisa ser atualizado.
-- `frontend-v2/src/components/codex/ArcTimeline.tsx`: nenhuma mudança esperada (consome `rows` já ordenadas; `row.date` continua null como hoje).
+- `frontend-v2/src/components/codex/ArcTimeline.tsx`: a princípio nenhuma mudança (consome `rows`, `branchOrigins` e `sequentialPairs`); a ligação sequencial passa a poder envolver sessões sem data (sem rótulo de tempo decorrido), o que deve ser conferido no componente.
 - Nenhuma mudança de backend, schema ou dado de campanha.

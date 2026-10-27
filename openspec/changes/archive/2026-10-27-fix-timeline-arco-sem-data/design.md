@@ -24,6 +24,7 @@ This matches the real data for the WFRP campaign: arc "A Corrupção do Grande H
 - Not changing the behavior for sessions with no `arco_id` at all (still sorts last, by `numero`) — out of scope per the agreed fix, even though the same nearest-neighbor idea could apply there too (see Open Questions).
 - Not backfilling or splitting events for sessions 22-24 in the WFRP campaign data — this is a frontend algorithm fix, not a data-registration fix (that was the alternative option the user explicitly declined).
 - Not touching the "Chronological" or "By discovery" tabs.
+- Not changing the stored data or the date granularity (year+month); not adding a day field to events.
 
 ## Decisions
 
@@ -47,7 +48,21 @@ Deterministic, and consistent with the product's existing bias against inventing
 **Decision: scope the fallback to arcs only (`row.arcId !== null`).**
 Matches what the user asked to fix and keeps the spec delta minimal. A session with no arc at all keeps today's behavior unchanged.
 
+## Extension: tie between non-interleaved arcs and sequential links for undated arcs
+
+Real data (WFRP): arc 5 (sessions 18-21) and arc 7 (25-28) have all events at 2511/10 (key 30141); arc 6 (22-24) has no dated session. `layoutArcs` currently: (1) `columns`/`branchOrigins` treat equal dates between different arcs as a conflict (`equalDates`), so arc 5 gets column 1 and `branchOrigins{5 <- 7}` (the unwanted line 21→28); (2) `sequentialPairs` skips pairs when `arcsOverlapOrTie` is true, and both passes require dated rows and an entry in `ranges`, so arc 6 never gets a link. The `numero` ranges are the evidence that the session sequence is real: 18-21 < 22-24 < 25-28.
+
+**Decision: equal dates between arcs conflict only when the arcs' session-number ranges interleave.**
+Compute `numeroRange(arcId) = {min,max}` over all rows of the arc (dated or not; by `sessao.numero`). Two arcs *interleave* when `!(maxA < minB || maxB < minA)`. In the column/bifurcation pass and in `arcsOverlapOrTie`, an equal-date tie between arcs that do not interleave is no longer a conflict (no extra column, no `branchOrigin`); the "strictly inside the other arc's date range" rule (`range.min < date < range.max`) is unchanged. This deliberately relaxes the current rule "two visible sessions from different arcs with the same date occupy different columns" for non-interleaved arcs only. *Alternative considered:* leave the tie as a bifurcation and fix by data — rejected by the product owner (the dates are correct in the story; the layout should read session order).
+**Decision: sequential links also for arcs tied in date or with no dated session.**
+After the existing sequential passes, add a pass over *consecutive arc blocks in the visible order* (rows grouped by `arcId`, `arcId !== null`, ignoring `null`-arc rows only if they sit between — see tasks): for each pair of consecutive blocks (computed on the final `withPrevious` order and indices) that do not interleave in `numero`, are not already linked (`seenPair`), and are not in a bifurcation (`branchOrigins` between them); a row with no arc (`arcId === null`) between the two blocks blocks the link, consistent with the existing `gapBlocked` rule. Explicit transitions (`arco_transicao_id`) keep precedence: `ArcTimeline` already filters pairs covered by `explicitTransitionPairs`, push a `SequentialPair` with `newerRowIndex` = the newer block's last row in the list (its lowest session number) and `olderRowIndex` = the older block's first row (its highest session number). This lets an undated arc be linked on both sides using only the order already established by the reference date and the session numbers; it does not read `arcAnchor` for `ranges`/`columns`, and does not create `row.date`. The link has no elapsed-time label when either end row has no own date.
+*Why session numbers and not just the reference date:* the reference date is a position hint only (see earlier decisions); the non-interleaving test and the facing rows come from `numero` and the list order.
+
 ## Risks / Trade-offs
+
+- [Trade-off accepted by product] The rule applies to any two arcs with the same date and disjoint session-number ranges, including arcs with a single session; month granularity cannot prove parallelism, so session order wins. Two existing tests encode the old behavior and are updated on purpose (see tasks 4.1/4.2).
+- [Risk] Relaxing the same-date rule could hide a real parallel storyline whose arcs happen to have separate session ranges but truly overlap in time. Mitigation: only arcs whose session-number ranges are disjoint are affected; interleaved ranges keep today's bifurcation; the month-level date cannot prove overlap anyway.
+- [Risk] New sequential pairs could duplicate or conflict with explicit transitions (`arco_transicao_id`) or the existing gap-based pairs. Mitigation: the new pass skips pairs already present (`seenPair`) and the component already filters pairs covered by an explicit transition (`explicitTransitionPairs`); cover with tests.
 
 - [Risk] The existing test `timelineLayout.test.ts:91` ("keeps undated sessions with their dated arc above older arcs and leaves unanchored rows last") encodes today's bottom-of-list behavior for exactly this scenario (arc 2, sessions 6/7, has zero dated events) → Mitigation: Task Group 1 updates this test's expectation as part of the same change, not as an afterthought; it must not be left red.
 - [Risk] A careless implementation could accidentally feed the new reference date into `ranges`/`columns`/`branchOrigins`, silently creating bifurcation curves or extra columns for an arc that has no real date evidence → Mitigation: `ranges` is built from `row.date`, which this change never touches; add an explicit regression test asserting column/branch output for the fallback-anchored arc matches a true "no evidence" baseline.
@@ -58,5 +73,7 @@ Matches what the user asked to fix and keeps the spec delta minimal. A session w
 Pure frontend logic change inside one function (`layoutArcs`), no persisted data or schema touched, no feature flag needed — ships with the next frontend deploy. Rollback is a plain revert of the diff; no data migration to undo.
 
 ## Open Questions
+
+- Elapsed-time label between two dated arcs tied in the same month would read "same month" (`arcos.elapsedSame`); accepted as correct for the data.
 
 - Should arco-less sessions (no `arco_id` at all) eventually get the same nearest-neighbor treatment instead of always sorting last? Deferred — the user scoped this change to arcs only; revisit as a separate change if it comes up again.
