@@ -1,9 +1,67 @@
 # Codex da Campanha
 
-Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens** e **Modo GM** na mesma interface.
+Aplicação web **self-hosted**, **multi-mestre e multi-campanha**, para os mestres de RPG de mesa organizarem o mundo das suas campanhas e compartilhá-lo com os jogadores: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens**, **fios narrativos** e **Modo GM**, com **IA** opcional como assistente de escrita.
 
-**Versão:** 1.4.0 — [`CHANGELOG.md`](CHANGELOG.md)
-**Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/1/wfrp` e `/c/2/wod`
+**Versão:** 1.5.0 — [`CHANGELOG.md`](CHANGELOG.md)
+**Produção:** <https://campaign-codex.1nodado.com.br> — exemplos de campanhas: [`/c/1/wfrp`](https://campaign-codex.1nodado.com.br/c/1/wfrp) e [`/c/2/wod`](https://campaign-codex.1nodado.com.br/c/2/wod) · operação: [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
+
+## Sumário
+
+1. [Objetivo e escopo](#objetivo-e-escopo)
+2. [Papéis e permissões](#papéis-e-permissões)
+3. [Capturas de ecrã](#capturas-de-ecrã)
+4. [Funcionalidades](#funcionalidades)
+5. [Arquitetura e funcionamento](#arquitetura-e-funcionamento)
+6. [API](#api)
+7. [Fluxos de integração](#fluxos-de-integração)
+8. [Configuração e operação](#configuração-e-operação)
+9. [Stack](#stack) e [Desenvolvimento](#desenvolvimento)
+10. [Segurança e privacidade](#segurança-e-privacidade)
+11. [Documentação](#documentação)
+
+---
+
+## Objetivo e escopo
+
+### Objetivo
+
+Dar ao mestre um **codex vivo da campanha**: um lugar único onde ele registra locais, personagens, vínculos, sessões, eventos, itens e rotas, e decide, entidade a entidade, **o que os jogadores veem**. Os jogadores acompanham a campanha pela web (mapa, relações, sessões, linha do tempo, itens) sem precisar de conta. A instância é **multi-mestre e multi-campanha**: vários mestres usam a mesma instância, cada um com a sua conta, e **cada mestre pode ter quantas campanhas quiser** (hoje não há limite por conta). As campanhas podem ser de sistemas diferentes (WFRP 4e, World of Darkness e outros) e são isoladas entre si: cada campanha tem o seu banco e as suas imagens, e só o seu dono e membros a administram.
+
+### Escopo — o que a aplicação faz
+
+- **Mapa e viagem:** mapa de imagem com pins de locais, saídas, marcador do grupo, rede de vias (estrada, rio, trilha) e cálculo de rotas com pernoite e fadiga.
+- **Mundo da campanha:** locais, personagens (PJ e NPC) com retratos, vínculos entre personagens, arcos, eventos, itens e linha do tempo (cronológica, por arcos e por descoberta).
+- **Condução de sessões:** sessões com resumo, notas de preparo privadas, blocos de combate, fios narrativos em aberto e geradores de apoio (nome, rumor, clima, recompensa).
+- **Controle de visibilidade:** cada entidade é visível a todos ou só ao mestre; a API aplica a regra em toda resposta pública.
+- **Multi-mestre, multi-campanha e multi-sistema:** uma instância com vários mestres, cada mestre com N campanhas; sistema e módulos por campanha (ex.: fadiga, IA), cota de armazenamento por campanha (padrão 300 MB).
+- **Contas e acesso:** registo por e-mail com verificação, convite do admin, recuperação de senha, sessão por cookie, console de administração da plataforma.
+- **Portabilidade:** exportar e importar uma campanha como pacote ZIP.
+- **IA opcional:** assistente de escrita e propostas (arcos, fios, associações) com **revisão obrigatória** do mestre; nada é gravado sem aceite.
+- **Contato:** formulário público que entrega a mensagem por e-mail ao administrador da instância.
+
+### Escopo — o que a aplicação **não** faz
+
+- Não é uma mesa virtual (VTT): sem rolagem de dados, fichas completas, iniciativa ou chat.
+- Não sincroniza em tempo real: os jogadores veem as atualizações ao recarregar.
+- Não tem controle de acesso **por jogador**: a visibilidade é por entidade (todos ou só o mestre).
+- Não grava conteúdo gerado pela IA sem revisão e aceite do mestre.
+- Não tem tickets de suporte, 2FA, login social, pagamentos nem aplicativo nativo.
+- Não guarda as mensagens do formulário de contato (só são enviadas por e-mail).
+- Não traduz o conteúdo escrito pelo mestre (só a interface: PT-BR e EN).
+
+---
+
+## Papéis e permissões
+
+| Papel | Como se obtém | O que pode fazer |
+|---|---|---|
+| **Visitante** | Sem conta | Ler campanhas listadas ou abertas por link (só o que o mestre tornou visível), ver o catálogo em `/explorar`, usar o contato, pedir registo (se aberto) e recuperar a senha |
+| **Usuário (mestre)** | Registo por e-mail, ou convite do admin | Entrar em `/painel`, criar **quantas campanhas quiser** (cada uma com o seu sistema, módulos e visibilidade), importar pacotes e gerir as próprias campanhas; não vê nem altera as campanhas de outros mestres |
+| **Membro da campanha** | Vínculo (`membro`) com a campanha | Ler a visão do mestre (inclui ocultos) e editar locais, personagens, NPCs, vínculos, sessões, waypoints, rotas, uploads e geradores |
+| **Dono da campanha** | Papel `dono`, por campanha (quem cria a campanha, ou quem o admin atribui); o mesmo mestre pode ser dono de N campanhas | Tudo o que o membro faz, mais arcos, eventos, itens, fios, grupo, descoberta, IA, exportação e as configurações da campanha (visibilidade, módulos, capa, unidade) |
+| **Admin da plataforma** | Flag `is_admin` na conta | Console `/admin`: usuários (convidar, desativar, resetar senha, remover), campanhas (ativar, trocar dono, remover) |
+
+> Hoje o dono é o único papel de membro criado pela aplicação; as rotas marcadas "Membro" na tabela de rotas também aceitam o dono.
 
 ---
 
@@ -93,27 +151,67 @@ Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 - Locais agrupados por arco; NPCs com status, facção, retrato e papel
 - Associação de PJs/NPCs a locais, com regras de visibilidade
 
+### Preparo e leitura de sessão
+
+- **Notas de preparo:** campo Markdown **sempre privado ao mestre**, ao lado do resumo, que não é apagado quando o resumo é preenchido e nunca é servido em contexto de jogador
+- **Preparar próxima sessão:** sugere o número, abre o formulário com a sessão oculta aos jogadores (`visivel_para_todos=false`) e foco nas notas
+- **Leitura em blocos** (Modo GM): Notas de Preparo, Fios Narrativos e Resumo, recolhíveis, com selo «Só para o mestre» nos blocos privados
+- **Blocos de combate** nas notas (`> [!combate] Título`): inimigos, ambiente, tática e desfecho, com cor e ícone próprios
+- **Barra de formatação Markdown** nos campos de texto rico, com atalhos Ctrl/Cmd+B e Ctrl/Cmd+I
+
+### Fios narrativos (`/fios`)
+
+- Lista persistente dos fios em aberto da campanha, **só para o mestre dono** (com o Modo GM ligado)
+- Cada fio: título, descrição, estado (em aberto/resolvido), origem (manual ou IA), sessão de origem opcional e posição
+- Criar, editar, reordenar, resolver, reabrir e remover; o bloco «Fios Narrativos» da sessão permite resolver e reabrir sem sair dela
+- A IA pode propor fios; eles só entram depois de aceitos pelo mestre
+
+### Ferramentas do mestre (`/ferramentas`)
+
+- Quatro geradores de apoio: **nome de PNG**, **rumor ou gancho**, **clima e ambiente**, **item ou recompensa**
+- O conteúdo respeita o `sistema` da campanha (`wfrp4e`, `wod`) e tem conjunto genérico de reserva para qualquer outro sistema
+
+### Assistente de IA e índice da campanha
+
+- Provedor **DeepSeek**, opcional e por campanha (módulo `ia`); sem `DEEPSEEK_API_KEY` a aplicação sobe e a IA fica indisponível
+- Assiste os campos de texto livre (rascunho e resumo de sessão, descrições de personagem e de local) e propõe arcos, fios e associações; **nada é gravado sem aceite**
+- Com a IA ligada, o contexto enviado ao provedor pode incluir **conteúdo oculto**; a resposta indica quando isso ocorreu (`usou_conteudo_oculto`)
+- **Índice de busca da campanha** (SQLite FTS5, no banco de cada campanha): o contexto é composto por fios em aberto, sessões e arcos recentes, um catálogo de nomes e os trechos mais relevantes ao pedido; o painel mostra o estado e permite reindexar
+
+### Exportar, importar e cota
+
+- **Exportar** uma campanha num pacote ZIP (conteúdo, manifesto e imagens) e **importar** em outra instância ou como cópia; pacotes mais antigos continuam sendo aceitos
+- **Cota de 300 MB por campanha** (configurável por `COTA_PADRAO_BYTES`): aviso a 90% e recusa de novos uploads ao exceder; uma campanha acima do limite continua legível e exportável
+- Limite por arquivo de upload de 25 MiB e tipos de imagem permitidos (JPEG, PNG, WebP, GIF)
+
 ### Modo GM / Painel
 
 - Sessão de mestre em `/login` → `/painel` (criar e gerir campanhas)
 - CRUD de locais, personagens, arcos, sessões, eventos e itens; upload de imagens; mover grupo
 - Substituir a imagem do mapa; **Rede de rotas** para digitalizar waypoints/segmentos
+- Configurações da campanha: visibilidade (**listada** no catálogo ou **só com link**), módulos, capa e unidade de distância (milhas ou quilômetros)
 - API de escrita protegida (membro/dono da campanha); gate «Entrar» na barra
 
 ### Contas, contato e termos
 
 - **Criar conta** em `/registo`: a pessoa informa só o e-mail e recebe um link de verificação (válido 5 horas) para definir a senha; contas não confirmadas são apagadas automaticamente. O registo vem **fechado** por padrão (`REGISTO_MODO`), com limites por IP e por e-mail, bloqueio de e-mails descartáveis, campo isca e Turnstile opcional
-- **Recuperar senha** em `/esqueci-senha`: link no login, pedido com resposta que não revela contas existentes e e-mail com link de uso único válido por 1 hora apenas para contas ativas; o reset do admin permanece disponível por 72 horas
-- **Convite do admin** continua disponível (válido 72 horas) e pode ser enviado também por e-mail
+- **Esqueci a senha** em `/esqueci-senha`: link de 1 hora e uso único enviado por e-mail, resposta que não revela contas, só contas ativas recebem o link; redefinir a senha revoga as sessões e nunca reativa uma conta desativada
+- **Convite do admin** (válido 72 horas), também por e-mail, e **reset gerado pelo admin** (72 horas)
 - **Contato** em `/contato`, para qualquer pessoa (com ou sem conta): a mensagem é entregue por e-mail ao administrador da instância e **não é guardada** na aplicação
 - **Termos** (`/termos`) e **privacidade** (`/privacidade`), em PT-BR e EN
-- **Cota de 300 MB** por campanha (configurável por `COTA_PADRAO_BYTES`)
 - **Rodapé** com a versão e os links acima, nas páginas fora de uma campanha
 - E-mails enviados pelo Resend; passo a passo em [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md)
 
-### Multi-sistema e multi-campanha
+### Administração da plataforma (`/admin`)
 
-- Uma instância: várias mesas; catálogo em `/explorar` e home em `/`
+- Console do **admin** com usuários (convidar, desativar/reativar, resetar senha, remover) e campanhas (ativar/desativar, trocar o dono, remover com exclusão recuperável)
+- Convites em `/admin/convites`, com a opção de enviar o link por e-mail quando o provedor está configurado
+
+### Multi-mestre, multi-campanha e multi-sistema
+
+- Uma instância com **vários mestres**; **cada mestre pode ter N campanhas** (`/painel` lista as suas, `/painel/novo` cria outra); sem limite de campanhas por conta por enquanto
+- Cada campanha é isolada: banco, imagens, cota, visibilidade e módulos próprios; um mestre só administra as campanhas de que é dono ou membro
+- Catálogo público das campanhas listadas em `/explorar` e home em `/`
 - Endereço canónico `/c/{id}/{slug}/…` (ex. `/c/1/wfrp/mapa`); links antigos `/c/{slug}/…` redireccionam
 - Sistema e módulos por campanha (`control.db`); `GET /api/c/{id|slug}/config`
 - Extensões mecânicas por personagem (ex. **fadiga** 0–6 quando o módulo está activo)
@@ -125,6 +223,13 @@ Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 - Design system **paper-parchment** (`frontend-v2`): tema **Claro / Escuro / Automático**
 - Idiomas **PT-BR** e **EN** (conteúdo escrito pelo mestre não é traduzido)
 - Erros da API com códigos estruturados e mensagens localizadas
+
+---
+
+## Novidades da versão 1.5
+
+- Recuperação de senha pela própria pessoa (`/esqueci-senha`), com link de 1 hora por e-mail, sem revelar contas e sem nunca reativar uma conta desativada
+- Documentação reorganizada: objetivo e escopo, papéis, aplicação multi-mestre e multi-campanha, e páginas próprias para a [API](docs/api-contracts.md) e os [fluxos](docs/flows.md)
 
 ---
 
@@ -153,113 +258,148 @@ Detalhe completo: [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
-## API e contratos
+## Arquitetura e funcionamento
 
-A API expõe OpenAPI em `/openapi.json` quando está em execução. Inventário de rotas, parâmetros e schemas: [`docs/api-contracts.md`](docs/api-contracts.md).
+### Visão geral
 
-Domínios cobertos:
+```mermaid
+flowchart LR
+  U[Navegador] -->|HTTPS| CF[Cloudflare Tunnel]
+  CF --> CD[Caddy do host]
+  CD -->|/ SPA| WEB[web: nginx + frontend-v2]
+  CD -->|/api| API[api: FastAPI, 1 worker]
+  API --> CTL[(control.db)]
+  API --> CAMP[(campanhas/uuid/campanha.db)]
+  API --> UP[(uploads por campanha)]
+  API -->|e-mail| RS[Resend]
+  API -->|IA opcional| DS[DeepSeek]
+  API -->|captcha opcional| TS[Turnstile]
+```
 
-- saúde, catálogo, configuração, autenticação e sessão;
-- campanhas, proprietários, convites, módulos, capa, visibilidade e unidade de distância;
-- registo de contas, contato público e administração de convites com envio por e-mail;
-- locais, NPCs, personagens, arcos, sessões, eventos e itens;
-- relações entre personagens;
-- waypoints, segmentos e planeamento de rotas (incl. pernoite);
-- descoberta, associações sugeridas por IA, export/import e uploads;
-- administração de utilizadores e recuperação de acesso.
+- **Frontend** (`frontend-v2`): SPA React servida pelo `web`; chama a API com o cookie de sessão.
+- **Backend** (`backend`): FastAPI + SQLModel. Resolve a campanha pelo **slug ou id na URL** (`/api/c/{slug}/…`) e abre o banco daquela campanha.
+- **Produção:** o acesso externo é só pelo túnel da Cloudflare até o Caddy; nenhuma porta do host é publicada. Por isso `TRUSTED_PROXY=true` é obrigatório (o IP real vem de `CF-Connecting-IP`).
+
+### Dados
+
+| Armazenamento | Conteúdo |
+|---|---|
+| `DATA_DIR/control.db` | Catálogo: `campanha` (slug, sistema, módulos, visibilidade, cota e uso), `usuario` (e-mail, hash da senha, `is_admin`, `email_canonico`, `termos_aceitos_em`), `membro`, `convite`, `sessao`, `login_bloqueio` (bloqueios de login e contadores de limite) |
+| `DATA_DIR/campanhas/<uuid>/campanha.db` | Uma base por campanha: `local`, `npc` (personagens PJ e NPC), `vinculo`, `arco`, `sessao`, `evento`, `item`, `fio_narrativo`, `waypoint`, `route_segment`, `map_scale`, `grupo_posicao`, as tabelas de ligação (`local_npc`, `local_conexao`, `sessao_local`, `sessao_npc`, `evento_local`, `evento_npc`, `item_sessao`, `item_evento`), `campaign_state` e o índice de busca `indice_ia` (FTS5) |
+| `DATA_DIR/campanhas/<uuid>/uploads` | Imagens: mapa, retratos e imagens de locais (servidas por `GET /api/c/{slug}/media/…` com ACL) |
+
+- **Migrações:** Alembic em duas árvores, `alembic_control` (banco de controle, hoje na revisão `009_registo_cota`) e `alembic_campaign` (cada campanha, aplicada ao abrir). Rodam no arranque.
+- **Isolamento:** uma campanha nunca lê o banco de outra; a exclusão de uma campanha é recuperável.
+
+### Comportamento da API
+
+- **Sessão:** cookie `codex_session` (`HttpOnly`, `SameSite=Lax`, `Secure` fora do modo de depuração). Expira por **12 h de inatividade** ou **30 dias** de vida máxima; é revogada ao desativar a conta ou redefinir a senha.
+- **Senhas:** mínimo de 8 caracteres, guardadas com hash Argon2. **5 tentativas falhadas** bloqueiam o e-mail (e o IP) por **15 minutos**.
+- **CSRF:** requisições que alteram dados exigem `Origin` (ou `Referer`) dentro de `CORS_ORIGINS`.
+- **Limites de taxa** (`slowapi`, por IP, em memória): 5/h no registo, na recuperação de senha e no contato; 30/min nas escritas do mestre; 10/min no assistente de IA e nas propostas da IA (arcos, fios, associações de sessão e de evento); 20/min em uploads; 3/min ao reindexar. Respostas `429` seguem o contrato de erro.
+- **Visibilidade:** as rotas públicas filtram por `visivel_para_todos` e a ACL de mídia só serve ao público o que uma entidade visível referencia.
+- **Tarefas em segundo plano:** apagar contas não confirmadas (a cada 15 minutos), recuperar exclusões de campanha interrompidas (no arranque) e enviar e-mails de registo e recuperação sem atrasar a resposta.
+- **Arranque seguro:** com `REGISTO_MODO=aberto` a API exige provedor de e-mail, `PUBLIC_BASE_URL` em HTTPS, a origem em `CORS_ORIGINS` e `TRUSTED_PROXY=true`; com `CONTATO_EMAIL` ou `EMAIL_API_KEY` definido (e `DEBUG=false`) exige `TRUSTED_PROXY=true`.
 
 ---
 
-## Fluxos principais
+## API
 
-### Entrada pública
+A API é **JSON sobre HTTP** e fica sob `/api`. A especificação em execução é o OpenAPI (`/api/openapi.json`, interface em `/api/docs`).
 
-```mermaid
-flowchart LR
-  A[Usuário acessa /c/:id/:slug] --> B[Carrega configuração pública]
-  B --> C{Mapa disponível?}
-  C -- Sim --> D[Mapa, locais e saídas]
-  C -- Não --> E[Abre Relações]
-  D --> F[Navegação Mapa / Relações / Rota / Sessões / Cronologia / Itens]
-  E --> F
-  F --> G[API aplica visibilidade]
-  G --> H[Interface renderiza dados localizados]
-```
+**As rotas, os contratos principais, os esquemas de cada contrato e o catálogo de códigos de erro estão em [`docs/api-contracts.md`](docs/api-contracts.md).**
 
-### URL canónica da campanha
+### Em resumo
 
-```mermaid
-flowchart TD
-  A["Pedido /c/:slug/..."] --> B{Slug resolve?}
-  B -- Sim --> C["Redirect  → /c/:id/:slug/..."]
-  B -- Não --> D[404]
-  E["Pedido /c/:id/:slug/..."] --> F[Usa id; slug é decorativo]
-  F --> G[Corrige slug na URL se estiver desatualizado]
-```
+- **Campanha:** `{slug}` aceita o slug (`wfrp`) ou o id numérico (`1`); o endereço canônico do frontend é `/c/{id}/{slug}/…`.
+- **Autenticação:** cookie de sessão `codex_session`, criado por `POST /api/auth/login` ou ao aceitar um convite. Sem sessão válida, as rotas protegidas respondem `401 AUTENTICACAO_NECESSARIA`; falta de papel responde `403` (`NAO_MEMBRO`, `NAO_DONO`, `NAO_ADMINISTRADOR`).
+- **Erros estruturados:** `{"detail": {"erro": "CODIGO", "detalhes": {…}}}`; o frontend traduz o código. Erros de validação do corpo (`422`) seguem o formato padrão do FastAPI.
+- **Limites de taxa:** `429` com `LIMITE_PEDIDOS`, `LIMITE_REGISTO` ou `LIMITE_CONTATO_DIARIO`.
+- **Respostas genéricas:** `POST /api/auth/registo` e `POST /api/auth/reset/pedir` devolvem sempre `202 {"ok": true}`, para não revelar se um e-mail tem conta.
+- **Uploads e mídia:** `POST …/admin/uploads` (multipart) valida tipo, tamanho e cota; a mídia é servida por `GET /api/c/{slug}/media/{categoria}/{arquivo}`. Os caminhos antigos `/uploads/…` respondem `410 Gone`.
 
-### Calcular rota com pernoite
+### Áreas da API
 
-```mermaid
-flowchart TD
-  A[Escolher De / Para] --> B[Preferências: transporte, ritmo, via]
-  B --> C[POST planeamento de rota]
-  C --> D[Alternativas no mapa]
-  D --> E{Cada noite}
-  E -- Num Local --> F[Marcador de abrigo]
-  E -- Perto de cidade no raio --> G[Trata como noite local]
-  E -- Campo aberto --> H[Pin ao relento]
-  F --> I[Traçado colorido por fadiga se ritmo intenso]
-  G --> I
-  H --> I
-```
+| Área | Prefixo | Acesso | Rotas |
+|---|---|---|---|
+| Autenticação, registo e recuperação de senha | `/api/auth` | Público (`/me` exige sessão) | 9 |
+| Contato público | `/api/contato` | Público | 2 |
+| Campanhas do usuário e catálogo | `/api/campanhas` | Catálogo público; demais exigem sessão ou dono | 8 |
+| Administração da plataforma | `/api/admin` | Admin da plataforma | 10 |
+| Campanha — leitura | `/api/c/{slug}` | Público, respeitando a visibilidade | 21 |
+| Campanha — escrita do mestre | `/api/c/{slug}/admin` | Membro ou dono da campanha | 66 |
+| Saúde e caminhos legados | `/api/health`, `/uploads/…` | Público | 3 |
 
-### Itens públicos
+Total: **119 operações**.
 
-```mermaid
-flowchart LR
-  A[Jogador abre /itens] --> B[GET itens visíveis]
-  B --> C[Lista + busca]
-  C --> D[Detalhe Markdown]
-  D --> E[Chips sessões / eventos]
-  F[Deep-link ?item=ID] --> D
-  G[Mestre autenticado] --> H[Vê também ocultos]
-  H --> I[Atalho para editar na Cronologia]
-```
+---
 
-### CRUD do mestre
+## Fluxos de integração
 
-```mermaid
-sequenceDiagram
-  actor GM as Mestre
-  participant UI as SPA
-  participant API as FastAPI
-  participant DB as SQLite
-  GM->>UI: Entrar / Painel
-  UI->>API: Login e leitura administrativa
-  API->>DB: Consulta campanha
-  DB-->>API: Dados autorizados
-  API-->>UI: Resposta tipada
-  GM->>UI: Cria ou edita entidade
-  UI->>API: POST/PATCH/PUT
-  API->>DB: Valida e persiste
-  API-->>UI: 201/200
-```
+Os diagramas Mermaid dos fluxos estão em [`docs/flows.md`](docs/flows.md):
 
-### Sugestões por IA
+- **Acesso público:** [entrada na campanha](docs/flows.md#entrada-pública), [URL canônica](docs/flows.md#url-canónica-da-campanha), [itens públicos](docs/flows.md#itens-públicos)
+- **Mapa e viagem:** [cálculo de rota com pernoite](docs/flows.md#calcular-rota-com-pernoite), [linha do tempo por arcos e descoberta](docs/flows.md#linha-do-tempo-por-arcos-e-descoberta)
+- **Conta e acesso:** [sessão e login](docs/flows.md#sessão-e-login), [criação de conta com verificação por e-mail](docs/flows.md#criação-de-conta-com-verificação-por-e-mail), [recuperação de senha](docs/flows.md#recuperação-de-senha), [convite do admin](docs/flows.md#convite-do-admin), [contato com o administrador](docs/flows.md#contato-com-o-administrador)
+- **Mestre:** [CRUD do mestre](docs/flows.md#crud-do-mestre), [sugestões por IA](docs/flows.md#sugestões-por-ia)
+- **Campanha:** [criar campanha, enviar imagens e respeitar a cota](docs/flows.md#criar-campanha-enviar-imagens-e-respeitar-a-cota), [exportar e importar](docs/flows.md#exportar-e-importar-uma-campanha)
+- **Operação:** [deploy e operação](docs/flows.md#deploy-e-operação)
 
-```mermaid
-flowchart TD
-  A[Mestre informa resumo ou descrição] --> B{Texto vazio?}
-  B -- Sim --> C[Não chama IA]
-  B -- Não --> D[Backend valida GM e campanha]
-  D --> E[Provedor recebe contexto mínimo]
-  E --> F{Resposta válida?}
-  F -- Não --> G[Erro explícito; seleção preservada]
-  F -- Sim --> H[Filtra referências inválidas ou ocultas]
-  H --> I[Mestre revisa e salva separadamente]
-```
+---
 
-Mais diagramas: [`docs/flows.md`](docs/flows.md).
+## Configuração e operação
+
+### Variáveis de ambiente
+
+Copie `.env.example` para `.env` (nunca commite o `.env`). Resumo:
+
+| Variável | Para quê | Padrão |
+|---|---|---|
+| `DEBUG` | Modo de depuração (cookie sem `Secure`, e-mails em arquivo, validações de arranque relaxadas) | `false` |
+| `CORS_ORIGINS` | Origens permitidas (também usadas pelo CSRF) | — |
+| `PUBLIC_BASE_URL` | Base dos links enviados por e-mail (em produção: HTTPS) | `http://localhost:5173` |
+| `COOKIE_SECURE` | Força `Secure` no cookie de sessão | `Secure` quando `DEBUG=false` |
+| `TRUSTED_PROXY` | Usa `CF-Connecting-IP`/`X-Forwarded-For` para o IP do cliente (**`true` em produção**) | `false` |
+| `DATA_DIR` | Pasta de dados (`control.db`, campanhas e uploads) | `./data` |
+| `MAX_UPLOAD_BYTES` | Limite por arquivo de upload | 25 MiB |
+| `COTA_PADRAO_BYTES` | Cota de armazenamento por campanha | 300 MiB |
+| `REGISTO_MODO` | `fechado` ou `aberto` (registo público) | `fechado` |
+| `EMAIL_API_KEY`, `EMAIL_FROM` | Provedor de e-mail (Resend) | — |
+| `EMAIL_LOG_FILE` | Em depuração, grava os e-mails num arquivo em vez de enviá-los | — |
+| `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY` | Captcha do Cloudflare (opcional) | — |
+| `REGISTO_DOMINIOS_BLOQUEADOS` | Arquivo extra de domínios de e-mail descartável | — |
+| `CONTATO_EMAIL` | Endereço do administrador que recebe os contatos | — |
+| `CONTATO_LIMITE_DIARIO`, `CONTATO_LIMITE_PRIVACIDADE` | Tetos diários de mensagens (geral e da categoria de privacidade) | 30 e 10 |
+| `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL`, `DEEPSEEK_MODEL`, `DEEPSEEK_TIMEOUT_SECONDS` | IA (opcional) | — |
+| `COMPOSE_PROJECT_NAME`, `PORTA_API`, `PORTA_WEB` | Multi-deploy com Docker Compose | — |
+| `VITE_API_BASE` | Base da API no frontend (vazio = mesmo domínio) | vazio |
+| `CAMPAIGN_SLUG`, `SISTEMA`, `MODULOS_ATIVOS` | Só para `python -m app.seed` e ferramentas locais | — |
+
+> **Ordem em produção:** defina `TRUSTED_PROXY=true` **antes** de `EMAIL_API_KEY` ou `CONTATO_EMAIL`; com `DEBUG=false` a API não arranca com a chave e o proxy não confiável.
+
+### Linha de comando (`uv run python -m app.cli …`)
+
+| Comando | O que faz |
+|---|---|
+| `campanha criar` / `listar` | Cria uma campanha isolada / lista as do catálogo |
+| `campanha atribuir-dono` | Atribui o dono (substitui o anterior) |
+| `campanha reconciliar-cota` | Recalcula `bytes_usados` a partir do disco |
+| `campanha exportar` / `importar` | Exporta/importa um pacote ZIP |
+| `campanha importar-legado` | Importa uma instância legada (ver o runbook de corte) |
+| `usuario criar` | Cria um usuário pendente e imprime o link de ativação |
+| `usuario reset` | Emite um link de reset de senha |
+| `usuario desactivar` | Desativa o usuário e revoga as sessões |
+| `usuario promover-admin` / `rebaixar-admin` | Promove/rebaixa um administrador da plataforma |
+| `usuario limpar-pendentes` | Apaga registos não confirmados e expirados |
+
+### Primeiros passos em produção
+
+1. Subir com o Docker Compose e o `.env` configurado; a migração do banco de controle roda no arranque.
+2. Criar a primeira conta e promovê-la: `usuario criar --email …` e `usuario promover-admin --email …`.
+3. Testar o envio de e-mail com um convite do admin; só então definir `REGISTO_MODO=aberto`.
+4. Antes de divulgar o registo ao público amplo, planejar cotas de IA e um limite de campanhas por conta (fora do escopo atual).
+
+Detalhes: [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md) e [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md).
 
 ---
 
@@ -313,12 +453,15 @@ Rotas úteis:
 - `/` — home
 - `/explorar` — catálogo público de campanhas
 - `/c/{id}/{slug}` — mapa da mesa (ex. `/c/1/wfrp`)
-- `/c/{id}/{slug}/relacoes` · `/rota` · `/sessoes` · `/linha-do-tempo` · `/itens`
+- `/c/{id}/{slug}/relacoes` · `/rota` · `/sessoes` · `/linha-do-tempo` · `/itens` · `/ferramentas` · `/fios`
 - `/painel` — minhas campanhas (mestre)
 - `/painel/novo` — criar campanha
 - `/login` — sessão de mestre
 - `/registo` — criar conta (quando o registo está aberto)
 - `/esqueci-senha` — pedir um link para recuperar a senha
+- `/reset/{token}` — definir a nova senha a partir do link de recuperação
+- `/conta` — conta do usuário
+- `/admin` · `/admin/convites` — console da plataforma (admin)
 - `/convite/{token}` — definir a senha a partir de um convite ou link de verificação
 - `/contato` — formulário de contato com o administrador
 - `/termos` · `/privacidade` — termos de uso e política de privacidade
@@ -345,14 +488,16 @@ docker compose --profile with-caddy up --build   # porta 8080
 
 ---
 
-## Segurança
+## Segurança e privacidade
 
 - Leitura pública; escrita exige sessão de membro/dono da campanha (fail closed)
-- Registo e contato públicos com limites por IP e por e-mail, campo isca e Turnstile opcional; o registo não revela contas existentes e vem fechado por padrão
-- Com `REGISTO_MODO=aberto` (ou `CONTATO_EMAIL` definido) em produção, a API exige `TRUSTED_PROXY=true` e, para o registo, e-mail e `PUBLIC_BASE_URL` configurados; ver o runbook
-- Gate na SPA: «Entrar» → login do mestre
+- Cookie de sessão `HttpOnly`/`SameSite=Lax`, CSRF por origem, senhas com Argon2 e bloqueio por tentativas
+- Registo, recuperação de senha e contato públicos com limites por IP e por e-mail, campo isca e Turnstile opcional; as respostas não revelam contas existentes
+- Redefinir a senha revoga as sessões, e um link de reset nunca reativa uma conta desativada
+- Com `REGISTO_MODO=aberto` ou `CONTATO_EMAIL`/`EMAIL_API_KEY` em produção, a API valida a configuração no arranque (ver *Configuração e operação*)
+- Privacidade: a aplicação guarda e-mail, hash da senha e o momento do aceite dos termos; usa IP e hash de e-mail em contadores temporários; não guarda as mensagens de contato; não usa analytics nem cookies de terceiros. Serviços externos: Resend (e-mail), DeepSeek (só quando a IA é usada) e Turnstile (quando ativo). Detalhes em `/privacidade`
 - Caddy pode reforçar rotas GM em produção
-- Jogadores vêem actualizações ao **recarregar** (sem sync ao vivo)
+- Jogadores veem atualizações ao **recarregar** (sem sync ao vivo)
 
 ---
 
@@ -365,9 +510,9 @@ docker compose --profile with-caddy up --build   # porta 8080
 | [`docs/manual-mapa.md`](docs/manual-mapa.md) | Mapa: pins, menu, fichas, grupo, calcular rotas, CRUD GM |
 | [`docs/manual-rede-rotas.md`](docs/manual-rede-rotas.md) | Nós e segmentos da rede de vias (Modo GM) |
 | [`docs/manual-relacoes.md`](docs/manual-relacoes.md) | Rede de Relações: grafo, tipos de vínculo, criar e visualizar |
-| [`docs/api-contracts.md`](docs/api-contracts.md) | Inventário OpenAPI |
-| [`docs/flows.md`](docs/flows.md) | Fluxos funcionais e operacionais em Mermaid |
-| [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md) | Registo de contas, e-mail (Resend), contato, cota e ordem de abertura em produção |
+| [`docs/api-contracts.md`](docs/api-contracts.md) | API: rotas, contratos principais, esquemas e códigos de erro |
+| [`docs/flows.md`](docs/flows.md) | Fluxos de integração em Mermaid (acesso, conta, mestre, campanha e operação) |
+| [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md) | Registo de contas, e-mail (Resend), contato, recuperação de senha, cota e ordem de abertura em produção |
 | [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) | Corte e operação do Campaign Codex em produção |
 | [`openspec/`](openspec/) | Specs OpenSpec por mudança |
 | [`frontend-v2/README.md`](frontend-v2/README.md) · [`backend/README.md`](backend/README.md) | Detalhe por camada |

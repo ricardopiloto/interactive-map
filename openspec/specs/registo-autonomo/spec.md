@@ -48,7 +48,7 @@ O pedido de registo SHALL devolver o mesmo corpo e o mesmo estado, quer o e-mail
 
 #### Scenario: E-mail com conta ativa
 - **WHEN** alguém pede registo com um e-mail que já tem conta ativa
-- **THEN** a resposta é igual à de um e-mail novo e o dono do e-mail recebe uma mensagem a informar que já tem conta, com link para entrar
+- **THEN** a resposta é igual à de um e-mail novo e o dono do e-mail recebe uma mensagem a informar que já tem conta, com link para entrar e link para recuperar a senha
 
 #### Scenario: E-mail pendente
 - **WHEN** alguém pede registo com um e-mail cuja conta ainda não foi confirmada (conta inativa e sem senha)

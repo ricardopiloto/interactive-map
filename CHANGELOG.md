@@ -7,14 +7,19 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-10-28
+
 ### Added
 
-- Recuperação de senha pela própria pessoa em `/esqueci-senha`, acessível pelo link no login: e-mail com link de uso único válido por 1 hora, resposta que não revela contas existentes e envio só para contas ativas. Há limites por IP e por e-mail, campo isca, Turnstile opcional e atalho para pedir novo link na página de reset.
+- Recuperação de senha pela própria pessoa em `/esqueci-senha`, acessível pelo link «Esqueci a senha» no login (página própria e janela): e-mail com link de uso único válido por 1 hora, resposta que não revela contas existentes e envio só para contas ativas (conta pendente, desativada ou inexistente não recebe nada). Um pedido novo invalida os links de reset anteriores. Há limite por IP (5 por hora) e por e-mail (5 por 24 h, com hash do e-mail), campo isca e Turnstile opcional; se o provedor de e-mail falhar, a tentativa não consome o limite. Sem provedor de e-mail, a página orienta a usar o contato.
+- Atalho «Pedir novo link» na página de reset quando o link expirou, já foi usado ou é inválido.
+- Textos próprios para os erros de link `CONVITE_JA_USADO` («Este link já foi usado.») e `CONVITE_INVALIDO` («Este link é inválido.»), em pt-BR e en; antes caíam numa mensagem genérica.
 
 ### Changed
 
 - O aviso de «você já tem conta» enviado no registo oferece também a recuperação de senha. O reset gerado pelo admin continua disponível e válido por 72 horas; um pedido novo de reset invalida links anteriores ainda abertos, inclusive os do admin.
 - `validate_public_forms_startup` passa a exigir `TRUSTED_PROXY=true` também quando `EMAIL_API_KEY` está definido e `DEBUG=false`.
+- `POST /api/auth/reset/confirmar`, em caso de link expirado, devolve `detalhes.tipo` no erro `CONVITE_EXPIRADO`.
 
 ### Fixed
 
@@ -23,6 +28,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 ### Security
 
 - `confirm_reset` deixa de reativar contas desativadas: um link emitido antes de o admin desativar a conta já não a reativa.
+
+### Documentation
+
+- README reorganizado: objetivo e escopo, papéis e permissões, aplicação multi-mestre e multi-campanha, arquitetura e funcionamento, configuração e operação, e o link de produção (<https://campaign-codex.1nodado.com.br>).
+- Novas páginas de referência: `docs/api-contracts.md` (as 119 rotas, contratos principais, esquemas e códigos de erro) e `docs/flows.md` (15 fluxos de integração em Mermaid). O runbook `docs/runbook-registo-autonomo.md` ganhou a recuperação de senha.
+- `.env.example` sem variáveis obsoletas (`ADMIN_USER`, `ADMIN_PASSWORD`, `VITE_MAP_URL` e `CODEX_INSTANCES_ROOT`) e com a ordem das variáveis (`TRUSTED_PROXY=true` antes de `EMAIL_API_KEY`).
 
 ### Operação
 
