@@ -1,6 +1,6 @@
 # Contratos da API
 
-Rotas, contratos, esquemas e códigos de erro da API do Codex da Campanha (versão 1.6.1). A API é **JSON sobre HTTP** e fica sob `/api`.
+Rotas, contratos, esquemas e códigos de erro da API do Codex da Campanha (versão 1.7.0). A API é **JSON sobre HTTP** e fica sob `/api`.
 
 - **Fonte normativa:** o OpenAPI em execução (`/api/openapi.json`, interface em `/api/docs`). Esta página é o inventário legível para revisão humana, gerado a partir de `app.main:app`.
 - **Visão geral da aplicação:** [`README.md`](../README.md).

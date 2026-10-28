@@ -15,6 +15,9 @@
     "removeVinculoError": "Failed to remove bond"
   },
   "graph": {
+    "distanceClose": "Close",
+    "distanceFar": "Far",
+    "distanceAria": "Distance between characters",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "fitView": "Fit to view",

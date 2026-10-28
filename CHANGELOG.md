@@ -7,6 +7,17 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-10-29
+
+### Added
+
+- Rede de Relações: controle deslizante «Perto — Longe» para aproximar (até 0,25×) ou afastar (até 2×) os personagens, com o espaçamento atual no centro. O ajuste vale só para a visita; duplo clique restaura. Abaixo do padrão as caixas dos nós podem se sobrepor.
+- Página inicial: a hero mostra uma captura real do mapa da aplicação no lugar do desenho decorativo.
+
+### Changed
+
+- README: capturas de ecrã atualizadas para a versão 1.7.0 (nova hero e novas imagens), exibidas em tamanho reduzido.
+
 ## [1.6.1] — 2026-10-29
 
 ### Added

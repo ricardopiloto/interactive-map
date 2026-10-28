@@ -2,7 +2,7 @@
 
 Aplicação web **self-hosted**, **multi-mestre e multi-campanha**, para os mestres de RPG de mesa organizarem o mundo das suas campanhas e compartilhá-lo com os jogadores: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens**, **fios narrativos** e **Modo GM**, com **IA** opcional como assistente de escrita.
 
-**Versão:** 1.6.1 — [`CHANGELOG.md`](CHANGELOG.md)
+**Versão:** 1.7.0 — [`CHANGELOG.md`](CHANGELOG.md)
 **Produção:** <https://campaign-codex.1nodado.com.br> — exemplos de campanhas: [`/c/1/wfrp`](https://campaign-codex.1nodado.com.br/c/1/wfrp) e [`/c/2/wod`](https://campaign-codex.1nodado.com.br/c/2/wod) · operação: [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
 
 ## Sumário
@@ -67,29 +67,29 @@ Dar ao mestre um **codex vivo da campanha**: um lugar único onde ele registra l
 
 ## Capturas de ecrã
 
-Capturas da versão **1.6.1** (`frontend-v2`, tema paper-parchment).
+Capturas da versão **1.7.0** (`frontend-v2`, tema paper-parchment).
 
 ### Entrada e exploração
 
-<img src="assets/campaign-codex-1.6.1-home.png" alt="Página inicial do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-home.png" alt="Página inicial do Campaign Codex 1.7.0" width="560">
 
-<img src="assets/campaign-codex-1.6.1-explorar.png" alt="Catálogo Explorar do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-explorar.png" alt="Catálogo Explorar do Campaign Codex 1.7.0" width="560">
 
 ### Mapa, rota e relações
 
-<img src="assets/campaign-codex-1.6.1-mapa.jpg" alt="Mapa da campanha do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-mapa.jpg" alt="Mapa da campanha do Campaign Codex 1.7.0" width="560">
 
-<img src="assets/campaign-codex-1.6.1-rota.jpg" alt="Planeador de rota com pernoite do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-rota.jpg" alt="Planeador de rota com pernoite do Campaign Codex 1.7.0" width="560">
 
-<img src="assets/campaign-codex-1.6.1-relacoes.png" alt="Rede de relações do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-relacoes.png" alt="Rede de relações do Campaign Codex 1.7.0" width="560">
 
 ### Sessões, cronologia e itens
 
-<img src="assets/campaign-codex-1.6.1-sessoes.png" alt="Sessões do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-sessoes.png" alt="Sessões do Campaign Codex 1.7.0" width="560">
 
-<img src="assets/campaign-codex-1.6.1-cronologia.png" alt="Linha do Tempo Por arcos do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-cronologia.png" alt="Linha do Tempo Por arcos do Campaign Codex 1.7.0" width="560">
 
-<img src="assets/campaign-codex-1.6.1-itens.png" alt="Itens públicos do Campaign Codex 1.6.1" width="560">
+<img src="assets/campaign-codex-1.7.0-itens.png" alt="Itens públicos do Campaign Codex 1.7.0" width="560">
 
 ---
 
@@ -116,6 +116,7 @@ Capturas da versão **1.6.1** (`frontend-v2`, tema paper-parchment).
 ### Rede de Relações (`/relacoes`)
 
 - Grafo PJ/NPC com zoom e pan reais (roda, arrastar fundo, pinça, **Ajustar à tela**)
+- Slider **Perto — Longe** para aproximar ou afastar os personagens (começa no centro = padrão; duplo clique restaura)
 - Layout radial: sem selecção, PJs no anel interno e NPCs no externo; ao seleccionar, o personagem vai ao centro com vizinhos no anel interno
 - Retratos circulares nos nós (fallback para iniciais)
 - **8 tipos** de vínculo com cor/estilo: Aliado, Vínculo de Sangue, Amizade, Inimizade, Adversário, Romance, Família, Conhecido

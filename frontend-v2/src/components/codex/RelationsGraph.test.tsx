@@ -348,3 +348,64 @@ it("centraliza a seleção na viewport e volta ao enquadramento geral ao limpar"
   view.rerender(draw(null));
   await waitFor(() => expect(Number(stage.dataset["viewportScale"])).toBeLessThanOrEqual(1));
 });
+
+function radialDistance(id: number) {
+  const svg = document.querySelector("svg")!;
+  const center = Number(svg.getAttribute("width")) / 2;
+  const node = translation(id);
+  return Math.hypot(node.x - center, node.y - center);
+}
+
+it("ajusta a distância por teclado, anuncia o fator e restaura por duplo clique", () => {
+  renderGraph();
+  const thumb = screen.getByRole("slider", { name: "Distância entre personagens" });
+  const original = translation(1);
+  const radius = radialDistance(1);
+  expect(thumb).toHaveAttribute("aria-valuenow", "0");
+  expect(thumb).toHaveAttribute("aria-valuetext", "1×");
+  expect(screen.getByText("Perto")).toBeInTheDocument();
+  expect(screen.getByText("Longe")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Padrão" })).not.toBeInTheDocument();
+
+  fireEvent.keyDown(thumb, { key: "End" });
+  expect(thumb).toHaveAttribute("aria-valuenow", "50");
+  expect(thumb).toHaveAttribute("aria-valuetext", "2×");
+  expect(radialDistance(1)).toBeCloseTo(radius * 2);
+  fireEvent.keyDown(thumb, { key: "ArrowLeft" });
+  expect(Number(thumb.getAttribute("aria-valuenow"))).toBe(49);
+  fireEvent.doubleClick(thumb);
+  expect(translation(1).raw).toBe(original.raw);
+  expect(thumb).toHaveAttribute("aria-valuetext", "1×");
+
+  fireEvent.keyDown(thumb, { key: "Home" });
+  expect(thumb).toHaveAttribute("aria-valuetext", "0,25×");
+  expect(radialDistance(1)).toBeCloseTo(radius / 4);
+  fireEvent.doubleClick(thumb);
+  expect(translation(1).raw).toBe(original.raw);
+  expect(thumb).toHaveAttribute("aria-valuenow", "0");
+});
+
+it("descarta o arrasto ao mudar a distância sem reenquadrar antes do commit", async () => {
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1000);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(700);
+  renderGraph();
+  const thumb = screen.getByRole("slider", { name: "Distância entre personagens" });
+  const stage = screen.getByTestId("relations-stage");
+  const original = translation(1);
+  grab("Ada", 80, 0);
+  expect(translation(1).x).toBeCloseTo(original.x + 80);
+  const viewport = [
+    stage.dataset["viewportScale"],
+    stage.dataset["viewportX"],
+    stage.dataset["viewportY"],
+  ];
+  fireEvent.keyDown(thumb, { key: "ArrowRight" });
+  expect(translation(1).x).not.toBeCloseTo(original.x + 80);
+  expect([
+    stage.dataset["viewportScale"],
+    stage.dataset["viewportX"],
+    stage.dataset["viewportY"],
+  ]).toEqual(viewport);
+  fireEvent.doubleClick(thumb);
+  expect(translation(1).raw).toBe(original.raw);
+});

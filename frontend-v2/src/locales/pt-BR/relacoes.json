@@ -15,6 +15,9 @@
     "removeVinculoError": "Erro ao remover vínculo"
   },
   "graph": {
+    "distanceClose": "Perto",
+    "distanceFar": "Longe",
+    "distanceAria": "Distância entre personagens",
     "zoomIn": "Aumentar zoom",
     "zoomOut": "Diminuir zoom",
     "fitView": "Ajustar à tela",

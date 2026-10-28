@@ -6,6 +6,11 @@
 
 export const NODE_BOX = { width: 96, height: 124 };
 export const NODE_GAP = 40;
+export const SPACING_STEPS = 50;
+
+export function spacingFromSlider(v: number) {
+  return 2 ** (v / (v < 0 ? SPACING_STEPS / 2 : SPACING_STEPS));
+}
 
 export interface GraphPoint {
   id: number;
@@ -36,11 +41,12 @@ export function layoutRing(
   ids: readonly number[],
   box: { width: number; height: number } = NODE_BOX,
   gap = NODE_GAP,
+  spacing = 1,
 ): GraphFrame {
   const ordered = [...ids].sort((a, b) => a - b);
   const count = ordered.length;
   const separation = minCenterDistance(box, gap);
-  const radius = ringRadius(count, separation);
+  const radius = ringRadius(count, separation) * spacing;
   const pad = Math.max(box.width, box.height) / 2 + gap;
   const origin = radius + pad;
   const span = count <= 1 ? pad * 2 : origin * 2;
@@ -60,16 +66,19 @@ export function layoutRadialByTipo(
   personagens: readonly { id: number; tipo: "pj" | "npc" }[],
   box: { width: number; height: number } = NODE_BOX,
   gap = NODE_GAP,
+  spacing = 1,
 ): GraphFrame {
   const pjs = personagens.filter((person) => person.tipo === "pj").map((person) => person.id);
   const npcs = personagens.filter((person) => person.tipo === "npc").map((person) => person.id);
-  if (!pjs.length || !npcs.length) return layoutRing(pjs.length ? pjs : npcs, box, gap);
+  if (!pjs.length || !npcs.length) return layoutRing(pjs.length ? pjs : npcs, box, gap, spacing);
 
   const separation = minCenterDistance(box, gap);
   const innerRadius = ringRadius(pjs.length, separation);
   const outerRadius = Math.max(ringRadius(npcs.length, separation), innerRadius + separation);
+  const scaledInnerRadius = innerRadius * spacing;
+  const scaledOuterRadius = outerRadius * spacing;
   const pad = Math.max(box.width, box.height) / 2 + gap;
-  const origin = outerRadius + pad;
+  const origin = scaledOuterRadius + pad;
   const onRing = (ids: number[], radius: number): GraphPoint[] =>
     ids
       .sort((a, b) => a - b)
@@ -78,7 +87,7 @@ export function layoutRadialByTipo(
         return { id, x: origin + radius * Math.cos(angle), y: origin + radius * Math.sin(angle) };
       });
   return {
-    nodes: [...onRing(pjs, innerRadius), ...onRing(npcs, outerRadius)],
+    nodes: [...onRing(pjs, scaledInnerRadius), ...onRing(npcs, scaledOuterRadius)],
     width: origin * 2,
     height: origin * 2,
   };
@@ -91,9 +100,10 @@ export function layoutRadialByRelation(
   relatedIds: readonly number[],
   box: { width: number; height: number } = NODE_BOX,
   gap = NODE_GAP,
+  spacing = 1,
 ): GraphFrame {
   const visible = new Set(ids);
-  if (!visible.has(selectedId)) return layoutRing(ids, box, gap);
+  if (!visible.has(selectedId)) return layoutRing(ids, box, gap, spacing);
 
   const related = new Set(relatedIds.filter((id) => id !== selectedId && visible.has(id)));
   const inner = [...related].sort((a, b) => a - b);
@@ -105,8 +115,10 @@ export function layoutRadialByRelation(
   const outerRadius = outer.length
     ? Math.max(ringRadius(outer.length, separation), innerRadius + separation)
     : 0;
+  const scaledInnerRadius = innerRadius * spacing;
+  const scaledOuterRadius = outerRadius * spacing;
   const pad = Math.max(box.width, box.height) / 2 + gap;
-  const origin = Math.max(innerRadius, outerRadius) + pad;
+  const origin = Math.max(scaledInnerRadius, scaledOuterRadius) + pad;
   const onRing = (group: number[], radius: number): GraphPoint[] =>
     group.map((id, index) => {
       const angle = -Math.PI / 2 + (index * 2 * Math.PI) / group.length;
@@ -116,8 +128,8 @@ export function layoutRadialByRelation(
   return {
     nodes: [
       { id: selectedId, x: origin, y: origin },
-      ...onRing(inner, innerRadius),
-      ...onRing(outer, outerRadius),
+      ...onRing(inner, scaledInnerRadius),
+      ...onRing(outer, scaledOuterRadius),
     ],
     width: origin * 2,
     height: origin * 2,

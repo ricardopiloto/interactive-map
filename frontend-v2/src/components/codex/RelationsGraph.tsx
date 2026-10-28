@@ -6,9 +6,11 @@ import {
   useControls,
   type ReactZoomPanPinchRef,
 } from "react-zoom-pan-pinch";
+import { Slider } from "@/components/ui/slider";
 import type { Personagem, PersonagemStatus, Vinculo, VinculoTipo } from "@/api/relacoes";
 import {
   NODE_BOX,
+  spacingFromSlider,
   layoutRadialByRelation,
   layoutRadialByTipo,
   type GraphFrame,
@@ -60,21 +62,67 @@ function GraphControls({ apiRef }: { apiRef: React.RefObject<ReactZoomPanPinchRe
   const { t } = useTranslation("relacoes");
   const { zoomIn, zoomOut } = useControls();
   return (
-    <div className="glass absolute top-20 left-3 z-10 flex gap-1 rounded-full p-1">
-      <button type="button" className="rounded-full px-3 py-1 text-xs" onClick={() => zoomIn()}>
+    <div className="glass absolute top-20 left-3 z-10 flex items-center gap-1 rounded-full p-2">
+      <button
+        type="button"
+        className="rounded-full whitespace-nowrap px-2 py-1 text-xs"
+        onClick={() => zoomIn()}
+      >
         {t("graph.zoomIn")}
       </button>
-      <button type="button" className="rounded-full px-3 py-1 text-xs" onClick={() => zoomOut()}>
+      <button
+        type="button"
+        className="rounded-full whitespace-nowrap px-2 py-1 text-xs"
+        onClick={() => zoomOut()}
+      >
         {t("graph.zoomOut")}
       </button>
       <button
         type="button"
-        className="rounded-full px-3 py-1 text-xs"
+        className="rounded-full whitespace-nowrap px-2 py-1 text-xs"
         aria-label={t("graph.fitViewAria")}
         onClick={() => void apiRef.current?.fitToView({ mode: "contain", animationTime: 0 })}
       >
         {t("graph.fitView")}
       </button>
+    </div>
+  );
+}
+
+function DistanceControl({
+  sliderValue,
+  onValueChange,
+  onValueCommit,
+  onReset,
+}: {
+  sliderValue: number;
+  onValueChange: (value: number) => void;
+  onValueCommit: () => void;
+  onReset: () => void;
+}) {
+  const { t, i18n } = useTranslation("relacoes");
+  const factor = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 }).format(
+    spacingFromSlider(sliderValue),
+  );
+  return (
+    <div
+      className="glass absolute top-[8.5rem] left-3 z-10 flex w-72 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full px-3 py-2 lg:top-auto lg:bottom-6 lg:left-[calc((100%-400px)/2)] lg:-translate-x-1/2"
+      onDoubleClick={onReset}
+    >
+      <span className="shrink-0 text-xs">{t("graph.distanceClose")}</span>
+      <Slider
+        value={[sliderValue]}
+        min={-50}
+        max={50}
+        step={1}
+        thumbProps={{
+          "aria-label": t("graph.distanceAria"),
+          "aria-valuetext": `${factor}×`,
+        }}
+        onValueChange={([value]) => onValueChange(value ?? 0)}
+        onValueCommit={onValueCommit}
+      />
+      <span className="shrink-0 text-xs">{t("graph.distanceFar")}</span>
     </div>
   );
 }
@@ -134,6 +182,9 @@ export function RelationsGraph({
   const { t } = useTranslation("relacoes");
   // Kept in memory for this visit only. The radial layout stays the position of record.
   const [sessionShifts, setSessionShifts] = useState<Map<number, Shift>>(() => new Map());
+  const [sliderValue, setSliderValue] = useState(0);
+  const [spacingCommit, setSpacingCommit] = useState(0);
+  const spacing = spacingFromSlider(sliderValue);
   const [failedPortraits, setFailedPortraits] = useState<Set<number>>(() => new Set());
   const [grabbedId, setGrabbedId] = useState<number | null>(null);
   const [viewportScale, setViewportScale] = useState(1);
@@ -147,6 +198,7 @@ export function RelationsGraph({
   const skipClickRef = useRef(false);
   const seenSlugRef = useRef(campaignSlug);
   shiftsRef.current = sessionShifts;
+  const focusContextRef = useRef<unknown>(null);
   const byId = useMemo(() => new Map(personagens.map((p) => [p.id, p])), [personagens]);
   const box = useMemo(
     () => ({
@@ -179,14 +231,18 @@ export function RelationsGraph({
         ? layoutRadialByTipo(
             personagens.map((p) => ({ id: p.id, tipo: p.tipo })),
             box,
+            undefined,
+            spacing,
           )
         : layoutRadialByRelation(
             personagens.map((p) => p.id),
             focusedId,
             [...related],
             box,
+            undefined,
+            spacing,
           ),
-    [personagens, box, focusedId, related],
+    [personagens, box, focusedId, related, spacing],
   );
 
   function focusViewport(ref: ReactZoomPanPinchRef, currentFrame: GraphFrame, id: number | null) {
@@ -208,8 +264,30 @@ export function RelationsGraph({
   }
 
   useEffect(() => {
-    if (apiRef.current) focusViewport(apiRef.current, frame, focusedId);
-  }, [campaignSlug, frame, focusedId]);
+    const context = [campaignSlug, personagens, box, focusedId, related, spacingCommit];
+    const previous = focusContextRef.current as unknown[] | null;
+    if (!previous || context.some((item, index) => item !== previous[index])) {
+      focusContextRef.current = context;
+      if (apiRef.current) focusViewport(apiRef.current, frame, focusedId);
+    }
+  }, [campaignSlug, personagens, box, focusedId, related, spacingCommit, frame]);
+
+  function changeSpacing(value: number) {
+    if (value === sliderValue) return;
+    releaseGrabRef.current?.();
+    setSessionShifts(new Map());
+    shiftsRef.current = new Map();
+    setSliderValue(value);
+  }
+
+  function commitSpacing() {
+    setSpacingCommit((previous) => previous + 1);
+  }
+
+  function resetSpacing() {
+    changeSpacing(0);
+    commitSpacing();
+  }
   const placed = useMemo(() => {
     const map = new Map(frame.nodes.map((node) => [node.id, node]));
     for (const [id, shift] of sessionShifts) {
@@ -401,6 +479,12 @@ export function RelationsGraph({
         }}
       >
         <GraphControls apiRef={apiRef} />
+        <DistanceControl
+          sliderValue={sliderValue}
+          onValueChange={changeSpacing}
+          onValueCommit={commitSpacing}
+          onReset={resetSpacing}
+        />
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           <svg
             ref={svgRef}
