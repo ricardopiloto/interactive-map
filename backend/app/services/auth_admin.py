@@ -22,6 +22,17 @@ def normalize_email(email: str) -> str:
     return email.strip().lower()
 
 
+def canonical_email(email: str) -> str:
+    local, separator, domain = normalize_email(email).partition("@")
+    if not separator:
+        return local
+    local = local.split("+", 1)[0]
+    if domain in {"gmail.com", "googlemail.com"}:
+        local = local.replace(".", "")
+        domain = "gmail.com"
+    return f"{local}@{domain}"
+
+
 def _basic_email_ok(email: str) -> bool:
     if "@" not in email or email.startswith("@") or email.endswith("@"):
         return False
@@ -31,7 +42,7 @@ def _basic_email_ok(email: str) -> bool:
 
 def invite_url(token: str, kind: str) -> str:
     base = settings.public_base_url.rstrip("/")
-    path = f"/convite/{token}" if kind == "activar" else f"/reset/{token}"
+    path = f"/convite/{token}" if kind in {"activar", "verificar"} else f"/reset/{token}"
     return f"{base}{path}"
 
 
@@ -45,6 +56,7 @@ def create_usuario_with_invite(session: Session, email: str) -> tuple[Usuario, s
     now = datetime.utcnow()
     user = Usuario(
         email=norm,
+        email_canonico=canonical_email(norm),
         senha_hash=None,
         activo=False,
         criado_em=now,

@@ -37,7 +37,7 @@ from app.models.vinculo import Vinculo, VinculoDirecao, VinculoTipo
 from app.models.waypoint import MapScale, RouteSegment, RouteTipo, Waypoint
 from app.services.auth_admin import assign_owner
 from app.services.campanha_admin import (
-    DEFAULT_COTA_BYTES,
+    default_cota_bytes,
     ensure_upload_tree,
     validate_slug,
     CampanhaAdminError,
@@ -187,7 +187,7 @@ def _read_zip_members(zip_path: Path) -> tuple[dict[str, bytes], int]:
             if not is_allowed_zip_member(name):
                 raise PackageError(ENTRADA_PROIBIDA)
             total_uncomp += max(info.file_size, 0)
-            if total_uncomp > DEFAULT_COTA_BYTES + ZIP_SIZE_MARGIN_BYTES:
+            if total_uncomp > default_cota_bytes() + ZIP_SIZE_MARGIN_BYTES:
                 raise PackageError(ZIP_DEMASIADO_GRANDE)
             members[name] = zf.read(info)
         return members, total_uncomp
@@ -234,7 +234,7 @@ def validate_package_members(
         if (cat, fname) not in images:
             raise PackageError(CONTEUDO_INVALIDO)
     image_bytes = sum(len(v) for v in images.values())
-    if image_bytes > DEFAULT_COTA_BYTES:
+    if image_bytes > default_cota_bytes():
         raise PackageError(COTA_EXCEDIDA)
     return manifest, content, images
 
@@ -365,7 +365,7 @@ def import_campaign_from_zip(
             caminho=caminho,
             mapa_arquivo=str(manifest.get("mapa_arquivo") or ""),
             capa_arquivo=str(manifest.get("capa_arquivo") or ""),
-            cota_bytes=DEFAULT_COTA_BYTES,
+            cota_bytes=default_cota_bytes(),
             bytes_usados=0,
             activa=True,
             criado_em=datetime.utcnow(),

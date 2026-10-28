@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { ApiError } from "@/api/client";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authApi } from "@/api/auth";
@@ -18,6 +19,8 @@ export function ConvitePage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [expiredType, setExpiredType] = useState<string | null>(null);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -29,6 +32,16 @@ export function ConvitePage() {
       navigate("/painel", { replace: true });
     } catch (reason) {
       setError(explain(reason, t("auth.inviteError")));
+      if (reason instanceof ApiError && reason.codigo === "CONVITE_EXPIRADO") {
+        const tipo = reason.detalhes?.["tipo"];
+        setExpiredType(tipo === "verificar" || tipo === "activar" ? tipo : null);
+        if (tipo === "verificar") {
+          void authApi
+            .registerConfig()
+            .then((config) => setRegistrationOpen(config.modo === "aberto"))
+            .catch(() => setRegistrationOpen(false));
+        }
+      }
     } finally {
       setBusy(false);
     }
@@ -56,6 +69,15 @@ export function ConvitePage() {
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
+            </p>
+          )}
+          {expiredType === "activar" && <p className="text-sm">{t("register.expiredAdmin")}</p>}
+          {expiredType === "verificar" && registrationOpen && (
+            <p className="text-sm">
+              {t("register.expiredSelf")}{" "}
+              <Link to="/registo" className="underline">
+                {t("register.newLink")}
+              </Link>
             </p>
           )}
           <Button type="submit" disabled={busy} className="w-full">

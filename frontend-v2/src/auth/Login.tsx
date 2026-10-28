@@ -111,6 +111,9 @@ export function LoginPage() {
       <h1 className="mb-2 font-display text-3xl">{t("v2.login")}</h1>
       <p className="mb-6 text-muted-foreground">{t("v2.loginDescription")}</p>
       <LoginForm onSuccess={() => navigate(returnTo, { replace: true })} />
+      <Link to="/registo" className="mt-4 text-sm underline">
+        {t("register.title")}
+      </Link>
     </main>
   );
 }

@@ -238,7 +238,11 @@ export function PainelPage() {
                           cap: formatBytes(campaign.cota_bytes),
                         })}
                       </span>
-                      {campaign.aviso_cota ? <span>{t("quota.warningNearFull")}</span> : null}
+                      {campaign.bytes_usados >= campaign.cota_bytes ? (
+                        <span>{t("quota.exceeded")}</span>
+                      ) : campaign.bytes_usados >= campaign.cota_bytes * 0.9 ? (
+                        <span>{t("quota.warningNearFull")}</span>
+                      ) : null}
                     </div>
                     <Progress value={pct} aria-label={t("painel.quota", { used: "", cap: "" })} />
                   </div>

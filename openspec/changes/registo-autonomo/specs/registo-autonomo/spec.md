@@ -82,9 +82,13 @@ O sistema SHALL apagar as contas criadas por auto-registo que não definiram a s
 - **WHEN** a pessoa definiu a senha dentro do prazo
 - **THEN** a conta não é afetada pela limpeza
 
-#### Scenario: Registos de bloqueio
+#### Scenario: Contador de pedidos preservado
 - **WHEN** a limpeza apaga uma conta não confirmada
-- **THEN** os contadores de bloqueio e de limite associados ao e-mail também são apagados
+- **THEN** o contador de pedidos de registo desse e-mail não é apagado e continua a valer até ao fim da sua janela de 24 horas
+
+#### Scenario: Conta que pediu um segundo link
+- **WHEN** uma conta pendente pede um novo link e nenhum dos dois é usado em 5 horas
+- **THEN** a conta é apagada pela limpeza e o primeiro link mostra "expirado" se for aberto antes disso
 
 ### Requirement: Defesas contra spam e bots
 O sistema SHALL limitar os pedidos de registo por IP e por e-mail, SHALL rejeitar domínios de e-mail descartável, e SHALL ignorar silenciosamente pedidos que preencham o campo isca (honeypot). Quando o captcha estiver configurado, o pedido SHALL ser rejeitado se a verificação falhar. Um limite excedido SHALL responder com erro de limite de pedidos, sem enviar e-mail.
@@ -113,6 +117,10 @@ O sistema SHALL limitar os pedidos de registo por IP e por e-mail, SHALL rejeita
 - **WHEN** o captcha está configurado e a verificação falha
 - **THEN** o pedido é recusado e nenhuma conta nem e-mail é criado
 
+#### Scenario: Captcha indisponível
+- **WHEN** o captcha está configurado e o serviço de verificação não responde a tempo
+- **THEN** o pedido é recusado com um erro distinto do de captcha inválido e nenhuma conta nem e-mail é criado
+
 ### Requirement: Modo de registo configurável
 O sistema SHALL ter um modo de registo configurável com os valores `fechado` e `aberto`. Em `fechado`, o endpoint de registo SHALL recusar pedidos e a página SHALL indicar indisponibilidade. O padrão SHALL ser `fechado`, para que nenhuma instalação existente passe a aceitar registos sem decisão explícita.
 
@@ -129,6 +137,10 @@ O sistema SHALL enviar os e-mails de verificação e de aviso por um provedor tr
 
 #### Scenario: Produção sem provedor
 - **WHEN** o registo está `aberto`, o modo de depuração está desligado e não há provedor de e-mail configurado
+- **THEN** a aplicação não arranca e indica o motivo
+
+#### Scenario: Origem do endereço público fora das origens permitidas
+- **WHEN** o registo está `aberto`, o modo de depuração está desligado e a origem do endereço público não consta nas origens permitidas
 - **THEN** a aplicação não arranca e indica o motivo
 
 #### Scenario: Endereço público inválido

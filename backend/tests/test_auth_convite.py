@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+import pytest
 from sqlmodel import Session, select
 
 from app.campaign_db import get_control_engine
 from app.cli import main
-from app.models.usuario import Convite
+from app.models.usuario import Convite, Usuario
+from app.services.auth_invite import issue_invite
 from app.services.auth_tokens import hash_token
 from tests.conftest import TEST_ORIGIN
 
@@ -60,3 +62,26 @@ def test_aceitar_convite_expired_fails(client_anon, data_root, capsys) -> None:
     )
     assert response.status_code == 400
     assert response.json()["detail"]["erro"] == "CONVITE_EXPIRADO"
+    assert response.json()["detail"]["detalhes"] == {"tipo": "activar"}
+
+
+@pytest.mark.parametrize("tipo", ["activar", "verificar"])
+def test_aceitar_convite_expirado_informa_tipo(client_anon, data_root, tipo: str) -> None:
+    with Session(get_control_engine()) as session:
+        email = f"expirado-{tipo}@teste.local"
+        usuario = Usuario(email=email, email_canonico=email, activo=False)
+        session.add(usuario)
+        session.commit()
+        session.refresh(usuario)
+        token = issue_invite(session, usuario.id, tipo)
+        convite = session.exec(select(Convite).where(Convite.token_hash == hash_token(token))).one()
+        convite.expira_em = datetime.utcnow() - timedelta(hours=1)
+        session.add(convite)
+        session.commit()
+    response = client_anon.post(
+        "/api/auth/convite/aceitar",
+        json={"token": token, "password": "senha-forte"},
+        headers={"Origin": TEST_ORIGIN},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == {"erro": "CONVITE_EXPIRADO", "detalhes": {"tipo": tipo}}

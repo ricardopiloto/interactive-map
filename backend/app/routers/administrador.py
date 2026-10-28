@@ -4,9 +4,12 @@ from fastapi import APIRouter, Depends, Query, Request, Response, status
 from pydantic import BaseModel
 
 from app.campaign_db import get_control_engine
+from app.config import settings
 from app.deps.auth import require_admin
 from app.errors import raise_api_error
 from app.services.rate_limit import limiter
+from app.services.email_sender import get_email_sender
+from app.services.email_templates import render_email
 from app.schemas.admin_console import (
     AdminCampaignsResponse,
     AdminUsersResponse,
@@ -57,6 +60,7 @@ def _raise_admin_error(exc: AdminConsoleError) -> None:
 
 class CriarConviteRequest(BaseModel):
     email: str
+    enviar_email: bool = False
 
 
 class CriarConviteResponse(BaseModel):
@@ -64,14 +68,29 @@ class CriarConviteResponse(BaseModel):
     link: str
 
 
+@router.get("/convites/config")
+def convite_config() -> dict[str, bool]:
+    return {"envio_email_disponivel": bool(settings.email_api_key or settings.debug)}
+
+
 @router.post("/convites", response_model=CriarConviteResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
 def criar_convite(request: Request, body: CriarConviteRequest) -> CriarConviteResponse:
+    if body.enviar_email and not (settings.email_api_key or settings.debug):
+        raise_api_error("ENVIO_EMAIL_INDISPONIVEL", status_code=503)
     with Session(get_control_engine()) as session:
         try:
             result = create_invite(session, body.email)
         except AdminConsoleError as exc:
             _raise_admin_error(exc)
+        if body.enviar_email:
+            sender = get_email_sender()
+            if sender is None:
+                raise_api_error("ENVIO_EMAIL_INDISPONIVEL", status_code=503)
+            # The template accepts a token; the existing link already carries it.
+            token = result["link"].rstrip("/").rsplit("/", 1)[-1]
+            subject, html, plain = render_email("admin", token=token)
+            sender.send(result["email"], subject, html, plain)
         return CriarConviteResponse(**result)
 
 

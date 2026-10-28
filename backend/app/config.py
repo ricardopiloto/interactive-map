@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/mapa.db"
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     uploads_dir: Path = Path("./uploads")
+    registo_modo: str = Field(default="fechado", validation_alias="REGISTO_MODO")
+    email_api_key: str | None = Field(default=None, validation_alias="EMAIL_API_KEY")
+    email_from: str = Field(default="", validation_alias="EMAIL_FROM")
+    turnstile_secret: str | None = Field(default=None, validation_alias="TURNSTILE_SECRET")
+    turnstile_site_key: str | None = Field(default=None, validation_alias="TURNSTILE_SITE_KEY")
+    registo_dominios_bloqueados: Path | None = Field(default=None, validation_alias="REGISTO_DOMINIOS_BLOQUEADOS")
+    email_log_file: Path | None = Field(default=None, validation_alias="EMAIL_LOG_FILE")
+    cota_padrao_bytes: int = Field(default=300 * 1024**2, gt=0, validation_alias="COTA_PADRAO_BYTES")
     max_upload_bytes: int = Field(
         default=25 * 1024 * 1024,  # 25 MB — mapas de campanha costumam ser grandes
         validation_alias="MAX_UPLOAD_BYTES",

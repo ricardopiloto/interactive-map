@@ -268,6 +268,7 @@
     "title": "Invite a game master",
     "hint": "Generate a single-use invite link for a new game master.",
     "emailLabel": "New game master's email",
+    "sendEmail": "Also send by email",
     "submit": "Generate invite",
     "linkLabel": "Generated invite link",
     "linkHint": "Copy and send this link to the invitee — it expires and can only be used once.",
@@ -288,7 +289,7 @@
     "AUTENTICACAO_NECESSARIA": "Authentication required",
     "NAO_ADMINISTRADOR": "Only the administrator can do this",
     "EMAIL_DUPLICADO": "An account with this email already exists",
-    "EMAIL_INVALIDO": "Invalid email",
+    "EMAIL_INVALIDO": "Invalid email.",
     "USUARIO_NAO_ENCONTRADO": "User not found",
     "USUARIO_PENDENTE": "This account is waiting for activation.",
     "USUARIO_INACTIVO": "Inactive user",
@@ -349,7 +350,16 @@
     "SESSAO_TRANSICAO_SEM_ARCO": "The transition session must belong to an arc",
     "SESSAO_TRANSICAO_ARCO_IGUAL": "The transition session cannot point to the same arc",
     "SESSOES_NAO_ENCONTRADAS": "Sessions not found: {{ids}}",
-    "EVENTO_NAO_ENCONTRADO": "Event not found"
+    "EVENTO_NAO_ENCONTRADO": "Event not found",
+    "REGISTO_FECHADO": "Registration is closed.",
+    "EMAIL_DESCARTAVEL": "Use a non-disposable email address.",
+    "LIMITE_REGISTO": "Too many registration requests. Try later.",
+    "LIMITE_PEDIDOS": "Too many requests. Try later.",
+    "CAPTCHA_INVALIDO": "Security verification failed. Try again.",
+    "CAPTCHA_INDISPONIVEL": "Security verification is unavailable. Try later.",
+    "TERMOS_NAO_ACEITOS": "You must accept the terms and privacy policy.",
+    "IDIOMA_INVALIDO": "Invalid language.",
+    "CONVITE_EXPIRADO": "The link has expired."
   },
   "campaignMissing": {
     "title": "Campaign not found",
@@ -471,5 +481,64 @@
     "environment": "Environment",
     "tactics": "Tactics or trigger",
     "outcome": "Outcome"
+  },
+  "register": {
+    "title": "Create account",
+    "loading": "Loading…",
+    "closed": "Registration is unavailable. Ask the administrator for an invitation.",
+    "accept": "I accept the",
+    "terms": "terms of use",
+    "and": "and the",
+    "privacy": "privacy policy",
+    "submit": "Request verification link",
+    "success": "Check your email.",
+    "spam": "Check your spam folder too. If the message does not arrive, try again later.",
+    "newLink": "Request a new link",
+    "expiredAdmin": "Ask the administrator for a new invitation.",
+    "expiredSelf": "You can request a new verification link."
+  },
+  "legal": {
+    "terms": {
+      "title": "Terms of use",
+      "sections": [
+        {
+          "title": "Using this instance",
+          "body": "By creating an account, you can create and manage RPG campaigns. You are responsible for the content you publish and for respecting others’ rights."
+        },
+        {
+          "title": "Account and access",
+          "body": "Provide an email address you control, protect your password, and do not share your session. The operator of this instance may disable accounts in case of abuse."
+        },
+        {
+          "title": "Data and contact",
+          "body": "Account use involves the processing described in the privacy policy. For questions about these terms or data removal, contact the operator of this instance through the contact channels provided on the instance."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "sections": [
+        {
+          "title": "Account and session",
+          "body": "The operator of this instance stores your email, password hash, and the time you accepted the terms. A session cookie keeps you signed in."
+        },
+        {
+          "title": "Security and limits",
+          "body": "The system uses IP addresses and email addresses in temporary login lockout counters. It limits registration requests by IP and stores a hash of the canonical email for the per-email limit."
+        },
+        {
+          "title": "Campaigns",
+          "body": "Content of campaigns you create is stored to provide the service. When you use AI features, the campaign context needed for the request is sent to DeepSeek; it may include hidden campaign content."
+        },
+        {
+          "title": "External services",
+          "body": "Your email address is sent to Resend for account messages. When enabled, Cloudflare Turnstile verifies registration requests. This instance does not use analytics or its own third-party cookies."
+        },
+        {
+          "title": "Contact and removal",
+          "body": "To request access, correction, or removal of your data, contact the operator of this instance through the contact channels provided on the instance. Removal may prevent account use."
+        }
+      ]
+    }
   }
 }

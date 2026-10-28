@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from hashlib import sha256
 
 from sqlmodel import Session, select
 
@@ -47,15 +48,15 @@ def is_locked(session: Session, chave: str) -> bool:
     return False
 
 
-def record_failure(session: Session, chave: str) -> None:
+def record_failure(session: Session, chave: str, *, limit: int = MAX_FAILURES, window: timedelta = timedelta(minutes=LOCKOUT_MINUTES)) -> None:
     row = _get_or_create(session, chave)
     now = _now()
     if row.bloqueado_ate and row.bloqueado_ate > now:
         return
     row.falhas += 1
     row.actualizado_em = now
-    if row.falhas >= MAX_FAILURES:
-        row.bloqueado_ate = now + timedelta(minutes=LOCKOUT_MINUTES)
+    if row.falhas >= limit:
+        row.bloqueado_ate = now + window
         row.falhas = 0
     session.add(row)
     session.commit()
@@ -70,3 +71,34 @@ def clear_failures(session: Session, chave: str) -> None:
     row.actualizado_em = _now()
     session.add(row)
     session.commit()
+
+
+def registo_key(email_canonico: str) -> str:
+    return "registo:" + sha256(email_canonico.encode()).hexdigest()
+
+
+def allow_registo_email(session: Session, email_canonico: str) -> bool:
+    """Fixed 24-hour window, including the first accepted request."""
+    key = registo_key(email_canonico)
+    now = _now()
+    row = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave == key)).first()
+    if row is None:
+        row = LoginBloqueio(chave=key, falhas=1, actualizado_em=now, bloqueado_ate=now + timedelta(hours=24))
+    elif row.bloqueado_ate is None or row.bloqueado_ate <= now:
+        row.falhas, row.actualizado_em, row.bloqueado_ate = 1, now, now + timedelta(hours=24)
+    elif row.falhas >= 3:
+        return False
+    else:
+        row.falhas += 1
+    session.add(row)
+    session.commit()
+    return True
+
+
+def purge_expired_registo_counters(session: Session) -> int:
+    rows = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave.startswith("registo:"))).all()
+    expired = [row for row in rows if row.bloqueado_ate is not None and row.bloqueado_ate <= _now()]
+    for row in expired:
+        session.delete(row)
+    session.commit()
+    return len(expired)

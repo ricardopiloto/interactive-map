@@ -16,7 +16,6 @@ from app.models.sessao import Sessao
 from app.models.usuario import Membro, Usuario
 from app.services.auth_password import hash_password
 from app.services.campaign_export import export_campaign_to_bytes, export_campaign_to_path
-from app.services.campanha_admin import DEFAULT_COTA_BYTES
 from app.services.package_schema import COTA_EXCEDIDA, SLUG_OCUPADO
 from tests.conftest import (
     TEST_CAMPAIGN_SLUG,
@@ -140,8 +139,8 @@ def test_import_cota_excedida(client, data_root, monkeypatch) -> None:
         seed_exportable_campaign(session, slug=TEST_CAMPAIGN_SLUG)
     zip_bytes = export_campaign_to_bytes(TEST_CAMPAIGN_SLUG)
     monkeypatch.setattr(
-        "app.services.campaign_import.DEFAULT_COTA_BYTES",
-        10,
+        "app.services.campaign_import.default_cota_bytes",
+        lambda: 10,
     )
     _make_second_user("cota@teste.local")
     with TestClient(app, headers={"Origin": TEST_ORIGIN}) as importer:

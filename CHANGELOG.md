@@ -310,7 +310,7 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 - Import legado de instância (`mapa.db` + `uploads/`): CLI `campanha importar-legado`, relatório de verificação, snippets `scripts/imprimir-snippets-codex.sh`; `nova-campanha.sh` / `migrar-wfrp.sh` aposentados (spec 099)
 - Página inicial `/` (catálogo público `listada`) e painel `/painel` (minhas campanhas = dono): criar, visibilidade, cota, export/import UI; APIs `GET /api/campanhas/catalogo|minhas`, `POST /api/campanhas`, `PATCH …/visibilidade`; pós-login → `/painel` (spec 098)
 - Exportar/importar campanha: zip (`manifest.json` + `content.json` + imagens), `GET …/admin/export` (só dono), `POST /api/campanhas/import`, CLI `campanha exportar|importar`, `require_dono` (spec 097)
-- Mídia com ACL e cota: `GET /api/c/{slug}/media/…`, mapa versionado (`mapa_arquivo`), cota 10 GiB + `COTA_EXCEDIDA` / aviso 90%, CLI `campanha reconciliar-cota` (spec 096)
+- Mídia com ACL e cota: `GET /api/c/{slug}/media/…`, mapa versionado (`mapa_arquivo`), cota 300 MiB + `COTA_EXCEDIDA` / aviso 90%, CLI `campanha reconciliar-cota` (spec 096)
 - Contas de mestre: CLI `usuario criar|reset|desactivar`, `campanha atribuir-dono`, sessão cookie `codex_session`, `/api/auth/*`, lockout 5/15 min, FE `/login` `/convite/:token` `/reset/:token` (spec 095)
 - Roteamento por campanha: API `/api/c/{slug}/…`, frontend `/c/:slug` e `/c/:slug/relacoes`, config/cache por slug (spec 094)
 - Multi-campanha por ficheiro: `control.db` + `data/campanhas/<uuid>/{campanha.db,uploads/}`, Alembic dual, CLI `campanha criar|listar` (spec 093)

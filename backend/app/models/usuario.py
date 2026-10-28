@@ -13,6 +13,8 @@ class Usuario(ControlSQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(max_length=320, unique=True, index=True)
+    email_canonico: str = Field(default="", max_length=320, index=True)
+    termos_aceitos_em: Optional[datetime] = Field(default=None)
     senha_hash: Optional[str] = Field(default=None, max_length=500)
     activo: bool = Field(default=False)
     is_admin: bool = Field(default=False)
@@ -35,7 +37,7 @@ class Convite(ControlSQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id", index=True)
-    tipo: str = Field(max_length=20)  # activar | reset
+    tipo: str = Field(max_length=20)  # activar | verificar | reset
     token_hash: str = Field(max_length=128, unique=True, index=True)
     expira_em: datetime
     consumido_em: Optional[datetime] = Field(default=None)
