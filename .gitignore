@@ -41,6 +41,7 @@ Thumbs.db
 .agents/
 .claude
 .codex/
+.aws
 
 # Misc
 .thumbnail
