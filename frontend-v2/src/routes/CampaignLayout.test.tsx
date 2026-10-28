@@ -49,6 +49,9 @@ function Harness() {
       <Route path="mapa" element={<View />} />
       <Route path="relacoes" element={<LocationProbe />} />
       <Route path="rota" element={<div data-testid="rota-page">Rota</div>} />
+      <Route path="ferramentas" element={<View />} />
+      <Route path="fios" element={<View />} />
+      <Route path="cronologia" element={<View />} />
     </>
   );
   return (
@@ -208,3 +211,89 @@ it("carrega a campanha pelo id mesmo com um texto de slug arbitrário", async ()
   );
   expect(screen.getByTestId("campaign-name")).toHaveTextContent("Mesa");
 });
+
+function renderSeoCampaign(path: string) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <AuthProvider>
+        <CodexProvider>
+          <Harness />
+        </CodexProvider>
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+}
+
+it("mantém noindex desde o carregamento e em falha", async () => {
+  await i18n.changeLanguage("pt-BR");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockImplementation((url: string) => {
+      if (url === "/api/auth/me") return Promise.resolve(new Response("{}", { status: 401 }));
+      return new Promise(() => {});
+    }),
+  );
+  const view = renderSeoCampaign("/c/3/mesa/relacoes");
+  expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex, nofollow",
+  );
+  view.unmount();
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockImplementation((url: string) =>
+        Promise.resolve(new Response("{}", { status: url === "/api/auth/me" ? 401 : 404 })),
+      ),
+  );
+  const failed = renderSeoCampaign("/c/9999/inexistente/relacoes");
+  await screen.findByRole("alert");
+  expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex, nofollow",
+  );
+  failed.unmount();
+});
+
+for (const [section, indexable, expectedSection] of [
+  ["relacoes", true, "relacoes"],
+  ["relacoes", false, "relacoes"],
+  ["rota", true, "rota"],
+  ["ferramentas", true, "ferramentas"],
+  ["fios", true, "fios"],
+  ["cronologia", true, "linha-do-tempo"],
+] as const) {
+  it(`${section} com indexavel=${indexable} aplica a política e o canônico`, async () => {
+    await i18n.changeLanguage("pt-BR");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/api/auth/me") return Promise.resolve(new Response("{}", { status: 401 }));
+        return Promise.resolve(
+          new Response(
+            JSON.stringify(config({ id: 3, slug: "mesa", nome: "Mesa", indexavel: indexable })),
+            { status: 200 },
+          ),
+        );
+      }),
+    );
+    const view = renderSeoCampaign(`/c/3/mesa/${section}`);
+    await screen.findByTestId(section === "rota" ? "rota-page" : "campaign-name");
+    const expectedRobots =
+      indexable && (section === "relacoes" || section === "cronologia")
+        ? "index, follow"
+        : "noindex, nofollow";
+    await waitFor(() =>
+      expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+        "content",
+        expectedRobots,
+      ),
+    );
+    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      `${window.location.origin}/c/3/mesa/${expectedSection}`,
+    );
+    view.unmount();
+  });
+}

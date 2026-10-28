@@ -42,6 +42,11 @@ def _make_second_user(email: str = "importador@teste.local", password: str = "pa
 
 
 def test_api_import_roundtrip(client, data_root) -> None:
+    with Session(get_control_engine()) as session:
+        source = session.exec(select(Campanha).where(Campanha.slug == TEST_CAMPAIGN_SLUG)).one()
+        source.indexavel = True
+        session.add(source)
+        session.commit()
     with resolve_campaign_session(TEST_CAMPAIGN_SLUG) as session:
         catalog = seed_exportable_campaign(session, slug=TEST_CAMPAIGN_SLUG)
         expected_npc_ids = {catalog.visivel.id, catalog.npc_visivel.id}
@@ -75,6 +80,7 @@ def test_api_import_roundtrip(client, data_root) -> None:
     with Session(get_control_engine()) as session:
         camp = session.exec(select(Campanha).where(Campanha.slug == "mesa-copia")).first()
         assert camp is not None
+        assert camp.indexavel is False
         assert camp.caminho != ""
         owner = session.exec(
             select(Membro).where(Membro.campanha_id == camp.id, Membro.papel == "dono")

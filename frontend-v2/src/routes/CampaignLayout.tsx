@@ -8,6 +8,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { useCampaignConfig } from "@/api/campaign";
+import { useSeo } from "@/lib/seo";
 import { ApiError } from "@/api/client";
 import { EditModeProvider } from "@/auth/EditModeContext";
 import { TopBar } from "@/components/codex/Shell";
@@ -30,6 +31,37 @@ function CampaignContent({ identifier }: { identifier: string }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { data, loading, error } = useCampaignConfig(identifier);
+  const section = location.pathname.split("/").filter(Boolean).at(-1) ?? "inicio";
+  const canonicalSection = section === "cronologia" ? "linha-do-tempo" : section;
+  const knownSections = [
+    "mapa",
+    "relacoes",
+    "sessoes",
+    "linha-do-tempo",
+    "itens",
+    "rota",
+    "ferramentas",
+    "fios",
+  ];
+  const pageSection = knownSections.includes(canonicalSection) ? canonicalSection : "inicio";
+  const ready = Boolean(data && !loading && !error);
+  const name = data?.nome ?? "";
+  useSeo({
+    title: t(`seo.campanha.${ready ? pageSection : "carregando"}.title`, { nome: name }),
+    description: t(`seo.campanha.${ready ? pageSection : "carregando"}.description`, {
+      nome: name,
+    }),
+    canonical:
+      ready && pageSection !== "inicio"
+        ? `${window.location.origin}/c/${data!.id}/${data!.slug}/${canonicalSection}`
+        : undefined,
+    robots:
+      ready &&
+      data?.indexavel &&
+      ["mapa", "relacoes", "sessoes", "linha-do-tempo", "itens"].includes(pageSection)
+        ? "index, follow"
+        : "noindex, nofollow",
+  });
 
   useEffect(() => {
     if (!data?.id || !data.slug) return;

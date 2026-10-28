@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
 import { campanhasApi, type PainelItem } from "@/api/campanhas";
@@ -21,6 +21,7 @@ const campaign = (slug: string, active: boolean): PainelItem => ({
   nome: slug,
   sistema: "wfrp4e",
   visibilidade: "listada",
+  indexavel: false,
   bytes_usados: 0,
   cota_bytes: 1000,
   aviso_cota: false,
@@ -109,4 +110,75 @@ it("mostra aviso a 90% e excedida no limite", async () => {
   expect(
     await within(await screen.findByTestId("campanha-duas")).findByText(pt.quota.exceeded),
   ).toBeTruthy();
+});
+
+it("liga a indexação da campanha escolhida após o PATCH", async () => {
+  vi.spyOn(indiceIaApi, "estado").mockResolvedValue(result("ausente"));
+  const patch = vi
+    .spyOn(campanhasApi, "setIndexacao")
+    .mockResolvedValue({ slug: "uma", indexavel: true });
+  montar();
+  const uma = await screen.findByTestId("campanha-uma");
+  const toggle = within(uma).getByRole("switch", { name: pt.painel.indexacao });
+  expect(toggle).not.toBeChecked();
+  fireEvent.click(toggle);
+  await waitFor(() => expect(patch).toHaveBeenCalledWith("uma", true));
+  await waitFor(() => expect(toggle).toBeChecked());
+  expect(
+    within(screen.getByTestId("campanha-duas")).getByRole("switch", { name: pt.painel.indexacao }),
+  ).not.toBeChecked();
+});
+
+it("desliga a indexação e desativa o interruptor durante o envio", async () => {
+  vi.spyOn(indiceIaApi, "estado").mockResolvedValue(result("ausente"));
+  vi.spyOn(campanhasApi, "minhas").mockResolvedValue({
+    campanhas: [{ ...campaign("uma", false), indexavel: true }],
+  });
+  let resolvePatch!: (value: { slug: string; indexavel: boolean }) => void;
+  const patch = vi.spyOn(campanhasApi, "setIndexacao").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        resolvePatch = resolve;
+      }),
+  );
+  montar();
+  const toggle = within(await screen.findByTestId("campanha-uma")).getByRole("switch", {
+    name: pt.painel.indexacao,
+  });
+  fireEvent.click(toggle);
+  expect(patch).toHaveBeenCalledWith("uma", false);
+  expect(toggle).toBeDisabled();
+  expect(toggle).toBeChecked();
+  resolvePatch({ slug: "uma", indexavel: false });
+  await waitFor(() => expect(toggle).not.toBeChecked());
+  expect(toggle).not.toBeDisabled();
+});
+
+it("preserva a escolha guardada e explica campanhas só com link", async () => {
+  vi.spyOn(indiceIaApi, "estado").mockResolvedValue(result("ausente"));
+  vi.spyOn(campanhasApi, "minhas").mockResolvedValue({
+    campanhas: [{ ...campaign("uma", false), visibilidade: "so_link", indexavel: true }],
+  });
+  const patch = vi.spyOn(campanhasApi, "setIndexacao");
+  montar();
+  const card = await screen.findByTestId("campanha-uma");
+  const toggle = within(card).getByRole("switch", { name: pt.painel.indexacao });
+  expect(toggle).toBeChecked();
+  expect(toggle).toBeDisabled();
+  expect(within(card).getByText(/Campanhas só com link nunca são indexadas/)).toBeInTheDocument();
+  fireEvent.click(toggle);
+  expect(patch).not.toHaveBeenCalled();
+});
+
+it("mostra o erro da API sem alterar a escolha", async () => {
+  vi.spyOn(indiceIaApi, "estado").mockResolvedValue(result("ausente"));
+  vi.spyOn(campanhasApi, "setIndexacao").mockRejectedValue(new Error("Falha no PATCH"));
+  montar();
+  const toggle = within(await screen.findByTestId("campanha-uma")).getByRole("switch", {
+    name: pt.painel.indexacao,
+  });
+  fireEvent.click(toggle);
+  expect(await screen.findByRole("alert")).toHaveTextContent("Ocorreu um erro. Tente novamente.");
+  expect(toggle).not.toBeChecked();
+  expect(toggle).not.toBeDisabled();
 });

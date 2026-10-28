@@ -175,6 +175,7 @@ def list_minhas_campanhas(usuario_id: int) -> list[dict[str, Any]]:
                     "nome": r.nome,
                     "sistema": r.sistema,
                     "visibilidade": r.visibilidade,
+                    "indexavel": r.indexavel,
                     "unidade_distancia": getattr(r, "unidade_distancia", None) or "mi",
                     "capa_url": media_url(r.slug, "covers", capa) if capa else None,
                     "bytes_usados": r.bytes_usados,
@@ -195,6 +196,25 @@ def set_visibilidade(slug: str, visibilidade: str) -> Campanha:
         if row is None or not row.activa:
             raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
         row.visibilidade = visibilidade
+        row.modificado_em = datetime.utcnow()
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        session.expunge(row)
+        return row
+
+
+def campanha_indexavel(campanha: Campanha) -> bool:
+    return bool(campanha.activa and campanha.visibilidade == "listada" and campanha.indexavel)
+
+
+def set_indexavel(slug: str, valor: bool) -> Campanha:
+    init_control()
+    with Session(get_control_engine()) as session:
+        row = session.exec(select(Campanha).where(Campanha.slug == slug)).first()
+        if row is None or not row.activa:
+            raise CampanhaAdminError("CAMPANHA_NAO_ENCONTRADA")
+        row.indexavel = valor
         row.modificado_em = datetime.utcnow()
         session.add(row)
         session.commit()

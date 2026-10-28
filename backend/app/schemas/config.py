@@ -6,6 +6,7 @@ class InstanceConfigRead(BaseModel):
     slug: str
     nome: str
     sistema: str
+    indexavel: bool = False
     modulos_ativos: list[str] = Field(default_factory=list)
     has_map_image: bool
     mapa_arquivo: str | None = None

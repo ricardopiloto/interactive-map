@@ -31,4 +31,5 @@ def test_cli_importar(data_root, tmp_path: Path) -> None:
     )
     assert code == 0
     with Session(get_control_engine()) as session:
-        assert session.exec(select(Campanha).where(Campanha.slug == "from-cli")).first()
+        camp = session.exec(select(Campanha).where(Campanha.slug == "from-cli")).first()
+        assert camp is not None and camp.indexavel is False

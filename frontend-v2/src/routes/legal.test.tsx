@@ -59,6 +59,16 @@ it.each(["pt-BR", "en"] as const)(
       expect(document.body.textContent).not.toContain("its own third-party cookies");
       if (kind === "privacy") {
         expect(document.body.textContent).toContain(
+          language === "en"
+            ? "Search engine indexing is the campaign owner's choice and is off by default"
+            : "A indexação em buscadores é uma escolha do mestre, desligada por padrão",
+        );
+        expect(document.body.textContent).toContain(
+          language === "en"
+            ? "only content the owner made visible to players is accessible"
+            : "só o conteúdo que ele tornou visível aos jogadores fica acessível",
+        );
+        expect(document.body.textContent).toContain(
           language === "en" ? "Password recovery" : "Recuperação de senha",
         );
         expect(document.body.textContent).toContain(

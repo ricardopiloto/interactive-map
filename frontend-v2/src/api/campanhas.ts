@@ -14,6 +14,7 @@ export interface PainelItem {
   nome: string;
   sistema: string;
   visibilidade: "listada" | "so_link" | string;
+  indexavel: boolean;
   unidade_distancia?: "mi" | "km" | string;
   capa_url?: string | null;
   bytes_usados: number;
@@ -66,6 +67,11 @@ export const campanhasApi = {
     api.patch<{ slug: string; visibilidade: string }>(
       `/api/campanhas/${encodeURIComponent(slug)}/visibilidade`,
       { visibilidade },
+    ),
+  setIndexacao: (slug: string, indexavel: boolean) =>
+    api.patch<{ slug: string; indexavel: boolean }>(
+      `/api/campanhas/${encodeURIComponent(slug)}/indexacao`,
+      { indexavel },
     ),
   patchUnidadeDistancia: (slug: string, unidade_distancia: "mi" | "km") =>
     api.patch<{ slug: string; unidade_distancia: string }>(

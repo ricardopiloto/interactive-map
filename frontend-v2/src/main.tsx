@@ -19,6 +19,7 @@ import { PainelPage } from "@/routes/painel";
 import { NovoCodexPage } from "@/routes/novo";
 import { AdminConsolePage } from "@/routes/admin";
 import { AdminConvitesPage } from "@/routes/admin-convites";
+import { SeoRouter } from "@/components/site/SeoRouter";
 import { NotFoundPage } from "@/routes/not-found";
 import { lazy, Suspense } from "react";
 import "./styles.css";
@@ -31,6 +32,7 @@ const StyleGuide = import.meta.env.DEV
 export function App() {
   return (
     <BrowserRouter>
+      <SeoRouter />
       <AuthProvider>
         <CodexProvider>
           <AppRoutes />

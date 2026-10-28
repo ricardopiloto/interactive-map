@@ -37,6 +37,7 @@ def test_criar_success_default_listada(client, data_root) -> None:
     with Session(get_control_engine()) as session:
         camp = session.exec(select(Campanha).where(Campanha.slug == body["slug"])).first()
         assert camp and camp.visibilidade == "listada"
+        assert camp.indexavel is False
         assert "fadiga" in (camp.modulos_ativos or [])
         user = session.exec(select(Usuario).where(Usuario.email == TEST_GM_EMAIL)).first()
         dono = session.exec(

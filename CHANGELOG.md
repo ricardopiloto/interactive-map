@@ -7,6 +7,35 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-10-28
+
+### Added
+
+- **Indexação em buscadores por campanha, escolha do mestre.** Nas configurações de cada campanha no Painel, o interruptor «Permitir indexação em buscadores» começa **desligado** (inclusive nas campanhas existentes). Só tem efeito com a campanha ativa e com visibilidade «listada»; campanhas «só com link» nunca são indexáveis, e a escolha guardada volta a valer se a campanha voltar a ser listada. O aviso do interruptor explica que o conteúdo visível aos jogadores pode aparecer no Google e que desligar não retira de imediato o que já foi indexado. Rota nova: `PATCH /api/campanhas/{slug}/indexacao` (só o dono); `GET /api/c/{slug}/config` passa a devolver `indexavel` (efeito) e `GET /api/campanhas/minhas`, a escolha guardada.
+- **Sitemap público** em `GET /sitemap.xml` (na raiz do site): `/`, `/explorar`, `/termos`, `/privacidade`, `/contato` (quando disponível) e, para cada campanha indexável, relações, sessões, linha do tempo, itens e o mapa (quando há imagem de mapa). Não publica `lastmod`, para não expor quando o mestre edita conteúdo privado, e nunca lista `/registo`, páginas privadas, `rota`, `ferramentas` nem `fios`.
+- **Metadados por página:** título e descrição próprios em pt-BR e en («Página — Campaign Codex»), endereço canônico absoluto (`/c/{id}/{slug}/…` nas campanhas; `cronologia` aponta para `linha-do-tempo`) e `<html lang>` que acompanha o idioma da interface.
+- **`noindex`:** páginas de conta, administração, convite e redefinição de senha, a página de «não encontrado», `rota`, `ferramentas` e `fios`, e todas as campanhas não autorizadas. As páginas de campanha começam **sempre em `noindex`** (também enquanto a configuração carrega ou se falha) e só passam a `index` quando a configuração confirma que a campanha é indexável.
+- `robots.txt` com a linha `Sitemap:`; sem `Disallow` novo (o Googlebot precisa buscar a API para renderizar e ver o `noindex`).
+
+### Changed
+
+- A política de privacidade informa que campanhas marcadas como indexáveis podem aparecer em buscadores.
+- Snippets do Caddy em `deploy/` (`Caddyfile` e `caddy.site.tpl`): `X-Robots-Tag` `noindex, nofollow` nas páginas privadas e `noindex` em `/api/*` (as imagens de `/api/c/{slug}/media` ficam fora do Google Imagens), `Referrer-Policy: no-referrer` em `/convite/*` e `/reset/*`, `/sitemap.xml` servido pela API, `index.html` sem cache e **404 real** para rotas desconhecidas.
+
+### Database
+
+- Migração do banco de controle `010_indexacao_buscadores`: coluna `indexavel` em `campanha` (`NOT NULL`, padrão falso).
+
+### Operação
+
+- **Os snippets do Caddy não se aplicam sozinhos:** colar o bloco novo no Caddy do host, validar (`caddy validate`) e recarregar. Conferir com `curl -I`: 404 em rota desconhecida, `X-Robots-Tag` no painel e na API, `Content-Type: application/xml` no sitemap. Se `copy_response 404` não se comportar no Caddy 2.9, o runbook traz o plano B (soft 404 apoiado no `noindex` da página).
+- Cadastrar o domínio no Google Search Console (registro TXT na Cloudflare), enviar o sitemap e conferir em «Inspecionar URL» que o Googlebot recebe a página (sem desafio de WAF ou Bot Fight Mode da Cloudflare). O canônico pressupõe um único hostname público.
+- Como as campanhas começam desligadas e o HTML inicial é uma casca, o ganho imediato é o site institucional e o catálogo.
+
+### Documentation
+
+- Novo `docs/runbook-seo.md` (Caddy, Search Console, conferências e remoção de URLs), seção «SEO e indexação» no README e `docs/api-contracts.md` com as rotas novas.
+
 ## [1.5.0] — 2026-10-28
 
 ### Added

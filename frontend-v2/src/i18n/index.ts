@@ -24,6 +24,10 @@ detector.addDetector({
   lookup: () => (navigator.language.toLowerCase().startsWith("en") ? "en" : "pt-BR"),
 });
 
+i18n.on("languageChanged", (language) => {
+  document.documentElement.lang = language.startsWith("en") ? "en" : "pt-BR";
+});
+
 void i18n
   .use(detector)
   .use(initReactI18next)

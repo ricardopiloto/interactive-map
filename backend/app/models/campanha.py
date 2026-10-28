@@ -29,6 +29,7 @@ class Campanha(ControlSQLModel, table=True):
         sa_column=Column(JSON, nullable=False),
     )
     visibilidade: str = Field(default="listada", max_length=20)
+    indexavel: bool = Field(default=False)
     unidade_distancia: str = Field(default="mi", max_length=8)
     capa_arquivo: str = Field(default="", max_length=500)
     caminho: str = Field(max_length=200)

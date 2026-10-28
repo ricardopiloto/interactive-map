@@ -20,3 +20,16 @@ def test_migration_009_quota_canonical_and_downgrade(data_root):
     command.downgrade(config, "008_remove_genero")
     assert "email_canonico" not in {c["name"] for c in inspect(engine).get_columns("usuario")}
     command.upgrade(config, "head")
+
+
+def test_migration_010_existing_campaign_defaults_false_and_downgrades(data_root):
+    engine = get_control_engine()
+    config = _alembic_config("control", str(engine.url))
+    command.downgrade(config, "009_registo_cota")
+    assert "indexavel" not in {c["name"] for c in inspect(engine).get_columns("campanha")}
+    command.upgrade(config, "head")
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT indexavel FROM campanha")).scalars().all() == [0]
+    command.downgrade(config, "009_registo_cota")
+    assert "indexavel" not in {c["name"] for c in inspect(engine).get_columns("campanha")}
+    command.upgrade(config, "head")

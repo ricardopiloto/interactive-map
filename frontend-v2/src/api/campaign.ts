@@ -8,6 +8,7 @@ export interface CampaignConfig {
   nome: string;
   sistema: string;
   has_map_image: boolean;
+  indexavel?: boolean;
   map_url: string | null;
   modulos_ativos: string[];
   /** Campaign display unit. The route engine always returns miles. */

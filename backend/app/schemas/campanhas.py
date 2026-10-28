@@ -24,6 +24,7 @@ class PainelItem(BaseModel):
     sistema: str
     visibilidade: str
     unidade_distancia: str = "mi"
+    indexavel: bool = False
     capa_url: str | None = None
     bytes_usados: int
     cota_bytes: int
@@ -59,6 +60,17 @@ class VisibilidadeRequest(BaseModel):
 class VisibilidadeResponse(BaseModel):
     slug: str
     visibilidade: str
+
+
+class IndexacaoRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    indexavel: bool
+
+
+class IndexacaoResponse(BaseModel):
+    slug: str
+    indexavel: bool
 
 
 class UnidadeDistanciaRequest(BaseModel):

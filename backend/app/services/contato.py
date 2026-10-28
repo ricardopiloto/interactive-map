@@ -4,11 +4,24 @@ from hashlib import sha256
 from html import escape
 import re
 from unicodedata import category
+from typing import Callable
 
 from app.services.auth_admin import normalize_email, valid_email_format
+from app.config import settings
+from app.services.email_sender import get_email_sender
 
 ASSUNTOS = {'duvida', 'privacidade', 'problema', 'sugestao', 'outro'}
 URL_PATTERN = re.compile(r'https?://', re.IGNORECASE)
+
+
+def obter_sender_contato(sender_factory: Callable = get_email_sender):
+    if not settings.contato_email or not valid_email_format(settings.contato_email):
+        return None
+    return sender_factory()
+
+
+def contato_disponivel(sender_factory: Callable | None = None) -> bool:
+    return obter_sender_contato(sender_factory or get_email_sender) is not None
 
 
 def validate_contato(nome: str, email: str, assunto: str, mensagem: str, idioma: str) -> str | None:

@@ -5,14 +5,19 @@ from sqlmodel import Session, select
 from app.campaign_db import campaign_uploads_path, get_control_engine, lookup_campanha
 from app.models.campanha import Campanha
 from app.schemas.config import InstanceConfigRead
+from app.services.campanha_admin import campanha_indexavel
 from app.services.media_paths import media_url
 
 _MAP_EXTENSIONS = (".webp", ".jpg", ".jpeg", ".png", ".gif")
 
 
+def tem_imagem_mapa(camp: Campanha) -> bool:
+    return bool((camp.mapa_arquivo or "").strip())
+
+
 def _stamp_mapa_arquivo_if_needed(camp: Campanha) -> Campanha:
     """One-time bridge from leftover campaign-map.* (094)."""
-    if (camp.mapa_arquivo or "").strip():
+    if tem_imagem_mapa(camp):
         return camp
     uploads = campaign_uploads_path(camp.caminho)
     map_dir = uploads / "map"
@@ -30,7 +35,7 @@ def _stamp_mapa_arquivo_if_needed(camp: Campanha) -> Campanha:
         row = session.get(Campanha, camp.id)
         if row is None:
             return camp
-        if not (row.mapa_arquivo or "").strip():
+        if not tem_imagem_mapa(row):
             row.mapa_arquivo = found
             session.add(row)
             session.commit()
@@ -54,8 +59,9 @@ def get_instance_config_for_slug(slug: str) -> InstanceConfigRead:
         slug=camp.slug,
         nome=camp.nome,
         sistema=camp.sistema,
+        indexavel=campanha_indexavel(camp),
         modulos_ativos=list(mods),
-        has_map_image=bool(mapa),
+        has_map_image=tem_imagem_mapa(camp),
         mapa_arquivo=mapa or None,
         map_url=media_url(camp.slug, "map", mapa) if mapa else None,
         unidade_distancia=ud,

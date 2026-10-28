@@ -10,10 +10,10 @@ from sqlmodel import Session
 from app.campaign_db import get_control_engine
 from app.config import settings
 from app.errors import raise_api_error
-from app.services.auth_admin import normalize_email, valid_email_format
+from app.services.auth_admin import normalize_email
 from app.services.auth_lockout import counter_allows, counter_consume, counter_refund
 from app.services.client_ip import client_ip
-from app.services.contato import contato_key, render_contato, validate_contato
+from app.services.contato import contato_disponivel, contato_key, obter_sender_contato, render_contato, validate_contato
 from app.services.email_sender import get_email_sender
 from app.services.rate_limit import limiter
 from app.services.registo import verify_turnstile
@@ -34,14 +34,12 @@ class ContatoBody(BaseModel):
 
 
 def _sender():
-    if not settings.contato_email or not valid_email_format(settings.contato_email):
-        return None
-    return get_email_sender()
+    return obter_sender_contato(get_email_sender)
 
 
 @router.get('/config')
 def contato_config() -> dict:
-    return {'disponivel': _sender() is not None, 'turnstile_site_key': settings.turnstile_site_key}
+    return {'disponivel': contato_disponivel(get_email_sender), 'turnstile_site_key': settings.turnstile_site_key}
 
 
 @router.post('', status_code=202)

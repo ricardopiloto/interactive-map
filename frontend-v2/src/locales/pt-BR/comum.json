@@ -123,6 +123,9 @@
     "toggleUnit": "Alternar mi/km",
     "moduloIaArcos": "Assistente de IA",
     "moduloIaArcosAjuda": "O assistente pode enviar conteúdo oculto da campanha ao DeepSeek.",
+    "indexacao": "Permitir indexação em buscadores",
+    "indexacaoAjuda": "O conteúdo visível aos jogadores pode aparecer em buscadores como o Google. Desligar a opção não remove imediatamente o que já foi indexado.",
+    "indexacaoSoLinkAjuda": "Campanhas só com link nunca são indexadas.",
     "indice": {
       "title": "Índice da campanha",
       "loading": "Carregando índice…",
@@ -545,7 +548,7 @@
         },
         {
           "title": "Campanhas",
-          "body": "O conteúdo das campanhas que você cria é guardado para oferecer o serviço. Quando você usa os recursos de IA, o contexto da campanha necessário à solicitação é enviado ao DeepSeek; esse contexto pode incluir conteúdo oculto da campanha."
+          "body": "O conteúdo das campanhas que você cria é guardado para oferecer o serviço. A indexação em buscadores é uma escolha do mestre, desligada por padrão. Campanhas que o mestre marcar como indexáveis podem aparecer em buscadores; só o conteúdo que ele tornou visível aos jogadores fica acessível. Quando você usa os recursos de IA, o contexto da campanha necessário à solicitação é enviado ao DeepSeek; esse contexto pode incluir conteúdo oculto da campanha."
         },
         {
           "title": "Serviços externos",
@@ -599,5 +602,113 @@
     "success": "Se existir uma conta com este e-mail, enviamos um link de redefinição.",
     "spam": "Confira também a pasta de spam. Se a mensagem não chegar, tente de novo mais tarde.",
     "newLink": "Pedir novo link"
+  },
+  "seo": {
+    "home": {
+      "title": "Início — Campaign Codex",
+      "description": "Explore campanhas de RPG, mapas, personagens e histórias."
+    },
+    "explorar": {
+      "title": "Explorar — Campaign Codex",
+      "description": "Encontre campanhas públicas para explorar."
+    },
+    "termos": {
+      "title": "Termos de uso — Campaign Codex",
+      "description": "Leia os termos de uso do Campaign Codex."
+    },
+    "privacidade": {
+      "title": "Privacidade — Campaign Codex",
+      "description": "Saiba como os seus dados são tratados."
+    },
+    "contato": {
+      "title": "Contato — Campaign Codex",
+      "description": "Envie uma mensagem à equipe do Campaign Codex."
+    },
+    "login": {
+      "title": "Entrar — Campaign Codex",
+      "description": "Acesse entrar no Campaign Codex."
+    },
+    "registo": {
+      "title": "Criar conta — Campaign Codex",
+      "description": "Acesse criar conta no Campaign Codex."
+    },
+    "esqueciSenha": {
+      "title": "Recuperar senha — Campaign Codex",
+      "description": "Acesse recuperar senha no Campaign Codex."
+    },
+    "convite": {
+      "title": "Ativar conta — Campaign Codex",
+      "description": "Acesse ativar conta no Campaign Codex."
+    },
+    "reset": {
+      "title": "Nova senha — Campaign Codex",
+      "description": "Acesse nova senha no Campaign Codex."
+    },
+    "painel": {
+      "title": "Painel — Campaign Codex",
+      "description": "Acesse painel no Campaign Codex."
+    },
+    "novo": {
+      "title": "Nova campanha — Campaign Codex",
+      "description": "Acesse nova campanha no Campaign Codex."
+    },
+    "conta": {
+      "title": "Conta — Campaign Codex",
+      "description": "Acesse conta no Campaign Codex."
+    },
+    "admin": {
+      "title": "Administração — Campaign Codex",
+      "description": "Acesse administração no Campaign Codex."
+    },
+    "adminConvites": {
+      "title": "Convites — Campaign Codex",
+      "description": "Acesse convites no Campaign Codex."
+    },
+    "naoEncontrada": {
+      "title": "Página não encontrada — Campaign Codex",
+      "description": "Acesse página não encontrada no Campaign Codex."
+    },
+    "campanha": {
+      "mapa": {
+        "title": "Mapa de {{nome}} — Campaign Codex",
+        "description": "Explore mapa da campanha {{nome}}."
+      },
+      "relacoes": {
+        "title": "Relações de {{nome}} — Campaign Codex",
+        "description": "Explore relações da campanha {{nome}}."
+      },
+      "sessoes": {
+        "title": "Sessões de {{nome}} — Campaign Codex",
+        "description": "Explore sessões da campanha {{nome}}."
+      },
+      "linha-do-tempo": {
+        "title": "Linha do tempo de {{nome}} — Campaign Codex",
+        "description": "Explore linha do tempo da campanha {{nome}}."
+      },
+      "itens": {
+        "title": "Itens de {{nome}} — Campaign Codex",
+        "description": "Explore itens da campanha {{nome}}."
+      },
+      "rota": {
+        "title": "Rota de {{nome}} — Campaign Codex",
+        "description": "Explore rota da campanha {{nome}}."
+      },
+      "ferramentas": {
+        "title": "Ferramentas de {{nome}} — Campaign Codex",
+        "description": "Explore ferramentas da campanha {{nome}}."
+      },
+      "fios": {
+        "title": "Fios narrativos de {{nome}} — Campaign Codex",
+        "description": "Explore fios narrativos da campanha {{nome}}."
+      },
+      "inicio": {
+        "title": "Campanha de {{nome}} — Campaign Codex",
+        "description": "Explore campanha da campanha {{nome}}."
+      },
+      "carregando": {
+        "title": "Campanha — Campaign Codex",
+        "description": "Carregando campanha."
+      }
+    }
   }
 }

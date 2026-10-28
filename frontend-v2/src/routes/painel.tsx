@@ -124,6 +124,7 @@ export function PainelPage() {
   const [items, setItems] = useState<PainelItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [indexacaoBusy, setIndexacaoBusy] = useState<string[]>([]);
   const [importSlug, setImportSlug] = useState("");
 
   const refresh = useCallback(async () => {
@@ -183,6 +184,24 @@ export function PainelPage() {
       setImportSlug("");
     });
     setBusy(false);
+  }
+
+  async function onIndexacao(slug: string, indexavel: boolean) {
+    setError(null);
+    setIndexacaoBusy((current) => [...current, slug]);
+    try {
+      const updated = await campanhasApi.setIndexacao(slug, indexavel);
+      setItems(
+        (current) =>
+          current?.map((item) =>
+            item.slug === slug ? { ...item, indexavel: updated.indexavel } : item,
+          ) ?? null,
+      );
+    } catch (reason) {
+      setError(explain(reason));
+    } finally {
+      setIndexacaoBusy((current) => current.filter((item) => item !== slug));
+    }
   }
 
   return (
@@ -310,6 +329,25 @@ export function PainelPage() {
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {t("painel.moduloIaArcosAjuda")}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id={`indexacao-${campaign.slug}`}
+                        checked={campaign.indexavel}
+                        disabled={
+                          campaign.visibilidade === "so_link" ||
+                          indexacaoBusy.includes(campaign.slug)
+                        }
+                        onCheckedChange={(indexavel) => void onIndexacao(campaign.slug, indexavel)}
+                      />
+                      <Label htmlFor={`indexacao-${campaign.slug}`}>{t("painel.indexacao")}</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("painel.indexacaoAjuda")}
+                      {campaign.visibilidade === "so_link" &&
+                        ` ${t("painel.indexacaoSoLinkAjuda")}`}
                     </p>
                   </div>
                   {campaign.modulos_ativos.includes("ia_arcos") && (

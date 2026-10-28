@@ -2,7 +2,7 @@
 
 Aplicação web **self-hosted**, **multi-mestre e multi-campanha**, para os mestres de RPG de mesa organizarem o mundo das suas campanhas e compartilhá-lo com os jogadores: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens**, **fios narrativos** e **Modo GM**, com **IA** opcional como assistente de escrita.
 
-**Versão:** 1.5.0 — [`CHANGELOG.md`](CHANGELOG.md)
+**Versão:** 1.6.0 — [`CHANGELOG.md`](CHANGELOG.md)
 **Produção:** <https://campaign-codex.1nodado.com.br> — exemplos de campanhas: [`/c/1/wfrp`](https://campaign-codex.1nodado.com.br/c/1/wfrp) e [`/c/2/wod`](https://campaign-codex.1nodado.com.br/c/2/wod) · operação: [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md)
 
 ## Sumário
@@ -226,6 +226,13 @@ Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 
 ---
 
+## Novidades da versão 1.6
+
+- Indexação em buscadores **por campanha, escolha do mestre** (desligada por padrão), com sitemap público, metadados por página e `noindex` nas páginas privadas e nas campanhas não autorizadas
+- Cabeçalhos de indexação e 404 real nos snippets do Caddy; runbook de SEO com o passo a passo do Google Search Console
+
+---
+
 ## Novidades da versão 1.5
 
 - Recuperação de senha pela própria pessoa (`/esqueci-senha`), com link de 1 hora por e-mail, sem revelar contas e sem nunca reativar uma conta desativada
@@ -303,6 +310,10 @@ flowchart LR
 
 ---
 
+## SEO e indexação
+
+O dono pode permitir a indexação de cada campanha listada no Painel; a opção começa desligada. O sitemap público está em `GET /sitemap.xml`. Para aplicar os cabeçalhos e conferir a descoberta no buscador, veja o [runbook de SEO](docs/runbook-seo.md).
+
 ## API
 
 A API é **JSON sobre HTTP** e fica sob `/api`. A especificação em execução é o OpenAPI (`/api/openapi.json`, interface em `/api/docs`).
@@ -316,6 +327,7 @@ A API é **JSON sobre HTTP** e fica sob `/api`. A especificação em execução 
 - **Erros estruturados:** `{"detail": {"erro": "CODIGO", "detalhes": {…}}}`; o frontend traduz o código. Erros de validação do corpo (`422`) seguem o formato padrão do FastAPI.
 - **Limites de taxa:** `429` com `LIMITE_PEDIDOS`, `LIMITE_REGISTO` ou `LIMITE_CONTATO_DIARIO`.
 - **Respostas genéricas:** `POST /api/auth/registo` e `POST /api/auth/reset/pedir` devolvem sempre `202 {"ok": true}`, para não revelar se um e-mail tem conta.
+- **Indexação:** `PATCH /api/campanhas/{slug}/indexacao` altera a escolha do dono; `GET /sitemap.xml` publica as páginas autorizadas.
 - **Uploads e mídia:** `POST …/admin/uploads` (multipart) valida tipo, tamanho e cota; a mídia é servida por `GET /api/c/{slug}/media/{categoria}/{arquivo}`. Os caminhos antigos `/uploads/…` respondem `410 Gone`.
 
 ### Áreas da API
@@ -512,6 +524,7 @@ docker compose --profile with-caddy up --build   # porta 8080
 | [`docs/manual-relacoes.md`](docs/manual-relacoes.md) | Rede de Relações: grafo, tipos de vínculo, criar e visualizar |
 | [`docs/api-contracts.md`](docs/api-contracts.md) | API: rotas, contratos principais, esquemas e códigos de erro |
 | [`docs/flows.md`](docs/flows.md) | Fluxos de integração em Mermaid (acesso, conta, mestre, campanha e operação) |
+| [`docs/runbook-seo.md`](docs/runbook-seo.md) | Caddy, sitemap, Search Console e verificação da indexação |
 | [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md) | Registo de contas, e-mail (Resend), contato, recuperação de senha, cota e ordem de abertura em produção |
 | [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) | Corte e operação do Campaign Codex em produção |
 | [`openspec/`](openspec/) | Specs OpenSpec por mudança |

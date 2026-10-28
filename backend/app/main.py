@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 import asyncio
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
@@ -14,6 +14,8 @@ from app.errors import raise_api_error
 from app.middleware.csrf import CsrfOriginMiddleware
 from app.routers import admin, administrador, auth, campanhas, contato, public
 from app.services.rate_limit import limiter
+from app.services.sitemap import build_sitemap_xml, campanhas_indexaveis
+from sqlmodel import Session
 
 
 PURGE_INTERVAL_SECONDS = 15 * 60
@@ -97,6 +99,15 @@ app.include_router(administrador.router)
 app.include_router(auth.router)
 app.include_router(contato.router)
 app.include_router(campanhas.router)
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml() -> Response:
+    with Session(get_control_engine()) as session:
+        xml = build_sitemap_xml(session)
+        count = len(campanhas_indexaveis(session))
+    assistant_logger.info("sitemap gerado campanhas=%d", count)
+    return Response(content=xml, media_type="application/xml", headers={"Cache-Control": "public, max-age=3600"})
 
 
 @app.get("/uploads/c/{slug}/{file_path:path}")

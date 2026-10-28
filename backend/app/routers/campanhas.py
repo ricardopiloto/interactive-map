@@ -12,6 +12,8 @@ from app.schemas.campanhas import (
     CriarCampanhaRequest,
     CriarCampanhaResponse,
     MinhasResponse,
+    IndexacaoRequest,
+    IndexacaoResponse,
     ModuloToggleRequest,
     ModuloToggleResponse,
     UnidadeDistanciaRequest,
@@ -29,6 +31,7 @@ from app.services.campanha_admin import (
     set_modulo_ativo,
     set_unidade_distancia,
     set_visibilidade,
+    set_indexavel,
 )
 from app.services.media_paths import media_url
 from app.services.campaign_import import import_campaign_from_bytes
@@ -95,6 +98,19 @@ def patch_visibilidade(
     except CampanhaAdminError as exc:
         raise_api_error(exc.codigo, status_code=_admin_error_status(exc.codigo))
     return VisibilidadeResponse(slug=camp.slug, visibilidade=camp.visibilidade)
+
+
+@router.patch("/{slug}/indexacao", response_model=IndexacaoResponse)
+def patch_indexacao(
+    slug: str,
+    body: IndexacaoRequest,
+    _ctx: MembroContext = Depends(require_dono),
+) -> IndexacaoResponse:
+    try:
+        camp = set_indexavel(slug, body.indexavel)
+    except CampanhaAdminError as exc:
+        raise_api_error(exc.codigo, status_code=_admin_error_status(exc.codigo))
+    return IndexacaoResponse(slug=camp.slug, indexavel=camp.indexavel)
 
 
 @router.patch("/{slug}/unidade-distancia", response_model=UnidadeDistanciaResponse)

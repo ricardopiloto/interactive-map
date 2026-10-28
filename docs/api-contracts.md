@@ -1,6 +1,6 @@
 # Contratos da API
 
-Rotas, contratos, esquemas e códigos de erro da API do Codex da Campanha (versão 1.5.0). A API é **JSON sobre HTTP** e fica sob `/api`.
+Rotas, contratos, esquemas e códigos de erro da API do Codex da Campanha (versão 1.6.0). A API é **JSON sobre HTTP** e fica sob `/api`.
 
 - **Fonte normativa:** o OpenAPI em execução (`/api/openapi.json`, interface em `/api/docs`). Esta página é o inventário legível para revisão humana, gerado a partir de `app.main:app`.
 - **Visão geral da aplicação:** [`README.md`](../README.md).
@@ -25,7 +25,7 @@ Rotas, contratos, esquemas e códigos de erro da API do Codex da Campanha (vers�
 
 ## Rotas
 
-Total: **119 operações**. Em *Rota*, as áreas de campanha omitem o prefixo (`/api/c/{slug}` ou `/api/c/{slug}/admin`). *Consulta* lista os parâmetros de query (`*` = obrigatório). *Corpo → Resposta* mostra o esquema do corpo e o status/esquema da resposta de sucesso.
+Total: **121 operações**. Em *Rota*, as áreas de campanha omitem o prefixo (`/api/c/{slug}` ou `/api/c/{slug}/admin`). *Consulta* lista os parâmetros de query (`*` = obrigatório). *Corpo → Resposta* mostra o esquema do corpo e o status/esquema da resposta de sucesso.
 
 ### 1. Autenticação, registo e recuperação de senha (`/api/auth`)
 
@@ -56,10 +56,17 @@ Total: **119 operações**. Em *Rota*, as áreas de campanha omitem o prefixo (`
 | GET | `/api/campanhas/catalogo` | Público | — | Catálogo público de campanhas listadas | — | 200 CatalogoResponse |
 | POST | `/api/campanhas/import` | Sessão | — | Importa um pacote ZIP exportado | — | Body_import_campaign_api_campanhas_import_post → 201 objeto |
 | GET | `/api/campanhas/minhas` | Sessão | — | Campanhas do usuário autenticado | — | 200 MinhasResponse |
+| PATCH | `/api/campanhas/{slug}/indexacao` | Dono da campanha | — | Liga ou desliga a indexação da campanha | — | IndexacaoRequest → 200 IndexacaoResponse |
 | PATCH | `/api/campanhas/{slug}/capa` | Dono da campanha | — | Define ou limpa a capa | — | CapaRequest → 200 CapaResponse |
 | PATCH | `/api/campanhas/{slug}/modulos` | Dono da campanha | — | Liga ou desliga um módulo (ex.: fadiga, IA) | — | ModuloToggleRequest → 200 ModuloToggleResponse |
 | PATCH | `/api/campanhas/{slug}/unidade-distancia` | Dono da campanha | — | Altera a unidade de distância do mapa | — | UnidadeDistanciaRequest → 200 UnidadeDistanciaResponse |
 | PATCH | `/api/campanhas/{slug}/visibilidade` | Dono da campanha | — | Altera a visibilidade (listada / só com link) | — | VisibilidadeRequest → 200 VisibilidadeResponse |
+
+### Sitemap (raiz do site)
+
+| Método | Rota | Acesso | Limite | Descrição | Consulta (query) | Corpo → Resposta |
+|---|---|---|---|---|---|---|
+| GET | `/sitemap.xml` | Público | — | Páginas institucionais e campanhas indexáveis | — | 200 application/xml |
 
 ### 4. Administração da plataforma (`/api/admin`)
 
@@ -392,7 +399,7 @@ Campos obrigatórios marcados com `*`. Os esquemas estão agrupados pela área d
 </details>
 
 <details>
-<summary><strong>campanhas</strong> (15 esquemas)</summary>
+<summary><strong>campanhas</strong> (17 esquemas)</summary>
 
 - **Body_import_campaign_api_campanhas_import_post** — file*: texto, slug: texto
 - **CapaRequest** — capa_arquivo: texto, limpar_capa: booleano
@@ -401,10 +408,12 @@ Campos obrigatórios marcados com `*`. Os esquemas estão agrupados pela área d
 - **CatalogoResponse** — campanhas*: [CatalogoItem]
 - **CriarCampanhaRequest** — nome*: texto, slug*: texto, sistema*: texto, visibilidade: listada|so_link
 - **CriarCampanhaResponse** — slug*: texto, id*: inteiro, nome*: texto, sistema*: texto, visibilidade*: texto
+- **IndexacaoRequest** — indexavel*: booleano
+- **IndexacaoResponse** — slug*: texto, indexavel*: booleano
 - **MinhasResponse** — campanhas*: [PainelItem]
 - **ModuloToggleRequest** — modulo*: texto, ativo*: booleano
 - **ModuloToggleResponse** — slug*: texto, modulos_ativos*: [texto]
-- **PainelItem** — id*: inteiro, slug*: texto, nome*: texto, sistema*: texto, visibilidade*: texto, unidade_distancia: texto, capa_url: texto, bytes_usados*: inteiro, cota_bytes*: inteiro, aviso_cota*: booleano, modulos_ativos: [texto]
+- **PainelItem** — id*: inteiro, slug*: texto, nome*: texto, sistema*: texto, visibilidade*: texto, indexavel*: booleano (escolha guardada), unidade_distancia: texto, capa_url: texto, bytes_usados*: inteiro, cota_bytes*: inteiro, aviso_cota*: booleano, modulos_ativos: [texto]
 - **UnidadeDistanciaRequest** — unidade_distancia*: mi|km
 - **UnidadeDistanciaResponse** — slug*: texto, unidade_distancia*: texto
 - **VisibilidadeRequest** — visibilidade*: listada|so_link
@@ -415,7 +424,7 @@ Campos obrigatórios marcados com `*`. Os esquemas estão agrupados pela área d
 <details>
 <summary><strong>config</strong> (1 esquemas)</summary>
 
-- **InstanceConfigRead** — id*: inteiro, slug*: texto, nome*: texto, sistema*: texto, modulos_ativos: [texto], has_map_image*: booleano, mapa_arquivo: texto, map_url: texto, unidade_distancia: texto, capa_url: texto
+- **InstanceConfigRead** — id*: inteiro, slug*: texto, nome*: texto, sistema*: texto, indexavel*: booleano (efetivo), modulos_ativos: [texto], has_map_image*: booleano, mapa_arquivo: texto, map_url: texto, unidade_distancia: texto, capa_url: texto
 
 </details>
 
