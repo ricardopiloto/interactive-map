@@ -1,6 +1,6 @@
 # Fluxos do Campaign Codex
 
-Diagramas de referência dos fluxos de integração da versão 1.6.0. Eles descrevem o comportamento da aplicação e complementam as rotas e os contratos em [`api-contracts.md`](api-contracts.md). Visão geral: [`README.md`](../README.md).
+Diagramas de referência dos fluxos de integração da versão 1.6.1. Eles descrevem o comportamento da aplicação e complementam as rotas e os contratos em [`api-contracts.md`](api-contracts.md). Visão geral: [`README.md`](../README.md).
 
 ## Sumário
 

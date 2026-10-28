@@ -2,13 +2,14 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Check, Map as MapIcon, Route as RouteIcon, Users } from "lucide-react";
+import { Check, Lock, Map as MapIcon, Route as RouteIcon, Users } from "lucide-react";
 import { campanhasApi, type CatalogoItem } from "@/api/campanhas";
 import { useAuth } from "@/auth/AuthContext";
 import { CampaignCard } from "@/components/site/CampaignCard";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { campaignHref } from "@/lib/navigation";
 
 export function HomePage() {
@@ -87,7 +88,7 @@ export function HomePage() {
         </section>
 
         <section className="border-y bg-card/60">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: MapIcon, title: t("landing.stepMapTitle"), body: t("landing.stepMapBody") },
               { icon: Users, title: t("landing.stepRelTitle"), body: t("landing.stepRelBody") },
@@ -95,6 +96,11 @@ export function HomePage() {
                 icon: RouteIcon,
                 title: t("landing.stepRouteTitle"),
                 body: t("landing.stepRouteBody"),
+              },
+              {
+                icon: Lock,
+                title: t("landing.stepMasterTitle"),
+                body: t("landing.stepMasterBody"),
               },
             ].map(({ icon: Icon, title, body }) => (
               <div key={title} className="space-y-2">
@@ -126,6 +132,36 @@ export function HomePage() {
             </div>
           </section>
         )}
+
+        <section className="border-t bg-card/60">
+          <div className="mx-auto max-w-6xl space-y-6 px-4 py-16">
+            <h2 className="font-display text-4xl">{t("landing.openSourceTitle")}</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="space-y-4 rounded-2xl p-6">
+                <h3 className="font-display text-2xl">{t("landing.openSourceSelfHostTitle")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("landing.openSourceSelfHostBody")}
+                </p>
+                <Button variant="outline" asChild>
+                  <a
+                    href="https://github.com/ricardopiloto/interactive-map"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t("landing.openSourceSelfHostCta")}
+                  </a>
+                </Button>
+              </Card>
+              <Card className="space-y-4 rounded-2xl p-6">
+                <h3 className="font-display text-2xl">{t("landing.openSourceHostedTitle")}</h3>
+                <p className="text-sm text-muted-foreground">{t("landing.openSourceHostedBody")}</p>
+                <Button asChild>
+                  <Link to={masterTo}>{t("landing.openSourceHostedCta")}</Link>
+                </Button>
+              </Card>
+            </div>
+          </div>
+        </section>
 
         <section className="border-t bg-card/70">
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-16">

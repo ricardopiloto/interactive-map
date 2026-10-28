@@ -7,6 +7,17 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.6.1] — 2026-10-29
+
+### Added
+
+- Página inicial: quarto card de funcionalidades, «Modo mestre» (edição na mesma tela em que se joga; o que ainda não foi revelado, os jogadores não veem), com o ícone de cadeado no padrão dos demais.
+- Página inicial: nova seção «Os dados da mesa são seus», com dois cartões: «Hospede você mesmo» (com o link do repositório no GitHub, em nova aba) e «Ou use a versão hospedada» (com o botão para entrar como mestre, que leva ao login ou ao painel conforme haja sessão). Textos em pt-BR e en.
+
+### Changed
+
+- Página inicial: o bloco de funcionalidades passa de 3 para 4 colunas em telas grandes (2 em telas médias e 1 no celular). As demais seções não mudam.
+
 ## [1.6.0] — 2026-10-28
 
 ### Added

@@ -1,7 +1,7 @@
 {
   "name": "campaign-codex-frontend-v2",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.6.1",
   "sideEffects": ["**/*.css", "src/i18n/index.ts"],
   "type": "module",
   "scripts": {
