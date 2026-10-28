@@ -67,29 +67,29 @@ Dar ao mestre um **codex vivo da campanha**: um lugar único onde ele registra l
 
 ## Capturas de ecrã
 
-Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
+Capturas da versão **1.6.1** (`frontend-v2`, tema paper-parchment).
 
 ### Entrada e exploração
 
-![Página inicial do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-home.png)
+<img src="assets/campaign-codex-1.6.1-home.png" alt="Página inicial do Campaign Codex 1.6.1" width="560">
 
-![Catálogo Explorar do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-explorar.png)
+<img src="assets/campaign-codex-1.6.1-explorar.png" alt="Catálogo Explorar do Campaign Codex 1.6.1" width="560">
 
 ### Mapa, rota e relações
 
-![Mapa da campanha do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-mapa.jpg)
+<img src="assets/campaign-codex-1.6.1-mapa.jpg" alt="Mapa da campanha do Campaign Codex 1.6.1" width="560">
 
-![Planeador de rota com pernoite do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-rota.jpg)
+<img src="assets/campaign-codex-1.6.1-rota.jpg" alt="Planeador de rota com pernoite do Campaign Codex 1.6.1" width="560">
 
-![Rede de relações do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-relacoes.png)
+<img src="assets/campaign-codex-1.6.1-relacoes.png" alt="Rede de relações do Campaign Codex 1.6.1" width="560">
 
 ### Sessões, cronologia e itens
 
-![Sessões do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-sessoes.png)
+<img src="assets/campaign-codex-1.6.1-sessoes.png" alt="Sessões do Campaign Codex 1.6.1" width="560">
 
-![Linha do Tempo Por arcos do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-cronologia.png)
+<img src="assets/campaign-codex-1.6.1-cronologia.png" alt="Linha do Tempo Por arcos do Campaign Codex 1.6.1" width="560">
 
-![Itens públicos do Campaign Codex 1.0.1](assets/campaign-codex-1.0.1-itens.png)
+<img src="assets/campaign-codex-1.6.1-itens.png" alt="Itens públicos do Campaign Codex 1.6.1" width="560">
 
 ---
 

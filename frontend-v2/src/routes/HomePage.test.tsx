@@ -54,6 +54,11 @@ it("carrega a home sem autenticação, com vitrine", async () => {
   renderHome();
 
   expect(await screen.findByRole("heading", { level: 1, name: /mapa, o elenco/i })).toBeVisible();
+  expect(
+    screen.getByRole("img", {
+      name: "Mapa interativo de uma campanha no Campaign Codex, com locais, rotas e o grupo",
+    }),
+  ).toHaveAttribute("width", "1200");
   expect(await screen.findByRole("article", { name: "Mesa Aberta" })).toBeVisible();
   expect(screen.getByRole("link", { name: "Ver campanhas abertas" })).toHaveAttribute(
     "href",
@@ -101,6 +106,11 @@ it("mostra o novo conteúdo em inglês e leva mestres autenticados ao painel", a
   stubHomeRequests(true);
   renderHome();
 
+  expect(
+    screen.getByRole("img", {
+      name: "Interactive campaign map in Campaign Codex, showing places, routes and the party",
+    }),
+  ).toBeVisible();
   expect(screen.getByRole("heading", { level: 2, name: "GM mode" })).toBeVisible();
   expect(
     screen.getByText(

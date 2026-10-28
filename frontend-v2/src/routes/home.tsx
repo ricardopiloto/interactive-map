@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { campaignHref } from "@/lib/navigation";
+import heroShot from "@/assets/hero-mapa.webp";
 
 export function HomePage() {
   const { t } = useTranslation("comum");
@@ -66,24 +67,21 @@ export function HomePage() {
               ))}
             </ul>
           </div>
-          <div className="overflow-hidden rounded-2xl border bg-card shadow-float" aria-hidden>
-            <div className="flex gap-1.5 border-b px-4 py-3">
+          <div className="overflow-hidden rounded-2xl border bg-card shadow-float">
+            <div className="flex gap-1.5 border-b px-4 py-3" aria-hidden>
               <span className="h-2.5 w-2.5 rounded-full bg-seal" />
               <span className="h-2.5 w-2.5 rounded-full bg-ochre" />
               <span className="h-2.5 w-2.5 rounded-full bg-verdigris" />
             </div>
-            <div className="grid min-h-64 grid-cols-5">
-              <div className="col-span-2 space-y-3 border-r p-4">
-                <div className="h-8 rounded-md bg-muted" />
-                <div className="h-4 rounded bg-muted" />
-                <div className="h-4 w-2/3 rounded bg-muted" />
-              </div>
-              <div className="relative col-span-3 bg-accent/50">
-                <span className="absolute top-1/3 left-[30%] h-3 w-3 rounded-full bg-seal" />
-                <span className="absolute top-1/2 left-[55%] h-3 w-3 rounded-full bg-ochre" />
-                <span className="absolute top-[28%] left-[68%] h-4 w-4 rounded-full border-2 border-verdigris" />
-              </div>
-            </div>
+            <img
+              src={heroShot}
+              alt={t("landing.heroShotAlt")}
+              width={1200}
+              height={675}
+              loading="eager"
+              decoding="async"
+              className="block h-auto w-full"
+            />
           </div>
         </section>
 
