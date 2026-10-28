@@ -1,6 +1,20 @@
 import { api } from "./client";
 
 export const authApi = {
+  resetConfig: () =>
+    api.get<{ disponivel: boolean; turnstile_site_key: string | null }>("/api/auth/reset/config"),
+  requestReset: (
+    email: string,
+    idioma: "pt-BR" | "en",
+    captchaToken?: string,
+    campoAuxiliar = "",
+  ) =>
+    api.post<{ ok: boolean }>("/api/auth/reset/pedir", {
+      email,
+      idioma,
+      ...(captchaToken ? { captcha_token: captchaToken } : {}),
+      campo_auxiliar: campoAuxiliar,
+    }),
   registerConfig: () =>
     api.get<{ modo: string; turnstile_site_key: string | null }>("/api/auth/registo/config"),
   register: (body: {

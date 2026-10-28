@@ -365,7 +365,10 @@
     "LIMITE_CONTATO_DIARIO": "O limite diário de mensagens foi atingido. Tente novamente mais tarde.",
     "ASSUNTO_INVALIDO": "Selecione um assunto válido.",
     "MENSAGEM_INVALIDA": "A mensagem deve ter de 10 a 4000 caracteres e no máximo 2 links.",
-    "NOME_INVALIDO": "Informe um nome com até 100 caracteres."
+    "NOME_INVALIDO": "Informe um nome com até 100 caracteres.",
+    "RESET_INDISPONIVEL": "A recuperação de senha não está disponível nesta instância.",
+    "CONVITE_JA_USADO": "Este link já foi usado.",
+    "CONVITE_INVALIDO": "Este link é inválido."
   },
   "campaignMissing": {
     "title": "Campanha não encontrada",
@@ -534,7 +537,11 @@
         },
         {
           "title": "Segurança e limites",
-          "body": "O sistema usa IP e e-mail em contadores temporários de bloqueio de login. Limita pedidos de registo por IP e guarda um hash do e-mail canônico para o limite por e-mail. O formulário de contato usa um contador temporário por IP e um hash do e-mail para limitar abuso."
+          "body": "O sistema usa IP e e-mail em contadores temporários de bloqueio de login. Limita pedidos de registo por IP e guarda um hash do e-mail canônico para o limite por e-mail. O formulário de contato usa um contador temporário por IP e um hash do e-mail para limitar abuso. A recuperação de senha usa um contador temporário com hash do e-mail para limitar abuso."
+        },
+        {
+          "title": "Recuperação de senha",
+          "body": "O e-mail informado é usado para enviar um link de redefinição de senha válido por 1 hora. Um contador temporário com hash do e-mail limita abuso; nenhum outro dado do pedido é guardado."
         },
         {
           "title": "Campanhas",
@@ -582,5 +589,15 @@
       "sugestao": "Sugestão",
       "outro": "Outro"
     }
+  },
+  "passwordRecovery": {
+    "loginLink": "Esqueci a senha",
+    "title": "Recuperar senha",
+    "loading": "Carregando recuperação…",
+    "unavailable": "A recuperação de senha não está disponível nesta instância.",
+    "submit": "Pedir link de redefinição",
+    "success": "Se existir uma conta com este e-mail, enviamos um link de redefinição.",
+    "spam": "Confira também a pasta de spam. Se a mensagem não chegar, tente de novo mais tarde.",
+    "newLink": "Pedir novo link"
   }
 }

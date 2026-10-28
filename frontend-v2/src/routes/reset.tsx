@@ -1,8 +1,9 @@
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { useState, type FormEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authApi } from "@/api/auth";
+import { ApiError } from "@/api/client";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,17 +17,25 @@ export function ResetPage() {
   const explain = useApiErrorMessage();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [canRequestAgain, setCanRequestAgain] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
+    setCanRequestAgain(false);
     try {
       await authApi.confirmReset(token, password);
       navigate("/login", { replace: true });
     } catch (reason) {
       setError(explain(reason, t("auth.resetError")));
+      setCanRequestAgain(
+        reason instanceof ApiError &&
+          ["CONVITE_EXPIRADO", "CONVITE_JA_USADO", "CONVITE_INVALIDO"].includes(
+            reason.codigo ?? "",
+          ),
+      );
     } finally {
       setBusy(false);
     }
@@ -55,6 +64,11 @@ export function ResetPage() {
             <p role="alert" className="text-sm text-destructive">
               {error}
             </p>
+          )}
+          {canRequestAgain && (
+            <Link to="/esqueci-senha" className="block text-sm underline">
+              {t("passwordRecovery.newLink")}
+            </Link>
           )}
           <Button type="submit" disabled={busy} className="w-full">
             {t("auth.resetSubmit")}

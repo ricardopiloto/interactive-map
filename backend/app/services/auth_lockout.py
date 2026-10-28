@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from hashlib import sha256
 
+from sqlalchemy import or_
 from sqlmodel import Session, select
 
 from app.models.usuario import LoginBloqueio
@@ -116,7 +117,8 @@ def counter_refund(session: Session, chave: str, limite: int, janela: timedelta)
 
 
 def purge_expired_registo_counters(session: Session) -> int:
-    rows = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave.startswith("registo:") | LoginBloqueio.chave.startswith("contato:"))).all()
+    prefixes = ("registo:", "contato:", "reset:")
+    rows = session.exec(select(LoginBloqueio).where(or_(*(LoginBloqueio.chave.startswith(prefix) for prefix in prefixes)))).all()
     expired = [row for row in rows if row.bloqueado_ate is not None and row.bloqueado_ate <= _now()]
     for row in expired:
         session.delete(row)

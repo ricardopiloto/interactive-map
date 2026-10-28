@@ -103,6 +103,7 @@ Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 ### Contas, contato e termos
 
 - **Criar conta** em `/registo`: a pessoa informa só o e-mail e recebe um link de verificação (válido 5 horas) para definir a senha; contas não confirmadas são apagadas automaticamente. O registo vem **fechado** por padrão (`REGISTO_MODO`), com limites por IP e por e-mail, bloqueio de e-mails descartáveis, campo isca e Turnstile opcional
+- **Recuperar senha** em `/esqueci-senha`: link no login, pedido com resposta que não revela contas existentes e e-mail com link de uso único válido por 1 hora apenas para contas ativas; o reset do admin permanece disponível por 72 horas
 - **Convite do admin** continua disponível (válido 72 horas) e pode ser enviado também por e-mail
 - **Contato** em `/contato`, para qualquer pessoa (com ou sem conta): a mensagem é entregue por e-mail ao administrador da instância e **não é guardada** na aplicação
 - **Termos** (`/termos`) e **privacidade** (`/privacidade`), em PT-BR e EN
@@ -317,6 +318,7 @@ Rotas úteis:
 - `/painel/novo` — criar campanha
 - `/login` — sessão de mestre
 - `/registo` — criar conta (quando o registo está aberto)
+- `/esqueci-senha` — pedir um link para recuperar a senha
 - `/convite/{token}` — definir a senha a partir de um convite ou link de verificação
 - `/contato` — formulário de contato com o administrador
 - `/termos` · `/privacidade` — termos de uso e política de privacidade

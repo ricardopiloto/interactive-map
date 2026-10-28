@@ -21,5 +21,5 @@ def validate_registo_startup(config: Settings = settings) -> None:
 
 
 def validate_public_forms_startup(config: Settings = settings) -> None:
-    if config.contato_email and not config.debug and not config.trusted_proxy:
-        raise RuntimeError('TRUSTED_PROXY=true é obrigatório para contacto público')
+    if (config.contato_email or config.email_api_key) and not config.debug and not config.trusted_proxy:
+        raise RuntimeError('TRUSTED_PROXY=true é obrigatório para formulários públicos com e-mail')

@@ -18,3 +18,12 @@ export async function loggedEmails(): Promise<LoggedEmail[]> {
 export async function latestEmail(to: string): Promise<LoggedEmail | undefined> {
   return (await loggedEmails()).filter((email) => email.to === to).at(-1);
 }
+
+export async function latestEmailMatching(
+  to: string,
+  pattern: RegExp,
+): Promise<LoggedEmail | undefined> {
+  return (await loggedEmails())
+    .filter((email) => email.to === to && pattern.test(email.text))
+    .at(-1);
+}

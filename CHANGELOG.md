@@ -7,6 +7,27 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Added
+
+- Recuperação de senha pela própria pessoa em `/esqueci-senha`, acessível pelo link no login: e-mail com link de uso único válido por 1 hora, resposta que não revela contas existentes e envio só para contas ativas. Há limites por IP e por e-mail, campo isca, Turnstile opcional e atalho para pedir novo link na página de reset.
+
+### Changed
+
+- O aviso de «você já tem conta» enviado no registo oferece também a recuperação de senha. O reset gerado pelo admin continua disponível e válido por 72 horas; um pedido novo de reset invalida links anteriores ainda abertos, inclusive os do admin.
+- `validate_public_forms_startup` passa a exigir `TRUSTED_PROXY=true` também quando `EMAIL_API_KEY` está definido e `DEBUG=false`.
+
+### Fixed
+
+- Redefinir a senha limpa o bloqueio de login do e-mail, permitindo entrar de imediato com a nova senha.
+
+### Security
+
+- `confirm_reset` deixa de reativar contas desativadas: um link emitido antes de o admin desativar a conta já não a reativa.
+
+### Operação
+
+- Definir `TRUSTED_PROXY=true` **antes** de `EMAIL_API_KEY` em produção e staging. Com `DEBUG=false`, a API não arranca com a chave configurada e proxy não confiável.
+
 ## [1.4.0] — 2026-10-28
 
 ### Added

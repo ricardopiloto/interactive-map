@@ -72,6 +72,9 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? t("v2.loggingIn") : t("v2.login")}
       </Button>
+      <Link to="/esqueci-senha" className="block text-sm underline">
+        {t("passwordRecovery.loginLink")}
+      </Link>
     </form>
   );
 }

@@ -7,10 +7,12 @@ from sqlmodel import Session, select
 from app.models.usuario import Convite, Usuario
 from app.services.auth_password import hash_password, validate_password_strength
 from app.services.auth_session import revoke_all_user_sessions
+from app.services.auth_lockout import clear_failures, email_key
 from app.services.auth_tokens import generate_opaque_token, hash_token
 
 INVITE_TTL_HOURS = 72
 REGISTO_TTL_HORAS = 5
+RESET_PEDIDO_TTL_HORAS = 1
 
 
 class InviteError(Exception):
@@ -24,7 +26,7 @@ def _now() -> datetime:
     return datetime.utcnow()
 
 
-def issue_invite(session: Session, usuario_id: int, tipo: str) -> str:
+def issue_invite(session: Session, usuario_id: int, tipo: str, *, ttl_horas: int | None = None) -> str:
     if tipo not in ("activar", "verificar", "reset"):
         raise InviteError("TIPO_CONVITE_INVALIDO")
     raw = generate_opaque_token()
@@ -32,7 +34,7 @@ def issue_invite(session: Session, usuario_id: int, tipo: str) -> str:
         usuario_id=usuario_id,
         tipo=tipo,
         token_hash=hash_token(raw),
-        expira_em=_now() + timedelta(hours=REGISTO_TTL_HORAS if tipo == "verificar" else INVITE_TTL_HOURS),
+        expira_em=_now() + timedelta(hours=ttl_horas if ttl_horas is not None else (REGISTO_TTL_HORAS if tipo == "verificar" else INVITE_TTL_HOURS)),
         consumido_em=None,
         criado_em=_now(),
     )
@@ -80,15 +82,15 @@ def confirm_reset(session: Session, token: str, password: str) -> Usuario:
         raise InviteError(err)
     invite = _load_valid_invite(session, token, {"reset"})
     usuario = session.get(Usuario, invite.usuario_id)
-    if usuario is None:
+    if usuario is None or not usuario.activo or not usuario.senha_hash:
         raise InviteError("CONVITE_INVALIDO")
     usuario.senha_hash = hash_password(password)
-    usuario.activo = True
     usuario.actualizado_em = _now()
     invite.consumido_em = _now()
     session.add(usuario)
     session.add(invite)
     session.commit()
+    clear_failures(session, email_key(usuario.email))
     revoke_all_user_sessions(session, usuario.id)  # type: ignore[arg-type]
     session.refresh(usuario)
     return usuario

@@ -11,6 +11,7 @@ import { ExplorarPage } from "@/routes/explorar";
 import { ConvitePage } from "@/routes/convite";
 import { ContatoPage } from "@/routes/contato";
 import { RegistoPage } from "@/routes/registo";
+import { EsqueciSenhaPage } from "@/routes/esqueci-senha";
 import { LegalPage } from "@/routes/legal";
 import { ResetPage } from "@/routes/reset";
 import { ContaPage } from "@/routes/conta";
@@ -92,6 +93,7 @@ function AppRoutes() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registo" element={<RegistoPage />} />
+        <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/contato" element={<ContatoPage />} />
         <Route path="/termos" element={<LegalPage kind="terms" />} />
         <Route path="/privacidade" element={<LegalPage kind="privacy" />} />
@@ -112,6 +114,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registo" element={<RegistoPage />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
           <Route path="/contato" element={<ContatoPage />} />
           <Route path="/termos" element={<LegalPage kind="terms" />} />
           <Route path="/privacidade" element={<LegalPage kind="privacy" />} />

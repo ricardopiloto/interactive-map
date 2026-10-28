@@ -29,6 +29,8 @@ from app.services.auth_session import (
     set_session_cookie,
 )
 from app.services.client_ip import client_ip
+from app.services.email_sender import get_email_sender
+from app.services.reset_senha import process_reset
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -109,8 +111,38 @@ def reset_confirmar(body: TokenPasswordBody) -> dict[str, str]:
         try:
             user = confirm_reset(session, body.token, body.password)
         except InviteError as exc:
-            raise_api_error(exc.codigo, status_code=400)
+            raise_api_error(exc.codigo, status_code=400, detalhes={"tipo": exc.tipo} if exc.tipo else None)
         return {"email": user.email}
+
+
+class ResetPedidoBody(BaseModel):
+    email: str
+    idioma: str = "pt-BR"
+    captcha_token: str | None = None
+    campo_auxiliar: str = ""
+
+
+@router.get("/reset/config")
+def reset_config() -> dict[str, bool | str | None]:
+    return {"disponivel": get_email_sender() is not None, "turnstile_site_key": settings.turnstile_site_key}
+
+
+@router.post("/reset/pedir", status_code=202)
+@limiter.limit("5/hour")
+def reset_pedir(body: ResetPedidoBody, request: Request, background_tasks: BackgroundTasks) -> dict[str, bool]:
+    if get_email_sender() is None:
+        raise_api_error("RESET_INDISPONIVEL", status_code=503)
+    if body.campo_auxiliar:
+        return {"ok": True}
+    if body.idioma not in {"pt-BR", "en"}:
+        raise_api_error("IDIOMA_INVALIDO", status_code=400)
+    if not valid_email_format(body.email):
+        raise_api_error("EMAIL_INVALIDO", status_code=400)
+    captcha_error = verify_turnstile(body.captcha_token, settings.turnstile_secret, client_ip(request))
+    if captcha_error:
+        raise_api_error(captcha_error, status_code=503 if captcha_error == "CAPTCHA_INDISPONIVEL" else 400)
+    background_tasks.add_task(process_reset, normalize_email(body.email), body.idioma)
+    return {"ok": True}
 
 
 class RegistoBody(BaseModel):

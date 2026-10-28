@@ -10,6 +10,9 @@ vi.mock("@/components/site/SiteHeader", () => ({ SiteHeader: () => null }));
 it.each(["pt-BR", "en"] as const)("resolves registration errors in %s", async (language) => {
   await i18n.changeLanguage(language);
   for (const code of [
+    "RESET_INDISPONIVEL",
+    "CONVITE_JA_USADO",
+    "CONVITE_INVALIDO",
     "REGISTO_FECHADO",
     "EMAIL_DESCARTAVEL",
     "EMAIL_INVALIDO",
@@ -55,6 +58,12 @@ it.each(["pt-BR", "en"] as const)(
       expect(document.body.textContent).not.toContain("cookies de terceiros próprios");
       expect(document.body.textContent).not.toContain("its own third-party cookies");
       if (kind === "privacy") {
+        expect(document.body.textContent).toContain(
+          language === "en" ? "Password recovery" : "Recuperação de senha",
+        );
+        expect(document.body.textContent).toContain(
+          language === "en" ? "valid for 1 hour" : "válido por 1 hora",
+        );
         expect(document.body.textContent).toContain(
           language === "en"
             ? "temporary counter per IP and a hash of the email address"

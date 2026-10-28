@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import { LoginPage } from "./Login";
+import i18n from "@/i18n";
+
+beforeEach(async () => {
+  await i18n.changeLanguage("pt-BR");
+});
 
 vi.mock("./AuthContext", () => ({ useAuth: () => ({ login: vi.fn() }) }));
 
@@ -14,6 +19,10 @@ it("shows the footer on the standalone login page", () => {
     </MemoryRouter>,
   );
   expect(screen.getByTestId("site-footer")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Esqueci a senha" })).toHaveAttribute(
+    "href",
+    "/esqueci-senha",
+  );
 });
 
 it("does not add a footer to the login modal", () => {
@@ -27,4 +36,8 @@ it("does not add a footer to the login modal", () => {
     </MemoryRouter>,
   );
   expect(screen.queryByTestId("site-footer")).toBeNull();
+  expect(screen.getByRole("link", { name: "Esqueci a senha" })).toHaveAttribute(
+    "href",
+    "/esqueci-senha",
+  );
 });

@@ -47,12 +47,17 @@ test("convite e reset rejeitam token inválido", async ({ page }) => {
   await page.goto("/convite/token-invalido");
   await page.getByLabel("Senha").fill("senha-valida-8");
   await page.getByRole("button", { name: "Activar" }).click();
-  await expect(page.getByRole("alert")).toContainText("Convite inválido");
+  await expect(page.getByRole("alert")).toContainText("Este link é inválido");
 
   await page.goto("/reset/token-invalido");
   await page.getByLabel("Senha").fill("senha-valida-8");
   await page.getByRole("button", { name: "Guardar senha" }).click();
-  await expect(page.getByRole("alert")).toContainText("Link de reset inválido");
+  await expect(page.getByRole("alert")).toContainText("Este link é inválido");
+  await expect(page.getByRole("link", { name: "Pedir novo link" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Pedir novo link" })).toHaveAttribute(
+    "href",
+    "/esqueci-senha",
+  );
 });
 
 test("convite ativa a conta, o login seguinte abre a campanha e o reset troca a senha", async ({
