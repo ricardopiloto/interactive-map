@@ -2,7 +2,7 @@
 
 Aplicação web self-hosted para acompanhar campanhas de RPG de mesa: **mapa** interativo, **rotas** com pernoite, **rede de relações**, **sessões**, **linha do tempo**, **itens** e **Modo GM** na mesma interface.
 
-**Versão:** 1.1.0 — [`CHANGELOG.md`](CHANGELOG.md)
+**Versão:** 1.4.0 — [`CHANGELOG.md`](CHANGELOG.md)
 **Produção (Campaign Codex):** [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) — `https://campaign-codex.1nodado.com.br/c/1/wfrp` e `/c/2/wod`
 
 ---
@@ -100,6 +100,16 @@ Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 - Substituir a imagem do mapa; **Rede de rotas** para digitalizar waypoints/segmentos
 - API de escrita protegida (membro/dono da campanha); gate «Entrar» na barra
 
+### Contas, contato e termos
+
+- **Criar conta** em `/registo`: a pessoa informa só o e-mail e recebe um link de verificação (válido 5 horas) para definir a senha; contas não confirmadas são apagadas automaticamente. O registo vem **fechado** por padrão (`REGISTO_MODO`), com limites por IP e por e-mail, bloqueio de e-mails descartáveis, campo isca e Turnstile opcional
+- **Convite do admin** continua disponível (válido 72 horas) e pode ser enviado também por e-mail
+- **Contato** em `/contato`, para qualquer pessoa (com ou sem conta): a mensagem é entregue por e-mail ao administrador da instância e **não é guardada** na aplicação
+- **Termos** (`/termos`) e **privacidade** (`/privacidade`), em PT-BR e EN
+- **Cota de 300 MB** por campanha (configurável por `COTA_PADRAO_BYTES`)
+- **Rodapé** com a versão e os links acima, nas páginas fora de uma campanha
+- E-mails enviados pelo Resend; passo a passo em [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md)
+
 ### Multi-sistema e multi-campanha
 
 - Uma instância: várias mesas; catálogo em `/explorar` e home em `/`
@@ -114,6 +124,16 @@ Capturas da versão **1.0.1** (`frontend-v2`, tema paper-parchment).
 - Design system **paper-parchment** (`frontend-v2`): tema **Claro / Escuro / Automático**
 - Idiomas **PT-BR** e **EN** (conteúdo escrito pelo mestre não é traduzido)
 - Erros da API com códigos estruturados e mensagens localizadas
+
+---
+
+## Novidades da linha 1.4
+
+- Criação de conta pela própria pessoa, com verificação por e-mail, expiração em 5 horas e limpeza automática das contas não confirmadas
+- Página de contato pública, entregue por e-mail ao administrador (sem guardar a mensagem)
+- Termos de uso, política de privacidade e rodapé com a versão
+- Cota de armazenamento por campanha reduzida de 10 GiB para 300 MB
+- Pacotes legados `frontend/` e `frontend-next/` removidos; só o `frontend-v2` permanece
 
 ---
 
@@ -139,7 +159,8 @@ A API expõe OpenAPI em `/openapi.json` quando está em execução. Inventário 
 Domínios cobertos:
 
 - saúde, catálogo, configuração, autenticação e sessão;
-- campanhas, proprietários, convites, módulos, género, capa, visibilidade e unidade de distância;
+- campanhas, proprietários, convites, módulos, capa, visibilidade e unidade de distância;
+- registo de contas, contato público e administração de convites com envio por e-mail;
 - locais, NPCs, personagens, arcos, sessões, eventos e itens;
 - relações entre personagens;
 - waypoints, segmentos e planeamento de rotas (incl. pernoite);
@@ -247,6 +268,7 @@ Mais diagramas: [`docs/flows.md`](docs/flows.md).
 |---|---|
 | Frontend | React + Vite + TypeScript + paper-parchment (`frontend-v2`) + `react-i18next` |
 | Backend | FastAPI + SQLModel + SQLite |
+| E-mail | Resend (transacional) + Turnstile da Cloudflare (opcional) |
 | Infra | Docker Compose + Caddy (opcional) |
 
 ---
@@ -262,7 +284,9 @@ Na raiz, `./scripts/test-fast.sh --frontend` e `--backend` (ou ambos). Playwrigh
 ```bash
 cd backend
 uv sync
-# Defina ADMIN_USER e ADMIN_PASSWORD no .env
+# Crie a primeira conta (imprime o link de ativação) e promova-a a admin:
+#   uv run python -m app.cli usuario criar --email voce@exemplo.com
+#   uv run python -m app.cli usuario promover-admin --email voce@exemplo.com
 uv run uvicorn app.main:app --reload --reload-dir app --port 8000
 
 # Seed opcional (só dev/teste)
@@ -292,15 +316,20 @@ Rotas úteis:
 - `/painel` — minhas campanhas (mestre)
 - `/painel/novo` — criar campanha
 - `/login` — sessão de mestre
+- `/registo` — criar conta (quando o registo está aberto)
+- `/convite/{token}` — definir a senha a partir de um convite ou link de verificação
+- `/contato` — formulário de contato com o administrador
+- `/termos` · `/privacidade` — termos de uso e política de privacidade
 
-> O pacote legado `frontend/` (Nocturne) permanece no repositório para referência; o desenvolvimento activo e as capturas desta versão usam `frontend-v2`.
+> Os pacotes legados `frontend/` e `frontend-next/` foram removidos. O frontend ativo e em produção é `frontend-v2/`.
 
 ### Docker
 
 ```bash
 cp .env.example .env
-# Preencha ADMIN_USER, ADMIN_PASSWORD (e ADMIN_PASSWORD_HASH para Caddy)
-# Senhas com `$`: no Compose use `$$` ou aspas simples
+# Ajuste PUBLIC_BASE_URL, CORS_ORIGINS e TRUSTED_PROXY (veja os comentários do .env.example)
+# Registo, e-mail e contato: EMAIL_API_KEY, EMAIL_FROM, REGISTO_MODO, CONTATO_EMAIL
+# (ver docs/runbook-registo-autonomo.md). Valores com `$`: no Compose use `$$` ou aspas simples
 docker compose up --build
 docker compose --profile with-caddy up --build   # porta 8080
 ```
@@ -317,6 +346,8 @@ docker compose --profile with-caddy up --build   # porta 8080
 ## Segurança
 
 - Leitura pública; escrita exige sessão de membro/dono da campanha (fail closed)
+- Registo e contato públicos com limites por IP e por e-mail, campo isca e Turnstile opcional; o registo não revela contas existentes e vem fechado por padrão
+- Com `REGISTO_MODO=aberto` (ou `CONTATO_EMAIL` definido) em produção, a API exige `TRUSTED_PROXY=true` e, para o registo, e-mail e `PUBLIC_BASE_URL` configurados; ver o runbook
 - Gate na SPA: «Entrar» → login do mestre
 - Caddy pode reforçar rotas GM em produção
 - Jogadores vêem actualizações ao **recarregar** (sem sync ao vivo)
@@ -334,5 +365,7 @@ docker compose --profile with-caddy up --build   # porta 8080
 | [`docs/manual-relacoes.md`](docs/manual-relacoes.md) | Rede de Relações: grafo, tipos de vínculo, criar e visualizar |
 | [`docs/api-contracts.md`](docs/api-contracts.md) | Inventário OpenAPI |
 | [`docs/flows.md`](docs/flows.md) | Fluxos funcionais e operacionais em Mermaid |
+| [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md) | Registo de contas, e-mail (Resend), contato, cota e ordem de abertura em produção |
+| [`docs/runbook-corte-campaign-codex.md`](docs/runbook-corte-campaign-codex.md) | Corte e operação do Campaign Codex em produção |
 | [`openspec/`](openspec/) | Specs OpenSpec por mudança |
 | [`frontend-v2/README.md`](frontend-v2/README.md) · [`backend/README.md`](backend/README.md) | Detalhe por camada |

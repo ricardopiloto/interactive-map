@@ -93,3 +93,20 @@ it("mantém paridade de textos pt-BR/en", () => {
     Object.keys(en.painel.indice.states).sort(),
   );
 });
+
+it("mostra aviso a 90% e excedida no limite", async () => {
+  vi.spyOn(indiceIaApi, "estado").mockResolvedValue(result("ausente"));
+  vi.spyOn(campanhasApi, "minhas").mockResolvedValue({
+    campanhas: [
+      { ...campaign("uma", false), bytes_usados: 900 },
+      { ...campaign("duas", false), bytes_usados: 1000 },
+    ],
+  });
+  montar();
+  expect(
+    await within(await screen.findByTestId("campanha-uma")).findByText(pt.quota.warningNearFull),
+  ).toBeTruthy();
+  expect(
+    await within(await screen.findByTestId("campanha-duas")).findByText(pt.quota.exceeded),
+  ).toBeTruthy();
+});

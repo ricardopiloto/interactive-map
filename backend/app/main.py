@@ -1,27 +1,63 @@
 from contextlib import asynccontextmanager
+import asyncio
 import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
+from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.campaign_db import init_control
+from app.campaign_db import get_control_engine, init_control
 from app.config import settings
 from app.errors import raise_api_error
 from app.middleware.csrf import CsrfOriginMiddleware
-from app.routers import admin, administrador, auth, campanhas, public
+from app.routers import admin, administrador, auth, campanhas, contato, public
 from app.services.rate_limit import limiter
+
+
+PURGE_INTERVAL_SECONDS = 15 * 60
+
+
+def _purge_pending_cycle() -> None:
+    from sqlmodel import Session
+    from app.services.admin_console import purge_unverified_signups
+
+    with Session(get_control_engine()) as session:
+        purge_unverified_signups(session)
+
+
+async def _periodic_pending_cleanup(interval: float = PURGE_INTERVAL_SECONDS) -> None:
+    while True:
+        await asyncio.sleep(interval)
+        try:
+            await asyncio.to_thread(_purge_pending_cycle)
+        except Exception:
+            assistant_logger.exception("pending signup cleanup failed")
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    from app.services.registo_config import validate_public_forms_startup, validate_registo_startup
+    from app.services.auth_admin import valid_email_format
+
+    validate_registo_startup()
+    validate_public_forms_startup()
+    if settings.contato_email and not valid_email_format(settings.contato_email):
+        assistant_logger.warning('contact unavailable code=CONTATO_EMAIL_INVALIDO')
     init_control()
+    cleanup_task = asyncio.create_task(_periodic_pending_cleanup())
     from app.services.admin_console import reconcile_campaign_deletions
 
-    reconcile_campaign_deletions()
-    yield
+    try:
+        reconcile_campaign_deletions()
+        yield
+    finally:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
 
 
 assistant_logger = logging.getLogger("app")
@@ -39,7 +75,12 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+def rate_limit_handler(request, _exc):
+    code = "LIMITE_REGISTO" if request.url.path == "/api/auth/registo" else "LIMITE_PEDIDOS"
+    return JSONResponse(status_code=429, content={"detail": {"erro": code}})
+
+
+app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(CsrfOriginMiddleware)
 app.add_middleware(
@@ -54,6 +95,7 @@ app.include_router(public.router)
 app.include_router(admin.router)
 app.include_router(administrador.router)
 app.include_router(auth.router)
+app.include_router(contato.router)
 app.include_router(campanhas.router)
 
 

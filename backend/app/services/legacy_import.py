@@ -34,7 +34,7 @@ import app.models.vinculo  # noqa: F401
 import app.models.waypoint  # noqa: F401
 from app.services.auth_admin import assign_owner
 from app.services.campanha_admin import (
-    DEFAULT_COTA_BYTES,
+    default_cota_bytes,
     CampanhaAdminError,
     create_campanha,
     ensure_upload_tree,
@@ -245,7 +245,7 @@ def import_legacy_instance(
     if not owner_email_exists(email):
         raise LegacyImportError("USUARIO_NAO_ENCONTRADO")
 
-    cap = DEFAULT_COTA_BYTES if cota_bytes is None else int(cota_bytes)
+    cap = default_cota_bytes() if cota_bytes is None else int(cota_bytes)
     if cap <= 0:
         raise LegacyImportError("COTA_EXCEDIDA")
 

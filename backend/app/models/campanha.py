@@ -6,6 +6,7 @@ from typing import Any, Optional
 from sqlalchemy import Column, MetaData
 from sqlalchemy.types import JSON
 from sqlmodel import Field, SQLModel
+from app.config import settings
 
 control_metadata = MetaData()
 
@@ -32,7 +33,7 @@ class Campanha(ControlSQLModel, table=True):
     capa_arquivo: str = Field(default="", max_length=500)
     caminho: str = Field(max_length=200)
     mapa_arquivo: str = Field(default="", max_length=500)
-    cota_bytes: int = Field(default=10 * 1024**3)
+    cota_bytes: int = Field(default_factory=lambda: settings.cota_padrao_bytes)
     bytes_usados: int = Field(default=0)
     activa: bool = Field(default=True)
     criado_em: Optional[datetime] = Field(default=None)

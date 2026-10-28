@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import NamedTuple
+from unicodedata import category
 
 from sqlmodel import Session, select
 
@@ -22,6 +23,25 @@ def normalize_email(email: str) -> str:
     return email.strip().lower()
 
 
+def valid_email_format(email: str) -> bool:
+    if any(category(char) == 'Cc' or char in '<>,;' for char in email):
+        return False
+    return (5 <= len(email) <= 320 and email.count('@') == 1
+            and bool(email.partition('@')[0]) and '.' in email.partition('@')[2]
+            and not any(char.isspace() for char in email))
+
+
+def canonical_email(email: str) -> str:
+    local, separator, domain = normalize_email(email).partition("@")
+    if not separator:
+        return local
+    local = local.split("+", 1)[0]
+    if domain in {"gmail.com", "googlemail.com"}:
+        local = local.replace(".", "")
+        domain = "gmail.com"
+    return f"{local}@{domain}"
+
+
 def _basic_email_ok(email: str) -> bool:
     if "@" not in email or email.startswith("@") or email.endswith("@"):
         return False
@@ -31,7 +51,7 @@ def _basic_email_ok(email: str) -> bool:
 
 def invite_url(token: str, kind: str) -> str:
     base = settings.public_base_url.rstrip("/")
-    path = f"/convite/{token}" if kind == "activar" else f"/reset/{token}"
+    path = f"/convite/{token}" if kind in {"activar", "verificar"} else f"/reset/{token}"
     return f"{base}{path}"
 
 
@@ -45,6 +65,7 @@ def create_usuario_with_invite(session: Session, email: str) -> tuple[Usuario, s
     now = datetime.utcnow()
     user = Usuario(
         email=norm,
+        email_canonico=canonical_email(norm),
         senha_hash=None,
         activo=False,
         criado_em=now,

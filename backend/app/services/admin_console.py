@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -17,7 +18,9 @@ from app.campaign_db import (
 from app.models.campanha import Campanha
 from app.models.usuario import Convite, LoginBloqueio, Membro, Sessao, Usuario
 from app.services.auth_admin import AuthAdminError, create_usuario_with_invite, invite_url, reset_usuario
-from app.services.auth_lockout import email_key
+from app.services.auth_lockout import email_key, purge_expired_registo_counters
+
+logger = logging.getLogger(__name__)
 
 
 class AdminConsoleError(Exception):
@@ -110,6 +113,12 @@ def delete_user(session: Session, user_id: int) -> None:
     campaigns = _owned_campaigns(session, user_id)
     if campaigns:
         raise AdminConsoleError("PROPRIETARIO_COM_MESAS", campaigns=campaigns)
+    _delete_user_rows(session, user)
+    session.commit()
+
+
+def _delete_user_rows(session: Session, user: Usuario) -> None:
+    user_id = user.id
     for model in (Convite, Sessao, Membro):
         for row in session.exec(select(model).where(model.usuario_id == user_id)).all():
             session.delete(row)
@@ -117,7 +126,32 @@ def delete_user(session: Session, user_id: int) -> None:
     if lockout is not None:
         session.delete(lockout)
     session.delete(user)
+
+
+def purge_unverified_signups(session: Session, *, now: datetime | None = None) -> int:
+    """Remove expired self signups, checking eligibility in the write transaction."""
+    now = now or datetime.utcnow()
+    # SQLite serializes competing writers; begin before reading candidates so an
+    # activation cannot commit between the eligibility check and deletion.
+    session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+    deleted = 0
+    for candidate_id in session.exec(select(Usuario.id).where(Usuario.activo.is_(False), Usuario.senha_hash.is_(None))).all():
+        user = session.get(Usuario, candidate_id, populate_existing=True)
+        if user is None or user.activo or user.senha_hash is not None:
+            continue
+        if session.exec(select(Membro.id).where(Membro.usuario_id == candidate_id)).first() is not None:
+            continue
+        if session.exec(select(Sessao.id).where(Sessao.usuario_id == candidate_id)).first() is not None:
+            continue
+        invites = session.exec(select(Convite).where(Convite.usuario_id == candidate_id).order_by(Convite.criado_em.desc(), Convite.id.desc())).all()
+        if not invites or any(invite.tipo != "verificar" for invite in invites) or invites[0].expira_em > now:
+            continue
+        _delete_user_rows(session, user)
+        deleted += 1
     session.commit()
+    purge_expired_registo_counters(session)
+    logger.info("purged unverified signups count=%d", deleted)
+    return deleted
 
 
 def create_invite(session: Session, email: str) -> dict:

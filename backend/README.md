@@ -93,7 +93,7 @@ Para feedback rápido a partir da raiz do repositório, execute `./scripts/test-
 | `GET /api/c/{slug}/media/{categoria}/{arquivo}` | Público (mapa/locais); retratos com ACL | Mídia da campanha (`map` \| `portraits` \| `locals`) |
 | `GET /api/c/{slug}/admin/export` | Cookie + **dono** | Download zip (`manifest.json` + `content.json` + imagens) |
 | `POST /api/campanhas/import` | Cookie (qualquer sessão activa) | Cria campanha nova a partir do zip; importador vira dono |
-| `/api/c/{slug}/admin/*` | Cookie de sessão + membership | Escrita / upload (cota 10 GiB) |
+| `/api/c/{slug}/admin/*` | Cookie de sessão + membership | Escrita / upload (cota 300 MiB) |
 | `/api/auth/*` | Público (login) / cookie | Contas |
 | `/uploads/…` | — | **404** (legado; usar `/media/`) |
 | `GET /api/health` | Público | Health (sem slug) |

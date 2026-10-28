@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { adminConsoleApi } from "@/api/adminConsole";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -15,13 +16,30 @@ export function AdminConvitesPage() {
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<{ email: string; link: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    void adminConsoleApi
+      .inviteConfig()
+      .then((config) => {
+        if (mounted) setEmailAvailable(config.envio_email_disponivel);
+      })
+      .catch(() => {
+        if (mounted) setEmailAvailable(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      setCreated(await adminConsoleApi.invite(email.trim()));
+      setCreated(await adminConsoleApi.invite(email.trim(), emailAvailable && sendEmail));
       setCopied(false);
     } catch (reason) {
       setError(explain(reason));
@@ -79,6 +97,16 @@ export function AdminConvitesPage() {
                 onChange={(event) => setEmail(event.target.value)}
               />
             </div>
+            {emailAvailable && (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={sendEmail}
+                  onChange={(event) => setSendEmail(event.target.checked)}
+                />
+                {t("adminConvites.sendEmail")}
+              </label>
+            )}
             {error && (
               <p role="alert" className="text-sm text-destructive">
                 {error}
@@ -90,6 +118,7 @@ export function AdminConvitesPage() {
           </form>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -99,6 +99,10 @@ it("troca a configuração ao trocar slug e redireciona campanha sem mapa para R
     </MemoryRouter>,
   );
   await screen.findByText("Primeira");
+  expect(screen.queryByTestId("site-footer")).toBeNull();
+  for (const href of ["/termos", "/privacidade", "/contato"]) {
+    expect(document.querySelector(`a[href="${href}"]`)).toBeNull();
+  }
   await waitFor(() => expect(screen.getByTestId("campaign-name")).toHaveTextContent("Primeira"));
   fireEvent.click(screen.getByText("Trocar"));
   await screen.findByText("Segunda");

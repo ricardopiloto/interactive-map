@@ -41,6 +41,7 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <LanguageSelector />
+          {!user && item("/registo", t("register.title"))}
           {user ? null : (
             <Link
               to="/login"

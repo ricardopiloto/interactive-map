@@ -27,6 +27,7 @@ from app.services.campaign_import import import_campaign_from_zip, owner_email_e
 from app.services.legacy_import import LegacyImportError, import_legacy_instance
 from app.services.package_schema import PackageError
 from app.services.uploads import reconcile_bytes_usados
+from app.services.admin_console import purge_unverified_signups
 
 
 def _create_campanha(
@@ -122,6 +123,7 @@ def main(argv: list[str] | None = None) -> int:
 
     u_demote = user_sub.add_parser("rebaixar-admin", help="Rebaixar administrador")
     u_demote.add_argument("--email", required=True)
+    user_sub.add_parser("limpar-pendentes", help="Apagar registos não confirmados expirados")
 
     args = parser.parse_args(argv)
     try:
@@ -225,6 +227,12 @@ def main(argv: list[str] | None = None) -> int:
             with Session(get_control_engine()) as session:
                 demote_admin(session, args.email)
             print(f"OK removido admin={args.email}")
+            return 0
+        if args.entity == "usuario" and args.action == "limpar-pendentes":
+            init_control()
+            with Session(get_control_engine()) as session:
+                count = purge_unverified_signups(session)
+            print(f"OK contas_apagadas={count}")
             return 0
     except CampanhaAdminError as exc:
         print(f"ERRO {exc.codigo}", file=sys.stderr)

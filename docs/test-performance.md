@@ -16,10 +16,10 @@
 ## Inventário e comandos completos
 
 - Backend: 206 testes coletados em `backend/tests/`; comando `cd backend && uv run pytest`. Abrange autenticação, permissões, migrações, import/export, dados e isolamento.
-- Frontend: `cd frontend && npm run build`, `npm run lint` e `npm run test:contrast`.
-- E2E: 162 testes em 21 arquivos, projetos desktop e mobile; `cd frontend && npm run test:e2e`. Playwright está serial, com um worker, timeout de caso 90 s, readiness de API 120 s e build/preview 180 s.
-- Seed E2E: `cd backend && DATA_DIR=../frontend/e2e/.data uv run python ../frontend/e2e/seed_e2e.py`; escreve sessão local em `frontend/e2e/.auth/session.json`.
-- Execução E2E focada: `cd frontend && npm run test:e2e -- --project=desktop <spec>` depois de preparar dados/serviços.
+- Frontend: `cd frontend-v2 && npm run build`, `npm run lint` e `npm run test`.
+- E2E: 162 testes em 21 arquivos, projetos desktop e mobile; `cd frontend-v2 && npm run test:e2e`. Playwright está serial, com um worker, timeout de caso 90 s, readiness de API 120 s e build/preview 180 s.
+- Seed E2E: `cd backend && DATA_DIR=../frontend-v2/e2e/.data uv run python ../frontend-v2/e2e/seed_e2e.py`; escreve sessão local em `frontend-v2/e2e/.auth/session.json`.
+- Execução E2E focada: `cd frontend-v2 && npm run test:e2e -- --project=desktop <spec>` depois de preparar dados/serviços.
 - Selecione a validação pelo escopo e risco da mudança. A suite completa não é exigida para cada spec ou ajuste visual; reserve-a para mudanças de alto risco, marcos de entrega e CI.
 
 ## Linha de base inicial
@@ -45,7 +45,7 @@ Playwright usa um worker e compartilha `DATA_DIR`, sessão e slugs de campanha e
 
 ## Perfil rápido
 
-`./scripts/test-fast.sh --frontend` executa `npm run lint` e `npm run test:contrast`, adequado a alterações visuais como CSS de botão; não exige Python nem backend. `--backend` executa nove testes unitários/CLI selecionados. Sem opção, o script combina as duas seleções. Requer somente as dependências dos perfis escolhidos já instaladas. Não instala/sincroniza dependências, faz build, seed nem inicializa serviços. O perfil frontend omite build, backend e Playwright; amplie a validação quando a mudança tocar esses escopos.
+`./scripts/test-fast.sh --frontend` executa `npm run lint` e `npm run test`, adequado a alterações visuais como CSS de botão; não exige Python nem backend. `--backend` executa nove testes unitários/CLI selecionados. Sem opção, o script combina as duas seleções. Requer somente as dependências dos perfis escolhidos já instaladas. Não instala/sincroniza dependências, faz build, seed nem inicializa serviços. O perfil frontend omite build, backend e Playwright; amplie a validação quando a mudança tocar esses escopos.
 
 Tempos aquecidos do perfil combinado: 1,40; 1,30; 1,30; 1,30; 1,33 s. Mediana: 1,30 s, abaixo da meta de 120 s. Cada execução teve nove testes backend aprovados e lint/contraste aprovados. Falha simulada no lint foi identificada pelo nome da etapa, retornou exit 37 e interrompeu antes do contraste. A seleção frontend isolada é ainda mais curta, sem custo de inicialização do backend.
 

@@ -51,7 +51,9 @@ export const adminConsoleApi = {
     api.get<{ usuarios: AdminUser[] }>(
       `/api/admin/usuarios${query({ email: params.email, estado: params.estado })}`,
     ),
-  invite: (email: string) => api.post<AdminLink>("/api/admin/convites", { email }),
+  inviteConfig: () => api.get<{ envio_email_disponivel: boolean }>("/api/admin/convites/config"),
+  invite: (email: string, enviar_email = false) =>
+    api.post<AdminLink>("/api/admin/convites", { email, enviar_email }),
   reset: (id: number) => api.post<AdminLink>(`/api/admin/usuarios/${id}/reset`, {}),
   setUserActive: (id: number, activo: boolean) =>
     api.patch<AdminUser>(`/api/admin/usuarios/${id}/estado`, { activo }),

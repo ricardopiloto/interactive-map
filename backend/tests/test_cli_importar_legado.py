@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 
 from app.campaign_db import get_control_engine, resolve_campaign_session
 from app.cli import main
+from app.config import settings
 from app.models.campanha import Campanha
 from app.models.npc import NPC
 from app.models.usuario import Membro
@@ -37,7 +38,8 @@ def _import_args(origem: Path, slug: str, **extra: str) -> list[str]:
     return args
 
 
-def test_importar_legado_happy_path(data_root, tmp_path: Path) -> None:
+def test_importar_legado_happy_path(data_root, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(settings, "cota_padrao_bytes", 400 * 1024**2)
     origin = build_wfrp_tree(tmp_path / "wfrp")
     before = hash_tree(origin)
     rel = tmp_path / "rel.json"
@@ -51,6 +53,7 @@ def test_importar_legado_happy_path(data_root, tmp_path: Path) -> None:
         ).first()
         assert dono is not None
         assert camp.mapa_arquivo == "campaign-map.webp"
+        assert camp.cota_bytes == 400 * 1024**2
         canonical = camp.slug
     with resolve_campaign_session(canonical) as session:
         npc = session.exec(select(NPC).where(NPC.id == 1)).one()

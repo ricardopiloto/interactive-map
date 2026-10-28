@@ -18,7 +18,7 @@ from app.campaign_db import (
     get_control_engine,
     init_control,
 )
-from app.config import DEFAULT_MODULOS_BY_SISTEMA
+from app.config import DEFAULT_MODULOS_BY_SISTEMA, settings
 from app.models.campanha import Campanha
 from app.models.usuario import Membro
 from app.services.media_paths import media_url
@@ -48,7 +48,8 @@ RESERVED_SLUGS = frozenset(
     }
 )
 
-DEFAULT_COTA_BYTES = 10 * 1024**3
+def default_cota_bytes() -> int:
+    return settings.cota_padrao_bytes
 COTA_AVISO_RATIO = 0.9
 
 
@@ -107,7 +108,7 @@ def create_campanha(
             visibilidade=visibilidade,
             caminho=caminho,
             mapa_arquivo="",
-            cota_bytes=DEFAULT_COTA_BYTES,
+            cota_bytes=default_cota_bytes(),
             bytes_usados=0,
             activa=True,
             criado_em=datetime.utcnow(),

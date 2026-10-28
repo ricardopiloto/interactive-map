@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
@@ -87,6 +88,7 @@ export function ExplorarPage() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -9,6 +9,9 @@ import { useCampaignRouteElements } from "@/routes/campaignRoutes";
 import { HomePage } from "@/routes/home";
 import { ExplorarPage } from "@/routes/explorar";
 import { ConvitePage } from "@/routes/convite";
+import { ContatoPage } from "@/routes/contato";
+import { RegistoPage } from "@/routes/registo";
+import { LegalPage } from "@/routes/legal";
 import { ResetPage } from "@/routes/reset";
 import { ContaPage } from "@/routes/conta";
 import { PainelPage } from "@/routes/painel";
@@ -88,6 +91,10 @@ function AppRoutes() {
           }
         />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/registo" element={<RegistoPage />} />
+        <Route path="/contato" element={<ContatoPage />} />
+        <Route path="/termos" element={<LegalPage kind="terms" />} />
+        <Route path="/privacidade" element={<LegalPage kind="privacy" />} />
         {campaignRoutes}
         {StyleGuide && (
           <Route
@@ -104,6 +111,10 @@ function AppRoutes() {
       {background && (
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/registo" element={<RegistoPage />} />
+          <Route path="/contato" element={<ContatoPage />} />
+          <Route path="/termos" element={<LegalPage kind="terms" />} />
+          <Route path="/privacidade" element={<LegalPage kind="privacy" />} />
         </Routes>
       )}
     </>

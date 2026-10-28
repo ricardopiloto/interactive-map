@@ -1,5 +1,7 @@
 # Backlog — Campaign Codex
 
+> Os links para `frontend/` e `frontend-next/` são históricos: as pastas foram removidas. Consulte o histórico do git para acessar esses arquivos.
+
 Este backlog acompanha melhorias, funcionalidades, design e decisões de produto, inclusive itens que já ganharam spec e aguardam planejamento ou implementação. Bugs são registrados separadamente em [docs/bugs/bugs.md](../bugs/bugs.md). Não confundir com [`proxima-fase-speckit-prompts.md`](../v2/proxima-fase-speckit-prompts.md) (specs 114–121) nem com as specs [112-cronica-sessoes](../../specs/112-cronica-sessoes/spec.md) e [113-revelacao-progressiva](../../specs/113-revelacao-progressiva/spec.md). O status de cada item indica se ainda é ideia, se já foi especificado ou se saiu do backlog.
 
 Cada item tem um ID único (`BKLG-NNN`) no título, na ordem em que foi registrado — usa esse ID pra referenciar o item numa conversa ou spec, em vez do título inteiro. IDs não são reciclados: se um item sair daqui (virou spec ou foi descartado), o número fica aposentado.

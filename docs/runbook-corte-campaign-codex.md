@@ -31,7 +31,7 @@ uv run python -m app.cli campanha importar-legado \
 
 O import de produção usa o `DATA_DIR` do compose **novo**. As pastas `/opt/codex-*` são origem **só leitura**.
 
-Se a soma dos uploads exceder 10 GiB, passar `--cota-bytes` maior.
+Se a soma dos uploads exceder 300 MiB, passar `--cota-bytes` maior.
 
 ## 2. Publicar o Codex
 

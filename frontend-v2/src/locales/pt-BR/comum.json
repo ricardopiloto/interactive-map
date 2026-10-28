@@ -268,6 +268,7 @@
     "title": "Convidar mestre",
     "hint": "Gere um link de convite de uso único para um novo mestre.",
     "emailLabel": "E-mail do novo mestre",
+    "sendEmail": "Enviar também por e-mail",
     "submit": "Gerar convite",
     "linkLabel": "Link de convite gerado",
     "linkHint": "Copie e envie este link ao convidado — ele expira e só pode ser usado uma vez.",
@@ -288,7 +289,7 @@
     "AUTENTICACAO_NECESSARIA": "Autenticação necessária",
     "NAO_ADMINISTRADOR": "Apenas o administrador pode fazer esta ação",
     "EMAIL_DUPLICADO": "Já existe uma conta com este e-mail",
-    "EMAIL_INVALIDO": "E-mail inválido",
+    "EMAIL_INVALIDO": "E-mail inválido.",
     "USUARIO_NAO_ENCONTRADO": "Usuário não encontrado",
     "USUARIO_PENDENTE": "A conta ainda aguarda ativação.",
     "USUARIO_INACTIVO": "Usuário inativo",
@@ -349,7 +350,22 @@
     "SESSAO_TRANSICAO_SEM_ARCO": "A sessão de transição precisa pertencer a um arco",
     "SESSAO_TRANSICAO_ARCO_IGUAL": "A sessão de transição não pode apontar para o mesmo arco",
     "SESSOES_NAO_ENCONTRADAS": "Sessões não encontradas: {{ids}}",
-    "EVENTO_NAO_ENCONTRADO": "Evento não encontrado"
+    "EVENTO_NAO_ENCONTRADO": "Evento não encontrado",
+    "REGISTO_FECHADO": "O registo está fechado.",
+    "EMAIL_DESCARTAVEL": "Use um e-mail não descartável.",
+    "LIMITE_REGISTO": "Muitos pedidos de registo. Tente mais tarde.",
+    "LIMITE_PEDIDOS": "Muitos pedidos. Tente mais tarde.",
+    "CAPTCHA_INVALIDO": "A verificação de segurança falhou. Tente de novo.",
+    "CAPTCHA_INDISPONIVEL": "A verificação de segurança está indisponível. Tente mais tarde.",
+    "TERMOS_NAO_ACEITOS": "É preciso aceitar os termos e a política de privacidade.",
+    "IDIOMA_INVALIDO": "Idioma inválido.",
+    "CONVITE_EXPIRADO": "O link expirou.",
+    "CONTATO_INDISPONIVEL": "O contato não está disponível nesta instância.",
+    "CONTATO_ENVIO_FALHOU": "Não foi possível enviar a mensagem. Tente novamente mais tarde.",
+    "LIMITE_CONTATO_DIARIO": "O limite diário de mensagens foi atingido. Tente novamente mais tarde.",
+    "ASSUNTO_INVALIDO": "Selecione um assunto válido.",
+    "MENSAGEM_INVALIDA": "A mensagem deve ter de 10 a 4000 caracteres e no máximo 2 links.",
+    "NOME_INVALIDO": "Informe um nome com até 100 caracteres."
   },
   "campaignMissing": {
     "title": "Campanha não encontrada",
@@ -471,5 +487,100 @@
     "environment": "Ambiente",
     "tactics": "Tática ou gatilho",
     "outcome": "Desfecho"
+  },
+  "register": {
+    "title": "Criar conta",
+    "loading": "Carregando…",
+    "closed": "O registo não está disponível. Peça um convite ao administrador.",
+    "accept": "Aceito os",
+    "terms": "termos de uso",
+    "and": "e a",
+    "privacy": "política de privacidade",
+    "submit": "Pedir link de verificação",
+    "success": "Verifique o seu e-mail.",
+    "spam": "Confira também a pasta de spam. Se a mensagem não chegar, tente de novo mais tarde.",
+    "newLink": "Pedir novo link",
+    "expiredAdmin": "Peça um novo convite ao administrador.",
+    "expiredSelf": "Pode solicitar um novo link de verificação."
+  },
+  "legal": {
+    "terms": {
+      "title": "Termos de uso",
+      "sections": [
+        {
+          "title": "Uso da instância",
+          "body": "Ao criar uma conta, você pode criar e gerir campanhas de RPG. Você é responsável pelo conteúdo que publica e por respeitar os direitos de outras pessoas."
+        },
+        {
+          "title": "Conta e acesso",
+          "body": "Informe um e-mail que controla, proteja a sua senha e não partilhe a sua sessão. O operador desta instância pode desativar contas em caso de abuso."
+        },
+        {
+          "title": "Dados e contato",
+          "body": "Para questões sobre estes termos ou pedidos de acesso, correção e retirada de dados, use o formulário de contato. A retirada pode impedir o uso da conta.",
+          "link": {
+            "to": "/contato",
+            "label": "Formulário de contato"
+          }
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Política de privacidade",
+      "sections": [
+        {
+          "title": "Conta e sessão",
+          "body": "O operador desta instância guarda o seu e-mail, o hash da senha e o momento em que aceitou os termos. Um cookie de sessão mantém o acesso à conta."
+        },
+        {
+          "title": "Segurança e limites",
+          "body": "O sistema usa IP e e-mail em contadores temporários de bloqueio de login. Limita pedidos de registo por IP e guarda um hash do e-mail canônico para o limite por e-mail. O formulário de contato usa um contador temporário por IP e um hash do e-mail para limitar abuso."
+        },
+        {
+          "title": "Campanhas",
+          "body": "O conteúdo das campanhas que você cria é guardado para oferecer o serviço. Quando você usa os recursos de IA, o contexto da campanha necessário à solicitação é enviado ao DeepSeek; esse contexto pode incluir conteúdo oculto da campanha."
+        },
+        {
+          "title": "Serviços externos",
+          "body": "O e-mail é enviado ao Resend para entregar mensagens da conta. Quando ativado, o Turnstile da Cloudflare verifica pedidos de registo. A instância não usa analytics nem cookies de terceiros."
+        },
+        {
+          "title": "Formulário de contato",
+          "body": "Nome, e-mail e mensagem são enviados por e-mail ao operador. A aplicação não guarda esses dados do formulário; o provedor de e-mail trata-os em trânsito. Não é enviada confirmação por e-mail à pessoa."
+        },
+        {
+          "title": "Contato e retirada",
+          "body": "Para pedir acesso, correção ou retirada dos seus dados, use o formulário de contato. A retirada pode impedir o uso da conta.",
+          "link": {
+            "to": "/contato",
+            "label": "Formulário de contato"
+          }
+        }
+      ]
+    }
+  },
+  "footer": {
+    "terms": "Termos de uso",
+    "privacy": "Política de privacidade",
+    "contact": "Contato",
+    "aria": "Links legais"
+  },
+  "contact": {
+    "title": "Contato",
+    "loading": "Carregando contato…",
+    "unavailable": "O contato não está disponível nesta instância.",
+    "success": "Mensagem enviada. O operador poderá responder ao e-mail informado.",
+    "name": "Nome",
+    "subject": "Assunto",
+    "message": "Mensagem",
+    "count": "{{count}} de 4000 caracteres",
+    "submit": "Enviar mensagem",
+    "subjects": {
+      "duvida": "Dúvida",
+      "privacidade": "Privacidade e dados",
+      "problema": "Problema técnico",
+      "sugestao": "Sugestão",
+      "outro": "Outro"
+    }
   }
 }
