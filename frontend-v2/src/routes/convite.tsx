@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useState, type FormEvent } from "react";
 import { ApiError } from "@/api/client";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -88,6 +89,7 @@ export function ConvitePage() {
           {t("v2.login")}
         </Link>
       </main>
+      <SiteFooter />
     </div>
   );
 }

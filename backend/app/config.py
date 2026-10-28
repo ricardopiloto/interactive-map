@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     turnstile_site_key: str | None = Field(default=None, validation_alias="TURNSTILE_SITE_KEY")
     registo_dominios_bloqueados: Path | None = Field(default=None, validation_alias="REGISTO_DOMINIOS_BLOQUEADOS")
     email_log_file: Path | None = Field(default=None, validation_alias="EMAIL_LOG_FILE")
+    contato_email: str | None = Field(default=None, validation_alias="CONTATO_EMAIL")
+    contato_limite_diario: int = Field(default=30, gt=0, validation_alias="CONTATO_LIMITE_DIARIO")
+    contato_limite_privacidade: int = Field(default=10, gt=0, validation_alias="CONTATO_LIMITE_PRIVACIDADE")
     cota_padrao_bytes: int = Field(default=300 * 1024**2, gt=0, validation_alias="COTA_PADRAO_BYTES")
     max_upload_bytes: int = Field(
         default=25 * 1024 * 1024,  # 25 MB — mapas de campanha costumam ser grandes

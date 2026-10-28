@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import NamedTuple
+from unicodedata import category
 
 from sqlmodel import Session, select
 
@@ -20,6 +21,14 @@ class AuthAdminError(Exception):
 
 def normalize_email(email: str) -> str:
     return email.strip().lower()
+
+
+def valid_email_format(email: str) -> bool:
+    if any(category(char) == 'Cc' or char in '<>,;' for char in email):
+        return False
+    return (5 <= len(email) <= 320 and email.count('@') == 1
+            and bool(email.partition('@')[0]) and '.' in email.partition('@')[2]
+            and not any(char.isspace() for char in email))
 
 
 def canonical_email(email: str) -> str:

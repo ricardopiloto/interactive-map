@@ -1,3 +1,4 @@
+import { MemoryRouter } from "react-router-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import i18n from "@/i18n";
@@ -15,7 +16,11 @@ beforeEach(async () => {
 
 it("shows email option when available and submits it", async () => {
   inviteConfig.mockResolvedValue({ envio_email_disponivel: true });
-  render(<AdminConvitesPage />);
+  render(
+    <MemoryRouter>
+      <AdminConvitesPage />
+    </MemoryRouter>,
+  );
   const checkbox = await screen.findByRole("checkbox", { name: "Enviar também por e-mail" });
   fireEvent.click(checkbox);
   fireEvent.change(screen.getByLabelText("E-mail do novo mestre"), {
@@ -27,7 +32,11 @@ it("shows email option when available and submits it", async () => {
 
 it("hides email option when unavailable", async () => {
   inviteConfig.mockResolvedValue({ envio_email_disponivel: false });
-  render(<AdminConvitesPage />);
+  render(
+    <MemoryRouter>
+      <AdminConvitesPage />
+    </MemoryRouter>,
+  );
   await waitFor(() => expect(inviteConfig).toHaveBeenCalled());
   expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 });

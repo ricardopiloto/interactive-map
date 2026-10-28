@@ -16,15 +16,7 @@ export interface E2ESession {
 }
 
 export function loadSession(): E2ESession {
-  const file = path.join(
-    import.meta.dirname,
-    "..",
-    "..",
-    "frontend",
-    "e2e",
-    ".auth",
-    "session.json",
-  );
+  const file = path.join(import.meta.dirname, ".auth", "session.json");
   if (!fs.existsSync(file)) {
     throw new Error(
       `Sessão e2e ausente em ${file}. O webServer do Playwright deveria ter rodado seed_e2e.py.`,

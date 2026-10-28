@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -373,6 +374,7 @@ export function PainelPage() {
           </label>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

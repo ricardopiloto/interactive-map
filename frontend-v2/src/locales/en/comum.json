@@ -359,7 +359,13 @@
     "CAPTCHA_INDISPONIVEL": "Security verification is unavailable. Try later.",
     "TERMOS_NAO_ACEITOS": "You must accept the terms and privacy policy.",
     "IDIOMA_INVALIDO": "Invalid language.",
-    "CONVITE_EXPIRADO": "The link has expired."
+    "CONVITE_EXPIRADO": "The link has expired.",
+    "CONTATO_INDISPONIVEL": "Contact is unavailable on this instance.",
+    "CONTATO_ENVIO_FALHOU": "Could not send your message. Please try again later.",
+    "LIMITE_CONTATO_DIARIO": "The daily message limit has been reached. Please try again later.",
+    "ASSUNTO_INVALIDO": "Select a valid subject.",
+    "MENSAGEM_INVALIDA": "The message must have 10 to 4000 characters and at most 2 links.",
+    "NOME_INVALIDO": "Enter a name of up to 100 characters."
   },
   "campaignMissing": {
     "title": "Campaign not found",
@@ -511,7 +517,11 @@
         },
         {
           "title": "Data and contact",
-          "body": "Account use involves the processing described in the privacy policy. For questions about these terms or data removal, contact the operator of this instance through the contact channels provided on the instance."
+          "body": "For questions about these terms or requests to access, correct, or remove your data, use the contact form. Removal may prevent account use.",
+          "link": {
+            "to": "/contato",
+            "label": "Contact form"
+          }
         }
       ]
     },
@@ -524,7 +534,7 @@
         },
         {
           "title": "Security and limits",
-          "body": "The system uses IP addresses and email addresses in temporary login lockout counters. It limits registration requests by IP and stores a hash of the canonical email for the per-email limit."
+          "body": "The system uses IP addresses and email addresses in temporary login lockout counters. It limits registration requests by IP and stores a hash of the canonical email for the per-email limit. The contact form uses a temporary counter per IP and a hash of the email address to limit abuse."
         },
         {
           "title": "Campaigns",
@@ -532,13 +542,45 @@
         },
         {
           "title": "External services",
-          "body": "Your email address is sent to Resend for account messages. When enabled, Cloudflare Turnstile verifies registration requests. This instance does not use analytics or its own third-party cookies."
+          "body": "Your email address is sent to Resend for account messages. When enabled, Cloudflare Turnstile verifies registration requests. This instance does not use analytics or third-party cookies."
+        },
+        {
+          "title": "Contact form",
+          "body": "Name, email address, and message are sent by email to the operator. The application does not store these form details; the email provider processes them in transit. No confirmation email is sent to the sender."
         },
         {
           "title": "Contact and removal",
-          "body": "To request access, correction, or removal of your data, contact the operator of this instance through the contact channels provided on the instance. Removal may prevent account use."
+          "body": "To request access, correction, or removal of your data, use the contact form. Removal may prevent account use.",
+          "link": {
+            "to": "/contato",
+            "label": "Contact form"
+          }
         }
       ]
+    }
+  },
+  "footer": {
+    "terms": "Terms of use",
+    "privacy": "Privacy policy",
+    "contact": "Contact",
+    "aria": "Legal links"
+  },
+  "contact": {
+    "title": "Contact",
+    "loading": "Loading contact…",
+    "unavailable": "Contact is unavailable on this instance.",
+    "success": "Message sent. The operator may reply to the email address you provided.",
+    "name": "Name",
+    "subject": "Subject",
+    "message": "Message",
+    "count": "{{count}} of 4000 characters",
+    "submit": "Send message",
+    "subjects": {
+      "duvida": "Question",
+      "privacidade": "Privacy and data",
+      "problema": "Technical issue",
+      "sugestao": "Suggestion",
+      "outro": "Other"
     }
   }
 }

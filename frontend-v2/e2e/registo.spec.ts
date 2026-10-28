@@ -1,25 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
+import { latestEmail } from "./emailLog";
 import { setLocale } from "./helpers";
-
-type LoggedEmail = { to: string; text: string };
-
-async function latestEmail(to: string): Promise<LoggedEmail | undefined> {
-  try {
-    const contents = await readFile(process.env.E2E_EMAIL_LOG_FILE!, "utf8");
-    return contents
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line) as LoggedEmail)
-      .filter((email) => email.to === to)
-      .at(-1);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw error;
-  }
-}
 
 test("registo confirma e-mail e ativa a conta", async ({ page }) => {
   const email = `registo-${randomUUID()}@example.com`;

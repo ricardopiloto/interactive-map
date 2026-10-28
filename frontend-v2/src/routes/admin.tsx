@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AdminCampaignsSection } from "@/components/admin/AdminCampaignsSection";
@@ -26,6 +27,7 @@ export function AdminConsolePage() {
           </TabsContent>
         </Tabs>
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -43,8 +43,7 @@ def test_resend_transport_and_log_sender(tmp_path, caplog):
     log = LogSender(tmp_path, Path('mails.jsonl'))
     log.send('to@example.com', 'subject', 'html', 'text')
     assert 'to@example.com' in (tmp_path / 'mails.jsonl').read_text()
-    with pytest.raises(ValueError):
-        LogSender(tmp_path, Path('../outside')).send('x', 'y', 'z', 'w')
+    assert LogSender(tmp_path, Path('../outside')).send('x', 'y', 'z', 'w') is False
 
 
 @pytest.mark.parametrize('kind', ['verificar', 'existente', 'admin'])

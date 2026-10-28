@@ -11,7 +11,7 @@ from app.services.registo import is_disposable, process_registo, verify_turnstil
 from app.deps.auth import require_session_user
 from app.errors import raise_api_error
 from app.models.usuario import Usuario
-from app.services.auth_admin import normalize_email
+from app.services.auth_admin import normalize_email, valid_email_format
 from app.services.auth_invite import InviteError, accept_activate_invite, confirm_reset
 from app.services.auth_lockout import (
     clear_failures,
@@ -137,9 +137,9 @@ def registo(body: RegistoBody, request: Request, background_tasks: BackgroundTas
         return {"ok": True}
     if body.idioma not in {"pt-BR", "en"}:
         raise_api_error("IDIOMA_INVALIDO", status_code=400)
-    email = normalize_email(body.email)
-    if len(email) > 320 or len(email) < 5 or email.count('@') != 1 or not email.partition('@')[0] or '.' not in email.partition('@')[2] or ' ' in email:
+    if not valid_email_format(body.email):
         raise_api_error("EMAIL_INVALIDO", status_code=400)
+    email = normalize_email(body.email)
     if is_disposable(email):
         raise_api_error("EMAIL_DESCARTAVEL", status_code=400)
     captcha_error = verify_turnstile(body.captcha_token, settings.turnstile_secret, client_ip(request))

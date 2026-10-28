@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -60,6 +61,7 @@ export function ResetPage() {
           </Button>
         </form>
       </main>
+      <SiteFooter />
     </div>
   );
 }

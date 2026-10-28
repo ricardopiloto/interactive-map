@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
@@ -104,16 +105,22 @@ export function LoginPage() {
       </Dialog>
     );
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center p-6">
-      <Link to="/" className="mb-8 font-display text-2xl">
-        {t("v2.codex")}
-      </Link>
-      <h1 className="mb-2 font-display text-3xl">{t("v2.login")}</h1>
-      <p className="mb-6 text-muted-foreground">{t("v2.loginDescription")}</p>
-      <LoginForm onSuccess={() => navigate(returnTo, { replace: true })} />
-      <Link to="/registo" className="mt-4 text-sm underline">
-        {t("register.title")}
-      </Link>
-    </main>
+    <div className="flex min-h-screen flex-col bg-background">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center p-6 max-w-md flex-col justify-center p-6">
+        <Link to="/" className="mb-8 font-display text-2xl">
+          {t("v2.codex")}
+        </Link>
+        <h1 className="mb-2 font-display text-3xl">{t("v2.login")}</h1>
+        <p className="mb-6 text-muted-foreground">{t("v2.loginDescription")}</p>
+        <LoginForm onSuccess={() => navigate(returnTo, { replace: true })} />
+        <Link to="/contato" className="mt-4 text-sm underline">
+          {t("footer.contact")}
+        </Link>
+        <Link to="/registo" className="mt-4 text-sm underline">
+          {t("register.title")}
+        </Link>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

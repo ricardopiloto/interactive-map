@@ -14,6 +14,8 @@ const dataDir =
 process.env.E2E_DATA_DIR = dataDir;
 const emailLogFile = path.join(dataDir, "emails.jsonl");
 process.env.E2E_EMAIL_LOG_FILE = emailLogFile;
+const contatoEmail = "contato@example.test";
+process.env.E2E_CONTATO_EMAIL = contatoEmail;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -27,7 +29,7 @@ export default defineConfig({
   projects: [{ name: "desktop", use: { ...devices["Desktop Chrome"], locale: "pt-BR" } }],
   webServer: [
     {
-      command: `UV_CACHE_DIR="${tmpdir()}/uv-e2e-cache" DATA_DIR="${dataDir}" E2E_ORIGIN="${origin}" uv run python ../frontend/e2e/seed_e2e.py && UV_CACHE_DIR="${tmpdir()}/uv-e2e-cache" DATA_DIR="${dataDir}" DEBUG=true REGISTO_MODO=aberto EMAIL_API_KEY= TURNSTILE_SECRET= EMAIL_LOG_FILE="${emailLogFile}" COOKIE_SECURE=false PUBLIC_BASE_URL="${origin}" CORS_ORIGINS="${origin},http://localhost:${port}" uv run uvicorn app.main:app --host 127.0.0.1 --port ${apiPort}`,
+      command: `UV_CACHE_DIR="${tmpdir()}/uv-e2e-cache" DATA_DIR="${dataDir}" E2E_ORIGIN="${origin}" uv run python ../frontend-v2/e2e/seed_e2e.py && UV_CACHE_DIR="${tmpdir()}/uv-e2e-cache" DATA_DIR="${dataDir}" DEBUG=true REGISTO_MODO=aberto CONTATO_EMAIL="${contatoEmail}" EMAIL_API_KEY= TURNSTILE_SECRET= EMAIL_LOG_FILE="${emailLogFile}" COOKIE_SECURE=false PUBLIC_BASE_URL="${origin}" CORS_ORIGINS="${origin},http://localhost:${port}" uv run uvicorn app.main:app --host 127.0.0.1 --port ${apiPort}`,
       cwd: path.join(root, "..", "backend"),
       url: `http://127.0.0.1:${apiPort}/api/health`,
       reuseExistingServer: false,

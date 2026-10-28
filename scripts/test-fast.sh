@@ -3,7 +3,7 @@ set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
-FRONTEND_DIR="$ROOT_DIR/frontend"
+FRONTEND_DIR="$ROOT_DIR/frontend-v2"
 
 fail() {
   printf 'ERRO: %s\n' "$*" >&2
@@ -17,9 +17,9 @@ case "$PROFILE" in
   backend|--backend) PROFILE="backend" ;;
   -h|--help)
     printf 'Uso: %s [--frontend|--backend|--all]\n' "$0"
-    printf '  --frontend  lint e contraste; adequado a CSS e componentes visuais\n'
+    printf '  --frontend  lint e testes unitários; adequado a CSS e componentes visuais\n'
     printf '  --backend   nove testes unitários/CLI selecionados\n'
-    printf '  --all       backend selecionado + lint + contraste (padrão)\n'
+    printf '  --all       backend selecionado + lint + testes unitários (padrão)\n'
     exit 0
     ;;
   *) fail "opção desconhecida: $PROFILE (use --help)" ;;
@@ -31,9 +31,9 @@ if [[ "$PROFILE" == "all" || "$PROFILE" == "backend" ]]; then
 fi
 
 if [[ "$PROFILE" == "all" || "$PROFILE" == "frontend" ]]; then
-  command -v node >/dev/null 2>&1 || fail "Node.js não encontrado; instale as dependências do frontend conforme frontend/README.md"
+  command -v node >/dev/null 2>&1 || fail "Node.js não encontrado; instale as dependências do frontend conforme frontend-v2/README.md"
   command -v npm >/dev/null 2>&1 || fail "npm não encontrado"
-  [[ -x "$FRONTEND_DIR/node_modules/.bin/oxlint" ]] || fail "frontend/node_modules ausente; execute npm install uma vez"
+  [[ -x "$FRONTEND_DIR/node_modules/.bin/eslint" ]] || fail "frontend-v2/node_modules ausente; execute npm install uma vez"
 fi
 
 # No dependency sync occurs in this profile; keep uv's metadata cache in a writable temp path.
@@ -71,7 +71,7 @@ if [[ "$PROFILE" == "all" || "$PROFILE" == "backend" ]]; then
 fi
 if [[ "$PROFILE" == "all" || "$PROFILE" == "frontend" ]]; then
   run_step "lint frontend" "$FRONTEND_DIR" npm run lint
-  run_step "contraste frontend" "$FRONTEND_DIR" npm run test:contrast
+  run_step "testes unitários frontend" "$FRONTEND_DIR" npm run test
 fi
 
 printf '\nPerfil rápido concluído (%s). Build, pytest completo e Playwright não foram executados.\n' "$PROFILE"

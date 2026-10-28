@@ -18,3 +18,8 @@ def validate_registo_startup(config: Settings = settings) -> None:
         raise RuntimeError('PUBLIC_BASE_URL deve constar em CORS_ORIGINS')
     if not config.trusted_proxy:
         raise RuntimeError('TRUSTED_PROXY=true é obrigatório para registo aberto')
+
+
+def validate_public_forms_startup(config: Settings = settings) -> None:
+    if config.contato_email and not config.debug and not config.trusted_proxy:
+        raise RuntimeError('TRUSTED_PROXY=true é obrigatório para contacto público')

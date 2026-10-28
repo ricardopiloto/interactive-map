@@ -236,6 +236,6 @@ codex_clone_or_copy() {
       --exclude 'uploads/' "$CODEX_REPO_ROOT/" "$dest/"
   else
     cp -a "$CODEX_REPO_ROOT/." "$dest/"
-    rm -rf "$dest/.venv" "$dest/frontend/node_modules" "$dest/backend/.venv" || true
+    rm -rf "$dest/.venv" "$dest/frontend-v2/node_modules" "$dest/backend/.venv" || true
   fi
 }

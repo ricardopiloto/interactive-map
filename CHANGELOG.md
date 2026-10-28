@@ -7,6 +7,40 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-10-28
+
+### Added
+
+- Criação de conta pela própria pessoa (`/registo`): informa só o e-mail, aceita os termos e a política de privacidade e recebe um link de verificação válido por 5 horas, que leva à definição da senha. A resposta é sempre a mesma, quer o e-mail seja novo, pendente, ativo ou de uma conta desativada (não revela contas existentes); uma conta desativada pelo admin nunca é reativada pelo registo. Contas não confirmadas dentro das 5 horas são apagadas automaticamente (a cada 15 minutos) e há o comando `usuario limpar-pendentes`.
+- Defesas contra spam e bots no registo: limite por IP (5 por hora), limite por e-mail com hash (3 por 24 h), bloqueio de domínios de e-mail descartável, normalização de aliases (`+etiqueta` e pontos do Gmail), campo isca e Turnstile da Cloudflare opcional. O registo vem **fechado** por padrão (`REGISTO_MODO=fechado`).
+- Envio de e-mail pelo Resend (`EMAIL_API_KEY`, `EMAIL_FROM`), em pt-BR e en. O convite do admin continua válido por 72 horas e agora pode também ser enviado por e-mail. Em depuração (`DEBUG=true`) os e-mails vão para um arquivo (`EMAIL_LOG_FILE`) em vez de serem enviados.
+- Página de contato (`/contato`), para qualquer pessoa, com ou sem conta: nome, e-mail para resposta, assunto e mensagem, entregues por e-mail ao administrador da instância (`CONTATO_EMAIL`), com resposta direta à pessoa. Nada é guardado na aplicação e nenhuma confirmação é enviada à pessoa. Tem limites por IP, por e-mail e por dia da instância (`CONTATO_LIMITE_DIARIO`, com teto próprio de `CONTATO_LIMITE_PRIVACIDADE` para a categoria de privacidade), campo isca, Turnstile opcional e no máximo 2 ligações por mensagem.
+- Páginas de termos de uso (`/termos`) e de política de privacidade (`/privacidade`), em pt-BR e en, descrevendo os dados tratados e os serviços externos (Resend, DeepSeek quando a IA é usada, Turnstile quando ativo).
+- Rodapé com a versão da aplicação e links para termos, privacidade e contato, nas páginas fora de uma campanha. Dentro de uma campanha não há rodapé.
+- Teste de alinhamento da versão: falha se `package.json`, `package-lock.json`, `pyproject.toml`, `uv.lock`, o README e o CHANGELOG divergirem.
+
+### Changed
+
+- **Cota de armazenamento por campanha: de 10 GiB para 300 MB**, para todas as campanhas (existentes e novas), configurável por `COTA_PADRAO_BYTES`. Uma campanha que já esteja acima do limite continua legível e exportável, mas recusa novos uploads. Importar um pacote cujas imagens somem mais que a cota é recusado.
+- Os erros 429 de limite de pedidos passam a seguir o formato da API (`{"detail": {"erro": "LIMITE_PEDIDOS"}}`, ou `LIMITE_REGISTO` no registo) e mostram a mensagem localizada, em vez de uma mensagem genérica.
+- `EmailSender.send` devolve o resultado do envio e nunca propaga exceções.
+- `scripts/test-fast.sh --frontend` passa a rodar o lint e os testes unitários do `frontend-v2`.
+
+### Removed
+
+- Os pacotes legados `frontend/` e `frontend-next/` foram removidos do repositório (o `frontend-v2` já era o único em produção). O seed dos testes e2e passou para `frontend-v2/e2e/seed_e2e.py`. O histórico continua no git.
+
+### Database
+
+- Migração do banco de controle `009_registo_cota`: define `cota_bytes = 314572800` em todas as campanhas (campanhas acima do novo limite são registadas no log), e adiciona as colunas `email_canonico` (indexada) e `termos_aceitos_em` à tabela `usuario`.
+
+### Operação
+
+- **Antes de definir `CONTATO_EMAIL`** em produção, defina `TRUSTED_PROXY=true`. Com o contato configurado, `DEBUG=false` e `TRUSTED_PROXY=false`, a API não arranca (senão todos os visitantes atrás do túnel dividiriam o limite de 5 pedidos por hora).
+- Para abrir o registo (`REGISTO_MODO=aberto`), a API exige `EMAIL_API_KEY`, `PUBLIC_BASE_URL` em HTTPS, a origem de `PUBLIC_BASE_URL` em `CORS_ORIGINS` e `TRUSTED_PROXY=true`.
+- O plano gratuito do Resend envia até 100 e-mails por dia, quota que o registo, o convite do admin e o contato dividem. Passo a passo em [`docs/runbook-registo-autonomo.md`](docs/runbook-registo-autonomo.md).
+- Recomenda-se não divulgar o registo ao público amplo antes de existirem cotas de IA e um limite de campanhas por conta.
+
 ## [1.3.0] — 2026-10-27
 
 ### Added

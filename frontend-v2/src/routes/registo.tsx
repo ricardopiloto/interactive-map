@@ -1,61 +1,15 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authApi } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import { Turnstile } from "@/components/site/Turnstile";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useApiErrorMessage } from "@/lib/apiError";
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        element: HTMLElement,
-        options: {
-          sitekey: string;
-          callback: (token: string) => void;
-          "expired-callback": () => void;
-          "error-callback": () => void;
-        },
-      ) => string | number;
-      remove: (id: string | number) => void;
-    };
-  }
-}
-
-function Turnstile({ siteKey, onToken }: { siteKey: string; onToken: (token: string) => void }) {
-  const container = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let active = true;
-    let widget: string | number | undefined;
-    const render = () => {
-      if (active && container.current && window.turnstile) {
-        widget = window.turnstile.render(container.current, {
-          sitekey: siteKey,
-          callback: onToken,
-          "expired-callback": () => onToken(""),
-          "error-callback": () => onToken(""),
-        });
-      }
-    };
-    if (window.turnstile) render();
-    else {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.onload = render;
-      document.head.appendChild(script);
-    }
-    return () => {
-      active = false;
-      if (widget !== undefined) window.turnstile?.remove(widget);
-    };
-  }, [siteKey, onToken]);
-  return <div ref={container} />;
-}
 
 export function RegistoPage() {
   const { t, i18n } = useTranslation("comum");
@@ -182,10 +136,14 @@ export function RegistoPage() {
             </Button>
           </form>
         )}
+        <Link to="/contato" className="text-sm underline">
+          {t("footer.contact")}
+        </Link>
         <Link to="/login" className="text-sm underline">
           {t("v2.login")}
         </Link>
       </main>
+      <SiteFooter />
     </div>
   );
 }

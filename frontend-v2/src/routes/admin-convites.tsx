@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { adminConsoleApi } from "@/api/adminConsole";
@@ -117,6 +118,7 @@ export function AdminConvitesPage() {
           </form>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -80,14 +80,26 @@ def registo_key(email_canonico: str) -> str:
 def allow_registo_email(session: Session, email_canonico: str) -> bool:
     """Fixed 24-hour window, including the first accepted request."""
     key = registo_key(email_canonico)
-    now = _now()
-    row = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave == key)).first()
-    if row is None:
-        row = LoginBloqueio(chave=key, falhas=1, actualizado_em=now, bloqueado_ate=now + timedelta(hours=24))
-    elif row.bloqueado_ate is None or row.bloqueado_ate <= now:
-        row.falhas, row.actualizado_em, row.bloqueado_ate = 1, now, now + timedelta(hours=24)
-    elif row.falhas >= 3:
+    if not counter_allows(session, key, 3, timedelta(hours=24)):
         return False
+    counter_consume(session, key, 3, timedelta(hours=24))
+    return True
+
+
+def counter_allows(session: Session, chave: str, limite: int, janela: timedelta) -> bool:
+    row = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave == chave)).first()
+    return row is None or row.bloqueado_ate is None or row.bloqueado_ate <= _now() or row.falhas < limite
+
+
+def counter_consume(session: Session, chave: str, limite: int, janela: timedelta) -> bool:
+    if not counter_allows(session, chave, limite, janela):
+        return False
+    now = _now()
+    row = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave == chave)).first()
+    if row is None:
+        row = LoginBloqueio(chave=chave, falhas=1, actualizado_em=now, bloqueado_ate=now + janela)
+    elif row.bloqueado_ate is None or row.bloqueado_ate <= now:
+        row.falhas, row.actualizado_em, row.bloqueado_ate = 1, now, now + janela
     else:
         row.falhas += 1
     session.add(row)
@@ -95,8 +107,16 @@ def allow_registo_email(session: Session, email_canonico: str) -> bool:
     return True
 
 
+def counter_refund(session: Session, chave: str, limite: int, janela: timedelta) -> None:
+    row = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave == chave)).first()
+    if row is not None and row.bloqueado_ate is not None and row.bloqueado_ate > _now() and row.falhas > 0:
+        row.falhas -= 1
+        session.add(row)
+        session.commit()
+
+
 def purge_expired_registo_counters(session: Session) -> int:
-    rows = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave.startswith("registo:"))).all()
+    rows = session.exec(select(LoginBloqueio).where(LoginBloqueio.chave.startswith("registo:") | LoginBloqueio.chave.startswith("contato:"))).all()
     expired = [row for row in rows if row.bloqueado_ate is not None and row.bloqueado_ate <= _now()]
     for row in expired:
         session.delete(row)

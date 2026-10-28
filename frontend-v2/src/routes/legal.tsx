@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -7,6 +8,7 @@ export function LegalPage({ kind }: { kind: "terms" | "privacy" }) {
   const sections = t(`legal.${kind}.sections`, { returnObjects: true }) as {
     title: string;
     body: string;
+    link?: { to: string; label: string };
   }[];
   return (
     <div className="min-h-screen bg-background">
@@ -17,12 +19,18 @@ export function LegalPage({ kind }: { kind: "terms" | "privacy" }) {
           <section key={section.title} className="space-y-2">
             <h2 className="font-display text-2xl">{section.title}</h2>
             <p className="text-muted-foreground">{section.body}</p>
+            {section.link && (
+              <Link to={section.link.to} className="underline">
+                {section.link.label}
+              </Link>
+            )}
           </section>
         ))}
         <Link to="/registo" className="underline">
           {t("register.title")}
         </Link>
       </main>
+      <SiteFooter />
     </div>
   );
 }

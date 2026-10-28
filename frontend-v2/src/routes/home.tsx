@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -135,6 +136,7 @@ export function HomePage() {
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

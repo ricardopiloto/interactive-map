@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/auth/AuthContext";
@@ -34,6 +35,7 @@ export function ContaPage() {
           </Link>
         </p>
       </main>
+      <SiteFooter />
     </div>
   );
 }

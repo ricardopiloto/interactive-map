@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -16,6 +17,7 @@ export function NotFoundPage() {
           <Link to="/">{t("home.nav")}</Link>
         </Button>
       </main>
+      <SiteFooter />
     </div>
   );
 }
