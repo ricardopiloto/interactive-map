@@ -7,6 +7,12 @@ e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [1.7.1] — 2026-11-08
+
+### Fixed
+
+- Correção de texto no mapa de rotas `frontend-v2/src/locales/en/mapa.json:135 (frontend-v2/src/locales/en/mapa.json:135)` e `frontend-v2/src/locales/pt-BR/mapa.json:135 (frontend-v2/src/locales/pt-BR/mapa.json:135)`.
+
 ## [1.7.0] — 2026-10-29
 
 ### Added
